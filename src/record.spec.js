@@ -4,6 +4,7 @@ import Record from './record'
 import {
   re,
 
+  errNotAType,
   errWrongType,
   errMissingRecordFields,
   errExtraneousRecordFields,
@@ -50,5 +51,13 @@ describe('Record', () => {
       p.x = 'hi'
     }, /Cannot assign/)
     assert.equal(5, p.x)
+  })
+
+  it('requires valid type specifications', () => {
+    assert.throws(() => {
+      Record({
+        foo: 3
+      })
+    }, re(errNotAType(3)))
   })
 })

@@ -7,6 +7,8 @@ import {
   re,
 
   errNoNullOrUndefined,
+  errNotAType,
+  errNotACtorTypeArray,
   errNumCtorArgs,
   errBadCtorArg,
   errWrongType,
@@ -93,5 +95,21 @@ describe('Enum', () => {
       })
     }, re(errMissingCase('Just')))
     settings.checkExhaustive = true
+  })
+
+  it('requires valid type specifications', () => {
+    assert.throws(() => {
+      Enum({
+        Foo: [3]
+      })
+    }, re(errNotAType(3)))
+  })
+
+  it('must be given an array of parameter types per constructor', () => {
+    assert.throws(() => {
+      Enum({
+        Foo: true
+      })
+    }, re(errNotACtorTypeArray(true)))
   })
 })

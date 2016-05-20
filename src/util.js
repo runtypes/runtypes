@@ -28,6 +28,13 @@ export const showVal = (val) => {
   return JSON.stringify(val)
 }
 
+export const isType = (type) => {
+  if (primByType.has(type))
+    return true
+
+  return false
+}
+
 export const showType = (type) => {
   const prim = primByType.get(type)
   if (prim)
@@ -61,6 +68,8 @@ export const checkType = (val, expectedType) => {
 
 // Type error message generators
 export const errNoNullOrUndefined = 'no null or undefined values allowed'
+export const errNotAType = (purportedType) => `not a type: ${purportedType}`
+export const errNotACtorTypeArray = (ctorName) => `constructor ${ctorName} must be specified with an array of parameter types`
 export const errNumCtorArgs = (numParams, numArgs) => `wrong number of arguments: expected ${numParams} but was ${numArgs}`
 export const errBadCtorArg = (arg, argIndex, ctorName, errMsg) => `value ${showVal(arg)} cannot be passed as argument ${argIndex} of constructor ${ctorName}; ${errMsg}`
 export const errWrongType = (expectedType) => `expected value of type ${showType(expectedType)}`

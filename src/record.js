@@ -1,7 +1,9 @@
 import Settings from './settings'
 import {
+  isType,
   checkType,
 
+  errNotAType,
   errMissingRecordFields,
   errExtraneousRecordFields,
   errBadRecordFieldValue,
@@ -18,6 +20,13 @@ const keyDiff = (obj1, obj2) => {
 }
 
 export default (spec) => {
+
+  for (const key in spec) {
+    const type = spec[key]
+    if (!isType(type))
+      throw new TypeError(errNotAType(type))
+  }
+
   return (obj) => {
     const missingKeys = keyDiff(spec, obj)
     if (missingKeys.length > 0)

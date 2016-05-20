@@ -1,8 +1,11 @@
 import Settings from './settings'
 import {
+  isType,
   checkType,
 
   errNoNullOrUndefined,
+  errNotAType,
+  errNotACtorTypeArray,
   errNumCtorArgs,
   errBadCtorArg,
   errWrongType,
@@ -12,15 +15,29 @@ import {
 } from './util'
 
 export default (spec) => {
+
   const type = {}
+
   for (const ctorName in spec) {
+
+    const paramTypes = spec[ctorName]
+
+    if (Settings.check) {
+      // Validate that the constructor was specified with an array of type params
+      if (!Array.isArray(paramTypes))
+        throw new TypeError(errNotACtorTypeArray(paramTypes))
+
+      // Validate that each param type is in fact a type
+      for (let i = 0; i < paramTypes.length; i++) {
+        const paramType = paramTypes[i]
+        if (!isType(paramType))
+          throw new TypeError(errNotAType(paramType))
+      }
+    }
+
     type[ctorName] = (...args) => {
 
-      const paramTypes = spec[ctorName]
-
-      const { check, checkExhaustive, checkExtraneous } = Settings
-
-      if (check) {
+      if (Settings.check) {
         // Num args check
         if (args.length !== paramTypes.length)
           throw new TypeError(errNumCtorArgs(paramTypes.length, args.length))
@@ -38,15 +55,15 @@ export default (spec) => {
       // A value of an enum type is nothing more than the case function
       // which analyzes it
       return (cases) => {
-        if (check) {
-          if (checkExtraneous) {
+        if (Settings.check) {
+          if (Settings.checkExtraneous) {
             for (const caseName in cases) {
               if (!(caseName in spec))
                 throw new TypeError(errInvalidCaseName(caseName, Object.keys(spec)))
             }
           }
 
-          if (checkExhaustive) {
+          if (Settings.checkExhaustive) {
             const missingCases = []
 
             for (const caseName in spec)
