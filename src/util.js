@@ -1,40 +1,62 @@
+const primitives = [
+  {
+    type: Boolean,
+    name: 'Boolean',
+    typeOf: 'boolean'
+  },
+  {
+    type: Number,
+    name: 'Number',
+    typeOf: 'number'
+  },
+  {
+    type: String,
+    name: 'String',
+    typeOf: 'string'
+  }
+]
+
+const primByType = new Map(),
+      primByTypeOf = new Map()
+for (let i = 0; i < primitives.length; i++) {
+  const prim = primitives[i]
+  primByType.set(prim.type, prim)
+  primByTypeOf.set(prim.typeOf, prim)
+}
+
 export const showVal = (val) => {
-    return JSON.stringify(val)
+  return JSON.stringify(val)
 }
 
 export const showType = (type) => {
-    switch (type) {
-        case Boolean: return 'Boolean'
-        case Number: return 'Number'
-        case String: return 'String'
-    }
-    throw new Error(`unable to show type ${type}`)
+  const prim = primByType.get(type)
+  if (prim)
+    return prim.name
+  throw new Error(`unable to show type ${type}`)
 }
 
 export const typesEqual = (type1, type2) => {
-    // TODO structural equality
-    return type1 === type2
+  // TODO structural equality
+  return type1 === type2
 }
 
 export const inferType = (val) => {
-    switch (typeof val) {
-        case 'boolean': return Boolean
-        case 'number': return Number
-        case 'string': return String
-    }
-    throw new Error(`unable to infer type of ${showVal(val)}`)
+  const prim = primByTypeOf.get(typeof val)
+  if (prim)
+    return prim.type
+  throw new Error(`unable to infer type of ${showVal(val)}`)
 }
 
 export const checkType = (val, expectedType) => {
-    if (val === null || val === undefined)
-        return errNoNullOrUndefined
+  if (val === null || val === undefined)
+    return errNoNullOrUndefined
 
-    const inferredType = inferType(val)
-    if (typesEqual(expectedType, inferredType))
-        return null // definitely no error in this case
+  const inferredType = inferType(val)
+  if (typesEqual(expectedType, inferredType))
+    return null // definitely no error in this case
 
-    // TODO handle validator functions
-    return errWrongType(expectedType)
+  // TODO handle validator functions
+  return errWrongType(expectedType)
 }
 
 // Type error message generators
