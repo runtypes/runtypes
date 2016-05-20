@@ -6,7 +6,7 @@ import {
 } from './util'
 
 describe('type inference', () => {
-  it('infers primitives', () => {
+  it('infers primitive types', () => {
     assert(typesEqual(Number, inferType(99)))
     assert(typesEqual(String, inferType('hello')))
     assert(typesEqual(Boolean, inferType(true)))
