@@ -4,6 +4,7 @@ import settings from './settings'
 import Enum from './enum'
 import {
   checkType,
+  re,
 
   errNoNullOrUndefined,
   errNumCtorArgs,
@@ -13,9 +14,6 @@ import {
   errExhaustiveness,
   errMissingCase
 } from './util'
-
-// Convert a string to a regexp, escaping all special characters inside it
-const re = str => new RegExp(str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"))
 
 const Maybe = T => Enum({
     Nothing: [],

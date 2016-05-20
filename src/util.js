@@ -28,11 +28,11 @@ export const inferType = (val) => {
 export const checkType = (val, expectedType) => {
     if (val === null || val === undefined)
         return errNoNullOrUndefined
-    
+
     const inferredType = inferType(val)
     if (typesEqual(expectedType, inferredType))
         return null // definitely no error in this case
-    
+
     // TODO handle validator functions
     return errWrongType(expectedType)
 }
@@ -45,3 +45,8 @@ export const errWrongType = (expectedType) => `expected value of type ${showType
 export const errInvalidCaseName = (caseName, validCases) => `${caseName} is not one of the valid constructors for this type (${validCases.join(', ')})`
 export const errExhaustiveness = (missingCases) => `not all cases handled (missing ${missingCases.join(', ')})`
 export const errMissingCase = (caseName) => `failed to handle case ${caseName}`
+export const errMissingRecordKeys = (missingKeys) => `missing record key${missingKeys.length === 1 ? '' : 's'} ${missingKeys.join(', ')}`
+export const errExtraneousRecordKeys = (missingKeys) => `extraneous record key${missingKeys.length === 1 ? '' : 's'} ${missingKeys.join(', ')}`
+
+// Convert a string to a regexp, escaping all special characters inside it
+export const re = str => new RegExp(str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"))
