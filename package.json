@@ -1,0 +1,34 @@
+{
+  "name": "runtypes",
+  "version": "0.0.1",
+  "description": "Runtime types and validation for JavaScript",
+  "scripts": {
+    "test": "mocha tools/testSetup.js \"src/**/*.spec.js\" --reporter progress",
+    "test:watch": "npm run test -- --watch"
+  },
+  "author": "Thomas Crockett",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-cli": "6.8.0",
+    "babel-preset-es2015": "^6.9.0",
+    "chai": "3.5.0",
+    "eslint": "2.9.0",
+    "eslint-watch": "2.1.11",
+    "mocha": "2.4.5",
+    "npm-run-all": "1.8.0",
+    "webpack": "1.13.0"
+  },
+  "keywords:": [
+    "runtime",
+    "algebraic",
+    "data",
+    "type",
+    "validation",
+    "functional"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pelotom/runtypes"
+  }
+}
