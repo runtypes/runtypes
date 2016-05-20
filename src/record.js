@@ -1,7 +1,10 @@
 import Settings from './settings'
 import {
-  errMissingRecordKeys,
-  errExtraneousRecordKeys
+  checkType,
+
+  errMissingRecordFields,
+  errExtraneousRecordFields,
+  errBadRecordFieldValue
 } from './util'
 
 const keyDiff = (obj1, obj2) => {
@@ -17,11 +20,19 @@ export default (spec) => {
   return (obj) => {
     const missingKeys = keyDiff(spec, obj)
     if (missingKeys.length > 0)
-      throw new TypeError(errMissingRecordKeys(missingKeys))
+      throw new TypeError(errMissingRecordFields(missingKeys))
 
     const extraKeys = keyDiff(obj, spec)
     if (extraKeys.length > 0)
-      throw new TypeError(errExtraneousRecordKeys(extraKeys))
+      throw new TypeError(errExtraneousRecordFields(extraKeys))
+
+    for (const key in obj) {
+      const val = obj[key]
+      const type = spec[key]
+      const errMsg = checkType(val, type)
+      if (errMsg)
+        throw new TypeError(errBadRecordFieldValue(val, key, errMsg))
+    }
 
     return obj
   }

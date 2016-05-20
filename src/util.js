@@ -45,8 +45,9 @@ export const errWrongType = (expectedType) => `expected value of type ${showType
 export const errInvalidCaseName = (caseName, validCases) => `${caseName} is not one of the valid constructors for this type (${validCases.join(', ')})`
 export const errExhaustiveness = (missingCases) => `not all cases handled (missing ${missingCases.join(', ')})`
 export const errMissingCase = (caseName) => `failed to handle case ${caseName}`
-export const errMissingRecordKeys = (missingKeys) => `missing record key${missingKeys.length === 1 ? '' : 's'} ${missingKeys.join(', ')}`
-export const errExtraneousRecordKeys = (missingKeys) => `extraneous record key${missingKeys.length === 1 ? '' : 's'} ${missingKeys.join(', ')}`
+export const errMissingRecordFields = (missingKeys) => `missing record field${missingKeys.length === 1 ? '' : 's'} ${missingKeys.join(', ')}`
+export const errExtraneousRecordFields = (extraKeys) => `extraneous record field${extraKeys.length === 1 ? '' : 's'} ${extraKeys.join(', ')}`
+export const errBadRecordFieldValue = (val, key, errMsg) => `value ${showVal(val)} cannot be assigned to field ${key}; ${errMsg}`
 
 // Convert a string to a regexp, escaping all special characters inside it
 export const re = str => new RegExp(str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"))
