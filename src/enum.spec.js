@@ -1,9 +1,10 @@
 import assert from 'assert'
 
-import { Enum, settings } from './enum'
+import settings from './settings'
+import Enum from './enum'
 import {
   checkType,
-  
+
   errNoNullOrUndefined,
   errNumCtorArgs,
   errBadCtorArg,
