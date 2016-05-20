@@ -7,7 +7,8 @@ import {
   errWrongType,
   errMissingRecordFields,
   errExtraneousRecordFields,
-  errBadRecordFieldValue
+  errBadRecordFieldValue,
+  errAttemptedFieldMutation
 } from './util'
 
 const Point = Record({
@@ -41,5 +42,13 @@ describe('Record', () => {
     assert.throws(() => {
       Point({ x: 5, y: 'hi' })
     }, re(errBadRecordFieldValue('hi', 'y', errWrongType(Number))))
+  })
+
+  it('prohibits mutation', () => {
+    const p = Point({ x: 5, y: 2})
+    assert.throws(() => {
+      p.x = 'hi'
+    }, /Cannot assign/)
+    assert.equal(5, p.x)
   })
 })

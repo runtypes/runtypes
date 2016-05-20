@@ -4,7 +4,8 @@ import {
 
   errMissingRecordFields,
   errExtraneousRecordFields,
-  errBadRecordFieldValue
+  errBadRecordFieldValue,
+  errAttemptedFieldMutation
 } from './util'
 
 const keyDiff = (obj1, obj2) => {
@@ -34,6 +35,6 @@ export default (spec) => {
         throw new TypeError(errBadRecordFieldValue(val, key, errMsg))
     }
 
-    return obj
+    return Object.freeze(obj)
   }
 }
