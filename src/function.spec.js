@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import Fn from './fn'
+import Fn from './function'
 
 import {
   checkType
