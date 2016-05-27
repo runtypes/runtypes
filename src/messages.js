@@ -1,10 +1,13 @@
+import { appendSuffix } from 'nth'
+const nth = (index) => appendSuffix(index + 1)
+
 import { showType, showVal } from './show'
 
 export const errNoNullOrUndefined = 'no null or undefined values allowed'
 export const errNotAType = (purportedType) => `not a type: ${purportedType}`
 export const errNotACtorTypeArray = (ctorName) => `constructor ${ctorName} must be specified with an array of parameter types`
 export const errNumCtorArgs = (numParams, numArgs) => `wrong number of arguments: expected ${numParams} but was ${numArgs}`
-export const errBadCtorArg = (arg, argIndex, ctorName, errMsg) => `value ${showVal(arg)} cannot be passed as argument ${argIndex} of constructor ${ctorName}; ${errMsg}`
+export const errBadCtorArg = (arg, argIndex, ctorName, errMsg) => `invalid ${nth(argIndex)} argument ${showVal(arg)} to ${ctorName}: ${errMsg}`
 export const errWrongType = (expectedType) => `expected value of type ${showType(expectedType)}`
 export const errInvalidCaseName = (caseName, validCases) => `${caseName} is not one of the valid constructors (${validCases.join(', ')}) for this type`
 export const errExhaustiveness = (missingCases) => `not all cases handled (missing ${missingCases.join(', ')})`
@@ -18,5 +21,5 @@ export const errGetNonexistentRecordField = (key, validKeys) => `attempted to ge
 export const errWrappingNonFunction = (arg) => `attempted to create a checked function from non-function ${showVal(arg)}`
 export const errTooManyResultTypes = 'functions can have at most one result type'
 export const errNumArgs = (numParams, numArgs) => `wrong number of arguments: expected ${numParams} but was ${numArgs}`
-export const errBadArg = (arg, argIndex, errMsg) => `value ${showVal(arg)} cannot be passed as argument ${argIndex}; ${errMsg}`
-export const errBadResult = (errMsg) => `wrapped function produced invalid result; ${errMsg}`
+export const errBadArg = (arg, argIndex, errMsg) => `invalid ${nth(argIndex)} argument ${showVal(arg)}; ${errMsg}`
+export const errBadResult = (errMsg) => `wrapped function produced invalid result: ${errMsg}`
