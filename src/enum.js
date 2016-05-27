@@ -10,12 +10,10 @@ import {
 } from './check'
 
 import {
-  errNoNullOrUndefined,
   errNotAType,
   errNotACtorTypeArray,
   errNumCtorArgs,
   errBadCtorArg,
-  errWrongType,
   errInvalidCaseName,
   errExhaustiveness,
   errMissingCase

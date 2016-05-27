@@ -22,8 +22,8 @@ import {
 } from './messages'
 
 const Maybe = T => Enum({
-    Nothing: [],
-    Just: [T]
+  Nothing: [],
+  Just: [T]
 })
 
 const { Just: JustNum, Nothing: NothingNum } = Maybe(Number)
@@ -72,7 +72,7 @@ describe('Enum', () => {
         Just(x) {
           return x + 9
         },
-        Bogus(y) {
+        Bogus() {
           return 3
         }
       })

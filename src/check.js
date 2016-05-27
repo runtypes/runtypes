@@ -8,6 +8,8 @@ import {
   primByTypeOf
 } from './primitives'
 
+import { showVal } from './show'
+
 export const isType = (type) => {
   if (primByType.has(type))
     return true

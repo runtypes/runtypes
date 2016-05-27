@@ -15,7 +15,7 @@ export function ifCheckingIt(title, test, expectedErrMsg) {
 }
 
 export function assertThrowsExact(test, errMsg) {
-  const re = new RegExp(errMsg.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"))
+  const re = new RegExp(errMsg.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'))
   assert.throws(test, re)
 }
 
