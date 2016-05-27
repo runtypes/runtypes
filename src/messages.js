@@ -6,7 +6,7 @@ export const errNotACtorTypeArray = (ctorName) => `constructor ${ctorName} must 
 export const errNumCtorArgs = (numParams, numArgs) => `wrong number of arguments: expected ${numParams} but was ${numArgs}`
 export const errBadCtorArg = (arg, argIndex, ctorName, errMsg) => `value ${showVal(arg)} cannot be passed as argument ${argIndex} of constructor ${ctorName}; ${errMsg}`
 export const errWrongType = (expectedType) => `expected value of type ${showType(expectedType)}`
-export const errInvalidCaseName = (caseName, validCases) => `${caseName} is not one of the valid constructors for this type (${validCases.join(', ')})`
+export const errInvalidCaseName = (caseName, validCases) => `${caseName} is not one of the valid constructors (${validCases.join(', ')}) for this type`
 export const errExhaustiveness = (missingCases) => `not all cases handled (missing ${missingCases.join(', ')})`
 export const errMissingCase = (caseName) => `failed to handle case ${caseName}`
 export const errMissingRecordFields = (missingKeys) => `missing record field${missingKeys.length === 1 ? '' : 's'} ${missingKeys.join(', ')}`
