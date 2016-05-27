@@ -14,3 +14,9 @@ export const errExtraneousRecordFields = (extraKeys) => `extraneous record field
 export const errBadRecordFieldValue = (val, key, errMsg) => `value ${showVal(val)} cannot be assigned to field ${key}; ${errMsg}`
 export const errAttemptedFieldMutation = 'attempted to modify an immutable record'
 export const errGetNonexistentRecordField = (key, validKeys) => `attempted to get ${key} from record { ${validKeys.join(', ')} }`
+
+export const errWrappingNonFunction = (arg) => `attempted to create a checked function from non-function ${showVal(arg)}`
+export const errTooManyResultTypes = 'functions can have at most one result type'
+export const errNumArgs = (numParams, numArgs) => `wrong number of arguments: expected ${numParams} but was ${numArgs}`
+export const errBadArg = (arg, argIndex, errMsg) => `value ${showVal(arg)} cannot be passed as argument ${argIndex}; ${errMsg}`
+export const errBadResult = (errMsg) => `wrapped function produced invalid result; ${errMsg}`
