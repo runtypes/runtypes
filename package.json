@@ -1,6 +1,6 @@
 {
   "name": "runtypes",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Runtime types and validation for JavaScript",
   "main": "runtypes.js",
   "scripts": {
