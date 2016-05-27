@@ -10,10 +10,6 @@ import {
 } from './testUtil'
 
 import {
-  checkType
-} from './check'
-
-import {
   errNoNullOrUndefined,
   errNotAType,
   errNotACtorTypeArray,
