@@ -28,7 +28,6 @@
     "eslint-watch": "^2.1.11",
     "mocha": "2.4.5",
     "npm-run-all": "1.8.0",
-    "webpack": "1.13.0"
   },
   "keywords:": [
     "runtime",
