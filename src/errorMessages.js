@@ -1,4 +1,4 @@
-import { showType, showVal } from './check'
+import { showType, showVal } from './show'
 
 export const errNoNullOrUndefined = 'no null or undefined values allowed'
 export const errNotAType = (purportedType) => `not a type: ${purportedType}`

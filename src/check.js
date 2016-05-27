@@ -3,48 +3,16 @@ import {
   errWrongType
 } from './errorMessages'
 
-const primitives = [
-  {
-    type: Boolean,
-    name: 'Boolean',
-    typeOf: 'boolean'
-  },
-  {
-    type: Number,
-    name: 'Number',
-    typeOf: 'number'
-  },
-  {
-    type: String,
-    name: 'String',
-    typeOf: 'string'
-  }
-]
-
-const primByType = new Map(),
-      primByTypeOf = new Map()
-for (let i = 0; i < primitives.length; i++) {
-  const prim = primitives[i]
-  primByType.set(prim.type, prim)
-  primByTypeOf.set(prim.typeOf, prim)
-}
-
-export const showVal = (val) => {
-  return JSON.stringify(val)
-}
+import {
+  primByType,
+  primByTypeOf
+} from './primitives'
 
 export const isType = (type) => {
   if (primByType.has(type))
     return true
 
   return false
-}
-
-export const showType = (type) => {
-  const prim = primByType.get(type)
-  if (prim)
-    return prim.name
-  throw new Error(`unable to show type ${type}`)
 }
 
 export const typesEqual = (type1, type2) => {
