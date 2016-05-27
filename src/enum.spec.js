@@ -97,7 +97,7 @@ describe('Enum', () => {
   )
 
   it('checks just that the right case is present when exhaustiveness is turned off', () => {
-    settings.checkExhaustive = false
+    settings.requireExhaustiveCases = false
     assertThrowsExact(() => {
       const just9 = JustNum(9)
       just9({
@@ -106,7 +106,7 @@ describe('Enum', () => {
         }
       })
     }, errMissingCase('Just'))
-    settings.checkExhaustive = true
+    settings.requireExhaustiveCases = true
   })
 
   ifCheckingIt('requires valid type specifications',

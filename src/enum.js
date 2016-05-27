@@ -59,14 +59,14 @@ export default (spec) => {
       // which analyzes it
       return (cases) => {
         if (Settings.check) {
-          if (Settings.checkExtraneous) {
+          if (Settings.disallowExtraneousCases) {
             for (const caseName in cases) {
               if (!(caseName in spec))
                 throw new TypeError(errInvalidCaseName(caseName, Object.keys(spec)))
             }
           }
 
-          if (Settings.checkExhaustive) {
+          if (Settings.requireExhaustiveCases) {
             const missingCases = []
 
             for (const caseName in spec)
