@@ -37,6 +37,14 @@ describe('Enum', () => {
     }))
   })
 
+  whetherCheckingOrNotIt('has a tag field', () => {
+    assert.equal('Just', JustNum(3).tag)
+  })
+
+  whetherCheckingOrNotIt('has an args field', () => {
+    assert.deepEqual([3], JustNum(3).args)
+  })
+
   ifCheckingIt('cannot be constructed with null arguments',
     () => JustNum(null),
     errNoNullOrUndefined

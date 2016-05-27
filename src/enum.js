@@ -23,9 +23,9 @@ export default (spec) => {
 
   const type = {}
 
-  for (const ctorName in spec) {
+  for (const tag in spec) {
 
-    const paramTypes = spec[ctorName]
+    const paramTypes = spec[tag]
 
     if (check()) {
       // Validate that the constructor was specified with an array of type params
@@ -40,7 +40,7 @@ export default (spec) => {
       }
     }
 
-    type[ctorName] = (...args) => {
+    type[tag] = (...args) => {
 
       if (check()) {
         // Num args check
@@ -53,13 +53,15 @@ export default (spec) => {
           const type = paramTypes[i]
           const errMsg = checkType(arg, type)
           if (errMsg)
-            throw new TypeError(errBadCtorArg(arg, i, ctorName, errMsg))
+            throw new TypeError(errBadCtorArg(arg, i, tag, errMsg))
         }
       }
 
       // A value of an enum type is nothing more than the case function
       // which analyzes it
       return {
+        tag,
+        args,
         match(cases) {
           if (check()) {
             if (disallowExtraneousCases()) {
@@ -81,10 +83,10 @@ export default (spec) => {
             }
           }
 
-          const handler = cases[ctorName]
+          const handler = cases[tag]
 
           if (!handler)
-            throw new TypeError(errMissingCase(ctorName))
+            throw new TypeError(errMissingCase(tag))
 
           return handler.apply(null, args)
         }
