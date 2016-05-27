@@ -12,7 +12,7 @@ import {
   errBadRecordFieldValue,
   errAttemptedFieldMutation,
   errGetNonexistentRecordField
-} from './errorMessages'
+} from './messages'
 
 const keyDiff = (obj1, obj2) => {
   const uniqueTo1 = []

@@ -10,7 +10,7 @@ import {
   errBadRecordFieldValue,
   errAttemptedFieldMutation,
   errGetNonexistentRecordField
-} from './errorMessages'
+} from './messages'
 
 import {
   ifCheckingIt,

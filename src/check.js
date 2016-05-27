@@ -1,7 +1,7 @@
 import {
   errNoNullOrUndefined,
   errWrongType
-} from './errorMessages'
+} from './messages'
 
 import {
   primByType,

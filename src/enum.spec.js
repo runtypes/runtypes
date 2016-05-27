@@ -23,7 +23,7 @@ import {
   errInvalidCaseName,
   errExhaustiveness,
   errMissingCase
-} from './errorMessages'
+} from './messages'
 
 const Maybe = T => Enum({
     Nothing: [],

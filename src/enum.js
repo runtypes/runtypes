@@ -15,7 +15,7 @@ import {
   errInvalidCaseName,
   errExhaustiveness,
   errMissingCase
-} from './errorMessages'
+} from './messages'
 
 export default (spec) => {
 
