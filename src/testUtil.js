@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import Settings from './settings'
+import { check } from './settings'
 
 export function whetherCheckingOrNotIt(title, test) {
   it(`${title}`, test)
@@ -21,11 +21,11 @@ export function assertThrowsExact(test, errMsg) {
 
 function testWithoutChecking(test) {
   return function() {
-    Settings.check = false
+    check(false)
     try {
       test()
     } finally {
-      Settings.check = true
+      check(true)
     }
   }
 }

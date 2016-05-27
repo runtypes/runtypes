@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import settings from './settings'
+import { requireExhaustiveCases } from './settings'
 import Enum from './enum'
 
 import {
@@ -97,7 +97,7 @@ describe('Enum', () => {
   )
 
   it('checks just that the right case is present when exhaustiveness is turned off', () => {
-    settings.requireExhaustiveCases = false
+    requireExhaustiveCases(false)
     assertThrowsExact(() => {
       const just9 = JustNum(9)
       just9({
@@ -106,7 +106,7 @@ describe('Enum', () => {
         }
       })
     }, errMissingCase('Just'))
-    settings.requireExhaustiveCases = true
+    requireExhaustiveCases(true)
   })
 
   ifCheckingIt('requires valid type specifications',

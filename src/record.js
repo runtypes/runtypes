@@ -1,4 +1,4 @@
-import Settings from './settings'
+import { check } from './settings'
 
 import {
   isType,
@@ -25,7 +25,7 @@ const keyDiff = (obj1, obj2) => {
 
 export default (spec) => {
 
-  if (Settings.check) {
+  if (check()) {
     for (const key in spec) {
       const type = spec[key]
       if (!isType(type))
@@ -34,7 +34,7 @@ export default (spec) => {
   }
 
   return (obj) => {
-    if (Settings.check) {
+    if (check()) {
       const missingKeys = keyDiff(spec, obj)
       if (missingKeys.length > 0)
         throw new TypeError(errMissingRecordFields(missingKeys))

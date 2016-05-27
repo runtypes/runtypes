@@ -1,4 +1,8 @@
-import Settings from './settings'
+import {
+  check,
+  requireExhaustiveCases,
+  disallowExtraneousCases
+} from './settings'
 
 import {
   isType,
@@ -25,7 +29,7 @@ export default (spec) => {
 
     const paramTypes = spec[ctorName]
 
-    if (Settings.check) {
+    if (check()) {
       // Validate that the constructor was specified with an array of type params
       if (!Array.isArray(paramTypes))
         throw new TypeError(errNotACtorTypeArray(paramTypes))
@@ -40,7 +44,7 @@ export default (spec) => {
 
     type[ctorName] = (...args) => {
 
-      if (Settings.check) {
+      if (check()) {
         // Num args check
         if (args.length !== paramTypes.length)
           throw new TypeError(errNumCtorArgs(paramTypes.length, args.length))
@@ -58,15 +62,15 @@ export default (spec) => {
       // A value of an enum type is nothing more than the case function
       // which analyzes it
       return (cases) => {
-        if (Settings.check) {
-          if (Settings.disallowExtraneousCases) {
+        if (check()) {
+          if (disallowExtraneousCases()) {
             for (const caseName in cases) {
               if (!(caseName in spec))
                 throw new TypeError(errInvalidCaseName(caseName, Object.keys(spec)))
             }
           }
 
-          if (Settings.requireExhaustiveCases) {
+          if (requireExhaustiveCases()) {
             const missingCases = []
 
             for (const caseName in spec)
