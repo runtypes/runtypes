@@ -6,8 +6,7 @@
   "scripts": {
     "test": "mocha testSetup.js src/**/*.spec.js --reporter progress",
     "test:watch": "npm run test -- --watch",
-    "browserify": "browserify -s runtypes src -o runtypes.js -t [ babelify ]",
-    "build": "npm-run-all test browserify",
+    "build": "browserify -s runtypes src -o runtypes.js -t [ babelify ]",
     "release": "npm run release:patch",
     "release:patch": "npm run build && xyz --increment patch",
     "release:minor": "npm run build && xyz --increment minor",
@@ -31,7 +30,6 @@
     "eslint-plugin-import": "^1.8.1",
     "eslint-watch": "^2.1.11",
     "mocha": "2.4.5",
-    "npm-run-all": "1.8.0",
     "xyz": "^0.5.0"
   },
   "keywords:": [
