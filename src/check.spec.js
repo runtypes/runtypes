@@ -3,7 +3,7 @@ import assert from 'assert'
 import {
   typesEqual,
   inferType
-} from './util'
+} from './check'
 
 describe('type inference', () => {
   it('infers primitive types', () => {

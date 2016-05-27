@@ -3,7 +3,7 @@ import Settings from './settings'
 import {
   isType,
   checkType
-} from './util'
+} from './check'
 
 import {
   errNotAType,

@@ -11,7 +11,7 @@ import {
 
 import {
   checkType
-} from './util'
+} from './check'
 
 import {
   errNoNullOrUndefined,
