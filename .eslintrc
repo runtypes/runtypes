@@ -33,5 +33,6 @@
     "import/no-named-as-default": 0
   },
   "globals": {
+    "console": true
   }
 }
