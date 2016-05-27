@@ -1,2 +1,5 @@
+# Dist file
+/runtypes.js
+
 node_modules
 .DS_Store
