@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Runtime types and validation for JavaScript",
   "scripts": {
-    "test": "mocha tools/testSetup.js src/**/*.spec.js --reporter progress",
+    "test": "mocha testSetup.js src/**/*.spec.js --reporter progress",
     "test:watch": "npm run test -- --watch"
   },
   "author": "Thomas Crockett",
