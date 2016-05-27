@@ -1,13 +1,8 @@
 import assert from 'assert'
 
 import Record from './record'
-import {
-  ifCheckingIt,
-  whetherCheckingOrNotIt
-} from './testUtil.js'
-import {
-  re,
 
+import {
   errNotAType,
   errWrongType,
   errMissingRecordFields,
@@ -15,7 +10,12 @@ import {
   errBadRecordFieldValue,
   errAttemptedFieldMutation,
   errGetNonexistentRecordField
-} from './util'
+} from './errorMessages'
+
+import {
+  ifCheckingIt,
+  whetherCheckingOrNotIt
+} from './testUtil.js'
 
 const Point = Record({
   x: Number,

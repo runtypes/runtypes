@@ -1,15 +1,18 @@
 import Settings from './settings'
+
 import {
   isType,
-  checkType,
+  checkType
+} from './util'
 
+import {
   errNotAType,
   errMissingRecordFields,
   errExtraneousRecordFields,
   errBadRecordFieldValue,
   errAttemptedFieldMutation,
   errGetNonexistentRecordField
-} from './util'
+} from './errorMessages'
 
 const keyDiff = (obj1, obj2) => {
   const uniqueTo1 = []

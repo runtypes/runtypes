@@ -2,14 +2,18 @@ import assert from 'assert'
 
 import settings from './settings'
 import Enum from './enum'
+
 import {
   ifCheckingIt,
   whetherCheckingOrNotIt,
   assertThrowsExact
 } from './testUtil'
-import {
-  checkType,
 
+import {
+  checkType
+} from './util'
+
+import {
   errNoNullOrUndefined,
   errNotAType,
   errNotACtorTypeArray,
@@ -19,7 +23,7 @@ import {
   errInvalidCaseName,
   errExhaustiveness,
   errMissingCase
-} from './util'
+} from './errorMessages'
 
 const Maybe = T => Enum({
     Nothing: [],

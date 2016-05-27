@@ -1,8 +1,11 @@
 import Settings from './settings'
+
 import {
   isType,
-  checkType,
+  checkType
+} from './util'
 
+import {
   errNoNullOrUndefined,
   errNotAType,
   errNotACtorTypeArray,
@@ -12,7 +15,7 @@ import {
   errInvalidCaseName,
   errExhaustiveness,
   errMissingCase
-} from './util'
+} from './errorMessages'
 
 export default (spec) => {
 
