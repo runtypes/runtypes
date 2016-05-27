@@ -79,7 +79,8 @@ export const errMissingCase = (caseName) => `failed to handle case ${caseName}`
 export const errMissingRecordFields = (missingKeys) => `missing record field${missingKeys.length === 1 ? '' : 's'} ${missingKeys.join(', ')}`
 export const errExtraneousRecordFields = (extraKeys) => `extraneous record field${extraKeys.length === 1 ? '' : 's'} ${extraKeys.join(', ')}`
 export const errBadRecordFieldValue = (val, key, errMsg) => `value ${showVal(val)} cannot be assigned to field ${key}; ${errMsg}`
-export const errAttemptedFieldMutation = 'attempted to mutate immutable record'
+export const errAttemptedFieldMutation = 'attempted to modify an immutable record'
+export const errGetNonexistentRecordField = (key, validKeys) => `attempted to get ${key} from record { ${validKeys.join(', ')} }`
 
 // Convert a string to a regexp, escaping all special characters inside it
 export const re = str => new RegExp(str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"))

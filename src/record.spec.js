@@ -9,7 +9,8 @@ import {
   errMissingRecordFields,
   errExtraneousRecordFields,
   errBadRecordFieldValue,
-  errAttemptedFieldMutation
+  errAttemptedFieldMutation,
+  errGetNonexistentRecordField
 } from './util'
 
 const Point = Record({
@@ -49,8 +50,14 @@ describe('Record', () => {
     const p = Point({ x: 5, y: 2})
     assert.throws(() => {
       p.x = 'hi'
-    }, /Cannot assign/)
+    }, errAttemptedFieldMutation)
     assert.equal(5, p.x)
+  })
+
+  it('prohibits attempts to get non-existent fields', () => {
+    assert.throws(() => {
+      const { z } = Point({ x: 5, y: 2})
+    }, re(errGetNonexistentRecordField('z', ['x', 'y'])))
   })
 
   it('requires valid type specifications', () => {

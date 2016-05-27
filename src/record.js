@@ -7,7 +7,8 @@ import {
   errMissingRecordFields,
   errExtraneousRecordFields,
   errBadRecordFieldValue,
-  errAttemptedFieldMutation
+  errAttemptedFieldMutation,
+  errGetNonexistentRecordField
 } from './util'
 
 const keyDiff = (obj1, obj2) => {
@@ -44,6 +45,27 @@ export default (spec) => {
         throw new TypeError(errBadRecordFieldValue(val, key, errMsg))
     }
 
-    return Object.freeze(obj)
+    // If our environment supports proxies, use them to prevent accessing
+    // nonexistent fields
+    if (typeof Proxy === 'function') {
+      return new Proxy(Object.freeze(obj), {
+        get(_, key) {
+          if (key in obj)
+            return obj[key]
+          else
+            throw new TypeError(errGetNonexistentRecordField(key, Object.keys(obj)))
+        },
+        set() {
+          throw new TypeError(errAttemptedFieldMutation)
+        }
+      })
+    }
+
+    // Second best option: freeze it
+    if (typeof Object.freeze === 'function') {
+      return Object.freeze(obj)
+    }
+
+    return obj
   }
 }
