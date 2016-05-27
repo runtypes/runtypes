@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import Fn from './function'
+import Fun from './function'
 
 import {
   checkType
@@ -21,24 +21,24 @@ import {
 } from './testUtil.js'
 
 
-describe('Fn', () => {
+describe('Fun', () => {
 
   ifCheckingIt('must be given valid parameter types',
-    () => Fn('oops'),
+    () => Fun('oops'),
     errNotAType('oops')
   )
 
   ifCheckingIt('must be given a valid result type',
-    () => Fn()('oops'),
+    () => Fun()('oops'),
     errNotAType('oops')
   )
 
   ifCheckingIt('must be given at most one result type',
-    () => Fn()(Number, Number),
+    () => Fun()(Number, Number),
     errTooManyResultTypes
   )
 
-  const PowType = Fn(Number, Number)(Number)
+  const PowType = Fun(Number, Number)(Number)
 
   ifCheckingIt('requires the wrapped object to be a function',
     () => PowType.checking('oops'),
@@ -67,6 +67,6 @@ describe('Fn', () => {
   )
 
   // whetherCheckingOrNotIt('allows an empty result type',
-  //   () => Fn()()//.wrap(function () {})('hi')
+  //   () => Fun()()//.wrap(function () {})('hi')
   // )
 })
