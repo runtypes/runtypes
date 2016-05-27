@@ -19,7 +19,7 @@ export function assertThrowsExact(test, errMsg) {
   assert.throws(test, re)
 }
 
-export function testWithoutChecking(test) {
+function testWithoutChecking(test) {
   return function() {
     Settings.check = false
     try {
