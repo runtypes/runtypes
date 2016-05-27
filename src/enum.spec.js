@@ -3,8 +3,12 @@ import assert from 'assert'
 import settings from './settings'
 import Enum from './enum'
 import {
+  ifCheckingIt,
+  whetherCheckingOrNotIt,
+  assertThrowsExact
+} from './testUtil'
+import {
   checkType,
-  re,
 
   errNoNullOrUndefined,
   errNotAType,
@@ -22,43 +26,45 @@ const Maybe = T => Enum({
     Just: [T]
 })
 
+const { Just: JustNum, Nothing: NothingNum } = Maybe(Number)
+
 describe('Enum', () => {
-  it('performs case analysis', () => {
-    const maybe = Maybe(Number).Just(3)
+  whetherCheckingOrNotIt('performs case analysis', () => {
+    const maybe = JustNum(3)
     assert.equal(4, maybe({
       Just(n) { return n + 1 },
       Nothing() { return 'oops' }
     }))
   })
 
-  it('does not accept null or undefined arguments', () => {
-    assert.throws(() => {
-      Maybe(Number).Just(null)
-    }, re(errNoNullOrUndefined))
-    assert.throws(() => {
-      Maybe(Number).Just(undefined)
-    }, re(errNoNullOrUndefined))
-  })
+  ifCheckingIt('cannot be constructed with null arguments',
+    () => JustNum(null),
+    errNoNullOrUndefined
+  )
 
-  it('requires the correct number of arguments', () => {
-    assert.throws(() => {
-      Maybe(Number).Just()
-    }, re(errNumCtorArgs(1, 0)))
+  ifCheckingIt('cannot be constructed with undefined arguments',
+    () => JustNum(undefined),
+    errNoNullOrUndefined
+  )
 
-    assert.throws(() => {
-      Maybe(Number).Just(1, 'foo')
-    }, re(errNumCtorArgs(1, 2)))
-  })
+  ifCheckingIt('must be constructed with all arguments',
+    () => JustNum(),
+    errNumCtorArgs(1, 0)
+  )
 
-  it('requires arguments of the right type', () => {
-    assert.throws(() => {
-      Maybe(Number).Just('foo')
-    }, re(errBadCtorArg('foo', 0, 'Just', errWrongType(Number))))
-  })
+  ifCheckingIt('must not be constructed with extra arguments',
+    () => JustNum(1, 'foo'),
+    errNumCtorArgs(1, 2)
+  )
 
-  it('rejects extraneous cases', () => {
-    assert.throws(() => {
-      const just9 = Maybe(Number).Just(9)
+  ifCheckingIt('must be constructed with arguments of the right type',
+    () => JustNum('foo'),
+    errBadCtorArg('foo', 0, 'Just', errWrongType(Number))
+  )
+
+  ifCheckingIt('rejects extraneous cases',
+    () => {
+      const just9 = JustNum(9)
       just9({
         Nothing() {
           return 4
@@ -70,46 +76,42 @@ describe('Enum', () => {
           return 3
         }
       })
-    }, re(errInvalidCaseName('Bogus', ['Nothing', 'Just'])))
-  })
+    },
+    errInvalidCaseName('Bogus', ['Nothing', 'Just'])
+  )
 
-  it('checks exhaustiveness', () => {
-    assert.throws(() => {
-      const just9 = Maybe(Number).Nothing()
+  ifCheckingIt('must be given exhaustive cases',
+    () => {
+      const just9 = NothingNum()
       just9({
         Nothing() {
           return 4
         }
       })
-    }, re(errExhaustiveness(['Just'])))
-  })
+    },
+    errExhaustiveness(['Just'])
+  )
 
-  it('checks that just the right case is present when exhaustiveness is turned off', () => {
+  it('checks just that the right case is present when exhaustiveness is turned off', () => {
     settings.checkExhaustive = false
-    assert.throws(() => {
-      const just9 = Maybe(Number).Just(9)
+    assertThrowsExact(() => {
+      const just9 = JustNum(9)
       just9({
         Nothing() {
           return 4
         }
       })
-    }, re(errMissingCase('Just')))
+    }, errMissingCase('Just'))
     settings.checkExhaustive = true
   })
 
-  it('requires valid type specifications', () => {
-    assert.throws(() => {
-      Enum({
-        Foo: [3]
-      })
-    }, re(errNotAType(3)))
-  })
+  ifCheckingIt('requires valid type specifications',
+    () => Enum({ Foo: [3] }),
+    errNotAType(3)
+  )
 
-  it('must be given an array of parameter types per constructor', () => {
-    assert.throws(() => {
-      Enum({
-        Foo: true
-      })
-    }, re(errNotACtorTypeArray(true)))
-  })
+  ifCheckingIt('must be given an array of parameter types per constructor',
+    () => Enum({ Foo: true }),
+    errNotACtorTypeArray(true)
+  )
 })

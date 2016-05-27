@@ -22,13 +22,18 @@ const keyDiff = (obj1, obj2) => {
 
 export default (spec) => {
 
-  for (const key in spec) {
-    const type = spec[key]
-    if (!isType(type))
-      throw new TypeError(errNotAType(type))
+  if (Settings.check) {
+    for (const key in spec) {
+      const type = spec[key]
+      if (!isType(type))
+        throw new TypeError(errNotAType(type))
+    }
   }
 
   return (obj) => {
+    if (!Settings.check)
+      return obj
+
     const missingKeys = keyDiff(spec, obj)
     if (missingKeys.length > 0)
       throw new TypeError(errMissingRecordFields(missingKeys))

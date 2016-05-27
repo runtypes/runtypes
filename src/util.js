@@ -81,6 +81,3 @@ export const errExtraneousRecordFields = (extraKeys) => `extraneous record field
 export const errBadRecordFieldValue = (val, key, errMsg) => `value ${showVal(val)} cannot be assigned to field ${key}; ${errMsg}`
 export const errAttemptedFieldMutation = 'attempted to modify an immutable record'
 export const errGetNonexistentRecordField = (key, validKeys) => `attempted to get ${key} from record { ${validKeys.join(', ')} }`
-
-// Convert a string to a regexp, escaping all special characters inside it
-export const re = str => new RegExp(str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"))

@@ -2,6 +2,10 @@ import assert from 'assert'
 
 import Record from './record'
 import {
+  ifCheckingIt,
+  whetherCheckingOrNotIt
+} from './testUtil.js'
+import {
   re,
 
   errNotAType,
@@ -19,7 +23,7 @@ const Point = Record({
 })
 
 describe('Record', () => {
-  it('gives access to fields', () => {
+  whetherCheckingOrNotIt('gives access to fields', () => {
     const p = Point({
       x: 3,
       y: 10
@@ -28,43 +32,38 @@ describe('Record', () => {
     assert.equal(10, p.y)
   })
 
-  it('requires all fields', () => {
-    assert.throws(() => {
-      Point({ x: 5 })
-    }, re(errMissingRecordFields(['y'])))
-  })
+  ifCheckingIt('must be constructed with a valid type specification',
+    () => Record({ foo: 3 }),
+    errNotAType(3)
+  )
 
-  it('does not allow extra fields', () => {
-    assert.throws(() => {
-      Point({ x: 5, y: 9, z: 4 })
-    }, re(errExtraneousRecordFields(['z'])))
-  })
+  ifCheckingIt('must be constructed with all fields',
+    () => Point({ x: 5 }),
+    errMissingRecordFields(['y'])
+  )
 
-  it('requires fields to have correct type', () => {
-    assert.throws(() => {
-      Point({ x: 5, y: 'hi' })
-    }, re(errBadRecordFieldValue('hi', 'y', errWrongType(Number))))
-  })
+  ifCheckingIt('cannot be constructed with extra fields',
+    () => Point({ x: 5, y: 9, z: 4 }),
+    errExtraneousRecordFields(['z'])
+  )
 
-  it('prohibits mutation', () => {
-    const p = Point({ x: 5, y: 2})
-    assert.throws(() => {
-      p.x = 'hi'
-    }, errAttemptedFieldMutation)
-    assert.equal(5, p.x)
-  })
+  ifCheckingIt('requires fields to have correct type',
+    () => Point({ x: 5, y: 'hi' }),
+    errBadRecordFieldValue('hi', 'y', errWrongType(Number))
+  )
 
-  it('prohibits attempts to get non-existent fields', () => {
-    assert.throws(() => {
-      const { z } = Point({ x: 5, y: 2})
-    }, re(errGetNonexistentRecordField('z', ['x', 'y'])))
-  })
+  ifCheckingIt('prohibits mutation',
+    () => { Point({ x: 5, y: 2}).x = 'hi' },
+    errAttemptedFieldMutation
+  )
 
-  it('requires valid type specifications', () => {
-    assert.throws(() => {
-      Record({
-        foo: 3
-      })
-    }, re(errNotAType(3)))
-  })
+  ifCheckingIt('prohibits adding fields',
+    () => { Point({ x: 5, y: 2}).x = 'hi' },
+    errAttemptedFieldMutation
+  )
+
+  ifCheckingIt('prohibits attempts to get non-existent fields',
+    () => Point({ x: 5, y: 2}).z,
+    errGetNonexistentRecordField('z', ['x', 'y'])
+  )
 })
