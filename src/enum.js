@@ -59,33 +59,35 @@ export default (spec) => {
 
       // A value of an enum type is nothing more than the case function
       // which analyzes it
-      return (cases) => {
-        if (check()) {
-          if (disallowExtraneousCases()) {
-            for (const caseName in cases) {
-              if (!(caseName in spec))
-                throw new TypeError(errInvalidCaseName(caseName, Object.keys(spec)))
+      return {
+        match(cases) {
+          if (check()) {
+            if (disallowExtraneousCases()) {
+              for (const caseName in cases) {
+                if (!(caseName in spec))
+                  throw new TypeError(errInvalidCaseName(caseName, Object.keys(spec)))
+              }
+            }
+
+            if (requireExhaustiveCases()) {
+              const missingCases = []
+
+              for (const caseName in spec)
+                if (!(caseName in cases))
+                  missingCases.push(caseName)
+
+              if (missingCases.length > 0)
+                throw new TypeError(errExhaustiveness(missingCases.reverse()))
             }
           }
 
-          if (requireExhaustiveCases()) {
-            const missingCases = []
+          const handler = cases[ctorName]
 
-            for (const caseName in spec)
-              if (!(caseName in cases))
-                missingCases.push(caseName)
+          if (!handler)
+            throw new TypeError(errMissingCase(ctorName))
 
-            if (missingCases.length > 0)
-              throw new TypeError(errExhaustiveness(missingCases.reverse()))
-          }
+          return handler.apply(null, args)
         }
-
-        const handler = cases[ctorName]
-
-        if (!handler)
-          throw new TypeError(errMissingCase(ctorName))
-
-        return handler.apply(null, args)
       }
     }
   }

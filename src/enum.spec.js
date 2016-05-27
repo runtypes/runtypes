@@ -31,7 +31,7 @@ const { Just: JustNum, Nothing: NothingNum } = Maybe(Number)
 describe('Enum', () => {
   whetherCheckingOrNotIt('performs case analysis', () => {
     const maybe = JustNum(3)
-    assert.equal(4, maybe({
+    assert.equal(4, maybe.match({
       Just(n) { return n + 1 },
       Nothing() { return 'oops' }
     }))
@@ -65,7 +65,7 @@ describe('Enum', () => {
   ifCheckingIt('rejects extraneous cases',
     () => {
       const just9 = JustNum(9)
-      just9({
+      just9.match({
         Nothing() {
           return 4
         },
@@ -83,7 +83,7 @@ describe('Enum', () => {
   ifCheckingIt('must be given exhaustive cases',
     () => {
       const just9 = NothingNum()
-      just9({
+      just9.match({
         Nothing() {
           return 4
         }
@@ -96,7 +96,7 @@ describe('Enum', () => {
     requireExhaustiveCases(false)
     assertThrowsExact(() => {
       const just9 = JustNum(9)
-      just9({
+      just9.match({
         Nothing() {
           return 4
         }
