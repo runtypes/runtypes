@@ -1,6 +1,6 @@
 {
   "name": "runtypes",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Runtime type validation for TypeScript",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -35,8 +35,13 @@
   "jest": {
     "verbose": false,
     "testRegex": ".*/*.spec.ts$",
-    "moduleFileExtensions": ["js", "ts"],
-    "transform": { "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor" },
+    "moduleFileExtensions": [
+      "js",
+      "ts"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor"
+    },
     "testEnvironment": "node"
   }
 }
