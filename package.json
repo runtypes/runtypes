@@ -6,7 +6,7 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "tsc --pretty",
-    "test": "jest --verbose",
+    "test": "npm run build && jest --verbose",
     "develop": "jest --watchAll",
     "release": "npm run release:patch",
     "release:patch": "npm run build && xyz --increment patch",
