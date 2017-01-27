@@ -1,0 +1,29 @@
+{
+  "name": "foo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "typescript": "^2.1.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^16.0.4",
+    "graphql": "^0.9.1",
+    "jest": "^18.1.0",
+    "shapeshifter": "^3.0.0",
+    "ts-jest": "^18.0.2",
+    "typescript": "^2.1.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "jest": {
+    "verbose": false,
+    "testRegex": ".*/*.spec.ts$",
+    "moduleFileExtensions": ["js", "ts"],
+    "transform": { "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor" },
+    "testEnvironment": "node"
+  }
+}
