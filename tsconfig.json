@@ -5,7 +5,7 @@
         "noImplicitAny": true,
         "strictNullChecks": true,
         "sourceMap": false,
-        "outDir": "build"
+        "noEmit": true
     },
     "files": [
         "src/index.ts"
