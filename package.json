@@ -4,8 +4,8 @@
   "description": "Runtime type validation for TypeScript",
   "main": "src/index.ts",
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watchAll",
+    "test": "jest --verbose",
+    "develop": "jest --watchAll",
     "release": "npm run release:patch",
     "release:patch": "npm run build && xyz --increment patch",
     "release:minor": "npm run build && xyz --increment minor",
