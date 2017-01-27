@@ -20,7 +20,7 @@
     "jest": "^18.1.0",
     "ts-jest": "^18.0.2",
     "typescript": "^2.1.5",
-    "xyz": "^0.5.0"
+    "xyz": "^2.1.0"
   },
   "keywords:": [
     "runtime",
