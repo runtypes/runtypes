@@ -46,9 +46,9 @@ for (const { value, passes } of testValues) {
 
     for (const name of validatorNames) {
       if (shouldPass[name]) {
-        it(`is assignable to type ${name}`, () => assertAccepts(value, validators[name]))
+        it(` : ${name}`, () => assertAccepts(value, validators[name]))
       } else {
-        it(`is not assignable to type ${name}`, () => assertRejects(value, validators[name]))
+        it(`~: ${name}`, () => assertRejects(value, validators[name]))
       }
     }
   })
