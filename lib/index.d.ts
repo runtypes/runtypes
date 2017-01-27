@@ -24,6 +24,9 @@ export declare type Failure = {
      */
     message: string;
 };
+/**
+ * The result of a type validation.
+ */
 export declare type Result<A> = Success<A> | Failure;
 /**
  * A validator determines whether a value conforms to a type specification.
