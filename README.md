@@ -166,9 +166,9 @@ const SpaceObject = union(Asteroid, Planet, Ship)
 type SpaceObject = typeof SpaceObject.falseWitness
 ```
 
-For a given `r: Runtype<A>`, `r.falseWitness: A` is always `undefined`, but it can be used with the
-type-level `typeof` operator in order to obtain the type `A`. This trick allows us to avoid having to repeat our
-type definitions at both the value and type level. Nifty!
+For a given `r: Runtype<A>`, `r.falseWitness: A` is always `undefined` in reality, so never try to treat it as an actual `A`. Even though
+it's a lie, it's useful because we can apply the `typeof` operator to it in order to obtain the derived type `A`. This trick obviates the
+need to repeat our type definitions at both the value and the type level. Nifty!
 
 ## Type guards
 
