@@ -1,6 +1,6 @@
 {
   "name": "runtypes",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Runtime type validation for (Java|Type)Script",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
