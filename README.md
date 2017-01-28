@@ -121,14 +121,14 @@ types altogether and instead derive them from the `Runtype`s like so:
 
 ```ts
 const Coordinates = tuple(number, number, number)
-type Coordinates = typeof Coordinates.falseWitness
+type Coordinates = typeof Coordinates.witness
 
 const Asteroid = record({
   type: literal('asteroid'),
   coordinates: Coordinates,
   mass: number,
 })
-type Asteroid = typeof Asteroid.falseWitness
+type Asteroid = typeof Asteroid.witness
 
 const Planet = record({
   type: literal('planet'),
@@ -137,7 +137,7 @@ const Planet = record({
   population: number,
   habitable: boolean,
 })
-type Planet = typeof Planet.falseWitness
+type Planet = typeof Planet.witness
 
 const Rank = union(
   literal('captain'),
@@ -145,7 +145,7 @@ const Rank = union(
   literal('officer'),
   literal('ensign'),
 )
-type Rank = typeof Rank.falseWitness
+type Rank = typeof Rank.witness
 
 const CrewMember = record({
   name: string,
@@ -153,7 +153,7 @@ const CrewMember = record({
   rank: Rank,
   home: Planet,
 })
-type CrewMember = typeof CrewMember.falseWitness
+type CrewMember = typeof CrewMember.witness
 
 const Ship = record({
   type: literal('ship'),
@@ -162,14 +162,14 @@ const Ship = record({
   name: string,
   crew: array(CrewMember),
 })
-type Ship = typeof Ship.falseWitness
+type Ship = typeof Ship.witness
 
 const SpaceObject = union(Asteroid, Planet, Ship)
-type SpaceObject = typeof SpaceObject.falseWitness
+type SpaceObject = typeof SpaceObject.witness
 ```
 
-For a given `r: Runtype<A>`, `r.falseWitness: A` is always `undefined` in reality, so never try to treat it as an actual `A`. Even though
-it's a lie, it's useful because we can apply the `typeof` operator to it in order to obtain the derived type `A`. This trick obviates the
+For a given `r: Runtype<A>`, `r.witness: A` is always `undefined` in reality--it's a false witness! But even though it's a lie,
+it's useful one because applying the `typeof` operator to it allows us to obtain the derived type `A`. This trick obviates the
 need to repeat our type definitions at both the value and the type level. Nifty!
 
 ## Type guards

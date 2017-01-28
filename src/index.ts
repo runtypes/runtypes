@@ -56,9 +56,9 @@ export type Runtype<A> = {
 
   /**
    * Provides a way to reference the constructed type that this runtype
-   * validates.
+   * validates. Note that this is a false witness; it's always undefined.
    */
-  falseWitness: A
+  witness: A
 }
 
 /**
@@ -269,10 +269,10 @@ export function union(...runtypes: Runtype<any>[]) {
   })
 }
 
-function runtype<A>(coerce: (x: {}) => A) {
-  let falseWitness: A = undefined as any as A
+function runtype<A>(coerce: (x: {}) => A): Runtype<A> {
+  let witness: A = undefined as any as A
 
-  return { coerce, validate, guard, falseWitness }
+  return { coerce, validate, guard, witness }
 
   function validate(value: any): Result<A> {
     try {
