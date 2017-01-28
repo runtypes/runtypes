@@ -48,9 +48,9 @@ export declare type Runtype<A> = {
     guard(x: {}): x is A;
     /**
      * Provides a way to reference the constructed type that this runtype
-     * validates.
+     * validates. Note that this is a false witness; it's always undefined.
      */
-    falseWitness: A;
+    witness: A;
 };
 /**
  * Validates anything, but provides no new type information about it.
