@@ -1,6 +1,6 @@
-# Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes)
+# Runtypes - Bring untyped data into the fold, safely
 
-## Bring untyped data into the fold, safely
+[![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes)
 
 Runtypes is a JavaScript and TypeScript library which allows you to take values about which you have no assurances and ensure
 that they conform to some type `A`. This is done by means of composable type validators of primitives, literals, arrays,
