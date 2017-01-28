@@ -1,7 +1,7 @@
 {
   "name": "runtypes",
   "version": "0.1.0",
-  "description": "Runtime type validation for TypeScript",
+  "description": "Runtime type validation for (Java|Type)Script",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
