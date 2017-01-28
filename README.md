@@ -149,7 +149,7 @@ In addition to coercion, runtypes can be used as [type guards](https://basarat.g
 function disembark(obj: {}) {
     if (SpaceObject.guard(obj)) {
         // obj: SpaceObject
-        if (obj.type === 'ship) {
+        if (obj.type === 'ship') {
             // obj: Ship
             obj.crew = []
         }
