@@ -1,17 +1,19 @@
 # Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes)
 
-## Installation
-
-```
-npm install --save runtypes
-```
-
 ## Bring untyped data into the fold, safely
 
 Runtypes is a JavaScript and TypeScript library which allows you to take values about which you have no assurances and ensure
 that they conform to some type `A`. This is done by means of composable type validators of primitives, literals, arrays,
 tuples, records, unions. Better yet, it has TypeScript bindings which allow exactly expressing the validated results in a type-safe
 manner.
+
+## Installation
+
+```
+npm install --save runtypes
+```
+
+## Example
 
 For example, suppose you have objects which represent asteroids, planets, ships and personnel. In TypeScript, you might model
 them like so:
