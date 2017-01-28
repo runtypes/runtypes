@@ -1,5 +1,7 @@
 # Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes)
 
+
+
 ## Bring untyped data into the fold, safely
 
 Runtypes is a JavaScript and TypeScript library which allows you to take values about which you have no assurances and ensure
@@ -97,7 +99,7 @@ const Ship: Runtype<Ship> = record({
 const SpaceObject: Runtype<SpaceObject> = union(Asteroid, Planet, Ship)
 ```
 
-Now if I have been given a putative `SpaceObject` I can validate it like so:
+Now if we are given a putative `SpaceObject` we can validate it like so:
 
 ```ts
 const spaceObject: SpaceObject = SpaceObject.coerce(obj)
