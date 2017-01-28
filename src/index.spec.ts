@@ -1,11 +1,11 @@
-import { Validator, anything, nothing, boolean, number, string, literal, array, record, tuple, union } from './index'
+import { Runtype, anything, nothing, boolean, number, string, literal, array, record, tuple, union } from './index'
 
 
 const boolTuple = tuple(boolean, boolean, boolean)
 const record1 = record({ boolean, number })
 const union1 = union(literal(3), string, boolTuple, record1)
 
-const validators = {
+const runtypes = {
   anything,
   nothing,
   boolean,
@@ -24,11 +24,11 @@ const validators = {
 
 tuple(boolean, boolean, boolean).coerce([true, false, true])
 
-type ValidatorName = keyof typeof validators
+type RuntypeName = keyof typeof runtypes
 
-const validatorNames = Object.keys(validators) as ValidatorName[]
+const runtypeNames = Object.keys(runtypes) as RuntypeName[]
 
-const testValues: { value: {}, passes: ValidatorName[] }[] = [
+const testValues: { value: {}, passes: RuntypeName[] }[] = [
   { value: true, passes: ['boolean', 'true'] },
   { value: false, passes: ['boolean', 'false'] },
   { value: 3, passes: ['number', '3', 'union1'] },
@@ -40,28 +40,28 @@ const testValues: { value: {}, passes: ValidatorName[] }[] = [
 
 for (const { value, passes } of testValues) {
   describe(JSON.stringify(value), () => {
-    const shouldPass: { [_ in ValidatorName]?: boolean } = { anything: true }
+    const shouldPass: { [_ in RuntypeName]?: boolean } = { anything: true }
     for (const name of passes)
       shouldPass[name] = true
 
-    for (const name of validatorNames) {
+    for (const name of runtypeNames) {
       if (shouldPass[name]) {
-        it(` : ${name}`, () => assertAccepts(value, validators[name]))
+        it(` : ${name}`, () => assertAccepts(value, runtypes[name]))
       } else {
-        it(`~: ${name}`, () => assertRejects(value, validators[name]))
+        it(`~: ${name}`, () => assertRejects(value, runtypes[name]))
       }
     }
   })
 }
 
-function assertAccepts<A>(value: {}, validator: Validator<A>) {
-  const result = validator.validate(value)
+function assertAccepts<A>(value: {}, runtype: Runtype<A>) {
+  const result = runtype.validate(value)
   if (result.success === false)
     fail(result.message)
 }
 
-function assertRejects<A>(value: {}, validator: Validator<A>) {
-  const result = validator.validate(value)
+function assertRejects<A>(value: {}, runtype: Runtype<A>) {
+  const result = runtype.validate(value)
   if (result.success === true)
     fail('value passed validation even though it was not expected to')
 }

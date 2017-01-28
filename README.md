@@ -3,7 +3,7 @@
 ## Bring untyped data into the fold, safely
 
 Runtypes is a JavaScript and TypeScript library which allows you to take values about which you have no assurances and ensure
-that they conform to some type `A`. This is done by means of composable type validators: it supports primitives, literals, arrays,
+that they conform to some type `A`. This is done by means of composable type validators of primitives, literals, arrays,
 tuples, records, unions. Better yet, it has TypeScript bindings which allow exactly expressing the validated results in a type-safe
 manner.
 
@@ -52,19 +52,19 @@ type SpaceObject = Asteroid | Planet | Ship
 ```
 
 If the objects which are supposed to have these shapes are loaded from some external source, perhaps a JSON file, we need to
-validate that the objects conform to their specifications. Using runtypes, we can build runtime validators for these types
-in a very straightforward manner:
+validate that the objects conform to their specifications. We do so by building corresponding `Runtype`s in a very straightforward
+manner:
 
 ```ts
-const Coordinates: Validator<Coordinates> = tuple(number, number, number)
+const Coordinates: Runtype<Coordinates> = tuple(number, number, number)
 
-const Asteroid: Validator<Asteroid> = record({
+const Asteroid: Runtype<Asteroid> = record({
   type: literal('asteroid'),
   coordinates: Coordinates,
   mass: number,
 })
 
-const Planet: Validator<Planet> = record({
+const Planet: Runtype<Planet> = record({
   type: literal('planet'),
   coordinates: Coordinates,
   mass: number,
@@ -72,21 +72,21 @@ const Planet: Validator<Planet> = record({
   habitable: boolean,
 })
 
-const Rank: Validator<Rank> = union(
+const Rank: Runtype<Rank> = union(
   literal('captain'),
   literal('first mate'),
   literal('officer'),
   literal('ensign'),
 )
 
-const CrewMember: Validator<CrewMember> = record({
+const CrewMember: Runtype<CrewMember> = record({
   name: string,
   age: number,
   rank: Rank,
   home: Planet,
 })
 
-const Ship: Validator<Ship> = record({
+const Ship: Runtype<Ship> = record({
   type: literal('ship'),
   coordinates: Coordinates,
   mass: number,
@@ -94,7 +94,7 @@ const Ship: Validator<Ship> = record({
   crew: array(CrewMember),
 })
 
-const SpaceObject: Validator<SpaceObject> = union(Asteroid, Planet, Ship)
+const SpaceObject: Runtype<SpaceObject> = union(Asteroid, Planet, Ship)
 ```
 
 Now if I have been given a putative `SpaceObject` I can validate it like so:
@@ -105,11 +105,11 @@ const spaceObject: SpaceObject = SpaceObject.coerce(obj)
 
 If the object doesn't conform to the type specification, `coerce` will throw an exception.
 
-## Compile-time type inference
+## Type inference
 
-It's worth pointing out that all of the type annotations above are optional in TypeScript; the correct type for the
-composed validator will be inferred if you leave them off. In fact, you can skip writing out the TypeScript types
-altogether and instead derive them from the runtypes like so:
+It's worth pointing out that all of the type annotations above are optional in TypeScript; the correct type parameter
+for the composed `Runtype` will be inferred if you leave them off. In fact, you can skip writing out the TypeScript
+types altogether and instead derive them from the `Runtype`s like so:
 
 ```ts
 const Coordinates = tuple(number, number, number)
@@ -160,9 +160,9 @@ const SpaceObject = union(Asteroid, Planet, Ship)
 type SpaceObject = typeof SpaceObject.falseWitness
 ```
 
-For a given `runtype: Validator<A>`, `runtype.falseWitness: A` is always undefined, but it can be used with the
+For a given `r: Runtype<A>`, `r.falseWitness: A` is always `undefined`, but it can be used with the
 type-level `typeof` operator in order to obtain the type `A`. This trick allows us to avoid having to repeat our
-type definitions at both the value and the type level. Nifty!
+type definitions at both the value and type level. Nifty!
 
 ## Type guards
 
