@@ -1,6 +1,10 @@
 # Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes)
 
+## Installation
 
+```
+npm install --save runtypes
+```
 
 ## Bring untyped data into the fold, safely
 
