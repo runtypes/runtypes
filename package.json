@@ -9,9 +9,9 @@
     "test": "npm run build && jest --verbose",
     "develop": "jest --watchAll",
     "release": "npm run release:patch",
-    "release:patch": "npm run build && xyz --increment patch",
-    "release:minor": "npm run build && xyz --increment minor",
-    "release:major": "npm run build && xyz --increment major"
+    "release:patch": "xyz --increment patch",
+    "release:minor": "xyz --increment minor",
+    "release:major": "xyz --increment major"
   },
   "author": "Thomas Crockett",
   "license": "MIT",
