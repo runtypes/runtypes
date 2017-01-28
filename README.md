@@ -19,17 +19,17 @@ For example, suppose you have objects which represent asteroids, planets, ships 
 them like so:
 
 ```ts
-type Coordinates = [number, number, number]
+type Vector = [number, number, number]
 
-interface Asteroid {
+type Asteroid = {
   type: 'asteroid'
-  coordinates: Coordinates
+  location: Vector
   mass: number
 }
 
-interface Planet {
+type Planet = {
   type: 'planet'
-  coordinates: Coordinates
+  location: Vector
   mass: number
   population: number
   habitable: boolean
@@ -41,16 +41,16 @@ type Rank
   | 'officer'
   | 'ensign'
 
-interface CrewMember {
+type CrewMember = {
   name: string
   age: number
   rank: Rank
   home: Planet
 }
 
-interface Ship {
+type Ship = {
   type: 'ship'
-  coordinates: Coordinates
+  location: Vector
   mass: number
   name: string
   crew: CrewMember[]
@@ -66,17 +66,17 @@ manner:
 ```ts
 import { boolean, number, string, literal, array, tuple, record, union } from 'runtypes'
 
-const Coordinates = tuple(number, number, number)
+const Vector = tuple(number, number, number)
 
 const Asteroid = record({
   type: literal('asteroid'),
-  coordinates: Coordinates,
+  location: Vector,
   mass: number,
 })
 
 const Planet = record({
   type: literal('planet'),
-  coordinates: Coordinates,
+  location: Vector,
   mass: number,
   population: number,
   habitable: boolean,
@@ -98,7 +98,7 @@ const CrewMember = record({
 
 const Ship = record({
   type: literal('ship'),
-  coordinates: Coordinates,
+  location: Vector,
   mass: number,
   name: string,
   crew: array(CrewMember),
@@ -129,7 +129,7 @@ Runtype<{
 ```
 
 That is, it's a `Runtype<Asteroid>`, and you could annotate it as such. But we don't really have to define the
-`Asteroid` interface in TypeScript at all now, because the inferred type is correct. Defining each of your types
+`Asteroid` type in TypeScript at all now, because the inferred type is correct. Defining each of your types
 twice, once at the type level and then again at the value level, is a pain and not very [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself).
 If you still want a static `Asteroid` type that you can refer to, you can make it an alias to the `Runtype`-derived
 type like so:
