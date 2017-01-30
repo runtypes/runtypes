@@ -1,9 +1,11 @@
-import { Runtype, anything, nothing, boolean, number, string, literal, array, record, tuple, union } from './index'
+import { Runtype, anything, nothing, boolean, number, string, literal, array, record, tuple, union, lazy } from './index'
 
 
 const boolTuple = tuple(boolean, boolean, boolean)
 const record1 = record({ boolean, number })
 const union1 = union(literal(3), string, boolTuple, record1)
+
+const Person = lazy(() => record({ name: string, likes: array(Person) }))
 
 const runtypes = {
   anything,
@@ -20,6 +22,7 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
+  Person,
 }
 
 tuple(boolean, boolean, boolean).coerce([true, false, true])
@@ -36,6 +39,7 @@ const testValues: { value: {}, passes: RuntypeName[] }[] = [
   { value: 'hello world', passes: ['string', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { boolean: true, number: 3 }, passes: ['record1', 'union1'] },
+  { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
 ]
 
 for (const { value, passes } of testValues) {
