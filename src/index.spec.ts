@@ -1,4 +1,4 @@
-import { Runtype, anything, nothing, boolean, number, string, literal, array, record, tuple, union, lazy } from './index'
+import { Runtype, anything, nothing, Undefined, Null, Void, boolean, number, string, literal, array, record, tuple, union, Optional, lazy } from './index'
 
 
 const boolTuple = tuple(boolean, boolean, boolean)
@@ -10,12 +10,16 @@ const Person = lazy(() => record({ name: string, likes: array(Person) }))
 const runtypes = {
   anything,
   nothing,
+  Undefined,
+  Null,
+  Void,
   boolean,
   true: literal(true),
   false: literal(false),
   number,
   3: literal(3),
   42: literal(42),
+  OptionalNumber: Optional(number),
   string,
   'hello world': literal('hello world'),
   boolArray: array(boolean),
@@ -32,10 +36,12 @@ type RuntypeName = keyof typeof runtypes
 const runtypeNames = Object.keys(runtypes) as RuntypeName[]
 
 const testValues: { value: {}, passes: RuntypeName[] }[] = [
+  { value: undefined, passes: ['Undefined', 'Void', 'OptionalNumber'] },
+  { value: null, passes: ['Null', 'Void'] },
   { value: true, passes: ['boolean', 'true'] },
   { value: false, passes: ['boolean', 'false'] },
-  { value: 3, passes: ['number', '3', 'union1'] },
-  { value: 42, passes: ['number', '42'] },
+  { value: 3, passes: ['number', '3', 'union1', 'OptionalNumber'] },
+  { value: 42, passes: ['number', '42', 'OptionalNumber'] },
   { value: 'hello world', passes: ['string', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { boolean: true, number: 3 }, passes: ['record1', 'union1'] },
@@ -43,7 +49,8 @@ const testValues: { value: {}, passes: RuntypeName[] }[] = [
 ]
 
 for (const { value, passes } of testValues) {
-  describe(JSON.stringify(value), () => {
+  const valueName = value === undefined ? 'undefined' : JSON.stringify(value)
+  describe(valueName, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = { anything: true }
     for (const name of passes)
       shouldPass[name] = true
