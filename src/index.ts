@@ -74,6 +74,33 @@ export const nothing: Runtype<never> = runtype(x => {
 })
 
 /**
+ * Validates that a value is undefined.
+ */
+export const Undefined: Runtype<undefined> = runtype(x => {
+  if (x !== undefined)
+    throw new ValidationError(`Expected undefined but was ${typeof x}`)
+  return x
+})
+
+/**
+ * Validates that a value is null.
+ */
+export const Null: Runtype<null> = runtype(x => {
+  if (x !== null)
+    throw new ValidationError(`Expected null but was ${typeof x}`)
+  return x
+})
+
+/**
+ * Validates that a value is void (null or undefined).
+ */
+export const Void: Runtype<void> = runtype(x => {
+  if (x !== undefined && x !== null)
+    throw new ValidationError(`Expected null but was ${typeof x}`)
+  return x
+})
+
+/**
  * Validates that a value is a boolean.
  */
 export const boolean: Runtype<boolean> = runtype(x => {
@@ -267,6 +294,13 @@ export function union(...runtypes: Runtype<any>[]) {
         return x
     throw new Error('No alternatives were matched')
   })
+}
+
+/**
+ * Constructs a possibly-undefined Runtype.
+ */
+export function Optional<A>(runtype: Runtype<A>): Runtype<A | undefined> {
+  return union(runtype, Undefined)
 }
 
 /**
