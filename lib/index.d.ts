@@ -55,55 +55,76 @@ export declare type Runtype<A> = {
 /**
  * Validates anything, but provides no new type information about it.
  */
-export declare const anything: Runtype<{}>;
+export declare const Anything: Runtype<{}>;
 /**
  * Validates nothing (always fails).
  */
-export declare const nothing: Runtype<never>;
+export declare const Nothing: Runtype<never>;
+/**
+ * Validates that a value is undefined.
+ */
+export declare const Undefined: Runtype<undefined>;
+/**
+ * Validates that a value is null.
+ */
+export declare const Null: Runtype<null>;
+/**
+ * Validates that a value is void (null or undefined).
+ */
+export declare const Void: Runtype<void>;
 /**
  * Validates that a value is a boolean.
  */
-export declare const boolean: Runtype<boolean>;
+export declare const Boolean: Runtype<boolean>;
 /**
  * Validates that a value is a number.
  */
-export declare const number: Runtype<number>;
+export declare const Number: Runtype<number>;
 /**
  * Validates that a value is a string.
  */
-export declare const string: Runtype<string>;
+export declare const String: Runtype<string>;
 /**
  * Construct a literal runtype.
  */
-export declare function literal<K extends string | number | boolean>(l: K): Runtype<K>;
+export declare function Literal<K extends string | number | boolean>(l: K): Runtype<K>;
 /**
  * Construct an array runtype from a runtype for its elements.
  */
-export declare function array<A>(v: Runtype<A>): Runtype<A[]>;
+declare function arr<A>(v: Runtype<A>): Runtype<A[]>;
+export { arr as Array };
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
-export declare function tuple<A>(a: Runtype<A>, strict?: boolean): Runtype<[A]>;
-export declare function tuple<A, B>(a: Runtype<A>, b: Runtype<B>, strict?: boolean): Runtype<[A, B]>;
-export declare function tuple<A, B, C>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, strict?: boolean): Runtype<[A, B, C]>;
-export declare function tuple<A, B, C, D>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, strict?: boolean): Runtype<[A, B, C, D]>;
-export declare function tuple<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, strict?: boolean): Runtype<[A, B, C, D, E]>;
-export declare function tuple<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, strict?: boolean): Runtype<[A, B, C, D, E, F]>;
-export declare function tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>, strict?: boolean): Runtype<[A, B, C, D, E, F, G]>;
+export declare function Tuple<A>(a: Runtype<A>, strict?: boolean): Runtype<[A]>;
+export declare function Tuple<A, B>(a: Runtype<A>, b: Runtype<B>, strict?: boolean): Runtype<[A, B]>;
+export declare function Tuple<A, B, C>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, strict?: boolean): Runtype<[A, B, C]>;
+export declare function Tuple<A, B, C, D>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, strict?: boolean): Runtype<[A, B, C, D]>;
+export declare function Tuple<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, strict?: boolean): Runtype<[A, B, C, D, E]>;
+export declare function Tuple<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, strict?: boolean): Runtype<[A, B, C, D, E, F]>;
+export declare function Tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>, strict?: boolean): Runtype<[A, B, C, D, E, F, G]>;
 /**
  * Construct a record runtype from runtypes for its values.
  */
-export declare function record<O>(runtypes: {
+export declare function Record<O>(runtypes: {
     [K in keyof O]: Runtype<O[K]>;
 }): Runtype<O>;
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-export declare function union(): Runtype<never>;
-export declare function union<A>(a: Runtype<A>): Runtype<A>;
-export declare function union<A, B>(a: Runtype<A>, b: Runtype<B>): Runtype<A | B>;
-export declare function union<A, B, C>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>): Runtype<A | B | C>;
-export declare function union<A, B, C, D>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>): Runtype<A | B | C | D>;
-export declare function union<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>): Runtype<A | B | C | D | E>;
-export declare function union<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>): Runtype<A | B | C | D | E | F>;
-export declare function union<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>): Runtype<A | B | C | D | E | F | G>;
+export declare function Union(): Runtype<never>;
+export declare function Union<A>(a: Runtype<A>): Runtype<A>;
+export declare function Union<A, B>(a: Runtype<A>, b: Runtype<B>): Runtype<A | B>;
+export declare function Union<A, B, C>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>): Runtype<A | B | C>;
+export declare function Union<A, B, C, D>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>): Runtype<A | B | C | D>;
+export declare function Union<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>): Runtype<A | B | C | D | E>;
+export declare function Union<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>): Runtype<A | B | C | D | E | F>;
+export declare function Union<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>): Runtype<A | B | C | D | E | F | G>;
+/**
+ * Constructs a possibly-undefined Runtype.
+ */
+export declare function Optional<A>(runtype: Runtype<A>): Runtype<A | undefined>;
+/**
+ * Constructs a possibly-recursive Runtype.
+ */
+export declare function Lazy<A>(fn: () => Runtype<A>): Runtype<A>;
