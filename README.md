@@ -64,47 +64,47 @@ validate that the objects conform to their specifications. We do so by building 
 manner:
 
 ```ts
-import { boolean, number, string, literal, array, tuple, record, union } from 'runtypes'
+import { Boolean, Number, String, Literal, Array, Tuple, Record, Union } from 'runtypes'
 
-const Vector = tuple(number, number, number)
+const Vector = Tuple(Number, Number, Number)
 
-const Asteroid = record({
-  type: literal('asteroid'),
+const Asteroid = Record({
+  type: Literal('asteroid'),
   location: Vector,
-  mass: number,
+  mass: Number,
 })
 
-const Planet = record({
-  type: literal('planet'),
+const Planet = Record({
+  type: Literal('planet'),
   location: Vector,
-  mass: number,
-  population: number,
-  habitable: boolean,
+  mass: Number,
+  population: Number,
+  habitable: Boolean,
 })
 
-const Rank = union(
-  literal('captain'),
-  literal('first mate'),
-  literal('officer'),
-  literal('ensign'),
+const Rank = Union(
+  Literal('captain'),
+  Literal('first mate'),
+  Literal('officer'),
+  Literal('ensign'),
 )
 
-const CrewMember = record({
-  name: string,
-  age: number,
+const CrewMember = Record({
+  name: String,
+  age: Number,
   rank: Rank,
   home: Planet,
 })
 
-const Ship = record({
-  type: literal('ship'),
+const Ship = Record({
+  type: Literal('ship'),
   location: Vector,
-  mass: number,
-  name: string,
-  crew: array(CrewMember),
+  mass: Number,
+  name: String,
+  crew: Array(CrewMember),
 })
 
-const SpaceObject = union(Asteroid, Planet, Ship)
+const SpaceObject = Union(Asteroid, Planet, Ship)
 ```
 
 Now if we are given a putative `SpaceObject` we can validate it like so:
