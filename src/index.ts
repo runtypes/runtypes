@@ -269,6 +269,18 @@ export function union(...runtypes: Runtype<any>[]) {
   })
 }
 
+/**
+ * Constructs a possibly-recursive Runtype.
+ */
+export function lazy<A>(fn: () => Runtype<A>): Runtype<A> {
+  let validator: Runtype<A>
+  return runtype(x => {
+    if (!validator)
+      validator = fn()
+    return validator.coerce(x)
+  })
+}
+
 function runtype<A>(coerce: (x: {}) => A): Runtype<A> {
   let witness: A = undefined as any as A
 
