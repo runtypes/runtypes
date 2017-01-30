@@ -307,11 +307,11 @@ export function Optional<A>(runtype: Runtype<A>): Runtype<A | undefined> {
  * Constructs a possibly-recursive Runtype.
  */
 export function lazy<A>(fn: () => Runtype<A>): Runtype<A> {
-  let validator: Runtype<A>
+  let cached: Runtype<A>
   return runtype(x => {
-    if (!validator)
-      validator = fn()
-    return validator.coerce(x)
+    if (!cached)
+      cached = fn()
+    return cached.coerce(x)
   })
 }
 
