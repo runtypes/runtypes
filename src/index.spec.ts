@@ -1,35 +1,35 @@
-import { Runtype, anything, nothing, Undefined, Null, Void, boolean, number, string, literal, array, record, tuple, union, Optional, lazy } from './index'
+import { Runtype, Anything, Nothing, Undefined, Null, Void, Boolean, Number, String, Literal, Array, Record, Tuple, Union, Optional, Lazy } from './index'
 
 
-const boolTuple = tuple(boolean, boolean, boolean)
-const record1 = record({ boolean, number })
-const union1 = union(literal(3), string, boolTuple, record1)
+const boolTuple = Tuple(Boolean, Boolean, Boolean)
+const record1 = Record({ Boolean, Number })
+const union1 = Union(Literal(3), String, boolTuple, record1)
 
-const Person = lazy(() => record({ name: string, likes: array(Person) }))
+const Person = Lazy(() => Record({ name: String, likes: Array(Person) }))
 
 const runtypes = {
-  anything,
-  nothing,
+  Anything,
+  Nothing,
   Undefined,
   Null,
   Void,
-  boolean,
-  true: literal(true),
-  false: literal(false),
-  number,
-  3: literal(3),
-  42: literal(42),
-  OptionalNumber: Optional(number),
-  string,
-  'hello world': literal('hello world'),
-  boolArray: array(boolean),
+  Boolean,
+  true: Literal(true),
+  false: Literal(false),
+  Number,
+  3: Literal(3),
+  42: Literal(42),
+  OptionalNumber: Optional(Number),
+  String,
+  'hello world': Literal('hello world'),
+  boolArray: Array(Boolean),
   boolTuple,
   record1,
   union1,
   Person,
 }
 
-tuple(boolean, boolean, boolean).coerce([true, false, true])
+Tuple(Boolean, Boolean, Boolean).coerce([true, false, true])
 
 type RuntypeName = keyof typeof runtypes
 
@@ -38,20 +38,20 @@ const runtypeNames = Object.keys(runtypes) as RuntypeName[]
 const testValues: { value: {}, passes: RuntypeName[] }[] = [
   { value: undefined, passes: ['Undefined', 'Void', 'OptionalNumber'] },
   { value: null, passes: ['Null', 'Void'] },
-  { value: true, passes: ['boolean', 'true'] },
-  { value: false, passes: ['boolean', 'false'] },
-  { value: 3, passes: ['number', '3', 'union1', 'OptionalNumber'] },
-  { value: 42, passes: ['number', '42', 'OptionalNumber'] },
-  { value: 'hello world', passes: ['string', 'hello world', 'union1'] },
+  { value: true, passes: ['Boolean', 'true'] },
+  { value: false, passes: ['Boolean', 'false'] },
+  { value: 3, passes: ['Number', '3', 'union1', 'OptionalNumber'] },
+  { value: 42, passes: ['Number', '42', 'OptionalNumber'] },
+  { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
-  { value: { boolean: true, number: 3 }, passes: ['record1', 'union1'] },
+  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
 ]
 
 for (const { value, passes } of testValues) {
   const valueName = value === undefined ? 'undefined' : JSON.stringify(value)
   describe(valueName, () => {
-    const shouldPass: { [_ in RuntypeName]?: boolean } = { anything: true }
+    const shouldPass: { [_ in RuntypeName]?: boolean } = { Anything: true }
     for (const name of passes)
       shouldPass[name] = true
 
