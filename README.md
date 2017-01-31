@@ -143,7 +143,7 @@ because applying the `typeof` operator to it allows us to obtain the derived typ
 
 ## Type guards
 
-In addition to coercion, runtypes can be used as [type guards](https://basarat.gitbooks.io/typescript/content/docs/types/typeGuard.html):
+In addition to providing a coercion method, runtypes can be used as [type guards](https://basarat.gitbooks.io/typescript/content/docs/types/typeGuard.html):
 
 ```ts
 function disembark(obj: {}) {
