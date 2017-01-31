@@ -231,8 +231,8 @@ export function Tuple(...args: any[]) {
  */
 export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O> {
   return runtype<O>(x => {
-    if (typeof x !== 'object')
-      throw new ValidationError(`Expected object but was ${typeof x}`)
+    if (x === null || x === undefined)
+      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
 
     // tslint:disable-next-line:forin
     for (const key in runtypes)
