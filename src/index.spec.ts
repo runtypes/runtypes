@@ -1,10 +1,9 @@
-import { Runtype, Anything, Nothing, Undefined, Null, Void, Boolean, Number, String, Literal, Array, Record, Tuple, Union, Optional, Lazy } from './index'
+import { Runtype, Anything, Nothing, Undefined, Null, Void, Boolean, Number, String, Literal, Array, Record, Tuple, Union, Optional, Lazy, Intersect } from './index';
 
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
 const record1 = Record({ Boolean, Number })
 const union1 = Union(Literal(3), String, boolTuple, record1)
-
 const Person = Lazy(() => Record({ name: String, likes: Array(Person) }))
 
 const runtypes = {
@@ -28,6 +27,7 @@ const runtypes = {
   union1,
   optionalKey: Record({ foo: Optional(String), Boolean }),
   Person,
+  Intersect: Intersect(Record({ Boolean }), Record({ Number }))
 }
 
 Tuple(Boolean, Boolean, Boolean).coerce([true, false, true])
@@ -45,7 +45,7 @@ const testValues: { value: {}, passes: RuntypeName[] }[] = [
   { value: 42, passes: ['Number', '42', 'OptionalNumber'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
-  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'optionalKey'] },
+  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'optionalKey', 'Intersect'] },
   { value: { Boolean: true }, passes: ['optionalKey'] },
   { value: { Boolean: true, foo: 'hello' }, passes: ['optionalKey'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
