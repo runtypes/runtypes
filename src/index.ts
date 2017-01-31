@@ -649,7 +649,7 @@ export function Union(...runtypes: Runtype<any>[]) {
  * Construct an intersection runtype from runtypes for its alternatives.
  */
 export function Intersect(
-): Runtype<never>
+): Runtype<{}>
 export function Intersect<A>(
   a: Runtype<A>,
 ): Runtype<A>
