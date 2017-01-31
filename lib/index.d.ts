@@ -142,7 +142,7 @@ export declare function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q,
 /**
  * Construct an intersection runtype from runtypes for its alternatives.
  */
-export declare function Intersect(): Runtype<never>;
+export declare function Intersect(): Runtype<{}>;
 export declare function Intersect<A>(a: Runtype<A>): Runtype<A>;
 export declare function Intersect<A, B>(a: Runtype<A>, b: Runtype<B>): Runtype<A & B>;
 export declare function Intersect<A, B, C>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>): Runtype<A & B & C>;
