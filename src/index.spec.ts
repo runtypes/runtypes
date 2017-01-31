@@ -11,6 +11,7 @@ const runtypes = {
   Nothing,
   Undefined,
   Null,
+  Empty: Record({}),
   Void,
   Boolean,
   true: Literal(true),
@@ -54,7 +55,13 @@ const testValues: { value: {}, passes: RuntypeName[] }[] = [
 for (const { value, passes } of testValues) {
   const valueName = value === undefined ? 'undefined' : JSON.stringify(value)
   describe(valueName, () => {
-    const shouldPass: { [_ in RuntypeName]?: boolean } = { Anything: true }
+    const shouldPass: { [_ in RuntypeName]?: boolean } = {}
+
+    shouldPass.Anything = true
+
+    if (value !== undefined && value !== null)
+      shouldPass.Empty = true
+
     for (const name of passes)
       shouldPass[name] = true
 
