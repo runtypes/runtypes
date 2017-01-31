@@ -36,16 +36,16 @@ export declare type Runtype<A> = {
      * Attempts to cast a value to the type for this runtype and return it.
      * Throws an exception if validation fails.
      */
-    coerce(x: {}): A;
+    coerce(x: any): A;
     /**
      * Validates that a value conforms to this type, and returns a result indicating
      * success or failure (does not throw).
      */
-    validate(x: {}): Result<A>;
+    validate(x: any): Result<A>;
     /**
      * A type guard for this runtype.
      */
-    guard(x: {}): x is A;
+    guard(x: any): x is A;
     /**
      * Provides a way to reference the constructed type that this runtype
      * validates. Note that this is a false witness; it's always undefined.
