@@ -104,13 +104,13 @@ export { arr as Array };
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
-export declare function Tuple<A>(a: Runtype<A>, strict?: boolean): Runtype<[A]>;
-export declare function Tuple<A, B>(a: Runtype<A>, b: Runtype<B>, strict?: boolean): Runtype<[A, B]>;
-export declare function Tuple<A, B, C>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, strict?: boolean): Runtype<[A, B, C]>;
-export declare function Tuple<A, B, C, D>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, strict?: boolean): Runtype<[A, B, C, D]>;
-export declare function Tuple<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, strict?: boolean): Runtype<[A, B, C, D, E]>;
-export declare function Tuple<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, strict?: boolean): Runtype<[A, B, C, D, E, F]>;
-export declare function Tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>, strict?: boolean): Runtype<[A, B, C, D, E, F, G]>;
+export declare function Tuple<A>(a: Runtype<A>): Runtype<[A]>;
+export declare function Tuple<A, B>(a: Runtype<A>, b: Runtype<B>): Runtype<[A, B]>;
+export declare function Tuple<A, B, C>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>): Runtype<[A, B, C]>;
+export declare function Tuple<A, B, C, D>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>): Runtype<[A, B, C, D]>;
+export declare function Tuple<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>): Runtype<[A, B, C, D, E]>;
+export declare function Tuple<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>): Runtype<[A, B, C, D, E, F]>;
+export declare function Tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>): Runtype<[A, B, C, D, E, F, G]>;
 /**
  * Construct a record runtype from runtypes for its values.
  */
