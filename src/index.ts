@@ -65,12 +65,12 @@ export type Runtype<A> = {
 /**
  * Validates anything, but provides no new type information about it.
  */
-export const Anything: Runtype<{} | undefined | null> = runtype(x => x)
+export const Always: Runtype<{} | undefined | null> = runtype(x => x)
 
 /**
  * Validates nothing (always fails).
  */
-export const Nothing: Runtype<never> = runtype(x => {
+export const Never: Runtype<never> = runtype(x => {
   throw new ValidationError('Expected nothing but got something')
 })
 
@@ -217,7 +217,7 @@ export function Tuple(...args: any[]) {
     runtypes = args
   }
   return runtype(x => {
-    const xs = arr(Anything).coerce(x)
+    const xs = arr(Always).coerce(x)
     if (strict ? xs.length !== runtypes.length : xs.length < runtypes.length)
       throw new ValidationError(`Expected array of ${runtypes.length} but was ${xs.length}`)
     for (let i = 0; i < runtypes.length; i++)
