@@ -14,8 +14,7 @@ npm install --save runtypes
 
 ## Example
 
-Suppose you have objects which represent asteroids, planets, ships and personnel. In TypeScript, you might model
-them like so:
+Suppose you have objects which represent asteroids, planets, ships and crew members. In TypeScript, you might write their types like so:
 
 ```ts
 type Vector = [number, number, number]
