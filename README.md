@@ -114,7 +114,7 @@ const spaceObject = SpaceObject.coerce(obj)
 
 If the object doesn't conform to the type specification, `coerce` will throw an exception.
 
-## Type inference
+## Static type inference
 
 In TypeScript, the inferred type of `Asteroid` in the above example is
 
