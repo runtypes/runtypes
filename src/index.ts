@@ -60,6 +60,16 @@ export type Runtype<A> = {
    * validates. Note that this is a false witness; it's always undefined.
    */
   witness: A
+
+  /**
+   * Union this Runtype with another.
+   */
+  Or<B>(B: Runtype<B>): Runtype<A | B>
+
+  /**
+   * Intersect this Runtype with another.
+   */
+  And<B>(B: Runtype<B>): Runtype<A & B>
 }
 
 /**
@@ -1084,7 +1094,9 @@ export function Lazy<A>(fn: () => Runtype<A>): Runtype<A> {
 function runtype<A>(coerce: (x: {}) => A): Runtype<A> {
   let witness: A = undefined as any as A
 
-  return { coerce, validate, guard, witness }
+  const A = { coerce, validate, guard, witness, Or, And }
+
+  return A
 
   function validate(value: any): Result<A> {
     try {
@@ -1097,6 +1109,14 @@ function runtype<A>(coerce: (x: {}) => A): Runtype<A> {
 
   function guard(x: any): x is A {
     return validate(x).success
+  }
+
+  function Or<B>(B: Runtype<B>): Runtype<A | B> {
+    return Union(A, B)
+  }
+
+  function And<B>(B: Runtype<B>): Runtype<A & B> {
+    return Intersect(A, B)
   }
 }
 
