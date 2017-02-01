@@ -2,10 +2,9 @@
 
 ### Safely bring untyped data into the fold
 
-Runtypes is a JavaScript and TypeScript library which allows you to take values about which you have no assurances and check
-that they conform to some type `A`. This is done by means of composable type validators of primitives, literals, arrays,
-tuples, records and unions. Better yet, it has TypeScript bindings which allow exactly expressing the validated results in a type-safe
-manner.
+Runtypes allow you to take values about which you have no assurances and check that they conform to some type `A`.
+This is done by means of composable type validators of primitives, literals, arrays, tuples, records, unions,
+intersections and more.
 
 ## Installation
 
@@ -15,7 +14,7 @@ npm install --save runtypes
 
 ## Example
 
-For example, suppose you have objects which represent asteroids, planets, ships and personnel. In TypeScript, you might model
+Suppose you have objects which represent asteroids, planets, ships and personnel. In TypeScript, you might model
 them like so:
 
 ```ts
