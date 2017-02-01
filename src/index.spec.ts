@@ -43,7 +43,7 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
-  Partial: Intersect(Optional({ foo: String }), Record({ Boolean })),
+  Partial: Record({ Boolean }).And(Optional({ foo: String })),
   Person,
 }
 
