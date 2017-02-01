@@ -51,15 +51,23 @@ export declare type Runtype<A> = {
      * validates. Note that this is a false witness; it's always undefined.
      */
     witness: A;
+    /**
+     * Union this Runtype with another.
+     */
+    Or<B>(B: Runtype<B>): Runtype<A | B>;
+    /**
+     * Intersect this Runtype with another.
+     */
+    And<B>(B: Runtype<B>): Runtype<A & B>;
 };
 /**
  * Validates anything, but provides no new type information about it.
  */
-export declare const Anything: Runtype<{}>;
+export declare const Always: Runtype<{} | undefined | null>;
 /**
  * Validates nothing (always fails).
  */
-export declare const Nothing: Runtype<never>;
+export declare const Never: Runtype<never>;
 /**
  * Validates that a value is undefined.
  */
@@ -109,6 +117,12 @@ export declare function Tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>,
 export declare function Record<O>(runtypes: {
     [K in keyof O]: Runtype<O[K]>;
 }): Runtype<O>;
+/**
+ * Construct a runtype for records of optional values.
+ */
+export declare function Optional<O>(runtypes: {
+    [K in keyof O]: Runtype<O[K]>;
+}): Runtype<Partial<O>>;
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
@@ -170,10 +184,9 @@ export declare function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P
 export declare function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>, h: Runtype<H>, i: Runtype<I>, j: Runtype<J>, k: Runtype<K>, m: Runtype<M>, n: Runtype<N>, o: Runtype<O>, p: Runtype<P>, q: Runtype<Q>, r: Runtype<R>, s: Runtype<S>, t: Runtype<T>, u: Runtype<U>, v: Runtype<V>, w: Runtype<W>, x: Runtype<X>, y: Runtype<Y>): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X & Y>;
 export declare function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>, h: Runtype<H>, i: Runtype<I>, j: Runtype<J>, k: Runtype<K>, m: Runtype<M>, n: Runtype<N>, o: Runtype<O>, p: Runtype<P>, q: Runtype<Q>, r: Runtype<R>, s: Runtype<S>, t: Runtype<T>, u: Runtype<U>, v: Runtype<V>, w: Runtype<W>, x: Runtype<X>, y: Runtype<Y>, z: Runtype<Z>): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X & Y & Z>;
 /**
- * Constructs a possibly-undefined Runtype.
- */
-export declare function Optional<A>(runtype: Runtype<A>): Runtype<A | undefined>;
-/**
  * Constructs a possibly-recursive Runtype.
  */
 export declare function Lazy<A>(fn: () => Runtype<A>): Runtype<A>;
+export declare function hasKey<K extends string>(k: K, o: {}): o is {
+    [_ in K]: {};
+};
