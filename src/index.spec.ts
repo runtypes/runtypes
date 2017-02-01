@@ -16,7 +16,7 @@ import {
   Union,
   Intersect,
   Lazy,
-} from './index';
+} from './index'
 
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
