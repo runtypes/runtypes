@@ -247,6 +247,23 @@ export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O
 }
 
 /**
+ * Construct a partial record runtype from runtypes for its values.
+ */
+export function Partial<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<Partial<O>> {
+  return runtype(x => {
+    if (x === null || x === undefined)
+      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
+
+    // tslint:disable-next-line:forin
+    for (const key in runtypes)
+      if (hasKey(key, x))
+        Union(runtypes[key], Undefined).coerce(x[key])
+
+    return x as Partial<O>
+  })
+}
+
+/**
  * Construct a union runtype from runtypes for its alternatives.
  */
 export function Union(
