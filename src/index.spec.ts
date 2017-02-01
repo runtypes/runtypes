@@ -45,7 +45,6 @@ const runtypes = {
   union1,
   Partial: Intersect(Optional({ foo: String }), Record({ Boolean })),
   Person,
-  Intersect: Intersect(Record({ Boolean }), Record({ Number }))
 }
 
 Tuple(Boolean, Boolean, Boolean).coerce([true, false, true])
@@ -63,7 +62,7 @@ const testValues: { value: {}, passes: RuntypeName[] }[] = [
   { value: 42, passes: ['Number', '42'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
-  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial', 'Intersect'] },
+  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
