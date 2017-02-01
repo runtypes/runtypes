@@ -64,8 +64,9 @@ const testValues: { value: {}, passes: RuntypeName[] }[] = [
   { value: 42, passes: ['Number', '42', 'OptionalNumber'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
-  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'optionalKey', 'Intersect'] },
-  { value: { Boolean: true }, passes: ['optionalKey'] },
+  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Intersect'] },
+  { value: { Boolean: true }, passes: [] },
+  { value: { Boolean: true, foo: undefined }, passes: ['optionalKey'] },
   { value: { Boolean: true, foo: 'hello' }, passes: ['optionalKey'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
 ]

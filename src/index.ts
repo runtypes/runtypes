@@ -230,13 +230,17 @@ export function Tuple(...args: any[]) {
  * Construct a record runtype from runtypes for its values.
  */
 export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O> {
-  return runtype<O>(x => {
+  return runtype(x => {
     if (x === null || x === undefined)
       throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
 
     // tslint:disable-next-line:forin
-    for (const key in runtypes)
-      runtypes[key].coerce((x as any)[key])
+    for (const key in runtypes) {
+      if (hasKey(key, x))
+        runtypes[key].coerce(x[key])
+      else
+        throw new ValidationError(`Missing property ${key}`)
+    }
 
     return x as O
   })
@@ -1090,4 +1094,10 @@ class ValidationError extends Error {
   constructor(message: string) {
     super(message)
   }
+}
+
+// Type guard to determine if an object has a given key
+// If this feature gets implemented, we can use `in` instead: https://github.com/Microsoft/TypeScript/issues/10485
+export function hasKey<K extends string>(k: K, o: {}): o is { [_ in K]: {} } {
+  return typeof o === 'object' && k in o
 }
