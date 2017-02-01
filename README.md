@@ -129,15 +129,23 @@ Runtype<{
 That is, it's a `Runtype<Asteroid>`, and you could annotate it as such. But we don't really have to define the
 `Asteroid` type in TypeScript at all now, because the inferred type is correct. Defining each of your types
 twice, once at the type level and then again at the value level, is a pain and not very [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself).
-If you still want a static `Asteroid` type that you can refer to, you can make it an alias to the `Runtype`-derived
-type like so:
+Fortunately you can define a static `Asteroid` type which is an alias to the `Runtype`-derived type like so:
 
 ```ts
-type Asteroid = typeof Asteroid.witness
+import { Static } from 'runtypes'
+
+type Asteroid = Static<typeof Asteroid>
 ```
 
-The `witness: A` field on a `Runtype<A>` is a lie--a false witness!--it's always `undefined`. But it's a useful one
-because applying the `typeof` operator to it allows us to obtain the derived type `A` and make a type alias.
+which achieves the same result as
+
+```ts
+type Asteroid = {
+  type: 'asteroid'
+  coordinates: [number, number, number]
+  mass: number
+}
+```
 
 ## Type guards
 
