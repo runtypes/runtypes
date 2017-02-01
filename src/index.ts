@@ -168,25 +168,21 @@ export { arr as Array }
  */
 export function Tuple<A>(
   a: Runtype<A>,
-  strict?: boolean
 ): Runtype<[A]>
 export function Tuple<A, B>(
   a: Runtype<A>,
   b: Runtype<B>,
-  strict?: boolean
 ): Runtype<[A, B]>
 export function Tuple<A, B, C>(
   a: Runtype<A>,
   b: Runtype<B>,
   c: Runtype<C>,
-  strict?: boolean
 ): Runtype<[A, B, C]>
 export function Tuple<A, B, C, D>(
   a: Runtype<A>,
   b: Runtype<B>,
   c: Runtype<C>,
   d: Runtype<D>,
-  strict?: boolean
 ): Runtype<[A, B, C, D]>
 export function Tuple<A, B, C, D, E>(
   a: Runtype<A>,
@@ -194,7 +190,6 @@ export function Tuple<A, B, C, D, E>(
   c: Runtype<C>,
   d: Runtype<D>,
   e: Runtype<E>,
-  strict?: boolean
 ): Runtype<[A, B, C, D, E]>
 export function Tuple<A, B, C, D, E, F>(
   a: Runtype<A>,
@@ -203,7 +198,6 @@ export function Tuple<A, B, C, D, E, F>(
   d: Runtype<D>,
   e: Runtype<E>,
   f: Runtype<F>,
-  strict?: boolean
 ): Runtype<[A, B, C, D, E, F]>
 export function Tuple<A, B, C, D, E, F, G>(
   a: Runtype<A>,
@@ -213,22 +207,11 @@ export function Tuple<A, B, C, D, E, F, G>(
   e: Runtype<E>,
   f: Runtype<F>,
   g: Runtype<G>,
-  strict?: boolean
 ): Runtype<[A, B, C, D, E, F, G]>
-export function Tuple(...args: any[]) {
-  const lastArg = args[args.length - 1]
-  let strict: boolean
-  let runtypes: Runtype<{}>[]
-  if (Boolean.guard(lastArg)) {
-    strict = lastArg
-    runtypes = args.slice(0, args.length - 1)
-  } else {
-    strict = false
-    runtypes = args
-  }
+export function Tuple(...runtypes: Runtype<any>[]) {
   return runtype(x => {
     const xs = arr(Always).coerce(x)
-    if (strict ? xs.length !== runtypes.length : xs.length < runtypes.length)
+    if (xs.length < runtypes.length)
       throw new ValidationError(`Expected array of ${runtypes.length} but was ${xs.length}`)
     for (let i = 0; i < runtypes.length; i++)
       runtypes[i].coerce(xs[i])
