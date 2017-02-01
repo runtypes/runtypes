@@ -1,4 +1,3 @@
-import { Partial } from './index'
 import {
   Runtype,
   Always,
@@ -12,10 +11,10 @@ import {
   Literal,
   Array,
   Record,
+  Optional,
   Tuple,
   Union,
   Intersect,
-  Optional,
   Lazy,
 } from './index';
 
@@ -38,14 +37,13 @@ const runtypes = {
   Number,
   3: Literal(3),
   42: Literal(42),
-  OptionalNumber: Optional(Number),
   String,
   'hello world': Literal('hello world'),
   boolArray: Array(Boolean),
   boolTuple,
   record1,
   union1,
-  Partial: Intersect(Partial({ foo: String }), Record({ Boolean })),
+  Partial: Intersect(Optional({ foo: String }), Record({ Boolean })),
   Person,
   Intersect: Intersect(Record({ Boolean }), Record({ Number }))
 }
@@ -57,12 +55,12 @@ type RuntypeName = keyof typeof runtypes
 const runtypeNames = Object.keys(runtypes) as RuntypeName[]
 
 const testValues: { value: {}, passes: RuntypeName[] }[] = [
-  { value: undefined, passes: ['Undefined', 'Void', 'OptionalNumber'] },
+  { value: undefined, passes: ['Undefined', 'Void'] },
   { value: null, passes: ['Null', 'Void'] },
   { value: true, passes: ['Boolean', 'true'] },
   { value: false, passes: ['Boolean', 'false'] },
-  { value: 3, passes: ['Number', '3', 'union1', 'OptionalNumber'] },
-  { value: 42, passes: ['Number', '42', 'OptionalNumber'] },
+  { value: 3, passes: ['Number', '3', 'union1'] },
+  { value: 42, passes: ['Number', '42'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial', 'Intersect'] },
