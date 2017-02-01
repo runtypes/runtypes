@@ -1,3 +1,4 @@
+import { Partial } from './index'
 import {
   Runtype,
   Always,
@@ -44,7 +45,7 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
-  optionalKey: Record({ foo: Optional(String), Boolean }),
+  Partial: Intersect(Partial({ foo: String }), Record({ Boolean })),
   Person,
   Intersect: Intersect(Record({ Boolean }), Record({ Number }))
 }
@@ -64,10 +65,10 @@ const testValues: { value: {}, passes: RuntypeName[] }[] = [
   { value: 42, passes: ['Number', '42', 'OptionalNumber'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
-  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Intersect'] },
-  { value: { Boolean: true }, passes: [] },
-  { value: { Boolean: true, foo: undefined }, passes: ['optionalKey'] },
-  { value: { Boolean: true, foo: 'hello' }, passes: ['optionalKey'] },
+  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial', 'Intersect'] },
+  { value: { Boolean: true }, passes: ['Partial'] },
+  { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
+  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
 ]
 
