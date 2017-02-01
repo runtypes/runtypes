@@ -1,4 +1,22 @@
-import { Runtype, Always, Never, Undefined, Null, Void, Boolean, Number, String, Literal, Array, Record, Tuple, Union, Optional, Lazy, Intersect } from './index';
+import {
+  Runtype,
+  Always,
+  Never,
+  Undefined,
+  Null,
+  Void,
+  Boolean,
+  Number,
+  String,
+  Literal,
+  Array,
+  Record,
+  Tuple,
+  Union,
+  Intersect,
+  Optional,
+  Lazy,
+} from './index';
 
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
