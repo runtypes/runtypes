@@ -247,9 +247,9 @@ export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O
 }
 
 /**
- * Construct a partial record runtype from runtypes for its values.
+ * Construct a runtype for records of optional values.
  */
-export function Partial<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<Partial<O>> {
+export function Optional<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<Partial<O>> {
   return runtype(x => {
     if (x === null || x === undefined)
       throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
@@ -1067,13 +1067,6 @@ export function Intersect(...runtypes: Runtype<any>[]) {
       coerce(x)
     return x
   })
-}
-
-/**
- * Constructs a possibly-undefined Runtype.
- */
-export function Optional<A>(runtype: Runtype<A>): Runtype<A | undefined> {
-  return Union(runtype, Undefined)
 }
 
 /**
