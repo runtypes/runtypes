@@ -47,11 +47,6 @@ export declare type Runtype<A> = {
      */
     guard(x: any): x is A;
     /**
-     * Provides a way to reference the constructed type that this runtype
-     * validates. Note that this is a false witness; it's always undefined.
-     */
-    witness: A;
-    /**
      * Union this Runtype with another.
      */
     Or<B>(B: Runtype<B>): Runtype<A | B>;
@@ -59,7 +54,12 @@ export declare type Runtype<A> = {
      * Intersect this Runtype with another.
      */
     And<B>(B: Runtype<B>): Runtype<A & B>;
+    _falseWitness: A;
 };
+/**
+ * Obtains the static type associated with a Runtype.
+ */
+export declare type Static<R extends Runtype<any>> = R['_falseWitness'];
 /**
  * Validates anything, but provides no new type information about it.
  */
