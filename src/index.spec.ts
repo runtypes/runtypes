@@ -47,8 +47,6 @@ const runtypes = {
   Person,
 }
 
-Tuple(Boolean, Boolean, Boolean).coerce([true, false, true])
-
 type RuntypeName = keyof typeof runtypes
 
 const runtypeNames = Object.keys(runtypes) as RuntypeName[]
