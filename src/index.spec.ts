@@ -1,4 +1,4 @@
-import { Runtype, Anything, Nothing, Undefined, Null, Void, Boolean, Number, String, Literal, Array, Record, Tuple, Union, Optional, Lazy, Intersect } from './index';
+import { Runtype, Always, Never, Undefined, Null, Void, Boolean, Number, String, Literal, Array, Record, Tuple, Union, Optional, Lazy, Intersect } from './index';
 
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
@@ -7,8 +7,8 @@ const union1 = Union(Literal(3), String, boolTuple, record1)
 const Person = Lazy(() => Record({ name: String, likes: Array(Person) }))
 
 const runtypes = {
-  Anything,
-  Nothing,
+  Always,
+  Never,
   Undefined,
   Null,
   Empty: Record({}),
@@ -57,7 +57,7 @@ for (const { value, passes } of testValues) {
   describe(valueName, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {}
 
-    shouldPass.Anything = true
+    shouldPass.Always = true
 
     if (value !== undefined && value !== null)
       shouldPass.Empty = true
