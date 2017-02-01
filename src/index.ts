@@ -56,12 +56,6 @@ export type Runtype<A> = {
   guard(x: any): x is A
 
   /**
-   * Provides a way to reference the constructed type that this runtype
-   * validates. Note that this is a false witness; it's always undefined.
-   */
-  witness: A
-
-  /**
    * Union this Runtype with another.
    */
   Or<B>(B: Runtype<B>): Runtype<A | B>
@@ -70,7 +64,14 @@ export type Runtype<A> = {
    * Intersect this Runtype with another.
    */
   And<B>(B: Runtype<B>): Runtype<A & B>
+
+  /* @internal */ _falseWitness: A
 }
+
+/**
+ * Obtains the static type associated with a Runtype.
+ */
+export type Static<R extends Runtype<any>> = R['_falseWitness']
 
 /**
  * Validates anything, but provides no new type information about it.
@@ -1075,9 +1076,15 @@ export function Lazy<A>(fn: () => Runtype<A>): Runtype<A> {
 }
 
 function runtype<A>(coerce: (x: {}) => A): Runtype<A> {
-  let witness: A = undefined as any as A
 
-  const A = { coerce, validate, guard, witness, Or, And }
+  const A = {
+    coerce,
+    validate,
+    guard,
+    Or,
+    And,
+    _falseWitness: undefined as any as A,
+  }
 
   return A
 
