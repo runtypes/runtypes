@@ -65,7 +65,7 @@ export type Runtype<A> = {
 /**
  * Validates anything, but provides no new type information about it.
  */
-export const Anything: Runtype<{}> = runtype(x => x)
+export const Anything: Runtype<{} | undefined | null> = runtype(x => x)
 
 /**
  * Validates nothing (always fails).
