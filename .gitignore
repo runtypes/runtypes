@@ -1,6 +1,3 @@
-# Dist file
-/runtypes.js
-
 node_modules
 npm-debug.log*
 .DS_Store
