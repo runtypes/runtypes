@@ -39,10 +39,10 @@ export type Result<A> = Success<A> | Failure
  */
 export type Runtype<A> = {
   /**
-   * Attempts to cast a value to the type for this runtype and return it.
-   * Throws an exception if validation fails.
+   * Verifies that a value conforms to this runtype. If so, returns the same value,
+   * statically typed. Otherwise throws an exception.
    */
-  coerce(x: any): A
+  check(x: any): A
 
   /**
    * Validates that a value conforms to this type, and returns a result indicating
@@ -158,7 +158,7 @@ function arr<A>(v: Runtype<A>): Runtype<A[]> {
     if (!(xs instanceof Array))
       throw new ValidationError(`Expected array but was ${typeof xs}`)
     for (const x of xs)
-      v.coerce(x)
+      v.check(x)
     return xs
   })
 }
@@ -211,11 +211,11 @@ export function Tuple<A, B, C, D, E, F, G>(
 ): Runtype<[A, B, C, D, E, F, G]>
 export function Tuple(...runtypes: Runtype<any>[]) {
   return runtype(x => {
-    const xs = arr(Always).coerce(x)
+    const xs = arr(Always).check(x)
     if (xs.length < runtypes.length)
       throw new ValidationError(`Expected array of ${runtypes.length} but was ${xs.length}`)
     for (let i = 0; i < runtypes.length; i++)
-      runtypes[i].coerce(xs[i])
+      runtypes[i].check(xs[i])
     return x
   })
 }
@@ -231,7 +231,7 @@ export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O
     // tslint:disable-next-line:forin
     for (const key in runtypes) {
       if (hasKey(key, x))
-        runtypes[key].coerce(x[key])
+        runtypes[key].check(x[key])
       else
         throw new ValidationError(`Missing property ${key}`)
     }
@@ -251,7 +251,7 @@ export function Optional<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype
     // tslint:disable-next-line:forin
     for (const key in runtypes)
       if (hasKey(key, x))
-        Union(runtypes[key], Undefined).coerce(x[key])
+        Union(runtypes[key], Undefined).check(x[key])
 
     return x as Partial<O>
   })
@@ -1057,8 +1057,8 @@ export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, 
 ): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X & Y & Z>
 export function Intersect(...runtypes: Runtype<any>[]) {
   return runtype(x => {
-    for (const { coerce } of runtypes)
-      coerce(x)
+    for (const { check } of runtypes)
+      check(x)
     return x
   })
 }
@@ -1071,14 +1071,14 @@ export function Lazy<A>(fn: () => Runtype<A>): Runtype<A> {
   return runtype(x => {
     if (!cached)
       cached = fn()
-    return cached.coerce(x)
+    return cached.check(x)
   })
 }
 
-function runtype<A>(coerce: (x: {}) => A): Runtype<A> {
+function runtype<A>(check: (x: {}) => A): Runtype<A> {
 
   const A = {
-    coerce,
+    check,
     validate,
     guard,
     Or,
@@ -1090,7 +1090,7 @@ function runtype<A>(coerce: (x: {}) => A): Runtype<A> {
 
   function validate(value: any): Result<A> {
     try {
-      coerce(value)
+      check(value)
       return { success: true, value }
     } catch ({ message }) {
       return { success: false, message }

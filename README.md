@@ -109,10 +109,10 @@ Now if we are given a putative `SpaceObject` we can validate it like so:
 
 ```ts
 // spaceObject: SpaceObject
-const spaceObject = SpaceObject.coerce(obj)
+const spaceObject = SpaceObject.check(obj)
 ```
 
-If the object doesn't conform to the type specification, `coerce` will throw an exception.
+If the object doesn't conform to the type specification, `check` will throw an exception.
 
 ## Static type inference
 
@@ -149,7 +149,7 @@ type Asteroid = {
 
 ## Type guards
 
-In addition to providing a coercion method, runtypes can be used as [type guards](https://basarat.gitbooks.io/typescript/content/docs/types/typeGuard.html):
+In addition to providing a `check` method, runtypes can be used as [type guards](https://basarat.gitbooks.io/typescript/content/docs/types/typeGuard.html):
 
 ```ts
 function disembark(obj: {}) {
