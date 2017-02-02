@@ -63,7 +63,7 @@ export declare type Static<R extends Runtype<any>> = R['_falseWitness'];
 /**
  * Validates anything, but provides no new type information about it.
  */
-export declare const Always: Runtype<{} | undefined | null>;
+export declare const Always: Runtype<{} | void | null>;
 /**
  * Validates nothing (always fails).
  */
