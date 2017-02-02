@@ -16,13 +16,17 @@ import {
   Union,
   Intersect,
   Lazy,
+  Static,
 } from './index'
 
+type Always = Static<typeof Always>
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
 const record1 = Record({ Boolean, Number })
 const union1 = Union(Literal(3), String, boolTuple, record1)
-const Person = Lazy(() => Record({ name: String, likes: Array(Person) }))
+
+type Person = { name: string, likes: Person[] }
+const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }))
 
 const runtypes = {
   Always,
@@ -51,7 +55,7 @@ type RuntypeName = keyof typeof runtypes
 
 const runtypeNames = Object.keys(runtypes) as RuntypeName[]
 
-const testValues: { value: {}, passes: RuntypeName[] }[] = [
+const testValues: { value: Always, passes: RuntypeName[] }[] = [
   { value: undefined, passes: ['Undefined', 'Void'] },
   { value: null, passes: ['Null', 'Void'] },
   { value: true, passes: ['Boolean', 'true'] },
@@ -90,13 +94,13 @@ for (const { value, passes } of testValues) {
   })
 }
 
-function assertAccepts<A>(value: {}, runtype: Runtype<A>) {
+function assertAccepts<A>(value: Always, runtype: Runtype<A>) {
   const result = runtype.validate(value)
   if (result.success === false)
     fail(result.message)
 }
 
-function assertRejects<A>(value: {}, runtype: Runtype<A>) {
+function assertRejects<A>(value: Always, runtype: Runtype<A>) {
   const result = runtype.validate(value)
   if (result.success === true)
     fail('value passed validation even though it was not expected to')
