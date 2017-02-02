@@ -33,10 +33,10 @@ export declare type Result<A> = Success<A> | Failure;
  */
 export declare type Runtype<A> = {
     /**
-     * Attempts to cast a value to the type for this runtype and return it.
-     * Throws an exception if validation fails.
+     * Verifies that a value conforms to this runtype. If so, returns the same value,
+     * statically typed. Otherwise throws an exception.
      */
-    coerce(x: any): A;
+    check(x: any): A;
     /**
      * Validates that a value conforms to this type, and returns a result indicating
      * success or failure (does not throw).
