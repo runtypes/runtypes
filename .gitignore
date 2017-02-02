@@ -1,3 +1,6 @@
+# Exclude built test files
+lib/index.spec.*
+
 node_modules
 npm-debug.log*
 .DS_Store
