@@ -76,7 +76,7 @@ export type Static<R extends Runtype<any>> = R['_falseWitness']
 /**
  * Validates anything, but provides no new type information about it.
  */
-export const Always: Runtype<{} | undefined | null> = runtype(x => x)
+export const Always: Runtype<{} | void | null> = runtype(x => x)
 
 /**
  * Validates nothing (always fails).
