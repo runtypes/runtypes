@@ -15,6 +15,7 @@ import {
   Tuple,
   Union,
   Intersect,
+  Function,
   Lazy,
   Static,
 } from './index'
@@ -48,6 +49,7 @@ const runtypes = {
   record1,
   union1,
   Partial: Record({ Boolean }).And(Optional({ foo: String })),
+  Function,
   Person,
 }
 
@@ -68,6 +70,7 @@ const testValues: { value: Always, passes: RuntypeName[] }[] = [
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
+  { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
 ]
 

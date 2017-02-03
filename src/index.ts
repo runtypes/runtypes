@@ -1064,6 +1064,15 @@ export function Intersect(...runtypes: Runtype<any>[]) {
 }
 
 /**
+ * Construct a runtype for functions.
+ */
+export const Function: Runtype<(x: never) => any> = runtype(x => {
+  if (typeof x !== 'function')
+    throw new ValidationError(`Expected a function but was ${typeof x}`)
+  return x
+})
+
+/**
  * Constructs a possibly-recursive Runtype.
  */
 export function Lazy<A>(fn: () => Runtype<A>): Runtype<A> {
