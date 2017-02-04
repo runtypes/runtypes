@@ -33,8 +33,8 @@ type Planet = {
   habitable: boolean
 }
 
-type Rank
-  = 'captain'
+type Rank =
+  | 'captain'
   | 'first mate'
   | 'officer'
   | 'ensign'
