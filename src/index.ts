@@ -1073,7 +1073,7 @@ export const Function: Runtype<(x: never) => any> = runtype(x => {
 })
 
 /**
- * Constructs a possibly-recursive Runtype.
+ * Construct a possibly-recursive Runtype.
  */
 export function Lazy<A>(fn: () => Runtype<A>): Runtype<A> {
   let cached: Runtype<A>
