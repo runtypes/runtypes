@@ -35,6 +35,11 @@ export type Failure = {
 export type Result<A> = Success<A> | Failure
 
 /**
+ * A callback which will throw an exception.
+ */
+export type ErrorReporter = (message: string) => never
+
+/**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
 export type Runtype<A> = {
@@ -64,6 +69,14 @@ export type Runtype<A> = {
    * Intersect this Runtype with another.
    */
   And<B>(B: Runtype<B>): Runtype<A & B>
+
+  /**
+   * Provide a function which validates some arbitrary constraint,
+   * returning true if the constraint is met, false if it failed
+   * for some reason. May also return a string which indicates an
+   * error and provides a descriptive message.
+   */
+  withConstraint(constraint: (x: A) => boolean | string): Runtype<A>
 
   /* @internal */ _falseWitness: A
 }
@@ -1173,6 +1186,7 @@ function runtype<A>(check: (x: {}) => A): Runtype<A> {
     guard,
     Or,
     And,
+    withConstraint,
     _falseWitness: undefined as any as A,
   }
 
@@ -1197,6 +1211,18 @@ function runtype<A>(check: (x: {}) => A): Runtype<A> {
 
   function And<B>(B: Runtype<B>): Runtype<A & B> {
     return Intersect(A, B)
+  }
+
+  function withConstraint(constraint: (x: A) => boolean | string): Runtype<A> {
+    return runtype(x => {
+      const typed = check(x)
+      const result = constraint(typed)
+      if (String.guard(result))
+        throw new ValidationError(result)
+      else if (!result)
+        throw new ValidationError('Failed constraint check')
+      return typed
+    })
   }
 }
 
