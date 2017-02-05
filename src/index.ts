@@ -35,11 +35,6 @@ export type Failure = {
 export type Result<A> = Success<A> | Failure
 
 /**
- * A callback which will throw an exception.
- */
-export type ErrorReporter = (message: string) => never
-
-/**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
 export type Runtype<A> = {
