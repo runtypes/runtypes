@@ -1087,32 +1087,32 @@ export function Lazy<A>(fn: () => Runtype<A>): Runtype<A> {
 /**
  * Create a function contract.
  */
-export function contract<Z>(
+export function Contract<Z>(
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => () => Z }
-export function contract<A, Z>(
+export function Contract<A, Z>(
   a: Runtype<A>,
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => (a: A) => Z }
-export function contract<A, B, Z>(
+export function Contract<A, B, Z>(
   a: Runtype<A>,
   b: Runtype<B>,
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => (a: A, b: B) => Z }
-export function contract<A, B, C, Z>(
+export function Contract<A, B, C, Z>(
   a: Runtype<A>,
   b: Runtype<B>,
   c: Runtype<C>,
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C) => Z }
-export function contract<A, B, C, D, Z>(
+export function Contract<A, B, C, D, Z>(
   a: Runtype<A>,
   b: Runtype<B>,
   c: Runtype<C>,
   d: Runtype<D>,
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D) => Z }
-export function contract<A, B, C, D, E, Z>(
+export function Contract<A, B, C, D, E, Z>(
   a: Runtype<A>,
   b: Runtype<B>,
   c: Runtype<C>,
@@ -1120,7 +1120,7 @@ export function contract<A, B, C, D, E, Z>(
   e: Runtype<E>,
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D, e: E) => Z }
-export function contract<A, B, C, D, E, F, Z>(
+export function Contract<A, B, C, D, E, F, Z>(
   a: Runtype<A>,
   b: Runtype<B>,
   c: Runtype<C>,
@@ -1129,7 +1129,7 @@ export function contract<A, B, C, D, E, F, Z>(
   f: Runtype<F>,
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D, e: E, f: F) => Z }
-export function contract<A, B, C, D, E, F, G, Z>(
+export function Contract<A, B, C, D, E, F, G, Z>(
   a: Runtype<A>,
   b: Runtype<B>,
   c: Runtype<C>,
@@ -1139,7 +1139,7 @@ export function contract<A, B, C, D, E, F, G, Z>(
   g: Runtype<G>,
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => Z }
-export function contract<A, B, C, D, E, F, G, H, Z>(
+export function Contract<A, B, C, D, E, F, G, H, Z>(
   a: Runtype<A>,
   b: Runtype<B>,
   c: Runtype<C>,
@@ -1150,7 +1150,7 @@ export function contract<A, B, C, D, E, F, G, H, Z>(
   h: Runtype<H>,
   z: Runtype<Z>,
 ): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => Z }
-export function contract(...runtypes: Runtype<any>[]) {
+export function Contract(...runtypes: Runtype<any>[]) {
   const lastIndex = runtypes.length - 1
   const argTypes = runtypes.slice(0, lastIndex)
   const returnType = runtypes[lastIndex]

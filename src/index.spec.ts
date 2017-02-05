@@ -1,4 +1,4 @@
-import { contract } from './index'
+import { Contract } from './index'
 import {
   Runtype,
   Always,
@@ -101,33 +101,33 @@ for (const { value, passes } of testValues) {
 describe('contracts', () => {
   it('0 args', () => {
     const f = () => 3
-    expect(contract(Number).enforce(f)()).toBe(3)
+    expect(Contract(Number).enforce(f)()).toBe(3)
     try {
-      contract(String).enforce(f)()
+      Contract(String).enforce(f)()
       fail('contract was violated but no exception was thrown')
     } catch (e) {/* success */}
   })
 
   it('1 arg', () => {
     const f = (x: string) => x.length
-    expect(contract(String, Number).enforce(f)('hel')).toBe(3)
+    expect(Contract(String, Number).enforce(f)('hel')).toBe(3)
     try {
-      (contract(String, Number).enforce(f) as any)(3)
+      (Contract(String, Number).enforce(f) as any)(3)
       fail('contract was violated but no exception was thrown')
 
-      (contract(String, String).enforce(f))('hi')
+      (Contract(String, String).enforce(f))('hi')
       fail('contract was violated but no exception was thrown')
     } catch (e) {/* success */}
   })
 
   it('2 args', () => {
     const f = (x: string, y: boolean) => y ? x.length : 4
-    expect(contract(String, Boolean, Number).enforce(f)('hello', false)).toBe(4)
+    expect(Contract(String, Boolean, Number).enforce(f)('hello', false)).toBe(4)
     try {
-      (contract(String, Boolean, Number).enforce(f) as any)('hello')
+      (Contract(String, Boolean, Number).enforce(f) as any)('hello')
       fail('contract was violated but no exception was thrown')
 
-      (contract(String, Boolean, Number).enforce(f) as any)('hello', 3)
+      (Contract(String, Boolean, Number).enforce(f) as any)('hello', 3)
       fail('contract was violated but no exception was thrown')
     } catch (e) {/* success */}
   })
