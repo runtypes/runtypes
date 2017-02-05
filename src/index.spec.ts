@@ -129,7 +129,7 @@ describe('contracts', () => {
 
       (contract(String, Boolean, Number).enforce(f) as any)('hello', 3)
       fail('contract was violated but no exception was thrown')
-    } catch (e) {console.log(e)}
+    } catch (e) {/* success */}
   })
 })
 
