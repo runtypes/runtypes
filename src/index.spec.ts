@@ -104,7 +104,7 @@ describe('contracts', () => {
     const f = () => 3
     expect(Contract(Number).enforce(f)()).toBe(3)
     try {
-      Contract(String).enforce(f)()
+      Contract(String).enforce(f as any)()
       fail('contract was violated but no exception was thrown')
     } catch (e) {/* success */}
   })
@@ -116,7 +116,7 @@ describe('contracts', () => {
       (Contract(String, Number).enforce(f) as any)(3)
       fail('contract was violated but no exception was thrown')
 
-      (Contract(String, String).enforce(f))('hi')
+      (Contract(String, String).enforce(f as any))('hi')
       fail('contract was violated but no exception was thrown')
     } catch (e) {/* success */}
   })
