@@ -29,6 +29,10 @@ export declare type Failure = {
  */
 export declare type Result<A> = Success<A> | Failure;
 /**
+ * A callback which will throw an exception.
+ */
+export declare type ErrorReporter = (message: string) => never;
+/**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
 export declare type Runtype<A> = {
@@ -54,6 +58,13 @@ export declare type Runtype<A> = {
      * Intersect this Runtype with another.
      */
     And<B>(B: Runtype<B>): Runtype<A & B>;
+    /**
+     * Provide a function which validates some arbitrary constraint,
+     * returning true if the constraint is met, false if it failed
+     * for some reason. May also return a string which indicates an
+     * error and provides a descriptive message.
+     */
+    withConstraint(constraint: (x: A) => boolean | string): Runtype<A>;
     _falseWitness: A;
 };
 /**
@@ -184,9 +195,44 @@ export declare function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P
 export declare function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>, h: Runtype<H>, i: Runtype<I>, j: Runtype<J>, k: Runtype<K>, m: Runtype<M>, n: Runtype<N>, o: Runtype<O>, p: Runtype<P>, q: Runtype<Q>, r: Runtype<R>, s: Runtype<S>, t: Runtype<T>, u: Runtype<U>, v: Runtype<V>, w: Runtype<W>, x: Runtype<X>, y: Runtype<Y>): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X & Y>;
 export declare function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>, h: Runtype<H>, i: Runtype<I>, j: Runtype<J>, k: Runtype<K>, m: Runtype<M>, n: Runtype<N>, o: Runtype<O>, p: Runtype<P>, q: Runtype<Q>, r: Runtype<R>, s: Runtype<S>, t: Runtype<T>, u: Runtype<U>, v: Runtype<V>, w: Runtype<W>, x: Runtype<X>, y: Runtype<Y>, z: Runtype<Z>): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X & Y & Z>;
 /**
- * Constructs a possibly-recursive Runtype.
+ * Construct a runtype for functions.
+ */
+export declare const func: Runtype<Function>;
+export { func as Function };
+/**
+ * Construct a possibly-recursive Runtype.
  */
 export declare function Lazy<A>(fn: () => Runtype<A>): Runtype<A>;
+/**
+ * Create a function contract.
+ */
+export declare function Contract<Z>(Z: Runtype<Z>): {
+    enforce: (f: () => Z) => () => Z;
+};
+export declare function Contract<A, Z>(A: Runtype<A>, Z: Runtype<Z>): {
+    enforce: (f: (a: A) => Z) => (a: A) => Z;
+};
+export declare function Contract<A, B, Z>(A: Runtype<A>, B: Runtype<B>, Z: Runtype<Z>): {
+    enforce: (f: (a: A, b: B) => Z) => (a: A, b: B) => Z;
+};
+export declare function Contract<A, B, C, Z>(A: Runtype<A>, B: Runtype<B>, C: Runtype<C>, Z: Runtype<Z>): {
+    enforce: (f: (a: A, b: B, c: C) => Z) => (a: A, b: B, c: C) => Z;
+};
+export declare function Contract<A, B, C, D, Z>(A: Runtype<A>, B: Runtype<B>, C: Runtype<C>, D: Runtype<D>, Z: Runtype<Z>): {
+    enforce: (f: (a: A, b: B, c: C, d: D) => Z) => (a: A, b: B, c: C, d: D) => Z;
+};
+export declare function Contract<A, B, C, D, E, Z>(A: Runtype<A>, B: Runtype<B>, C: Runtype<C>, D: Runtype<D>, E: Runtype<E>, Z: Runtype<Z>): {
+    enforce: (f: (a: A, b: B, c: C, d: D, e: E) => Z) => (a: A, b: B, c: C, d: D, e: E) => Z;
+};
+export declare function Contract<A, B, C, D, E, F, Z>(A: Runtype<A>, B: Runtype<B>, C: Runtype<C>, D: Runtype<D>, E: Runtype<E>, F: Runtype<F>, Z: Runtype<Z>): {
+    enforce: (f: (a: A, b: B, c: C, d: D, e: E, f: F) => Z) => (a: A, b: B, c: C, d: D, e: E, f: F) => Z;
+};
+export declare function Contract<A, B, C, D, E, F, G, Z>(A: Runtype<A>, B: Runtype<B>, C: Runtype<C>, D: Runtype<D>, E: Runtype<E>, F: Runtype<F>, G: Runtype<G>, Z: Runtype<Z>): {
+    enforce: (f: (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => Z) => (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => Z;
+};
+export declare function Contract<A, B, C, D, E, F, G, H, Z>(A: Runtype<A>, B: Runtype<B>, C: Runtype<C>, D: Runtype<D>, E: Runtype<E>, F: Runtype<F>, G: Runtype<G>, H: Runtype<H>, Z: Runtype<Z>): {
+    enforce: (f: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => Z) => (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => Z;
+};
 export declare function hasKey<K extends string>(k: K, o: {}): o is {
     [_ in K]: {};
 };
