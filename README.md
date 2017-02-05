@@ -162,3 +162,43 @@ function disembark(obj: {}) {
     }
 }
 ```
+
+## Constraint checking
+
+Beyond mere type checking, we can add arbitrary runtime constraints to a `Runtype`:
+
+```ts
+const Positive = Number.withConstraint(n => n > 0)
+
+Positive.check(-3) // Throws error: Failed constraint check
+```
+
+You can provide more descriptive error messages for failed constraints by returning
+a string instead of `false`:
+
+
+```ts
+const Positive = Number.withConstraint(n => n > 0 || `${n} is not positive`)
+
+Positive.check(-3) // Throws error: -3 is not positive
+```
+
+## Function contracts
+
+Runtypes along with constraint checking are a natural fit for enforcing function
+contracts. You can construct a contract from `Runtype`s for the parameters and
+return type of the function:
+
+```ts
+const divide = Contract(
+  // Parameters:
+  Number,
+  Number.withConstraint(n => n !== 0 || 'division by zero'),
+  // Return type:
+  Number
+).enforce((n, m) => n / m)
+
+divide(10, 2) // 5
+
+divide(10, 0) // Throws error: division by zero
+```
