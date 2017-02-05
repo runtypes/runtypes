@@ -1084,6 +1084,87 @@ export function Lazy<A>(fn: () => Runtype<A>): Runtype<A> {
   })
 }
 
+/**
+ * Create a function contract.
+ */
+export function contract<Z>(
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => () => Z }
+export function contract<A, Z>(
+  a: Runtype<A>,
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => (a: A) => Z }
+export function contract<A, B, Z>(
+  a: Runtype<A>,
+  b: Runtype<B>,
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => (a: A, b: B) => Z }
+export function contract<A, B, C, Z>(
+  a: Runtype<A>,
+  b: Runtype<B>,
+  c: Runtype<C>,
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C) => Z }
+export function contract<A, B, C, D, Z>(
+  a: Runtype<A>,
+  b: Runtype<B>,
+  c: Runtype<C>,
+  d: Runtype<D>,
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D) => Z }
+export function contract<A, B, C, D, E, Z>(
+  a: Runtype<A>,
+  b: Runtype<B>,
+  c: Runtype<C>,
+  d: Runtype<D>,
+  e: Runtype<E>,
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D, e: E) => Z }
+export function contract<A, B, C, D, E, F, Z>(
+  a: Runtype<A>,
+  b: Runtype<B>,
+  c: Runtype<C>,
+  d: Runtype<D>,
+  e: Runtype<E>,
+  f: Runtype<F>,
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D, e: E, f: F) => Z }
+export function contract<A, B, C, D, E, F, G, Z>(
+  a: Runtype<A>,
+  b: Runtype<B>,
+  c: Runtype<C>,
+  d: Runtype<D>,
+  e: Runtype<E>,
+  f: Runtype<F>,
+  g: Runtype<G>,
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => Z }
+export function contract<A, B, C, D, E, F, G, H, Z>(
+  a: Runtype<A>,
+  b: Runtype<B>,
+  c: Runtype<C>,
+  d: Runtype<D>,
+  e: Runtype<E>,
+  f: Runtype<F>,
+  g: Runtype<G>,
+  h: Runtype<H>,
+  z: Runtype<Z>,
+): { enforce: (f: (...args: any[]) => any) => (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => Z }
+export function contract(...runtypes: Runtype<any>[]) {
+  const lastIndex = runtypes.length - 1
+  const argTypes = runtypes.slice(0, lastIndex)
+  const returnType = runtypes[lastIndex]
+  return {
+    enforce: (f: (...args: any[]) => any) => (...args: any[]) => {
+      if (args.length < argTypes.length)
+        throw new ValidationError(`Expected ${argTypes.length} arguments but only received ${args.length}`)
+      for (let i = 0; i < argTypes.length; i++)
+        argTypes[i].check(args[i])
+      return returnType.check(f(...args))
+    }
+  }
+}
+
 function runtype<A>(check: (x: {}) => A): Runtype<A> {
 
   const A = {
