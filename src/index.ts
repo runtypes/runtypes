@@ -1,4 +1,3 @@
-
 /**
  * A successful validation result.
  */
