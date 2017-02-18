@@ -89,7 +89,7 @@ export interface Always extends Runtype<{} | void | null> {}
  */
 export const Always = runtype<Always>(x => x)
 
-export interface Never extends Runtype<never> {}
+export type always = Static<typeof Always>
 
 /**
  * Validates nothing (always fails).

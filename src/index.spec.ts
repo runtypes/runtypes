@@ -1,7 +1,7 @@
 import { Contract } from './index'
 import {
   Runtype,
-  Always,
+  Always, always,
   Never,
   Undefined,
   Null,
@@ -20,8 +20,6 @@ import {
   Lazy,
   Static,
 } from './index'
-
-type always = Static<typeof Always>
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
 const record1 = Record({ Boolean, Number })
