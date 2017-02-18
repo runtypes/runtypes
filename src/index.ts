@@ -166,19 +166,19 @@ export const String = runtype<String>(x => {
   return x
 })
 
-export interface Literal<A extends Rt> extends Runtype<Static<A>> {
-  tag: 'literal',
-  value: Static<A>,
+export interface Literal<A extends boolean | number | string> extends Runtype<A> {
+  tag: 'literal'
+  value: A
 }
 
 /**
  * Construct a literal runtype.
  */
-export function Literal<K extends boolean | number | string>(value: K): Literal<Runtype<K>> {
-  return runtype<Literal<Runtype<K>>>(x => {
+export function Literal<A extends boolean | number | string>(value: A): Literal<A> {
+  return runtype<Literal<A>>(x => {
     if (x !== value)
       throw new ValidationError(`Expected literal '${value}' but was '${x}'`)
-    return x as K
+    return x as A
   }, { value })
 }
 
