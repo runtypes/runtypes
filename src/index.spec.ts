@@ -21,7 +21,7 @@ import {
   Static,
 } from './index'
 
-type Always = Static<typeof Always>
+type always = Static<typeof Always>
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
 const record1 = Record({ Boolean, Number })
@@ -59,7 +59,7 @@ type RuntypeName = keyof typeof runtypes
 
 const runtypeNames = Object.keys(runtypes) as RuntypeName[]
 
-const testValues: { value: Always, passes: RuntypeName[] }[] = [
+const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: undefined, passes: ['Undefined', 'Void'] },
   { value: null, passes: ['Null', 'Void'] },
   { value: true, passes: ['Boolean', 'true'] },
@@ -134,13 +134,23 @@ describe('contracts', () => {
   })
 })
 
-function assertAccepts<A>(value: Always, runtype: Runtype<A>) {
+describe('reflection', () => {
+  it('literal', () => {
+    expect(Literal('x').value).toBe('x')
+  })
+
+  it('union', () => {
+    expect(Union(Literal('x'), Literal('y')).alternatives.map(lit => lit.value)).toEqual(['x', 'y'])
+  })
+})
+
+function assertAccepts<A>(value: always, runtype: Runtype<A>) {
   const result = runtype.validate(value)
   if (result.success === false)
     fail(result.message)
 }
 
-function assertRejects<A>(value: Always, runtype: Runtype<A>) {
+function assertRejects<A>(value: always, runtype: Runtype<A>) {
   const result = runtype.validate(value)
   if (result.success === true)
     fail('value passed validation even though it was not expected to')

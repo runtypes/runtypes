@@ -36,7 +36,7 @@ export type Result<A> = Success<A> | Failure
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export type Runtype<A> = {
+export interface Runtype<A> {
   /**
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
@@ -57,7 +57,7 @@ export type Runtype<A> = {
   /**
    * Union this Runtype with another.
    */
-  Or<B>(B: Runtype<B>): Runtype<A | B>
+  Or<B extends Rt>(B: B): Union2<this, B>
 
   /**
    * Intersect this Runtype with another.
@@ -75,27 +75,35 @@ export type Runtype<A> = {
   /* @internal */ _falseWitness: A
 }
 
+export type Rt = Runtype<any>
+
 /**
  * Obtains the static type associated with a Runtype.
  */
-export type Static<R extends Runtype<any>> = R['_falseWitness']
+export type Static<R extends Rt> = R['_falseWitness']
+
+export interface Always extends Runtype<{} | void | null> {}
 
 /**
  * Validates anything, but provides no new type information about it.
  */
-export const Always: Runtype<{} | void | null> = runtype(x => x)
+export const Always = runtype<Always>(x => x)
+
+export interface Never extends Runtype<never> {}
 
 /**
  * Validates nothing (always fails).
  */
-export const Never: Runtype<never> = runtype(x => {
+export const Never = runtype<Never>(x => {
   throw new ValidationError('Expected nothing but got something')
 })
+
+export interface Undefined extends Runtype<undefined> {}
 
 /**
  * Validates that a value is undefined.
  */
-export const Undefined: Runtype<undefined> = runtype(x => {
+export const Undefined = runtype<Undefined>(x => {
   if (x !== undefined)
     throw new ValidationError(`Expected undefined but was ${typeof x}`)
   return x
@@ -104,64 +112,78 @@ export const Undefined: Runtype<undefined> = runtype(x => {
 /**
  * Validates that a value is null.
  */
-export const Null: Runtype<null> = runtype(x => {
+export const Null = runtype<Void>(x => {
   if (x !== null)
     throw new ValidationError(`Expected null but was ${typeof x}`)
   return x
 })
 
+export interface Void extends Runtype<void> {}
+
 /**
  * Validates that a value is void (null or undefined).
  */
-export const Void: Runtype<void> = runtype(x => {
+export const Void = runtype<Void>(x => {
   if (x !== undefined && x !== null)
     throw new ValidationError(`Expected null but was ${typeof x}`)
   return x
 })
 
+export interface Boolean extends Runtype<boolean> {}
+
 /**
  * Validates that a value is a boolean.
  */
-export const Boolean: Runtype<boolean> = runtype(x => {
+export const Boolean = runtype<Boolean>(x => {
   if (typeof x !== 'boolean')
     throw new ValidationError(`Expected boolean but was ${typeof x}`)
   return x
 })
 
+export interface Number extends Runtype<number> {}
+
 /**
  * Validates that a value is a number.
  */
-export const Number: Runtype<number> = runtype(x => {
+export const Number = runtype<Number>(x => {
   if (typeof x !== 'number')
     throw new ValidationError(`Expected number but was ${typeof x}`)
   return x
 })
 
+export interface String extends Runtype<string> {}
+
 /**
  * Validates that a value is a string.
  */
-export const String: Runtype<string> = runtype(x => {
+export const String = runtype<String>(x => {
   if (typeof x !== 'string')
     throw new ValidationError(`Expected string but was ${typeof x}`)
   return x
 })
 
+export interface Literal<K extends string | number | boolean> extends Runtype<K> {
+  value: K
+}
+
 /**
  * Construct a literal runtype.
  */
-export function Literal<K extends string | number | boolean>(l: K): Runtype<K> {
-  return runtype(x => {
-    if (x !== l)
-      throw new ValidationError(`Expected literal '${l}' but was '${x}'`)
+export function Literal<K extends string | number | boolean>(value: K) {
+  return runtype<Literal<K>>(x => {
+    if (x !== value)
+      throw new ValidationError(`Expected literal '${value}' but was '${x}'`)
     return x as K
-  })
+  }, { value })
 }
+
+export interface Arr<A> extends Runtype<A[]> {}
 
 /**
  * Construct an array runtype from a runtype for its elements.
  */
-function arr<A>(v: Runtype<A>): Runtype<A[]> {
-  return runtype(xs => {
+function arr<A>(v: Runtype<A>) {
+  return runtype<Arr<A>>(xs => {
     if (!(xs instanceof Array))
       throw new ValidationError(`Expected array but was ${typeof xs}`)
     for (const x of xs)
@@ -264,29 +286,45 @@ export function Optional<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype
   })
 }
 
+export interface Union1<
+  A extends Rt,
+> extends Runtype<
+  Static<A>
+> { alternatives: [A] }
+
+export interface Union2<
+  A extends Rt, B extends Rt,
+> extends Runtype<
+  Static<A> | Static<B>
+> { alternatives: [A, B] }
+
+export interface Union3<
+  A extends Rt, B extends Rt, C extends Rt,
+> extends Runtype<
+  Static<A> | Static<B> | Static<C>
+> { alternatives: [A, B, C] }
+
+export interface Union4<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt,
+> extends Runtype<
+  Static<A> | Static<B> | Static<C> | Static<D>
+> { alternatives: [A, B, C, D] }
+
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-export function Union(
-): Runtype<never>
-export function Union<A>(
-  a: Runtype<A>,
-): Runtype<A>
-export function Union<A, B>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-): Runtype<A | B>
-export function Union<A, B, C>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-): Runtype<A | B | C>
-export function Union<A, B, C, D>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-): Runtype<A | B | C | D>
+export function Union<A extends Rt>(
+  a: A,
+): Union1<A>
+export function Union<A extends Rt, B extends Rt>(
+  a: A, b: B,
+): Union2<A, B>
+export function Union<A extends Rt, B extends Rt, C extends Rt>(
+  a: A, b: B, c: C,
+): Union3<A, B, C>
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt>(
+  a: A, b: B, c: C, d: D
+): Union4<A, B, C, D>
 export function Union<A, B, C, D, E>(
   a: Runtype<A>,
   b: Runtype<B>,
@@ -658,15 +696,14 @@ export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T
   y: Runtype<Y>,
   z: Runtype<Z>,
 ): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z>
-export function Union(...runtypes: Runtype<any>[]) {
+export function Union(...alternatives: Runtype<any>[]) {
   return runtype(x => {
-    for (const { guard } of runtypes)
+    for (const { guard } of alternatives)
       if (guard(x))
         return x
     throw new Error('No alternatives were matched')
-  })
+  }, { alternatives })
 }
-
 
 /**
  * Construct an intersection runtype from runtypes for its alternatives.
@@ -1173,7 +1210,7 @@ export function Contract(...runtypes: Runtype<any>[]) {
   }
 }
 
-function runtype<A>(check: (x: {}) => A): Runtype<A> {
+function runtype<A extends Rt>(check: (x: {}) => Static<A>, info?: any): A {
 
   const A = {
     check,
@@ -1183,9 +1220,13 @@ function runtype<A>(check: (x: {}) => A): Runtype<A> {
     And,
     withConstraint,
     _falseWitness: undefined as any as A,
-  }
+  } as A
 
-  return A
+  if (info)
+    for (const k in info)
+      (A as any)[k] = info[k]
+
+  return A as any as A
 
   function validate(value: any): Result<A> {
     try {
@@ -1200,7 +1241,7 @@ function runtype<A>(check: (x: {}) => A): Runtype<A> {
     return validate(x).success
   }
 
-  function Or<B>(B: Runtype<B>): Runtype<A | B> {
+  function Or<B extends Rt>(B: B): Union2<A, B> {
     return Union(A, B)
   }
 
@@ -1208,7 +1249,7 @@ function runtype<A>(check: (x: {}) => A): Runtype<A> {
     return Intersect(A, B)
   }
 
-  function withConstraint(constraint: (x: A) => boolean | string): Runtype<A> {
+  function withConstraint(constraint: (x: A) => boolean | string) {
     return runtype(x => {
       const typed = check(x)
       const result = constraint(typed)
@@ -1217,7 +1258,7 @@ function runtype<A>(check: (x: {}) => A): Runtype<A> {
       else if (!result)
         throw new ValidationError('Failed constraint check')
       return typed
-    })
+    }, info)
   }
 }
 
@@ -1229,6 +1270,6 @@ class ValidationError extends Error {
 
 // Type guard to determine if an object has a given key
 // If this feature gets implemented, we can use `in` instead: https://github.com/Microsoft/TypeScript/issues/10485
-function hasKey<K extends string>(k: K, o: {}): o is { [_ in K]: {} } {
+function hasKey<K extends string>(k: K, o: {}): o is {[_ in K]: {} } {
   return typeof o === 'object' && k in o
 }
