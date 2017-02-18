@@ -19,7 +19,7 @@
     "@types/jest": "^18.1.1",
     "jest": "^18.1.0",
     "ts-jest": "^18.0.3",
-    "typescript": "^2.1.5",
+    "typescript": "^2.1.6",
     "xyz": "^2.1.0"
   },
   "keywords:": [
