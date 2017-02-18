@@ -82,7 +82,7 @@ export type Rt = Runtype<any>
  */
 export type Static<R extends Rt> = R['_falseWitness']
 
-export interface Always extends Runtype<{} | void | null> {}
+export interface Always extends Runtype<{} | void | null> { tag: 'always' }
 
 /**
  * Validates anything, but provides no new type information about it.
@@ -91,6 +91,8 @@ export const Always = runtype<Always>(x => x)
 
 export type always = Static<typeof Always>
 
+export interface Never extends Runtype<never> { tag: 'never' }
+
 /**
  * Validates nothing (always fails).
  */
@@ -98,7 +100,7 @@ export const Never = runtype<Never>(x => {
   throw new ValidationError('Expected nothing but got something')
 })
 
-export interface Undefined extends Runtype<undefined> {}
+export interface Undefined extends Runtype<undefined> { tag: 'undefined' }
 
 /**
  * Validates that a value is undefined.
@@ -109,16 +111,18 @@ export const Undefined = runtype<Undefined>(x => {
   return x
 })
 
+export interface Null extends Runtype<null> { tag: 'null' }
+
 /**
  * Validates that a value is null.
  */
-export const Null = runtype<Void>(x => {
+export const Null = runtype<Null>(x => {
   if (x !== null)
     throw new ValidationError(`Expected null but was ${typeof x}`)
   return x
 })
 
-export interface Void extends Runtype<void> {}
+export interface Void extends Runtype<void> { tag: 'void' }
 
 /**
  * Validates that a value is void (null or undefined).
@@ -129,7 +133,7 @@ export const Void = runtype<Void>(x => {
   return x
 })
 
-export interface Boolean extends Runtype<boolean> {}
+export interface Boolean extends Runtype<boolean> { tag: 'boolean' }
 
 /**
  * Validates that a value is a boolean.
@@ -140,7 +144,7 @@ export const Boolean = runtype<Boolean>(x => {
   return x
 })
 
-export interface Number extends Runtype<number> {}
+export interface Number extends Runtype<number> { tag: 'number' }
 
 /**
  * Validates that a value is a number.
@@ -151,7 +155,7 @@ export const Number = runtype<Number>(x => {
   return x
 })
 
-export interface String extends Runtype<string> {}
+export interface String extends Runtype<string> { tag: 'string' }
 
 /**
  * Validates that a value is a string.
@@ -162,22 +166,23 @@ export const String = runtype<String>(x => {
   return x
 })
 
-export interface Literal<K extends string | number | boolean> extends Runtype<K> {
-  value: K
+export interface Literal<A extends Rt> extends Runtype<Static<A>> {
+  tag: 'literal',
+  value: Static<A>,
 }
 
 /**
  * Construct a literal runtype.
  */
-export function Literal<K extends string | number | boolean>(value: K) {
-  return runtype<Literal<K>>(x => {
+export function Literal<K extends boolean | number | string>(value: K): Literal<Runtype<K>> {
+  return runtype<Literal<Runtype<K>>>(x => {
     if (x !== value)
       throw new ValidationError(`Expected literal '${value}' but was '${x}'`)
     return x as K
   }, { value })
 }
 
-export interface Arr<A> extends Runtype<A[]> {}
+export interface Arr<A> extends Runtype<A[]> { tag: 'array' }
 
 /**
  * Construct an array runtype from a runtype for its elements.
@@ -290,25 +295,37 @@ export interface Union1<
   A extends Rt,
 > extends Runtype<
   Static<A>
-> { alternatives: [A] }
+> {
+  tag: 'union'
+  alternatives: [A]
+}
 
 export interface Union2<
   A extends Rt, B extends Rt,
 > extends Runtype<
   Static<A> | Static<B>
-> { alternatives: [A, B] }
+> {
+  tag: 'union'
+  alternatives: [A, B]
+}
 
 export interface Union3<
   A extends Rt, B extends Rt, C extends Rt,
 > extends Runtype<
   Static<A> | Static<B> | Static<C>
-> { alternatives: [A, B, C] }
+> {
+  tag: 'union'
+  alternatives: [A, B, C]
+}
 
 export interface Union4<
   A extends Rt, B extends Rt, C extends Rt, D extends Rt,
 > extends Runtype<
   Static<A> | Static<B> | Static<C> | Static<D>
-> { alternatives: [A, B, C, D] }
+> {
+  tag: 'union'
+  alternatives: [A, B, C, D]
+}
 
 /**
  * Construct a union runtype from runtypes for its alternatives.
@@ -1206,7 +1223,7 @@ export function Contract(...runtypes: Runtype<any>[]) {
       for (let i = 0; i < argTypes.length; i++)
         argTypes[i].check(args[i])
       return returnType.check(f(...args))
-    }
+      }
   }
 }
 
