@@ -141,6 +141,10 @@ describe('reflection', () => {
     expect(Array(Literal('x')).Element.value).toBe('x')
   })
 
+  it('tuple', () => {
+    expect(Tuple(Literal('x'), Literal('y')).Components.map(Lit => Lit.value)).toEqual(['x', 'y'])
+  })
+
   it('union', () => {
     expect(Union(Literal('x'), Literal('y')).Alternatives.map(Lit => Lit.value)).toEqual(['x', 'y'])
   })

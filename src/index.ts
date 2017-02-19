@@ -201,16 +201,30 @@ function arr<E extends Rt>(Element: E): Arr<E> {
 }
 export { arr as Array }
 
+export interface Tuple1<
+  A extends Rt,
+> extends Runtype<[Static<A>]> {
+  tag: 'tuple'
+  Components: [A]
+}
+
+export interface Tuple2<
+  A extends Rt,
+  B extends Rt,
+> extends Runtype<[Static<A>, Static<B>]> {
+  tag: 'tuple'
+  Components: [A, B]
+}
+
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
-export function Tuple<A>(
-  a: Runtype<A>,
-): Runtype<[A]>
-export function Tuple<A, B>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-): Runtype<[A, B]>
+export function Tuple<A extends Rt>(
+  A: A,
+): Tuple1<A>
+export function Tuple<A extends Rt, B extends Rt>(
+  A: A, B: B,
+): Tuple2<A, B>
 export function Tuple<A, B, C>(
   a: Runtype<A>,
   b: Runtype<B>,
@@ -246,15 +260,15 @@ export function Tuple<A, B, C, D, E, F, G>(
   f: Runtype<F>,
   g: Runtype<G>,
 ): Runtype<[A, B, C, D, E, F, G]>
-export function Tuple(...runtypes: Runtype<any>[]) {
+export function Tuple(...Components: Runtype<any>[]) {
   return runtype(x => {
     const xs = arr(Always).check(x)
-    if (xs.length < runtypes.length)
-      throw new ValidationError(`Expected array of ${runtypes.length} but was ${xs.length}`)
-    for (let i = 0; i < runtypes.length; i++)
-      runtypes[i].check(xs[i])
+    if (xs.length < Components.length)
+      throw new ValidationError(`Expected array of ${Components.length} but was ${xs.length}`)
+    for (let i = 0; i < Components.length; i++)
+      Components[i].check(xs[i])
     return x
-  })
+  }, { Components })
 }
 
 /**
