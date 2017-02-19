@@ -1178,16 +1178,21 @@ const Func = runtype<Func>(x => {
 }, { tag: 'function' })
 export { Func as Function }
 
+export interface Lazy<A extends Rt> extends Runtype<Static<A>> {
+  tag: 'lazy'
+  Delayed: () => A
+}
+
 /**
  * Construct a possibly-recursive Runtype.
  */
-export function Lazy<A>(fn: () => Runtype<A>): Runtype<A> {
-  let cached: Runtype<A>
-  return runtype(x => {
+export function Lazy<A extends Rt>(Delayed: () => A) {
+  let cached: A
+  return runtype<Lazy<A>>(x => {
     if (!cached)
-      cached = fn()
+      cached = Delayed()
     return cached.check(x)
-  })
+  }, { tag: 'lazy', Delayed })
 }
 
 /**

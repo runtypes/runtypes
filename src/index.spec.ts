@@ -218,6 +218,12 @@ describe('reflection', () => {
   it('function', () => {
     expectLiteralField(Function, 'tag', 'function')
   })
+
+  it('lazy', () => {
+    const L = Lazy(() => X)
+    expectLiteralField(L, 'tag', 'lazy')
+    expectLiteralField(L.Delayed(), 'value', 'x')
+  })
 })
 
 function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v: V) {
