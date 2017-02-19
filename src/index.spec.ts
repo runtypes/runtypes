@@ -133,25 +133,78 @@ describe('contracts', () => {
 })
 
 describe('reflection', () => {
+  const X = Literal('x')
+  const Y = Literal('y')
+
+  it('always', () => {
+    expect(Always.tag).toBe('always')
+  })
+
+  it('never', () => {
+    expect(Never.tag).toBe('never')
+  })
+
+  it('undefined', () => {
+    expect(Undefined.tag).toBe('undefined')
+  })
+
+  it('null', () => {
+    expect(Null.tag).toBe('null')
+  })
+
+  it('void', () => {
+    expect(Void.tag).toBe('void')
+  })
+
+  it('boolean', () => {
+    expect(Boolean.tag).toBe('boolean')
+  })
+
+  it('number', () => {
+    expect(Number.tag).toBe('number')
+  })
+
+  it('string', () => {
+    expect(String.tag).toBe('string')
+  })
+
   it('literal', () => {
-    expect(Literal('x').value).toBe('x')
+    expect(X.tag).toBe('literal')
+    expect(X.value).toBe('x')
   })
 
   it('array', () => {
-    expect(Array(Literal('x')).Element.value).toBe('x')
+    expect(Array(X).tag).toBe('array')
+    expect(Array(X).Element.tag).toBe('literal')
+    expect(Array(X).Element.value).toBe('x')
   })
 
   it('tuple', () => {
-    expect(Tuple(Literal('x'), Literal('y')).Components.map(Lit => Lit.value)).toEqual(['x', 'y'])
+    expect(Tuple(X, X).tag).toBe('tuple')
+    expect(Tuple(X, X).Components.map(C => C.tag)).toEqual(['literal', 'literal'])
+    expect(Tuple(X, X).Components.map(C => C.value)).toEqual(['x', 'x'])
   })
 
   it('record', () => {
     const Rec = Record({ x: Number, y: Literal(3) })
+    expect(Rec.tag).toBe('record')
+    expect(Rec.Fields.x.tag).toBe('number')
+    expect(Rec.Fields.y.tag).toBe('literal')
     expect(Rec.Fields.y.value).toBe(3)
   })
 
+  it('optional', () => {
+    const Opt = Optional({ x: Number, y: Literal(3) })
+    expect(Opt.tag).toBe('optional')
+    expect(Opt.Fields.x.tag).toBe('number')
+    expect(Opt.Fields.y.tag).toBe('literal')
+    expect(Opt.Fields.y.value).toBe(3)
+  })
+
   it('union', () => {
-    expect(Union(Literal('x'), Literal('y')).Alternatives.map(Lit => Lit.value)).toEqual(['x', 'y'])
+    expect(Union(X, Y).tag).toBe('union')
+    expect(Union(X, Y).Alternatives.map(A => A.tag)).toEqual(['literal', 'literal'])
+    expect(Union(X, Y).Alternatives.map(A => A.value)).toEqual(['x', 'y'])
   })
 })
 

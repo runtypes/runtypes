@@ -87,7 +87,7 @@ export interface Always extends Runtype<{} | void | null> { tag: 'always' }
 /**
  * Validates anything, but provides no new type information about it.
  */
-export const Always = runtype<Always>(x => x)
+export const Always = runtype<Always>(x => x, { tag: 'always' })
 
 export type always = Static<typeof Always>
 
@@ -98,7 +98,7 @@ export interface Never extends Runtype<never> { tag: 'never' }
  */
 export const Never = runtype<Never>(x => {
   throw new ValidationError('Expected nothing but got something')
-})
+}, { tag: 'never' })
 
 export interface Undefined extends Runtype<undefined> { tag: 'undefined' }
 
@@ -109,7 +109,7 @@ export const Undefined = runtype<Undefined>(x => {
   if (x !== undefined)
     throw new ValidationError(`Expected undefined but was ${typeof x}`)
   return x
-})
+}, { tag: 'undefined' })
 
 export interface Null extends Runtype<null> { tag: 'null' }
 
@@ -120,7 +120,7 @@ export const Null = runtype<Null>(x => {
   if (x !== null)
     throw new ValidationError(`Expected null but was ${typeof x}`)
   return x
-})
+}, { tag: 'null' })
 
 export interface Void extends Runtype<void> { tag: 'void' }
 
@@ -131,7 +131,7 @@ export const Void = runtype<Void>(x => {
   if (x !== undefined && x !== null)
     throw new ValidationError(`Expected null but was ${typeof x}`)
   return x
-})
+}, { tag: 'void' })
 
 export interface Boolean extends Runtype<boolean> { tag: 'boolean' }
 
@@ -142,7 +142,7 @@ export const Boolean = runtype<Boolean>(x => {
   if (typeof x !== 'boolean')
     throw new ValidationError(`Expected boolean but was ${typeof x}`)
   return x
-})
+}, { tag: 'boolean' })
 
 export interface Number extends Runtype<number> { tag: 'number' }
 
@@ -153,7 +153,7 @@ export const Number = runtype<Number>(x => {
   if (typeof x !== 'number')
     throw new ValidationError(`Expected number but was ${typeof x}`)
   return x
-})
+}, { tag: 'number' })
 
 export interface String extends Runtype<string> { tag: 'string' }
 
@@ -164,7 +164,7 @@ export const String = runtype<String>(x => {
   if (typeof x !== 'string')
     throw new ValidationError(`Expected string but was ${typeof x}`)
   return x
-})
+}, { tag: 'string' })
 
 export interface Literal<A extends boolean | number | string> extends Runtype<A> {
   tag: 'literal'
@@ -179,7 +179,7 @@ export function Literal<A extends boolean | number | string>(value: A): Literal<
     if (x !== value)
       throw new ValidationError(`Expected literal '${value}' but was '${x}'`)
     return x as A
-  }, { value })
+  }, { tag: 'literal', value })
 }
 
 export interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
@@ -197,7 +197,7 @@ function arr<E extends Rt>(Element: E): Arr<E> {
     for (const x of xs)
       Element.check(x)
     return xs
-  }, { Element })
+  }, { tag: 'array', Element })
 }
 export { arr as Array }
 
@@ -268,11 +268,11 @@ export function Tuple(...Components: Runtype<any>[]) {
     for (let i = 0; i < Components.length; i++)
       Components[i].check(xs[i])
     return x
-  }, { Components })
+  }, { tag: 'tuple', Components })
 }
 
 export interface Record<O extends { [_ in string]: Rt }> extends Runtype<{ [K in keyof O]: Static<O[K]> }> {
-  tag: 'tuple'
+  tag: 'record'
   Fields: O
 }
 
@@ -293,24 +293,29 @@ export function Record<O extends { [_: string]: Rt }>(Fields: O) {
     }
 
     return x as O
-  }, { Fields })
+  }, { tag: 'record', Fields })
+}
+
+export interface Optional<O extends { [_ in string]: Rt }> extends Runtype<{ [K in keyof O]?: Static<O[K]> }> {
+  tag: 'optional'
+  Fields: O
 }
 
 /**
  * Construct a runtype for records of optional values.
  */
-export function Optional<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<Partial<O>> {
-  return runtype(x => {
+export function Optional<O extends { [_: string]: Rt }>(Fields: O) {
+  return runtype<Optional<O>>(x => {
     if (x === null || x === undefined)
       throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
 
     // tslint:disable-next-line:forin
-    for (const key in runtypes)
+    for (const key in Fields)
       if (hasKey(key, x))
-        Union(runtypes[key], Undefined).check(x[key])
+        Union(Fields[key], Undefined).check(x[key])
 
     return x as Partial<O>
-  })
+  }, { tag: 'optional', Fields })
 }
 
 export interface Union1<
@@ -741,7 +746,7 @@ export function Union(...Alternatives: Runtype<any>[]) {
       if (guard(x))
         return x
     throw new Error('No alternatives were matched')
-  }, { Alternatives })
+  }, { tag: 'union', Alternatives })
 }
 
 /**
@@ -1249,7 +1254,7 @@ export function Contract(...runtypes: Runtype<any>[]) {
   }
 }
 
-function runtype<A extends Rt>(check: (x: {}) => Static<A>, info?: any): A {
+function runtype<A extends Rt>(check: (x: {}) => Static<A>, info: any): A {
 
   const A = {
     check,
