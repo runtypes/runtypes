@@ -1166,15 +1166,17 @@ export function Intersect(...Intersectees: Runtype<any>[]) {
   }, { tag: 'intersect', Intersectees })
 }
 
+interface Func extends Runtype<Function> { tag: 'function' }
+
 /**
  * Construct a runtype for functions.
  */
-export const func: Runtype<Function> = runtype(x => {
+const Func = runtype<Func>(x => {
   if (typeof x !== 'function')
     throw new ValidationError(`Expected a function but was ${typeof x}`)
   return x
-})
-export { func as Function }
+}, { tag: 'function' })
+export { Func as Function }
 
 /**
  * Construct a possibly-recursive Runtype.
