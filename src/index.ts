@@ -62,7 +62,7 @@ export interface Runtype<A> {
   /**
    * Intersect this Runtype with another.
    */
-  And<B>(B: Runtype<B>): Runtype<A & B>
+  And<B extends Rt>(B: B): Intersect2<this, B>
 
   /**
    * Provide a function which validates some arbitrary constraint,
@@ -1328,7 +1328,7 @@ function runtype<A extends Rt>(check: (x: {}) => Static<A>, info: any): A {
     return Union(A, B)
   }
 
-  function And<B>(B: Runtype<B>): Runtype<A & B> {
+  function And<B extends Rt>(B: B): Intersect2<A, B> {
     return Intersect(A, B)
   }
 
