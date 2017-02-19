@@ -145,6 +145,11 @@ describe('reflection', () => {
     expect(Tuple(Literal('x'), Literal('y')).Components.map(Lit => Lit.value)).toEqual(['x', 'y'])
   })
 
+  it('record', () => {
+    const Rec = Record({ x: Number, y: Literal(3) })
+    expect(Rec.Fields.y.value).toBe(3)
+  })
+
   it('union', () => {
     expect(Union(Literal('x'), Literal('y')).Alternatives.map(Lit => Lit.value)).toEqual(['x', 'y'])
   })
