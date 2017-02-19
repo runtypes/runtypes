@@ -138,11 +138,11 @@ describe('reflection', () => {
   })
 
   it('array', () => {
-    expect(Array(Literal('x')).elemType.value).toBe('x')
+    expect(Array(Literal('x')).Element.value).toBe('x')
   })
 
   it('union', () => {
-    expect(Union(Literal('x'), Literal('y')).alternatives.map(lit => lit.value)).toEqual(['x', 'y'])
+    expect(Union(Literal('x'), Literal('y')).Alternatives.map(Lit => Lit.value)).toEqual(['x', 'y'])
   })
 })
 

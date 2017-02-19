@@ -184,20 +184,20 @@ export function Literal<A extends boolean | number | string>(value: A): Literal<
 
 export interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
   tag: 'array'
-  elemType: E
+  Element: E
 }
 
 /**
  * Construct an array runtype from a runtype for its elements.
  */
-function arr<E extends Rt>(elemType: E): Arr<E> {
+function arr<E extends Rt>(Element: E): Arr<E> {
   return runtype<Arr<E>>(xs => {
     if (!(xs instanceof Array))
       throw new ValidationError(`Expected array but was ${typeof xs}`)
     for (const x of xs)
-      elemType.check(x)
+      Element.check(x)
     return xs
-  }, { elemType })
+  }, { Element })
 }
 export { arr as Array }
 
@@ -300,7 +300,7 @@ export interface Union1<
   Static<A>
 > {
   tag: 'union'
-  alternatives: [A]
+  Alternatives: [A]
 }
 
 export interface Union2<
@@ -309,7 +309,7 @@ export interface Union2<
   Static<A> | Static<B>
 > {
   tag: 'union'
-  alternatives: [A, B]
+  Alternatives: [A, B]
 }
 
 export interface Union3<
@@ -318,7 +318,7 @@ export interface Union3<
   Static<A> | Static<B> | Static<C>
 > {
   tag: 'union'
-  alternatives: [A, B, C]
+  Alternatives: [A, B, C]
 }
 
 export interface Union4<
@@ -327,7 +327,7 @@ export interface Union4<
   Static<A> | Static<B> | Static<C> | Static<D>
 > {
   tag: 'union'
-  alternatives: [A, B, C, D]
+  Alternatives: [A, B, C, D]
 }
 
 /**
@@ -716,13 +716,13 @@ export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T
   y: Runtype<Y>,
   z: Runtype<Z>,
 ): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z>
-export function Union(...alternatives: Runtype<any>[]) {
+export function Union(...Alternatives: Runtype<any>[]) {
   return runtype(x => {
-    for (const { guard } of alternatives)
+    for (const { guard } of Alternatives)
       if (guard(x))
         return x
     throw new Error('No alternatives were matched')
-  }, { alternatives })
+  }, { Alternatives })
 }
 
 /**
