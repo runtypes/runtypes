@@ -1293,7 +1293,7 @@ export function Contract(...runtypes: Runtype<any>[]) {
   }
 }
 
-function runtype<A extends Rt>(check: (x: {}) => Static<A>, info: any): A {
+function runtype<A extends Rt>(check: (x: {}) => Static<A>, reflectData: any): A {
 
   let A = {
     check,
@@ -1305,9 +1305,9 @@ function runtype<A extends Rt>(check: (x: {}) => Static<A>, info: any): A {
     _falseWitness: undefined as any as A,
   } as A
 
-  if (info)
-    for (const k in info)
-      (A as any)[k] = info[k]
+  if (reflectData)
+    for (const k in reflectData)
+      (A as any)[k] = reflectData[k]
 
   return A as any as A
 
