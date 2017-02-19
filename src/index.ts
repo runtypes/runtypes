@@ -749,18 +749,33 @@ export function Union(...Alternatives: Runtype<any>[]) {
   }, { tag: 'union', Alternatives })
 }
 
+export interface Intersect1<
+  A extends Rt,
+> extends Runtype<
+  Static<A>
+> {
+  tag: 'intersect'
+  Intersectees: [A]
+}
+
+export interface Intersect2<
+  A extends Rt, B extends Rt,
+> extends Runtype<
+  Static<A> & Static<B>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B]
+}
+
 /**
  * Construct an intersection runtype from runtypes for its alternatives.
  */
-export function Intersect(
-): Runtype<{}>
-export function Intersect<A>(
-  a: Runtype<A>,
-): Runtype<A>
-export function Intersect<A, B>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-): Runtype<A & B>
+export function Intersect<A extends Rt>(
+  A: A
+): Intersect1<A>
+export function Intersect<A extends Rt, B extends Rt>(
+  A: A, B: B
+): Intersect2<A, B>
 export function Intersect<A, B, C>(
   a: Runtype<A>,
   b: Runtype<B>,
@@ -1143,12 +1158,12 @@ export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, 
   y: Runtype<Y>,
   z: Runtype<Z>,
 ): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X & Y & Z>
-export function Intersect(...runtypes: Runtype<any>[]) {
+export function Intersect(...Intersectees: Runtype<any>[]) {
   return runtype(x => {
-    for (const { check } of runtypes)
+    for (const { check } of Intersectees)
       check(x)
     return x
-  })
+  }, { tag: 'intersect', Intersectees })
 }
 
 /**

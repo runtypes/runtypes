@@ -207,6 +207,13 @@ describe('reflection', () => {
     expect(Union(X, Y).Alternatives.map(A => A.tag)).toEqual(['literal', 'literal'])
     expect(Union(X, Y).Alternatives.map(A => A.value)).toEqual(['x', 'y'])
   })
+
+  it('intersect', () => {
+    expectLiteralField(Intersect(X, Y), 'tag', 'intersect')
+    expectLiteralField(Intersect(X, Y), 'tag', 'intersect')
+    expect(Intersect(X, Y).Intersectees.map(A => A.tag)).toEqual(['literal', 'literal'])
+    expect(Intersect(X, Y).Intersectees.map(A => A.value)).toEqual(['x', 'y'])
+  })
 })
 
 function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v: V) {
