@@ -182,7 +182,7 @@ export function Literal<A extends boolean | number | string>(value: A): Literal<
   }, { tag: 'literal', value })
 }
 
-export interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
+interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
   tag: 'array'
   Element: E
 }
@@ -190,7 +190,7 @@ export interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
 /**
  * Construct an array runtype from a runtype for its elements.
  */
-function arr<E extends Rt>(Element: E): Arr<E> {
+function Arr<E extends Rt>(Element: E): Arr<E> {
   return runtype<Arr<E>>(xs => {
     if (!(xs instanceof Array))
       throw new ValidationError(`Expected array but was ${typeof xs}`)
@@ -199,7 +199,7 @@ function arr<E extends Rt>(Element: E): Arr<E> {
     return xs
   }, { tag: 'array', Element })
 }
-export { arr as Array }
+export { Arr as Array }
 
 export interface Tuple1<
   A extends Rt,
@@ -262,7 +262,7 @@ export function Tuple<A, B, C, D, E, F, G>(
 ): Runtype<[A, B, C, D, E, F, G]>
 export function Tuple(...Components: Runtype<any>[]) {
   return runtype(x => {
-    const xs = arr(Always).check(x)
+    const xs = Arr(Always).check(x)
     if (xs.length < Components.length)
       throw new ValidationError(`Expected array of ${Components.length} but was ${xs.length}`)
     for (let i = 0; i < Components.length; i++)
