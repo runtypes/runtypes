@@ -137,80 +137,80 @@ describe('reflection', () => {
   const Y = Literal('y')
 
   it('always', () => {
-    expectTag(Always, 'always')
+    expectLiteralField(Always, 'tag', 'always')
   })
 
   it('never', () => {
-    expectTag(Never, 'never')
+    expectLiteralField(Never, 'tag', 'never')
   })
 
   it('undefined', () => {
-    expectTag(Undefined, 'undefined')
+    expectLiteralField(Undefined, 'tag', 'undefined')
   })
 
   it('null', () => {
-    expectTag(Null, 'null')
+    expectLiteralField(Null, 'tag', 'null')
   })
 
   it('void', () => {
-    expectTag(Void, 'void')
+    expectLiteralField(Void, 'tag', 'void')
   })
 
   it('boolean', () => {
-    expectTag(Boolean, 'boolean')
+    expectLiteralField(Boolean, 'tag', 'boolean')
   })
 
   it('number', () => {
-    expectTag(Number, 'number')
+    expectLiteralField(Number, 'tag', 'number')
   })
 
   it('string', () => {
-    expectTag(String, 'string')
+    expectLiteralField(String, 'tag', 'string')
   })
 
   it('literal', () => {
-    expectTag(X, 'literal')
-    expect(X.value).toBe('x')
+    expectLiteralField(X, 'tag', 'literal')
+    expectLiteralField(X, 'value', 'x')
   })
 
   it('array', () => {
-    expectTag(Array(X), 'array')
-    expectTag(Array(X).Element, 'literal')
-    expect(Array(X).Element.value).toBe('x')
+    expectLiteralField(Array(X), 'tag', 'array')
+    expectLiteralField(Array(X).Element, 'tag', 'literal')
+    expectLiteralField(Array(X).Element, 'value', 'x')
   })
 
   it('tuple', () => {
-    expectTag(Tuple(X, X), 'tuple')
+    expectLiteralField(Tuple(X, X), 'tag', 'tuple')
     expect(Tuple(X, X).Components.map(C => C.tag)).toEqual(['literal', 'literal'])
     expect(Tuple(X, X).Components.map(C => C.value)).toEqual(['x', 'x'])
   })
 
   it('record', () => {
     const Rec = Record({ x: Number, y: Literal(3) })
-    expectTag(Rec, 'record')
-    expectTag(Rec.Fields.x, 'number')
-    expectTag(Rec.Fields.y, 'literal')
-    expect(Rec.Fields.y.value).toBe(3)
+    expectLiteralField(Rec, 'tag', 'record')
+    expectLiteralField(Rec.Fields.x, 'tag', 'number')
+    expectLiteralField(Rec.Fields.y, 'tag', 'literal')
+    expectLiteralField(Rec.Fields.y, 'value', 3)
   })
 
   it('optional', () => {
     const Opt = Optional({ x: Number, y: Literal(3) })
-    expectTag(Opt, 'optional')
-    expectTag(Opt.Fields.x, 'number')
-    expectTag(Opt.Fields.y, 'literal')
-    expect(Opt.Fields.y.value).toBe(3)
+    expectLiteralField(Opt, 'tag', 'optional')
+    expectLiteralField(Opt.Fields.x, 'tag', 'number')
+    expectLiteralField(Opt.Fields.y, 'tag', 'literal')
+    expectLiteralField(Opt.Fields.y, 'value', 3)
   })
 
   it('union', () => {
-    expectTag(Union(X, Y), 'union')
+    expectLiteralField(Union(X, Y), 'tag', 'union')
+    expectLiteralField(Union(X, Y), 'tag', 'union')
     expect(Union(X, Y).Alternatives.map(A => A.tag)).toEqual(['literal', 'literal'])
     expect(Union(X, Y).Alternatives.map(A => A.value)).toEqual(['x', 'y'])
   })
 })
 
-// Type-safe tag assertion
-function expectTag<K extends string, O extends { tag: K }>(o: O, tag: K) {
-  expect(o.tag).toBe(tag)
+function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v: V) {
+  expect(o[k]).toBe(v)
 }
 
 function assertAccepts<A>(value: always, runtype: Runtype<A>) {
