@@ -70,7 +70,7 @@ export interface Runtype<A> {
    * for some reason. May also return a string which indicates an
    * error and provides a descriptive message.
    */
-  withConstraint(constraint: (x: A) => boolean | string): Runtype<A>
+  withConstraint(constraint: (x: A) => boolean | string): Constraint<this>
 
   /* @internal */ _falseWitness: A
 }
@@ -1195,6 +1195,23 @@ export function Lazy<A extends Rt>(Delayed: () => A) {
   }, { tag: 'lazy', Delayed })
 }
 
+export interface Constraint<A extends Rt> extends Runtype<Static<A>> {
+  tag: 'constraint'
+  Underlying: A
+}
+
+export function Constraint<A extends Rt>(Underlying: A, constraint: (x: A) => boolean | string) {
+  return runtype<Constraint<A>>(x => {
+    const typed = Underlying.check(x)
+    const result = constraint(typed)
+    if (String.guard(result))
+      throw new ValidationError(result)
+    else if (!result)
+      throw new ValidationError('Failed constraint check')
+    return typed
+  }, { tag: 'constraint', Underlying })
+}
+
 /**
  * Create a function contract.
  */
@@ -1278,7 +1295,7 @@ export function Contract(...runtypes: Runtype<any>[]) {
 
 function runtype<A extends Rt>(check: (x: {}) => Static<A>, info: any): A {
 
-  const A = {
+  let A = {
     check,
     validate,
     guard,
@@ -1315,16 +1332,8 @@ function runtype<A extends Rt>(check: (x: {}) => Static<A>, info: any): A {
     return Intersect(A, B)
   }
 
-  function withConstraint(constraint: (x: A) => boolean | string) {
-    return runtype(x => {
-      const typed = check(x)
-      const result = constraint(typed)
-      if (String.guard(result))
-        throw new ValidationError(result)
-      else if (!result)
-        throw new ValidationError('Failed constraint check')
-      return typed
-    }, info)
+  function withConstraint(constraint: (x: A) => boolean | string): Constraint<A> {
+    return Constraint(A, constraint)
   }
 }
 

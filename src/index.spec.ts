@@ -224,6 +224,12 @@ describe('reflection', () => {
     expectLiteralField(L, 'tag', 'lazy')
     expectLiteralField(L.Delayed(), 'value', 'x')
   })
+
+  it('constraint', () => {
+    const C = Number.withConstraint(n => n > 9)
+    expectLiteralField(C, 'tag', 'constraint')
+    expectLiteralField(C.Underlying, 'tag', 'number')
+  })
 })
 
 function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v: V) {
