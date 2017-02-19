@@ -271,7 +271,7 @@ export function Tuple(...Components: Runtype<any>[]) {
   }, { tag: 'tuple', Components })
 }
 
-export interface Record<O extends { [_ in string]: Rt }> extends Runtype<{ [K in keyof O]: Static<O[K]> }> {
+export interface Record<O extends {[_ in string]: Rt }> extends Runtype<{[K in keyof O]: Static<O[K]> }> {
   tag: 'record'
   Fields: O
 }
@@ -296,7 +296,7 @@ export function Record<O extends { [_: string]: Rt }>(Fields: O) {
   }, { tag: 'record', Fields })
 }
 
-export interface Optional<O extends { [_ in string]: Rt }> extends Runtype<{ [K in keyof O]?: Static<O[K]> }> {
+export interface Optional<O extends {[_ in string]: Rt }> extends Runtype<{[K in keyof O]?: Static<O[K]> }> {
   tag: 'optional'
   Fields: O
 }
@@ -1289,7 +1289,7 @@ export function Contract(...runtypes: Runtype<any>[]) {
       for (let i = 0; i < argTypes.length; i++)
         argTypes[i].check(args[i])
       return returnType.check(f(...args))
-      }
+    }
   }
 }
 
