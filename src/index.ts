@@ -182,19 +182,22 @@ export function Literal<A extends boolean | number | string>(value: A): Literal<
   }, { value })
 }
 
-export interface Arr<A> extends Runtype<A[]> { tag: 'array' }
+export interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
+  tag: 'array'
+  elemType: E
+}
 
 /**
  * Construct an array runtype from a runtype for its elements.
  */
-function arr<A>(v: Runtype<A>) {
-  return runtype<Arr<A>>(xs => {
+function arr<E extends Rt>(elemType: E): Arr<E> {
+  return runtype<Arr<E>>(xs => {
     if (!(xs instanceof Array))
       throw new ValidationError(`Expected array but was ${typeof xs}`)
     for (const x of xs)
-      v.check(x)
+      elemType.check(x)
     return xs
-  })
+  }, { elemType })
 }
 export { arr as Array }
 
