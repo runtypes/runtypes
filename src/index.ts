@@ -1166,7 +1166,7 @@ export function Intersect(...Intersectees: Runtype<any>[]) {
   }, { tag: 'intersect', Intersectees })
 }
 
-interface Func extends Runtype<Function> { tag: 'function' }
+interface Func extends Runtype<(...args: any[]) => any> { tag: 'function' }
 
 /**
  * Construct a runtype for functions.
@@ -1292,6 +1292,28 @@ export function Contract(...runtypes: Runtype<any>[]) {
     }
   }
 }
+
+export type Extract<O extends { [x: string]: any }> = O['x']
+
+export type AnyRuntype =
+  | Always
+  | Never
+  | Undefined
+  | Null
+  | Void
+  | Boolean
+  | Number
+  | String
+  | Literal<boolean | number | string>
+  | { tag: 'array'; Element: AnyRuntype } & Runtype<always[]>
+  | Record<{ [_ in string]: AnyRuntype }>
+  | Optional<{ [_ in string]: AnyRuntype }>
+  | { tag: 'tuple'; Components: AnyRuntype[] } & Runtype<[always]>
+  | { tag: 'union'; Alternatives: AnyRuntype[] } & Runtype<always>
+  | { tag: 'intersect'; Intersectees: AnyRuntype[] } & Runtype<always>
+  | Func
+  | { tag: 'lazy'; Delayed: () => AnyRuntype } & Runtype<always>
+  | { tag: 'constraint'; Underlying: AnyRuntype } & Runtype<always>
 
 function runtype<A extends Rt>(check: (x: {}) => Static<A>, reflectData: any): A {
 

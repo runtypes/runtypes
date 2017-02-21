@@ -1,6 +1,6 @@
-import { Contract } from './index'
 import {
   Runtype,
+  Static,
   Always, always,
   Never,
   Undefined,
@@ -13,12 +13,14 @@ import {
   Array,
   Record,
   Optional,
-  Tuple,
-  Union,
-  Intersect,
+  Tuple, Tuple2,
+  Union, Union2,
+  Intersect, Intersect2,
   Function,
   Lazy,
-  Static,
+  Constraint,
+  Contract,
+  AnyRuntype,
 } from './index'
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
@@ -231,6 +233,89 @@ describe('reflection', () => {
     expectLiteralField(C.Underlying, 'tag', 'number')
   })
 })
+
+// Static tests of AnyRuntype
+function testAnyRuntype(
+  X:
+  | Always
+  | Never
+  | Undefined
+  | Null
+  | Void
+  | Boolean
+  | Number
+  | String
+  | Literal<boolean | number | string>
+  | Array<AnyRuntype>
+  | Record<{ [_ in string]: AnyRuntype }>
+  | Optional<{ [_ in string]: AnyRuntype }>
+  | Tuple2<AnyRuntype, AnyRuntype>
+  | Union2<AnyRuntype, AnyRuntype>
+  | Intersect2<AnyRuntype, AnyRuntype>
+  | Function
+  | Lazy<AnyRuntype>
+  | Constraint<AnyRuntype>
+): AnyRuntype {
+  const check = <A>(X: Runtype<A>): A => X.check({})
+  switch (X.tag) {
+    case 'always':
+      check<always>(X)
+      break
+    case 'never':
+      check<never>(X)
+      break
+    case 'undefined':
+      check<undefined>(X)
+      break
+    case 'null':
+      check<null>(X)
+      break
+    case 'void':
+      check<void>(X)
+      break
+    case 'boolean':
+      check<boolean>(X)
+      break
+    case 'number':
+      check<number>(X)
+      break
+    case 'string':
+      check<string>(X)
+      break
+    case 'literal':
+      check<typeof X.value>(X)
+      break
+    case 'array':
+      check<(Static<typeof X.Element>)[]>(X)
+      break
+    case 'record':
+      check<{ [K in keyof typeof X.Fields]: Static<typeof X.Fields['K']> }>(X)
+      break
+    case 'optional':
+      check<{ [K in keyof typeof X.Fields]?: Static<typeof X.Fields['K']> }>(X)
+      break
+    case 'tuple':
+      check<[Static<typeof X.Components[0]>, Static<typeof X.Components[1]>]>(X)
+      break
+    case 'union':
+      check<Static<typeof X.Alternatives[0]> | Static<typeof X.Alternatives[1]>>(X)
+      break
+    case 'intersect':
+      check<Static<typeof X.Intersectees[0]> & Static<typeof X.Intersectees[1]>>(X)
+      break
+    case 'function':
+      check<(...args: any[]) => any>(X)
+      break
+    case 'lazy':
+      const delayed = X.Delayed()
+      check<Static<typeof delayed>>(X)
+      break
+    case 'constraint':
+      check<Static<typeof X.Underlying>>(X)
+  }
+
+  return X
+}
 
 function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v: V) {
   expect(o[k]).toBe(v)
