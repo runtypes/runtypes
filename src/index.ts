@@ -75,6 +75,9 @@ export interface Runtype<A> {
   /* @internal */ _falseWitness: A
 }
 
+/**
+ * Just a convenient synonym for internal use in defining new Runtypes.
+ */
 export type Rt = Runtype<any>
 
 /**
