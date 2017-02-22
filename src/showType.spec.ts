@@ -97,11 +97,15 @@ const cases: [AnyRuntype, string][] = [
 
   // Parenthesization
   [
-    Intersect(Boolean, Number.Or(String)),
+    Boolean.And(Number.Or(String)),
     'boolean & (number | string)'
   ],
   [
-    Union(Boolean, Record({ x: String, y: Number })),
+    Boolean.Or(Number.And(String)),
+    'boolean | (number & string)'
+  ],
+  [
+    Boolean.Or(Record({ x: String, y: Number })),
     'boolean | { x: string; y: number; }'
   ]
 ]
