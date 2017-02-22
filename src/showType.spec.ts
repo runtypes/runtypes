@@ -109,7 +109,7 @@ const cases: [AnyRuntype, string][] = [
 for (const [T, expected] of cases) {
   const name = showType(T)
   it(name, () => {
-    expect(showType(T)).toBe(expected)
+    expect(name).toBe(expected)
   })
 }
 
