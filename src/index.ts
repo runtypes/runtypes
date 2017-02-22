@@ -1,3 +1,4 @@
+import showType from './showType'
 /**
  * A successful validation result.
  */
@@ -1355,7 +1356,7 @@ export type AnyRuntype =
 
 function runtype<A extends Rt>(check: (x: {}) => Static<A>, reflectData: any): A {
 
-  let A = {
+  const A: any = {
     check,
     validate,
     guard,
@@ -1363,13 +1364,15 @@ function runtype<A extends Rt>(check: (x: {}) => Static<A>, reflectData: any): A
     And,
     withConstraint,
     _falseWitness: undefined as any as A,
-  } as A
+  }
+
+  A.toString = () => showType(A)
 
   if (reflectData)
     for (const k in reflectData)
-      (A as any)[k] = reflectData[k]
+      A[k] = reflectData[k]
 
-  return A as any as A
+  return A
 
   function validate(value: any): Result<A> {
     try {
