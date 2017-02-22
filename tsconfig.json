@@ -8,8 +8,7 @@
         "sourceMap": false,
         "outDir": "lib"
     },
-    "files": [
-        "src/index.ts",
-        "src/index.spec.ts"
+    "include": [
+        "src/**/*"
     ]
 }
