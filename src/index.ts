@@ -219,6 +219,61 @@ export interface Tuple2<
   Components: [A, B]
 }
 
+export interface Tuple3<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+> extends Runtype<[Static<A>, Static<B>, Static<C>]> {
+  tag: 'tuple'
+  Components: [A, B, C]
+}
+
+export interface Tuple4<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+> extends Runtype<[Static<A>, Static<B>, Static<C>, Static<D>]> {
+  tag: 'tuple'
+  Components: [A, B, C, D]
+}
+
+export interface Tuple5<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+> extends Runtype<[Static<A>, Static<B>, Static<C>, Static<D>, Static<E>]> {
+  tag: 'tuple'
+  Components: [A, B, C, D, E]
+}
+
+export interface Tuple6<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+> extends Runtype<[Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>]> {
+  tag: 'tuple'
+  Components: [A, B, C, D, E, F]
+}
+
+export interface Tuple7<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+> extends Runtype<[Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>]> {
+  tag: 'tuple'
+  Components: [A, B, C, D, E, F, G]
+}
+
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
@@ -228,41 +283,21 @@ export function Tuple<A extends Rt>(
 export function Tuple<A extends Rt, B extends Rt>(
   A: A, B: B,
 ): Tuple2<A, B>
-export function Tuple<A, B, C>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-): Runtype<[A, B, C]>
-export function Tuple<A, B, C, D>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-): Runtype<[A, B, C, D]>
-export function Tuple<A, B, C, D, E>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-): Runtype<[A, B, C, D, E]>
-export function Tuple<A, B, C, D, E, F>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-): Runtype<[A, B, C, D, E, F]>
-export function Tuple<A, B, C, D, E, F, G>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-): Runtype<[A, B, C, D, E, F, G]>
+export function Tuple<A extends Rt, B extends Rt, C extends Rt>(
+  A: A, B: B, C: C,
+): Tuple3<A, B, C>
+export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt>(
+  A: A, B: B, C: C, D: D,
+): Tuple4<A, B, C, D>
+export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt>(
+  A: A, B: B, C: C, D: D, E: E,
+): Tuple5<A, B, C, D, E>
+export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F,
+): Tuple6<A, B, C, D, E, F>
+export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G,
+): Tuple7<A, B, C, D, E, F, G>
 export function Tuple(...Components: Runtype<any>[]) {
   return runtype(x => {
     const xs = Arr(Always).check(x)

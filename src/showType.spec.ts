@@ -52,6 +52,26 @@ const cases: [AnyRuntype, string][] = [
     '[boolean, number]'
   ],
   [
+    Tuple(Boolean, Number, String),
+    '[boolean, number, string]'
+  ],
+  [
+    Tuple(Boolean, Number, String, Boolean),
+    '[boolean, number, string, boolean]'
+  ],
+  [
+    Tuple(Boolean, Number, String, Boolean, Number),
+    '[boolean, number, string, boolean, number]'
+  ],
+  [
+    Tuple(Boolean, Number, String, Boolean, Number, String),
+    '[boolean, number, string, boolean, number, string]'
+  ],
+  [
+    Tuple(Boolean, Number, String, Boolean, Number, String, Boolean),
+    '[boolean, number, string, boolean, number, string, boolean]'
+  ],
+  [
     Union(Boolean),
     'boolean'
   ],
