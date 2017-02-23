@@ -228,12 +228,21 @@ export function Tuple(...runtypes: Runtype<any>[]) {
 }
 
 /**
+ * A runtype for arbitrary string dictionaries.
+ */
+export const Dictionary: Runtype<{ [_: string]: Static<typeof Always> }> = runtype(x => {
+  if (x === null || x === undefined)
+    throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
+
+  return x
+})
+
+/**
  * Construct a record runtype from runtypes for its values.
  */
 export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O> {
   return runtype(x => {
-    if (x === null || x === undefined)
-      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
+    Dictionary.check(x)
 
     // tslint:disable-next-line:forin
     for (const key in runtypes) {
