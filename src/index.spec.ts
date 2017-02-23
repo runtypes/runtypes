@@ -11,6 +11,7 @@ import {
   String,
   Literal,
   Array,
+  Dictionary,
   Record,
   Optional,
   Tuple, Tuple2,
@@ -185,6 +186,18 @@ describe('reflection', () => {
     expectLiteralField(Tuple(X, X), 'tag', 'tuple')
     expect(Tuple(X, X).Components.map(C => C.tag)).toEqual(['literal', 'literal'])
     expect(Tuple(X, X).Components.map(C => C.value)).toEqual(['x', 'x'])
+  })
+
+  it('string dictionary', () => {
+    const Rec = Dictionary()
+    expectLiteralField(Rec, 'tag', 'dictionary')
+    expectLiteralField(Rec, 'keyType', 'string')
+  })
+
+  it('number dictionary', () => {
+    const Rec = Dictionary('number')
+    expectLiteralField(Rec, 'tag', 'dictionary')
+    expectLiteralField(Rec, 'keyType', 'number')
   })
 
   it('record', () => {

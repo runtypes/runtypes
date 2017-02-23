@@ -119,6 +119,16 @@ export declare function Tuple<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Ru
 export declare function Tuple<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>): Runtype<[A, B, C, D, E, F]>;
 export declare function Tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>): Runtype<[A, B, C, D, E, F, G]>;
 /**
+ * Construct a runtype for arbitrary dictionaries. Note that unlike Record, this provides no actual
+ * runtime validation of the keys or values.
+ */
+export declare function Dictionary<V>(keyType?: 'string'): Runtype<{
+    [_: string]: V;
+}>;
+export declare function Dictionary<V>(keyType?: 'number'): Runtype<{
+    [_: number]: V;
+}>;
+/**
  * Construct a record runtype from runtypes for its values.
  */
 export declare function Record<O>(runtypes: {
@@ -228,7 +238,4 @@ export declare function Contract<A, B, C, D, E, F, G, Z>(A: Runtype<A>, B: Runty
 };
 export declare function Contract<A, B, C, D, E, F, G, H, Z>(A: Runtype<A>, B: Runtype<B>, C: Runtype<C>, D: Runtype<D>, E: Runtype<E>, F: Runtype<F>, G: Runtype<G>, H: Runtype<H>, Z: Runtype<Z>): {
     enforce: (f: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => Z) => (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => Z;
-};
-export declare function hasKey<K extends string>(k: K, o: {}): o is {
-    [_ in K]: {};
 };

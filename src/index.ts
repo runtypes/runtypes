@@ -310,7 +310,32 @@ export function Tuple(...Components: Runtype<any>[]) {
   }, { tag: 'tuple', Components })
 }
 
-export interface Record<O extends {[_ in string]: Rt }> extends Runtype<{[K in keyof O]: Static<O[K]> }> {
+export interface StringDictionary<V> extends Runtype<{ [_: string]: V }> {
+  tag: 'dictionary'
+  keyType: 'string'
+}
+
+export interface NumberDictionary<V> extends Runtype<{ [_: number]: V }> {
+  tag: 'dictionary'
+  keyType: 'number'
+}
+
+/**
+ * Construct a runtype for arbitrary dictionaries. Note that unlike Record, this provides no actual
+ * runtime validation of the keys or values.
+ */
+export function Dictionary<V>(keyType?: 'string'): StringDictionary<V>
+export function Dictionary<V>(keyType?: 'number'): NumberDictionary<V>
+export function Dictionary<V>(keyType = 'string') {
+  return runtype<Runtype<any>>(x => {
+    if (x === null || x === undefined)
+      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
+
+    return x
+  }, { tag: 'dictionary', keyType })
+}
+
+export interface Record<O extends { [_ in string]: Rt }> extends Runtype<{[K in keyof O]: Static<O[K]> }> {
   tag: 'record'
   Fields: O
 }
@@ -320,8 +345,7 @@ export interface Record<O extends {[_ in string]: Rt }> extends Runtype<{[K in k
  */
 export function Record<O extends { [_: string]: Rt }>(Fields: O) {
   return runtype<Record<O>>(x => {
-    if (x === null || x === undefined)
-      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
+    Dictionary().check(x)
 
     // tslint:disable-next-line:forin
     for (const key in Fields) {
@@ -1345,6 +1369,8 @@ export type AnyRuntype =
   | String
   | Literal<boolean | number | string>
   | { tag: 'array'; Element: AnyRuntype } & Runtype<always[]>
+  | StringDictionary<any>
+  | NumberDictionary<any>
   | Record<{ [_ in string]: AnyRuntype }>
   | Optional<{ [_ in string]: AnyRuntype }>
   | { tag: 'tuple'; Components: AnyRuntype[] } & Runtype<[always]>

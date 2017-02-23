@@ -26,6 +26,8 @@ const showType = (needsParens: boolean) => (T: AnyRuntype): string => {
     }
     case 'array':
       return `${showType(true)(T.Element)}[]`
+    case 'dictionary':
+      return `{ [_: ${T.keyType}]: {} }`
     case 'record': {
       const keys = Object.keys(T.Fields)
       return keys.length ? `{ ${keys
