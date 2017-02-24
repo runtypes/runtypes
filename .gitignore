@@ -1,5 +1,5 @@
 # Exclude built test files
-lib/index.spec.*
+lib/**/*.spec.*
 
 node_modules
 npm-debug.log*
