@@ -35,8 +35,8 @@ const cases: [AnyRuntype, string][] = [
   [Literal(3), '3'],
   [Literal('foo'), '"foo"'],
   [Array(String), 'string[]'],
-  [Dictionary(), '{ [_: string]: {} }'],
-  [Dictionary('number'), '{ [_: number]: {} }'],
+  [Dictionary(Always), '{ [_: string]: {} }'],
+  [Dictionary(Always, 'number'), '{ [_: number]: {} }'],
   [Record({}), '{}'],
   [
     Record({ x: String, y: Array(Boolean) }),
