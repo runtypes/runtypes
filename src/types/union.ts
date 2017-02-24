@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, create } from './base'
+import { Runtype, Rt, Static, create } from './runtype'
 
 export interface Union1<
   A extends Rt,

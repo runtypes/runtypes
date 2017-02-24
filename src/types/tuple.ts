@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, create } from './base'
+import { Runtype, Rt, Static, create } from './runtype'
 import { Always } from './always'
 import { Array as Arr } from './array'
 import { ValidationError } from '../validation-error'

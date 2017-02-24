@@ -1,4 +1,4 @@
-import { Runtype, create } from './base'
+import { Runtype, create } from './runtype'
 import { ValidationError } from '../validation-error'
 
 interface Func extends Runtype<(...args: any[]) => any> { tag: 'function' }

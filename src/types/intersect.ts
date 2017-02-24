@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, create } from './base'
+import { Runtype, Rt, Static, create } from './runtype'
 
 export interface Intersect1<
   A extends Rt,

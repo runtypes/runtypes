@@ -1,4 +1,4 @@
-import { Runtype } from './types/base'
+import { Runtype } from './index'
 import { ValidationError } from './validation-error'
 
 export interface Contract0<Z> {

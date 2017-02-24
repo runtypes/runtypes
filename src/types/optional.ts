@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, create } from './base'
+import { Runtype, Rt, Static, create } from './runtype'
 import { Union } from '../index'
 import { Undefined } from './literal'
 import { hasKey } from '../util'

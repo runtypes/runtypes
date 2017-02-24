@@ -1,4 +1,4 @@
-import { Runtype } from './base'
+import { Runtype } from './runtype'
 import { Always, always } from './always'
 import { Never } from './never'
 import { Void } from './void'
