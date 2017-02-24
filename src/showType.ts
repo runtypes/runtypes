@@ -1,6 +1,6 @@
-import { AnyRuntype } from './index'
+import { Unknown } from './index'
 
-const showType = (needsParens: boolean) => (T: AnyRuntype): string => {
+const showType = (needsParens: boolean) => (T: Unknown): string => {
 
   const parenthesize = (s: string) => needsParens ? `(${s})` : s
 

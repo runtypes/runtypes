@@ -18,11 +18,11 @@ import {
   Function,
   Lazy,
   Constraint,
-  AnyRuntype,
+  Unknown,
 } from './index'
 import showType from './showType'
 
-const cases: [AnyRuntype, string][] = [
+const cases: [Unknown, string][] = [
   [Always, 'always'],
   [Never, 'never'],
   [Undefined, 'undefined'],

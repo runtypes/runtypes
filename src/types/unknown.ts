@@ -10,7 +10,7 @@ import { Optional } from './optional'
 import { StringDictionary, NumberDictionary } from './dictionary'
 import { Function } from './function'
 
-export type AnyRuntype =
+export type Unknown =
   | Always
   | Never
   | Undefined
@@ -20,13 +20,13 @@ export type AnyRuntype =
   | Number
   | String
   | Literal<boolean | number | string>
-  | { tag: 'array'; Element: AnyRuntype } & Runtype<always[]>
-  | Record<{ [_ in string]: AnyRuntype }>
-  | Optional<{ [_ in string]: AnyRuntype }>
+  | { tag: 'array'; Element: Unknown } & Runtype<always[]>
+  | Record<{ [_ in string]: Unknown }>
+  | Optional<{ [_ in string]: Unknown }>
   | StringDictionary<any>
   | NumberDictionary<any>
-  | { tag: 'tuple'; Components: AnyRuntype[] } & Runtype<[always]>
-  | { tag: 'union'; Alternatives: AnyRuntype[] } & Runtype<always>
-  | { tag: 'intersect'; Intersectees: AnyRuntype[] } & Runtype<always>
+  | { tag: 'tuple'; Components: Unknown[] } & Runtype<[always]>
+  | { tag: 'union'; Alternatives: Unknown[] } & Runtype<always>
+  | { tag: 'intersect'; Intersectees: Unknown[] } & Runtype<always>
   | Function
-  | { tag: 'constraint'; Underlying: AnyRuntype } & Runtype<always>
+  | { tag: 'constraint'; Underlying: Unknown } & Runtype<always>

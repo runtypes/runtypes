@@ -21,7 +21,7 @@ import {
   Lazy,
   Constraint,
   Contract,
-  AnyRuntype,
+  Unknown,
 } from './index'
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
@@ -269,15 +269,15 @@ function testAnyRuntype(
   | Number
   | String
   | Literal<boolean | number | string>
-  | Array<AnyRuntype>
-  | Record<{ [_ in string]: AnyRuntype }>
-  | Optional<{ [_ in string]: AnyRuntype }>
-  | Tuple2<AnyRuntype, AnyRuntype>
-  | Union2<AnyRuntype, AnyRuntype>
-  | Intersect2<AnyRuntype, AnyRuntype>
+  | Array<Unknown>
+  | Record<{ [_ in string]: Unknown }>
+  | Optional<{ [_ in string]: Unknown }>
+  | Tuple2<Unknown, Unknown>
+  | Union2<Unknown, Unknown>
+  | Intersect2<Unknown, Unknown>
   | Function
-  | Constraint<AnyRuntype>
-): AnyRuntype {
+  | Constraint<Unknown>
+): Unknown {
   const check = <A>(X: Runtype<A>): A => X.check({})
   switch (X.tag) {
     case 'always':
