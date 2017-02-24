@@ -233,25 +233,29 @@ export function Tuple(...runtypes: Runtype<any>[]) {
 export function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtype<{ [_: string]: V }>
 export function Dictionary<V>(v: Runtype<V>, keyType: 'number'): Runtype<{ [_: number]: V }>
 export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
-  return runtype((xs: {[k: string]: V}) => {
-    Record({}).check(xs)
-    if (typeof xs !== 'object')
-      throw new ValidationError(`Expected an object but was ${typeof xs}`)
-    if (Object.getPrototypeOf(xs) !== Object.prototype) {
-      if (!Array.isArray(xs))
+  return runtype((x: { [k: string]: V }) => {
+    Record({}).check(x)
+
+    if (typeof x !== 'object')
+      throw new ValidationError(`Expected an object but was ${typeof x}`)
+
+    if (Object.getPrototypeOf(x) !== Object.prototype) {
+      if (!Array.isArray(x))
         throw new ValidationError(`Expected simple object but was complex`)
       else if (keyType === 'string')
         throw new ValidationError(`Expected a dictionary but was array`)
     }
-    for (const key of Object.keys(xs)) {
-      // Object.keys is always a string array
+
+    for (const key in x) {
+      // Object keys are always strings
       if (keyType === 'number') {
         if (isNaN(+key))
           throw new ValidationError(`Expected dictionary key to be a number but was string`)
       }
-      v.check(xs[key])
+      v.check(x[key])
     }
-    return xs
+
+    return x
   })
 }
 
