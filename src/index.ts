@@ -1380,23 +1380,15 @@ export type AnyRuntype =
   | { tag: 'lazy'; Delayed: () => AnyRuntype } & Runtype<always>
   | { tag: 'constraint'; Underlying: AnyRuntype } & Runtype<always>
 
-function runtype<A extends Rt>(check: (x: {}) => Static<A>, reflectData: any): A {
+function runtype<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
 
-  const A: any = {
-    check,
-    validate,
-    guard,
-    Or,
-    And,
-    withConstraint,
-    _falseWitness: undefined as any as A,
-  }
-
+  A.check = check
+  A.validate = validate
+  A.guard = guard
+  A.Or = Or
+  A.And = And
+  A.withConstraint = withConstraint
   A.toString = () => showType(A)
-
-  if (reflectData)
-    for (const k in reflectData)
-      A[k] = reflectData[k]
 
   return A
 
