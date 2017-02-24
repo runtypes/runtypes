@@ -55,9 +55,8 @@ const runtypes = {
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
   Dictionary: Dictionary(String),
-  StringKeyedDictionary: Dictionary(String, 'string'),
-  NumberKeyedDictionary: Dictionary(String, 'number'),
-  ArrayDictionary: Dictionary(Array(Boolean))
+  NumberDictionary: Dictionary(String, 'number'),
+  DictionaryOfArrays: Dictionary(Array(Boolean))
 }
 
 type RuntypeName = keyof typeof runtypes
@@ -79,10 +78,10 @@ const testValues: { value: Always, passes: RuntypeName[] }[] = [
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
-  { value: { 1: '1', '2_': '2' }, passes: ['Dictionary'] },
-  { value: { a: '1', b: '2' }, passes: ['Dictionary', 'StringKeyedDictionary'] },
-  { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberKeyedDictionary'] },
-  { value: { a: [], b: [true, false] }, passes: ['ArrayDictionary'] }
+  { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
+  { value: ['1', '2'], passes: ['NumberDictionary'] },
+  { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
+  { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] }
 ]
 
 for (const { value, passes } of testValues) {

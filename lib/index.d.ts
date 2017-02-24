@@ -121,16 +121,11 @@ export declare function Tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>,
 /**
  * Construct a runtype for arbitrary dictionaries.
  */
-export declare function Dictionary<V>(v: Runtype<V>, keyType: 'string'): Runtype<{
+export declare function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtype<{
     [_: string]: V;
 }>;
 export declare function Dictionary<V>(v: Runtype<V>, keyType: 'number'): Runtype<{
     [_: number]: V;
-}>;
-export declare function Dictionary<V>(v: Runtype<V>): Runtype<{
-    [_: number]: V;
-} | {
-    [_: string]: V;
 }>;
 /**
  * Construct a record runtype from runtypes for its values.

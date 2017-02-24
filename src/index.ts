@@ -230,23 +230,21 @@ export function Tuple(...runtypes: Runtype<any>[]) {
 /**
  * Construct a runtype for arbitrary dictionaries.
  */
-export function Dictionary<V>(v: Runtype<V>, keyType: 'string'): Runtype<{ [_: string]: V }>
+export function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtype<{ [_: string]: V }>
 export function Dictionary<V>(v: Runtype<V>, keyType: 'number'): Runtype<{ [_: number]: V }>
-export function Dictionary<V>(v: Runtype<V>): Runtype<{ [_: number]: V } | { [_: string]: V }>
 export function Dictionary<V>(v: Runtype<V>, keyType?: 'string' | 'number') {
   return runtype((xs: {[k: string]: V}) => {
-    if (xs === null || xs === undefined || typeof xs !== 'object')
+    if (xs === null || xs === undefined)
       throw new ValidationError(`Expected a defined non-null value but was ${typeof xs}`)
+    if (typeof xs !== 'object')
+      throw new ValidationError(`Expected an object but was ${typeof xs}`)
+    if (keyType !== 'number' && Array.isArray(xs))
+      throw new ValidationError(`Expected a dictionary but was array`)
     for (const key of Object.keys(xs)) {
       // Object.keys is always a string array
       if (keyType === 'number') {
         if (isNaN(+key))
           throw new ValidationError(`Expected dictionary key to be a number but was string`)
-      }
-      if (keyType === 'string') {
-        if (''+(+key) === key)
-          throw new ValidationError(`Expected dictionary key to be a string but was number`)
-        String.check(key)
       }
       v.check(xs[key])
     }
