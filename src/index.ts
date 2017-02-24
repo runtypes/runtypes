@@ -234,8 +234,7 @@ export function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtype<{ [_: 
 export function Dictionary<V>(v: Runtype<V>, keyType: 'number'): Runtype<{ [_: number]: V }>
 export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
   return runtype((xs: {[k: string]: V}) => {
-    if (xs === null || xs === undefined)
-      throw new ValidationError(`Expected a defined non-null value but was ${typeof xs}`)
+    Record({}).check(xs)
     if (typeof xs !== 'object')
       throw new ValidationError(`Expected an object but was ${typeof xs}`)
     if (Object.getPrototypeOf(xs) !== Object.prototype) {
