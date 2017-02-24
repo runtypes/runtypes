@@ -119,8 +119,7 @@ export declare function Tuple<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Ru
 export declare function Tuple<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>): Runtype<[A, B, C, D, E, F]>;
 export declare function Tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>): Runtype<[A, B, C, D, E, F, G]>;
 /**
- * Construct a runtype for arbitrary dictionaries. Note that this provides no actual
- * runtime validation of the keys.
+ * Construct a runtype for arbitrary dictionaries.
  */
 export declare function Dictionary<V>(v: Runtype<V>, keyType: 'string'): Runtype<{
     [_: string]: V;
