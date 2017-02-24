@@ -1,5 +1,5 @@
 import { Runtype, Rt, Static, create, ValidationError } from './base'
-import { String as Str } from './string'
+import { String } from './string'
 
 export interface Constraint<A extends Rt> extends Runtype<Static<A>> {
   tag: 'constraint'
@@ -10,7 +10,7 @@ export function Constraint<A extends Rt>(Underlying: A, constraint: (x: A) => bo
   return create<Constraint<A>>(x => {
     const typed = Underlying.check(x)
     const result = constraint(typed)
-    if (Str.guard(result))
+    if (String.guard(result))
       throw new ValidationError(result)
     else if (!result)
       throw new ValidationError('Failed constraint check')
