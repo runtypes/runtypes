@@ -51,7 +51,7 @@ export type Rt = Runtype<any>
 /**
  * Obtains the static type associated with a Runtype.
  */
-export type Static<R extends Rt> = R['_falseWitness']
+export type Static<A extends Rt> = A['_falseWitness']
 
 export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
 
