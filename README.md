@@ -62,7 +62,7 @@ type Fleet = {
   [shipId: number]: Ship
 }
 
-type SpaceObject = Asteroid | Planet | Ship | Fleet | StarSystem
+type SpaceObject = Asteroid | Planet | Ship | StarSystem | Fleet
 ```
 
 If the objects which are supposed to have these shapes are loaded from some external source, perhaps a JSON file, we need to
