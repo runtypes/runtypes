@@ -19,6 +19,7 @@ import {
   Function,
   Lazy,
   Static,
+  Dictionary
 } from './index'
 
 type Always = Static<typeof Always>
@@ -52,12 +53,17 @@ const runtypes = {
   Partial: Record({ Boolean }).And(Optional({ foo: String })),
   Function,
   Person,
-  MoreThanThree: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`)
+  MoreThanThree: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
+  Dictionary: Dictionary(String),
+  NumberDictionary: Dictionary(String, 'number'),
+  DictionaryOfArrays: Dictionary(Array(Boolean))
 }
 
 type RuntypeName = keyof typeof runtypes
 
 const runtypeNames = Object.keys(runtypes) as RuntypeName[]
+
+class Foo { x: 'blah' } // Should not be recognized as a Dictionary
 
 const testValues: { value: Always, passes: RuntypeName[] }[] = [
   { value: undefined, passes: ['Undefined', 'Void'] },
@@ -74,6 +80,11 @@ const testValues: { value: Always, passes: RuntypeName[] }[] = [
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
+  { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
+  { value: ['1', '2'], passes: ['NumberDictionary'] },
+  { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
+  { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
+  { value: new Foo(), passes: [] },
 ]
 
 for (const { value, passes } of testValues) {

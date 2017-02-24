@@ -228,26 +228,12 @@ export function Tuple(...runtypes: Runtype<any>[]) {
 }
 
 /**
- * Construct a runtype for arbitrary dictionaries. Note that unlike Record, this provides no actual
- * runtime validation of the keys or values.
- */
-export function Dictionary<V>(keyType?: 'string'): Runtype<{ [_: string]: V }>
-export function Dictionary<V>(keyType?: 'number'): Runtype<{ [_: number]: V }>
-export function Dictionary<V>() {
-  return runtype(x => {
-    if (x === null || x === undefined)
-      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
-
-    return x
-  })
-}
-
-/**
  * Construct a record runtype from runtypes for its values.
  */
 export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O> {
   return runtype(x => {
-    Dictionary().check(x)
+    if (x === null || x === undefined)
+      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
 
     // tslint:disable-next-line:forin
     for (const key in runtypes) {
@@ -258,6 +244,38 @@ export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O
     }
 
     return x as O
+  })
+}
+
+/**
+ * Construct a runtype for arbitrary dictionaries.
+ */
+export function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtype<{ [_: string]: V }>
+export function Dictionary<V>(v: Runtype<V>, keyType: 'number'): Runtype<{ [_: number]: V }>
+export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
+  return runtype((x: { [k: string]: V }) => {
+    Record({}).check(x)
+
+    if (typeof x !== 'object')
+      throw new ValidationError(`Expected an object but was ${typeof x}`)
+
+    if (Object.getPrototypeOf(x) !== Object.prototype) {
+      if (!Array.isArray(x))
+        throw new ValidationError(`Expected simple object but was complex`)
+      else if (keyType === 'string')
+        throw new ValidationError(`Expected dictionary but was array`)
+    }
+
+    for (const key in x) {
+      // Object keys are always strings
+      if (keyType === 'number') {
+        if (isNaN(+key))
+          throw new ValidationError(`Expected dictionary key to be a number but was string`)
+      }
+      v.check(x[key])
+    }
+
+    return x
   })
 }
 
