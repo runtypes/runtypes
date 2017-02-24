@@ -1,31 +1,21 @@
 import { Runtype } from './types/runtype'
-import { Always, always } from './types/always'
-import { Never } from './types/never'
-import { Void } from './types/void'
-import { Literal, LiteralBase } from './types/literal'
-import { Boolean } from './types/boolean'
-import { Number } from './types/number'
-import { String } from './types/string'
-import { Record } from './types/record'
-import { Optional } from './types/optional'
-import { StringDictionary, NumberDictionary } from './types/dictionary'
-import { Function } from './types/function'
+import { always } from './types/always'
+import { LiteralBase } from './types/literal'
 
 export type Reflect =
-  | Always
-  | Never
-  | Void
-  | Boolean
-  | Number
-  | String
-  | Literal<LiteralBase>
+  | { tag: 'always' } & Runtype<always>
+  | { tag: 'never' } & Runtype<never>
+  | { tag: 'void' } & Runtype<void>
+  | { tag: 'boolean' } & Runtype<boolean>
+  | { tag: 'number' } & Runtype<number>
+  | { tag: 'string' } & Runtype<string>
+  | { tag: 'literal'; value: LiteralBase } & Runtype<LiteralBase>
   | { tag: 'array'; Element: Reflect } & Runtype<always[]>
-  | Record<{ [_ in string]: Reflect }>
-  | Optional<{ [_ in string]: Reflect }>
-  | StringDictionary<any>
-  | NumberDictionary<any>
+  | { tag: 'record'; Fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]: always }>
+  | { tag: 'optional'; Fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]?: always }>
+  | { tag: 'dictionary'; keyType: 'string' | 'number' } & Runtype<{ [_: string]: always }>
   | { tag: 'tuple'; Components: Reflect[] } & Runtype<[always]>
   | { tag: 'union'; Alternatives: Reflect[] } & Runtype<always>
   | { tag: 'intersect'; Intersectees: Reflect[] } & Runtype<always>
-  | Function
+  | { tag: 'function' } & Runtype<(...args: any[]) => any>
   | { tag: 'constraint'; Underlying: Reflect } & Runtype<always>
