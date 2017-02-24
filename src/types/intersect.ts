@@ -1,0 +1,131 @@
+import { Runtype, Rt, Static, runtype } from './base'
+
+export interface Intersect1<
+  A extends Rt,
+> extends Runtype<
+  Static<A>
+> {
+  tag: 'intersect'
+  Intersectees: [A]
+}
+
+export interface Intersect2<
+  A extends Rt, B extends Rt,
+> extends Runtype<
+  Static<A> & Static<B>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B]
+}
+export interface Intersect3<
+  A extends Rt, B extends Rt, C extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C]
+}
+
+export interface Intersect4<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D]
+}
+
+export interface Intersect5<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E]
+}
+
+export interface Intersect6<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F]
+}
+
+export interface Intersect7<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F, G]
+}
+
+export interface Intersect8<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F, G, H]
+}
+
+export interface Intersect9<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H> & Static<I>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F, G, H, I]
+}
+
+export interface Intersect10<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H> & Static<I> & Static<J>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F, G, H, I, J]
+}
+
+/**
+ * Construct an intersection runtype from runtypes for its alternatives.
+ */
+export function Intersect<A extends Rt>(
+  A: A,
+): Intersect1<A>
+export function Intersect<A extends Rt, B extends Rt>(
+  A: A, B: B,
+): Intersect2<A, B>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt>(
+  A: A, B: B, C: C,
+): Intersect3<A, B, C>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt>(
+  A: A, B: B, C: C, D: D,
+): Intersect4<A, B, C, D>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt>(
+  A: A, B: B, C: C, D: D, E: E,
+): Intersect5<A, B, C, D, E>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F,
+): Intersect6<A, B, C, D, E, F>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G,
+): Intersect7<A, B, C, D, E, F, G>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H,
+): Intersect8<A, B, C, D, E, F, G, H>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I,
+): Intersect9<A, B, C, D, E, F, G, H, I>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
+): Intersect10<A, B, C, D, E, F, G, H, I, J>
+export function Intersect(...Intersectees: Runtype<any>[]) {
+  return runtype(x => {
+    for (const { check } of Intersectees)
+      check(x)
+    return x
+  }, { tag: 'intersect', Intersectees })
+}
