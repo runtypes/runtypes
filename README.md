@@ -54,7 +54,15 @@ type Ship = {
   crew: CrewMember[]
 }
 
-type SpaceObject = Asteroid | Planet | Ship
+type StarSystem = {
+  [planetName: string]: Planet
+}
+
+type Fleet = {
+  [shipId: number]: Ship
+}
+
+type SpaceObject = Asteroid | Planet | Ship | Fleet | StarSystem
 ```
 
 If the objects which are supposed to have these shapes are loaded from some external source, perhaps a JSON file, we need to
@@ -62,7 +70,7 @@ validate that the objects conform to their specifications. We do so by building 
 manner:
 
 ```ts
-import { Boolean, Number, String, Literal, Array, Tuple, Record, Union } from 'runtypes'
+import { Boolean, Number, String, Literal, Array, Tuple, Record, Union, Dictionary } from 'runtypes'
 
 const Vector = Tuple(Number, Number, Number)
 
@@ -102,7 +110,11 @@ const Ship = Record({
   crew: Array(CrewMember),
 })
 
-const SpaceObject = Union(Asteroid, Planet, Ship)
+const StarSystem = Dictionary(Planet)
+
+const Fleet = Dictionary(Ship, 'number')
+
+const SpaceObject = Union(Asteroid, Planet, Ship, StarSystem, Fleet)
 ```
 
 Now if we are given a putative `SpaceObject` we can validate it like so:
