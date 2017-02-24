@@ -1,6 +1,6 @@
 import { Unknown } from './index'
 
-const showType = (needsParens: boolean) => (T: Unknown): string => {
+const show = (needsParens: boolean) => (T: Unknown): string => {
 
   const parenthesize = (s: string) => needsParens ? `(${s})` : s
 
@@ -23,32 +23,32 @@ const showType = (needsParens: boolean) => (T: Unknown): string => {
         : String(value)
     }
     case 'array':
-      return `${showType(true)(T.Element)}[]`
+      return `${show(true)(T.Element)}[]`
     case 'dictionary':
       return `{ [_: ${T.keyType}]: {} }`
     case 'record': {
       const keys = Object.keys(T.Fields)
       return keys.length ? `{ ${keys
-        .map(k => `${k}: ${showType(false)(T.Fields[k])};`)
+        .map(k => `${k}: ${show(false)(T.Fields[k])};`)
         .join(' ')
       } }` : '{}'
     }
     case 'optional': {
       const keys = Object.keys(T.Fields)
       return keys.length ? `{ ${keys
-        .map(k => `${k}?: ${showType(false)(T.Fields[k])};`)
+        .map(k => `${k}?: ${show(false)(T.Fields[k])};`)
         .join(' ')
       } }` : '{}'
     }
     case 'tuple':
-      return `[${T.Components.map(showType(false)).join(', ')}]`
+      return `[${T.Components.map(show(false)).join(', ')}]`
     case 'union':
-      return parenthesize(`${T.Alternatives.map(showType(true)).join(' | ')}`)
+      return parenthesize(`${T.Alternatives.map(show(true)).join(' | ')}`)
     case 'intersect':
-      return parenthesize(`${T.Intersectees.map(showType(true)).join(' & ')}`)
+      return parenthesize(`${T.Intersectees.map(show(true)).join(' & ')}`)
     case 'constraint':
-      return showType(needsParens)(T.Underlying)
+      return show(needsParens)(T.Underlying)
   }
 }
 
-export default showType(false)
+export default show(false)

@@ -19,7 +19,7 @@ import {
   Lazy,
   Unknown,
 } from './index'
-import showType from './showType'
+import show from './show'
 
 const cases: [Unknown, string][] = [
   [Always, 'always'],
@@ -77,7 +77,7 @@ const cases: [Unknown, string][] = [
 ]
 
 for (const [T, expected] of cases) {
-  const name = showType(T)
+  const name = show(T)
   it(name, () => {
     expect(name).toBe(expected)
   })

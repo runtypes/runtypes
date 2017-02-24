@@ -1,5 +1,5 @@
 import { Result, Union, Union2, Intersect, Intersect2, Constraint } from '../index'
-import showType from '../showType'
+import show from '../show'
 
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
@@ -61,7 +61,7 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
   A.Or = Or
   A.And = And
   A.withConstraint = withConstraint
-  A.toString = () => showType(A)
+  A.toString = () => show(A)
 
   return A
 
