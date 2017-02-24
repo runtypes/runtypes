@@ -1,4 +1,4 @@
-export * from './types/base'
+export { Runtype, Static } from './types/base'
 export * from './types/always'
 export * from './types/never'
 export * from './types/literal'
