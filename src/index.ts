@@ -228,6 +228,26 @@ export function Tuple(...runtypes: Runtype<any>[]) {
 }
 
 /**
+ * Construct a record runtype from runtypes for its values.
+ */
+export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O> {
+  return runtype(x => {
+    if (x === null || x === undefined)
+      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
+
+    // tslint:disable-next-line:forin
+    for (const key in runtypes) {
+      if (hasKey(key, x))
+        runtypes[key].check(x[key])
+      else
+        throw new ValidationError(`Missing property ${key}`)
+    }
+
+    return x as O
+  })
+}
+
+/**
  * Construct a runtype for arbitrary dictionaries.
  */
 export function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtype<{ [_: string]: V }>
@@ -256,26 +276,6 @@ export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
     }
 
     return x
-  })
-}
-
-/**
- * Construct a record runtype from runtypes for its values.
- */
-export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O> {
-  return runtype(x => {
-    if (x === null || x === undefined)
-      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
-
-    // tslint:disable-next-line:forin
-    for (const key in runtypes) {
-      if (hasKey(key, x))
-        runtypes[key].check(x[key])
-      else
-        throw new ValidationError(`Missing property ${key}`)
-    }
-
-    return x as O
   })
 }
 
