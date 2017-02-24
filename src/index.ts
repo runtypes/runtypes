@@ -263,7 +263,7 @@ export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
       if (!Array.isArray(x))
         throw new ValidationError(`Expected simple object but was complex`)
       else if (keyType === 'string')
-        throw new ValidationError(`Expected a dictionary but was array`)
+        throw new ValidationError(`Expected dictionary but was array`)
     }
 
     for (const key in x) {
