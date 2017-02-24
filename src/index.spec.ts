@@ -246,8 +246,8 @@ describe('reflection', () => {
 
   it('lazy', () => {
     const L = Lazy(() => X)
-    expectLiteralField(L, 'tag', 'lazy')
-    expectLiteralField(L.Delayed(), 'value', 'x')
+    expectLiteralField(L, 'tag', 'literal')
+    expectLiteralField(L, 'value', 'x')
   })
 
   it('constraint', () => {
@@ -276,7 +276,6 @@ function testAnyRuntype(
   | Union2<AnyRuntype, AnyRuntype>
   | Intersect2<AnyRuntype, AnyRuntype>
   | Function
-  | Lazy<AnyRuntype>
   | Constraint<AnyRuntype>
 ): AnyRuntype {
   const check = <A>(X: Runtype<A>): A => X.check({})
@@ -328,10 +327,6 @@ function testAnyRuntype(
       break
     case 'function':
       check<(...args: any[]) => any>(X)
-      break
-    case 'lazy':
-      const delayed = X.Delayed()
-      check<Static<typeof delayed>>(X)
       break
     case 'constraint':
       check<Static<typeof X.Underlying>>(X)

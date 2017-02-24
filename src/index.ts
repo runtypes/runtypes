@@ -1259,21 +1259,28 @@ const Func = runtype<Func>(x => {
 }, { tag: 'function' })
 export { Func as Function }
 
-export interface Lazy<A extends Rt> extends Runtype<Static<A>> {
-  tag: 'lazy'
-  Delayed: () => A
-}
-
 /**
  * Construct a possibly-recursive Runtype.
  */
-export function Lazy<A extends Rt>(Delayed: () => A) {
+export function Lazy<A extends Rt>(delayed: () => A) {
+  const data: any = {
+    get tag() { return (getWrapped() as any)['tag'] }
+  }
+
   let cached: A
-  return runtype<Lazy<A>>(x => {
-    if (!cached)
-      cached = Delayed()
-    return cached.check(x)
-  }, { tag: 'lazy', Delayed })
+  function getWrapped() {
+    if (!cached) {
+      cached = delayed()
+      for (const k in cached)
+        if (k !== 'tag')
+          data[k] = cached[k]
+    }
+    return cached
+  }
+
+  return runtype<A>(x => {
+    return getWrapped().check(x)
+  }, data)
 }
 
 export interface Constraint<A extends Rt> extends Runtype<Static<A>> {
@@ -1395,7 +1402,6 @@ export type AnyRuntype =
   | { tag: 'union'; Alternatives: AnyRuntype[] } & Runtype<always>
   | { tag: 'intersect'; Intersectees: AnyRuntype[] } & Runtype<always>
   | Func
-  | { tag: 'lazy'; Delayed: () => AnyRuntype } & Runtype<always>
   | { tag: 'constraint'; Underlying: AnyRuntype } & Runtype<always>
 
 function runtype<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {

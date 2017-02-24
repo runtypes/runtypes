@@ -48,8 +48,6 @@ const showType = (needsParens: boolean) => (T: AnyRuntype): string => {
       return parenthesize(`${T.Alternatives.map(showType(true)).join(' | ')}`)
     case 'intersect':
       return parenthesize(`${T.Intersectees.map(showType(true)).join(' & ')}`)
-    case 'lazy':
-      return showType(needsParens)(T.Delayed())
     case 'constraint':
       return showType(needsParens)(T.Underlying)
   }
