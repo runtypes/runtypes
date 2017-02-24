@@ -1,4 +1,4 @@
-import { Runtype, runtype, Rt, ValidationError } from './base'
+import { Runtype, create, Rt, ValidationError } from './base'
 import { Record } from './record'
 
 export interface StringDictionary<V> extends Runtype<{ [_: string]: V }> {
@@ -17,7 +17,7 @@ export interface NumberDictionary<V> extends Runtype<{ [_: number]: V }> {
 export function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): StringDictionary<V>
 export function Dictionary<V>(v: Runtype<V>, keyType?: 'number'): NumberDictionary<V>
 export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
-  return runtype<Rt>(x => {
+  return create<Rt>(x => {
     Record({}).check(x)
 
     if (typeof x !== 'object')

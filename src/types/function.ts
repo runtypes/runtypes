@@ -1,11 +1,11 @@
-import { Runtype, runtype, ValidationError } from './base'
+import { Runtype, create, ValidationError } from './base'
 
 interface Func extends Runtype<(...args: any[]) => any> { tag: 'function' }
 
 /**
  * Construct a runtype for functions.
  */
-const Func = runtype<Func>(x => {
+const Func = create<Func>(x => {
   if (typeof x !== 'function')
     throw new ValidationError(`Expected a function but was ${typeof x}`)
   return x

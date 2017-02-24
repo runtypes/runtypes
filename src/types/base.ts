@@ -1,5 +1,4 @@
-import { Result } from '../result'
-import { Union2, Intersect2, Constraint, Union, Intersect } from '../index'
+import { Result, Union, Union2, Intersect, Intersect2, Constraint } from '../index'
 import showType from '../showType'
 
 /**
@@ -54,7 +53,7 @@ export type Rt = Runtype<any>
  */
 export type Static<R extends Rt> = R['_falseWitness']
 
-export function runtype<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
+export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
 
   A.check = check
   A.validate = validate

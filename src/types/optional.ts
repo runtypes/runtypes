@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, runtype, ValidationError } from './base'
+import { Runtype, Rt, Static, create, ValidationError } from './base'
 import { Union } from '../index'
 import { Undefined } from './literal'
 import { hasKey } from '../util'
@@ -12,7 +12,7 @@ export interface Optional<O extends {[_ in string]: Rt }> extends Runtype<{[K in
  * Construct a runtype for records of optional values.
  */
 export function Optional<O extends { [_: string]: Rt }>(Fields: O) {
-  return runtype<Optional<O>>(x => {
+  return create<Optional<O>>(x => {
     if (x === null || x === undefined)
       throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
 

@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, runtype, ValidationError } from './base'
+import { Runtype, Rt, Static, create, ValidationError } from './base'
 import { Always } from './always'
 import { Array as Arr } from './array'
 
@@ -124,7 +124,7 @@ export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E 
   A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
 ): Tuple10<A, B, C, D, E, F, G, H, I, J>
 export function Tuple(...Components: Runtype<any>[]) {
-  return runtype(x => {
+  return create(x => {
     const xs = Arr(Always).check(x)
     if (xs.length < Components.length)
       throw new ValidationError(`Expected array of ${Components.length} but was ${xs.length}`)

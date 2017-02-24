@@ -1,4 +1,4 @@
-import { Rt, runtype } from './base'
+import { Rt, create } from './base'
 
 /**
  * Construct a possibly-recursive Runtype.
@@ -19,7 +19,7 @@ export function Lazy<A extends Rt>(delayed: () => A) {
     return cached
   }
 
-  return runtype<A>(x => {
+  return create<A>(x => {
     return getWrapped().check(x)
   }, data)
 }

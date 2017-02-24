@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, runtype } from './base'
+import { Runtype, Rt, Static, create } from './base'
 
 export interface Intersect1<
   A extends Rt,
@@ -123,7 +123,7 @@ export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt
   A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
 ): Intersect10<A, B, C, D, E, F, G, H, I, J>
 export function Intersect(...Intersectees: Runtype<any>[]) {
-  return runtype(x => {
+  return create(x => {
     for (const { check } of Intersectees)
       check(x)
     return x

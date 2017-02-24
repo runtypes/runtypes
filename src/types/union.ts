@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, runtype } from './base'
+import { Runtype, Rt, Static, create } from './base'
 
 export interface Union1<
   A extends Rt,
@@ -124,7 +124,7 @@ export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E 
   A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
 ): Union10<A, B, C, D, E, F, G, H, I, J>
 export function Union(...Alternatives: Runtype<any>[]) {
-  return runtype(x => {
+  return create(x => {
     for (const { guard } of Alternatives)
       if (guard(x))
         return x
