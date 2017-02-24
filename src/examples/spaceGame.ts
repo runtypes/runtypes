@@ -1,4 +1,4 @@
-import { Boolean, Number, String, Literal, Array, Tuple, Record, Union, Static } from '../src/index'
+import { Boolean, Number, String, Literal, Array, Tuple, Record, Union, Static } from '../index'
 
 const NonNegative = Number.withConstraint(n => n >= 0)
 
