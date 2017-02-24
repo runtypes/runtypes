@@ -61,7 +61,7 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
   A.Or = Or
   A.And = And
   A.withConstraint = withConstraint
-  A.toString = () => show(A)
+  A.toString = () => `Runtype<${show(A)}>`
 
   return A
 
