@@ -228,17 +228,30 @@ export function Tuple(...runtypes: Runtype<any>[]) {
 }
 
 /**
- * Construct a runtype for arbitrary dictionaries. Note that unlike Record, this provides no actual
- * runtime validation of the keys or values.
+ * Construct a runtype for arbitrary dictionaries. Note that this provides no actual
+ * runtime validation of the keys.
  */
-export function Dictionary<V>(keyType?: 'string'): Runtype<{ [_: string]: V }>
-export function Dictionary<V>(keyType?: 'number'): Runtype<{ [_: number]: V }>
-export function Dictionary<V>() {
-  return runtype(x => {
-    if (x === null || x === undefined)
-      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
-
-    return x
+export function Dictionary<V>(v: Runtype<V>, keyType: 'string'): Runtype<{ [_: string]: V }>
+export function Dictionary<V>(v: Runtype<V>, keyType: 'number'): Runtype<{ [_: number]: V }>
+export function Dictionary<V>(v: Runtype<V>): Runtype<{ [_: number]: V } | { [_: string]: V }>
+export function Dictionary<V>(v: Runtype<V>, keyType?: 'string' | 'number') {
+  return runtype((xs: {[k: string]: V}) => {
+    if (xs === null || xs === undefined || typeof xs !== 'object')
+      throw new ValidationError(`Expected a defined non-null value but was ${typeof xs}`)
+    for (const x of Object.keys(xs)) {
+      // Object.keys is always a string array, check that key is not the string representation of a number or vice-versa
+      if (keyType === 'number') {
+        if (isNaN(+x))
+          throw new ValidationError(`Expected dictionary key to be a number but was string`)
+      }
+      if (keyType === 'string') {
+        if (''+(+x) === x)
+          throw new ValidationError(`Expected dictionary key to be a string but was number`)
+        String.check(x)
+      }
+      v.check(xs[x])
+    }
+    return xs
   })
 }
 
@@ -247,7 +260,8 @@ export function Dictionary<V>() {
  */
 export function Record<O>(runtypes: {[K in keyof O]: Runtype<O[K]> }): Runtype<O> {
   return runtype(x => {
-    Dictionary().check(x)
+    if (x === null || x === undefined)
+      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
 
     // tslint:disable-next-line:forin
     for (const key in runtypes) {

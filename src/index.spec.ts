@@ -19,6 +19,7 @@ import {
   Function,
   Lazy,
   Static,
+  Dictionary
 } from './index'
 
 type Always = Static<typeof Always>
@@ -52,7 +53,11 @@ const runtypes = {
   Partial: Record({ Boolean }).And(Optional({ foo: String })),
   Function,
   Person,
-  MoreThanThree: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`)
+  MoreThanThree: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
+  Dictionary: Dictionary(String),
+  StringKeyedDictionary: Dictionary(String, 'string'),
+  NumberKeyedDictionary: Dictionary(String, 'number'),
+  ArrayDictionary: Dictionary(Array(Boolean))
 }
 
 type RuntypeName = keyof typeof runtypes
@@ -74,6 +79,10 @@ const testValues: { value: Always, passes: RuntypeName[] }[] = [
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
+  { value: { 1: '1', '2_': '2' }, passes: ['Dictionary'] },
+  { value: { a: '1', b: '2' }, passes: ['Dictionary', 'StringKeyedDictionary'] },
+  { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberKeyedDictionary'] },
+  { value: { a: [], b: [true, false] }, passes: ['ArrayDictionary'] }
 ]
 
 for (const { value, passes } of testValues) {
