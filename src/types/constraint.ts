@@ -1,5 +1,6 @@
-import { Runtype, Rt, Static, create, ValidationError } from './base'
+import { Runtype, Rt, Static, create } from './base'
 import { String } from './string'
+import { ValidationError } from '../validation-error'
 
 export interface Constraint<A extends Rt> extends Runtype<Static<A>> {
   tag: 'constraint'

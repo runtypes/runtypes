@@ -90,9 +90,3 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
     return Constraint(A, constraint)
   }
 }
-
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message)
-  }
-}

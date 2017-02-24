@@ -1,6 +1,7 @@
-import { Runtype, Rt, Static, create, ValidationError } from './base'
+import { Runtype, Rt, Static, create } from './base'
 import { Always } from './always'
 import { Array as Arr } from './array'
+import { ValidationError } from '../validation-error'
 
 export interface Tuple1<
   A extends Rt,

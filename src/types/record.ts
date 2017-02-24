@@ -1,5 +1,6 @@
-import { Runtype, Rt, Static, create, ValidationError } from './base'
+import { Runtype, Rt, Static, create } from './base'
 import { hasKey } from '../util'
+import { ValidationError } from '../validation-error'
 
 export interface Record<O extends { [_ in string]: Rt }> extends Runtype<{[K in keyof O]: Static<O[K]> }> {
   tag: 'record'

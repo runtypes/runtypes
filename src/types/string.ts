@@ -1,4 +1,5 @@
-import { Runtype, create, ValidationError } from './base'
+import { Runtype, create } from './base'
+import { ValidationError } from '../validation-error'
 
 export interface String extends Runtype<string> { tag: 'string' }
 

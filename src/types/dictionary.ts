@@ -1,5 +1,6 @@
-import { Runtype, create, Rt, ValidationError } from './base'
+import { Runtype, create, Rt } from './base'
 import { Record } from './record'
+import { ValidationError } from '../validation-error'
 
 export interface StringDictionary<V> extends Runtype<{ [_: string]: V }> {
   tag: 'dictionary'

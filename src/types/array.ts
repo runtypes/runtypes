@@ -1,4 +1,5 @@
-import { Runtype, Rt, Static, create, ValidationError } from './base'
+import { Runtype, Rt, Static, create } from './base'
+import { ValidationError } from '../validation-error'
 
 interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
   tag: 'array'
