@@ -4,22 +4,22 @@ import { ValidationError } from '../validation-error'
 
 export interface StringDictionary<V extends Rt> extends Runtype<{ [_: string]: V }> {
   tag: 'dictionary'
-  keyType: 'string'
-  valType: V
+  key: 'string'
+  value: V
 }
 
 export interface NumberDictionary<V extends Rt> extends Runtype<{ [_: number]: V }> {
   tag: 'dictionary'
-  keyType: 'number'
-  valType: V
+  key: 'number'
+  value: V
 }
 
 /**
  * Construct a runtype for arbitrary dictionaries.
  */
-export function Dictionary<V extends Rt>(v: V, keyType?: 'string'): StringDictionary<V>
-export function Dictionary<V extends Rt>(v: V, keyType?: 'number'): NumberDictionary<V>
-export function Dictionary<V extends Rt>(valType: V, keyType = 'string') {
+export function Dictionary<V extends Rt>(v: V, key?: 'string'): StringDictionary<V>
+export function Dictionary<V extends Rt>(v: V, key?: 'number'): NumberDictionary<V>
+export function Dictionary<V extends Rt>(value: V, key = 'string') {
   return create<Rt>(x => {
     Record({}).check(x)
 
@@ -29,19 +29,19 @@ export function Dictionary<V extends Rt>(valType: V, keyType = 'string') {
     if (Object.getPrototypeOf(x) !== Object.prototype) {
       if (!Array.isArray(x))
         throw new ValidationError(`Expected simple object but was complex`)
-      else if (keyType === 'string')
+      else if (key === 'string')
         throw new ValidationError(`Expected dictionary but was array`)
     }
 
-    for (const key in x) {
+    for (const k in x) {
       // Object keys are always strings
-      if (keyType === 'number') {
-        if (isNaN(+key))
+      if (key === 'number') {
+        if (isNaN(+k))
           throw new ValidationError(`Expected dictionary key to be a number but was string`)
       }
-      valType.check((x as any)[key])
+      value.check((x as any)[k])
     }
 
     return x
-  }, { tag: 'dictionary', keyType, valType })
+  }, { tag: 'dictionary', key, value })
 }

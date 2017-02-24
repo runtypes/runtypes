@@ -13,7 +13,7 @@ export type Reflect =
   | { tag: 'array'; element: Reflect } & Runtype<always[]>
   | { tag: 'record'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]: always }>
   | { tag: 'optional'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]?: always }>
-  | { tag: 'dictionary'; keyType: 'string' | 'number'; valType: Reflect } & Runtype<{ [_: string]: always }>
+  | { tag: 'dictionary'; key: 'string' | 'number'; value: Reflect } & Runtype<{ [_: string]: always }>
   | { tag: 'tuple'; components: Reflect[] } & Runtype<[always]>
   | { tag: 'union'; alternatives: Reflect[] } & Runtype<always>
   | { tag: 'intersect'; intersectees: Reflect[] } & Runtype<always>

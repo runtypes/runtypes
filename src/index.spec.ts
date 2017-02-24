@@ -193,13 +193,13 @@ describe('reflection', () => {
   it('string dictionary', () => {
     const Rec = Dictionary(Always)
     expectLiteralField(Rec, 'tag', 'dictionary')
-    expectLiteralField(Rec, 'keyType', 'string')
+    expectLiteralField(Rec, 'key', 'string')
   })
 
   it('number dictionary', () => {
     const Rec = Dictionary(Always, 'number')
     expectLiteralField(Rec, 'tag', 'dictionary')
-    expectLiteralField(Rec, 'keyType', 'number')
+    expectLiteralField(Rec, 'key', 'number')
   })
 
   it('record', () => {
