@@ -17,7 +17,6 @@ import {
   Intersect,
   Function,
   Lazy,
-  Constraint,
   Unknown,
 } from './index'
 import showType from './showType'

@@ -257,8 +257,8 @@ describe('reflection', () => {
   })
 })
 
-// Static tests of AnyRuntype
-function testAnyRuntype(
+// Static tests of reflection
+;(
   X:
   | Always
   | Never
@@ -277,7 +277,7 @@ function testAnyRuntype(
   | Intersect2<Unknown, Unknown>
   | Function
   | Constraint<Unknown>
-): Unknown {
+): Unknown => {
   const check = <A>(X: Runtype<A>): A => X.check({})
   switch (X.tag) {
     case 'always':
