@@ -119,6 +119,12 @@ export declare function Tuple<A, B, C, D, E>(a: Runtype<A>, b: Runtype<B>, c: Ru
 export declare function Tuple<A, B, C, D, E, F>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>): Runtype<[A, B, C, D, E, F]>;
 export declare function Tuple<A, B, C, D, E, F, G>(a: Runtype<A>, b: Runtype<B>, c: Runtype<C>, d: Runtype<D>, e: Runtype<E>, f: Runtype<F>, g: Runtype<G>): Runtype<[A, B, C, D, E, F, G]>;
 /**
+ * Construct a record runtype from runtypes for its values.
+ */
+export declare function Record<O>(runtypes: {
+    [K in keyof O]: Runtype<O[K]>;
+}): Runtype<O>;
+/**
  * Construct a runtype for arbitrary dictionaries.
  */
 export declare function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtype<{
@@ -127,12 +133,6 @@ export declare function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtyp
 export declare function Dictionary<V>(v: Runtype<V>, keyType: 'number'): Runtype<{
     [_: number]: V;
 }>;
-/**
- * Construct a record runtype from runtypes for its values.
- */
-export declare function Record<O>(runtypes: {
-    [K in keyof O]: Runtype<O[K]>;
-}): Runtype<O>;
 /**
  * Construct a runtype for records of optional values.
  */
