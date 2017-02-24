@@ -105,6 +105,8 @@ const Ship = Record({
 const SpaceObject = Union(Asteroid, Planet, Ship)
 ```
 
+(See the [examples](src/examples) directory for an expanded version of this.)
+
 Now if we are given a putative `SpaceObject` we can validate it like so:
 
 ```ts
