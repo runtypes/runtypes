@@ -1,4 +1,5 @@
 import { Result, Union, Union2, Intersect, Intersect2, Constraint } from '../index'
+import { Reflect } from '../reflect'
 import show from '../show'
 
 /**
@@ -40,6 +41,11 @@ export interface Runtype<A> {
    */
   withConstraint(constraint: (x: A) => boolean | string): Constraint<this>
 
+  /**
+   * Convert this to a Reflect, capable of introspecting the structure of the type.
+   */
+  reflect: Reflect
+
   /* @internal */ _falseWitness: A
 }
 
@@ -61,6 +67,7 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
   A.Or = Or
   A.And = And
   A.withConstraint = withConstraint
+  A.reflect = A
   A.toString = () => `Runtype<${show(A)}>`
 
   return A

@@ -1,6 +1,6 @@
-import { Reflect } from './index'
+import { Runtype } from './index'
 
-const show = (needsParens: boolean) => (T: Reflect): string => {
+const show = (needsParens: boolean) => ({ reflect: T }: Runtype<any>): string => {
 
   const parenthesize = (s: string) => needsParens ? `(${s})` : s
 
