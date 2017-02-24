@@ -157,14 +157,6 @@ describe('reflection', () => {
     expectLiteralField(Never, 'tag', 'never')
   })
 
-  it('undefined', () => {
-    expectLiteralField(Undefined, 'tag', 'undefined')
-  })
-
-  it('null', () => {
-    expectLiteralField(Null, 'tag', 'null')
-  })
-
   it('void', () => {
     expectLiteralField(Void, 'tag', 'void')
   })
@@ -262,8 +254,6 @@ describe('reflection', () => {
   X:
   | Always
   | Never
-  | Undefined
-  | Null
   | Void
   | Boolean
   | Number
@@ -285,12 +275,6 @@ describe('reflection', () => {
       break
     case 'never':
       check<never>(X)
-      break
-    case 'undefined':
-      check<undefined>(X)
-      break
-    case 'null':
-      check<null>(X)
       break
     case 'void':
       check<void>(X)

@@ -1,7 +1,8 @@
 import { Runtype } from './base'
 import { Always, always } from './always'
 import { Never } from './never'
-import { Undefined, Null, Void, Literal } from './literal'
+import { Void } from './void'
+import { Literal, LiteralBase } from './literal'
 import { Boolean } from './boolean'
 import { Number } from './number'
 import { String } from './string'
@@ -13,13 +14,11 @@ import { Function } from './function'
 export type Unknown =
   | Always
   | Never
-  | Undefined
-  | Null
   | Void
   | Boolean
   | Number
   | String
-  | Literal<boolean | number | string>
+  | Literal<LiteralBase>
   | { tag: 'array'; Element: Unknown } & Runtype<always[]>
   | Record<{ [_ in string]: Unknown }>
   | Optional<{ [_ in string]: Unknown }>

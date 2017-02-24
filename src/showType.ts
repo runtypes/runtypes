@@ -8,8 +8,6 @@ const showType = (needsParens: boolean) => (T: Unknown): string => {
     // Primitive types
     case 'always':
     case 'never':
-    case 'undefined':
-    case 'null':
     case 'void':
     case 'boolean':
     case 'number':
