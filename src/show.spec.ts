@@ -17,11 +17,11 @@ import {
   Intersect,
   Function,
   Lazy,
-  Unknown,
+  Reflect,
 } from './index'
 import show from './show'
 
-const cases: [Unknown, string][] = [
+const cases: [Reflect, string][] = [
   [Always, 'always'],
   [Never, 'never'],
   [Undefined, 'undefined'],

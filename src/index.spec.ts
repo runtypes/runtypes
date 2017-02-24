@@ -21,7 +21,7 @@ import {
   Lazy,
   Constraint,
   Contract,
-  Unknown,
+  Reflect,
 } from './index'
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
@@ -259,15 +259,15 @@ describe('reflection', () => {
   | Number
   | String
   | Literal<boolean | number | string>
-  | Array<Unknown>
-  | Record<{ [_ in string]: Unknown }>
-  | Optional<{ [_ in string]: Unknown }>
-  | Tuple2<Unknown, Unknown>
-  | Union2<Unknown, Unknown>
-  | Intersect2<Unknown, Unknown>
+  | Array<Reflect>
+  | Record<{ [_ in string]: Reflect }>
+  | Optional<{ [_ in string]: Reflect }>
+  | Tuple2<Reflect, Reflect>
+  | Union2<Reflect, Reflect>
+  | Intersect2<Reflect, Reflect>
   | Function
-  | Constraint<Unknown>
-): Unknown => {
+  | Constraint<Reflect>
+): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({})
   switch (X.tag) {
     case 'always':

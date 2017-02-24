@@ -1,6 +1,6 @@
-import { Unknown } from './index'
+import { Reflect } from './index'
 
-const show = (needsParens: boolean) => (T: Unknown): string => {
+const show = (needsParens: boolean) => (T: Reflect): string => {
 
   const parenthesize = (s: string) => needsParens ? `(${s})` : s
 
