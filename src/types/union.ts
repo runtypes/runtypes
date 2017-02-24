@@ -6,7 +6,7 @@ export interface Union1<
   Static<A>
 > {
   tag: 'union'
-  Alternatives: [A]
+  alternatives: [A]
 }
 
 export interface Union2<
@@ -15,7 +15,7 @@ export interface Union2<
   Static<A> | Static<B>
 > {
   tag: 'union'
-  Alternatives: [A, B]
+  alternatives: [A, B]
 }
 
 export interface Union3<
@@ -24,7 +24,7 @@ export interface Union3<
   Static<A> | Static<B> | Static<C>
 > {
   tag: 'union'
-  Alternatives: [A, B, C]
+  alternatives: [A, B, C]
 }
 
 export interface Union4<
@@ -33,7 +33,7 @@ export interface Union4<
   Static<A> | Static<B> | Static<C> | Static<D>
 > {
   tag: 'union'
-  Alternatives: [A, B, C, D]
+  alternatives: [A, B, C, D]
 }
 
 export interface Union5<
@@ -42,7 +42,7 @@ export interface Union5<
   Static<A> | Static<B> | Static<C> | Static<D> | Static<E>
 > {
   tag: 'union'
-  Alternatives: [A, B, C, D, E]
+  alternatives: [A, B, C, D, E]
 }
 
 export interface Union6<
@@ -51,7 +51,7 @@ export interface Union6<
   Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F>
 > {
   tag: 'union'
-  Alternatives: [A, B, C, D, E, F]
+  alternatives: [A, B, C, D, E, F]
 }
 
 export interface Union7<
@@ -60,7 +60,7 @@ export interface Union7<
   Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G>
 > {
   tag: 'union'
-  Alternatives: [A, B, C, D, E, F, G]
+  alternatives: [A, B, C, D, E, F, G]
 }
 
 export interface Union8<
@@ -69,7 +69,7 @@ export interface Union8<
   Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H>
 > {
   tag: 'union'
-  Alternatives: [A, B, C, D, E, F, G, H]
+  alternatives: [A, B, C, D, E, F, G, H]
 }
 
 export interface Union9<
@@ -78,7 +78,7 @@ export interface Union9<
   Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H> | Static<I>
 > {
   tag: 'union'
-  Alternatives: [A, B, C, D, E, F, G, H, I]
+  alternatives: [A, B, C, D, E, F, G, H, I]
 }
 
 export interface Union10<
@@ -87,7 +87,7 @@ export interface Union10<
   Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H> | Static<I> | Static<J>
 > {
   tag: 'union'
-  Alternatives: [A, B, C, D, E, F, G, H, I, J]
+  alternatives: [A, B, C, D, E, F, G, H, I, J]
 }
 
 /**
@@ -123,11 +123,11 @@ export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E 
 export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
   A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
 ): Union10<A, B, C, D, E, F, G, H, I, J>
-export function Union(...Alternatives: Runtype<any>[]) {
+export function Union(...alternatives: Runtype<any>[]) {
   return create(x => {
-    for (const { guard } of Alternatives)
+    for (const { guard } of alternatives)
       if (guard(x))
         return x
     throw new Error('No alternatives were matched')
-  }, { tag: 'union', Alternatives })
+  }, { tag: 'union', alternatives })
 }

@@ -6,7 +6,7 @@ export interface Intersect1<
   Static<A>
 > {
   tag: 'intersect'
-  Intersectees: [A]
+  intersectees: [A]
 }
 
 export interface Intersect2<
@@ -15,7 +15,7 @@ export interface Intersect2<
   Static<A> & Static<B>
 > {
   tag: 'intersect'
-  Intersectees: [A, B]
+  intersectees: [A, B]
 }
 export interface Intersect3<
   A extends Rt, B extends Rt, C extends Rt,
@@ -23,7 +23,7 @@ export interface Intersect3<
   Static<A> & Static<B> & Static<C>
 > {
   tag: 'intersect'
-  Intersectees: [A, B, C]
+  intersectees: [A, B, C]
 }
 
 export interface Intersect4<
@@ -32,7 +32,7 @@ export interface Intersect4<
   Static<A> & Static<B> & Static<C> & Static<D>
 > {
   tag: 'intersect'
-  Intersectees: [A, B, C, D]
+  intersectees: [A, B, C, D]
 }
 
 export interface Intersect5<
@@ -41,7 +41,7 @@ export interface Intersect5<
   Static<A> & Static<B> & Static<C> & Static<D> & Static<E>
 > {
   tag: 'intersect'
-  Intersectees: [A, B, C, D, E]
+  intersectees: [A, B, C, D, E]
 }
 
 export interface Intersect6<
@@ -50,7 +50,7 @@ export interface Intersect6<
   Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F>
 > {
   tag: 'intersect'
-  Intersectees: [A, B, C, D, E, F]
+  intersectees: [A, B, C, D, E, F]
 }
 
 export interface Intersect7<
@@ -59,7 +59,7 @@ export interface Intersect7<
   Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G>
 > {
   tag: 'intersect'
-  Intersectees: [A, B, C, D, E, F, G]
+  intersectees: [A, B, C, D, E, F, G]
 }
 
 export interface Intersect8<
@@ -68,7 +68,7 @@ export interface Intersect8<
   Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H>
 > {
   tag: 'intersect'
-  Intersectees: [A, B, C, D, E, F, G, H]
+  intersectees: [A, B, C, D, E, F, G, H]
 }
 
 export interface Intersect9<
@@ -77,7 +77,7 @@ export interface Intersect9<
   Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H> & Static<I>
 > {
   tag: 'intersect'
-  Intersectees: [A, B, C, D, E, F, G, H, I]
+  intersectees: [A, B, C, D, E, F, G, H, I]
 }
 
 export interface Intersect10<
@@ -86,7 +86,7 @@ export interface Intersect10<
   Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H> & Static<I> & Static<J>
 > {
   tag: 'intersect'
-  Intersectees: [A, B, C, D, E, F, G, H, I, J]
+  intersectees: [A, B, C, D, E, F, G, H, I, J]
 }
 
 /**
@@ -122,10 +122,10 @@ export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt
 export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
   A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
 ): Intersect10<A, B, C, D, E, F, G, H, I, J>
-export function Intersect(...Intersectees: Runtype<any>[]) {
+export function Intersect(...intersectees: Runtype<any>[]) {
   return create(x => {
-    for (const { check } of Intersectees)
+    for (const { check } of intersectees)
       check(x)
     return x
-  }, { tag: 'intersect', Intersectees })
+  }, { tag: 'intersect', intersectees })
 }

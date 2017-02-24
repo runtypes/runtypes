@@ -7,7 +7,7 @@ export interface Tuple1<
   A extends Rt,
 > extends Runtype<[Static<A>]> {
   tag: 'tuple'
-  Components: [A]
+  components: [A]
 }
 
 export interface Tuple2<
@@ -16,7 +16,7 @@ export interface Tuple2<
   Static<A>, Static<B>
 ]> {
   tag: 'tuple'
-  Components: [A, B]
+  components: [A, B]
 }
 
 export interface Tuple3<
@@ -25,7 +25,7 @@ export interface Tuple3<
   Static<A>, Static<B>, Static<C>
 ]> {
   tag: 'tuple'
-  Components: [A, B, C]
+  components: [A, B, C]
 }
 
 export interface Tuple4<
@@ -34,7 +34,7 @@ export interface Tuple4<
   Static<A>, Static<B>, Static<C>, Static<D>
 ]> {
   tag: 'tuple'
-  Components: [A, B, C, D]
+  components: [A, B, C, D]
 }
 
 export interface Tuple5<
@@ -43,7 +43,7 @@ export interface Tuple5<
   Static<A>, Static<B>, Static<C>, Static<D>, Static<E>
 ]> {
   tag: 'tuple'
-  Components: [A, B, C, D, E]
+  components: [A, B, C, D, E]
 }
 
 export interface Tuple6<
@@ -52,7 +52,7 @@ export interface Tuple6<
   Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>
 ]> {
   tag: 'tuple'
-  Components: [A, B, C, D, E, F]
+  components: [A, B, C, D, E, F]
 }
 
 export interface Tuple7<
@@ -61,7 +61,7 @@ export interface Tuple7<
   Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>
 ]> {
   tag: 'tuple'
-  Components: [A, B, C, D, E, F, G]
+  components: [A, B, C, D, E, F, G]
 }
 
 export interface Tuple8<
@@ -70,7 +70,7 @@ export interface Tuple8<
   Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>, Static<H>
 ]> {
   tag: 'tuple'
-  Components: [A, B, C, D, E, F, G, H]
+  components: [A, B, C, D, E, F, G, H]
 }
 
 export interface Tuple9<
@@ -79,7 +79,7 @@ export interface Tuple9<
   Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>, Static<H>, Static<I>
 ]> {
   tag: 'tuple'
-  Components: [A, B, C, D, E, F, G, H, I]
+  components: [A, B, C, D, E, F, G, H, I]
 }
 
 export interface Tuple10<
@@ -88,7 +88,7 @@ export interface Tuple10<
   Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>, Static<H>, Static<I>, Static<J>
 ]> {
   tag: 'tuple'
-  Components: [A, B, C, D, E, F, G, H, I, J]
+  components: [A, B, C, D, E, F, G, H, I, J]
 }
 
 /**
@@ -124,13 +124,13 @@ export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E 
 export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
   A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
 ): Tuple10<A, B, C, D, E, F, G, H, I, J>
-export function Tuple(...Components: Runtype<any>[]) {
+export function Tuple(...components: Runtype<any>[]) {
   return create(x => {
     const xs = Arr(Always).check(x)
-    if (xs.length < Components.length)
-      throw new ValidationError(`Expected array of ${Components.length} but was ${xs.length}`)
-    for (let i = 0; i < Components.length; i++)
-      Components[i].check(xs[i])
+    if (xs.length < components.length)
+      throw new ValidationError(`Expected array of ${components.length} but was ${xs.length}`)
+    for (let i = 0; i < components.length; i++)
+      components[i].check(xs[i])
     return x
-  }, { tag: 'tuple', Components })
+  }, { tag: 'tuple', components })
 }

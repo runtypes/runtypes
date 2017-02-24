@@ -180,14 +180,14 @@ describe('reflection', () => {
 
   it('array', () => {
     expectLiteralField(Array(X), 'tag', 'array')
-    expectLiteralField(Array(X).Element, 'tag', 'literal')
-    expectLiteralField(Array(X).Element, 'value', 'x')
+    expectLiteralField(Array(X).element, 'tag', 'literal')
+    expectLiteralField(Array(X).element, 'value', 'x')
   })
 
   it('tuple', () => {
     expectLiteralField(Tuple(X, X), 'tag', 'tuple')
-    expect(Tuple(X, X).Components.map(C => C.tag)).toEqual(['literal', 'literal'])
-    expect(Tuple(X, X).Components.map(C => C.value)).toEqual(['x', 'x'])
+    expect(Tuple(X, X).components.map(C => C.tag)).toEqual(['literal', 'literal'])
+    expect(Tuple(X, X).components.map(C => C.value)).toEqual(['x', 'x'])
   })
 
   it('string dictionary', () => {
@@ -205,31 +205,31 @@ describe('reflection', () => {
   it('record', () => {
     const Rec = Record({ x: Number, y: Literal(3) })
     expectLiteralField(Rec, 'tag', 'record')
-    expectLiteralField(Rec.Fields.x, 'tag', 'number')
-    expectLiteralField(Rec.Fields.y, 'tag', 'literal')
-    expectLiteralField(Rec.Fields.y, 'value', 3)
+    expectLiteralField(Rec.fields.x, 'tag', 'number')
+    expectLiteralField(Rec.fields.y, 'tag', 'literal')
+    expectLiteralField(Rec.fields.y, 'value', 3)
   })
 
   it('optional', () => {
     const Opt = Optional({ x: Number, y: Literal(3) })
     expectLiteralField(Opt, 'tag', 'optional')
-    expectLiteralField(Opt.Fields.x, 'tag', 'number')
-    expectLiteralField(Opt.Fields.y, 'tag', 'literal')
-    expectLiteralField(Opt.Fields.y, 'value', 3)
+    expectLiteralField(Opt.fields.x, 'tag', 'number')
+    expectLiteralField(Opt.fields.y, 'tag', 'literal')
+    expectLiteralField(Opt.fields.y, 'value', 3)
   })
 
   it('union', () => {
     expectLiteralField(Union(X, Y), 'tag', 'union')
     expectLiteralField(Union(X, Y), 'tag', 'union')
-    expect(Union(X, Y).Alternatives.map(A => A.tag)).toEqual(['literal', 'literal'])
-    expect(Union(X, Y).Alternatives.map(A => A.value)).toEqual(['x', 'y'])
+    expect(Union(X, Y).alternatives.map(A => A.tag)).toEqual(['literal', 'literal'])
+    expect(Union(X, Y).alternatives.map(A => A.value)).toEqual(['x', 'y'])
   })
 
   it('intersect', () => {
     expectLiteralField(Intersect(X, Y), 'tag', 'intersect')
     expectLiteralField(Intersect(X, Y), 'tag', 'intersect')
-    expect(Intersect(X, Y).Intersectees.map(A => A.tag)).toEqual(['literal', 'literal'])
-    expect(Intersect(X, Y).Intersectees.map(A => A.value)).toEqual(['x', 'y'])
+    expect(Intersect(X, Y).intersectees.map(A => A.tag)).toEqual(['literal', 'literal'])
+    expect(Intersect(X, Y).intersectees.map(A => A.value)).toEqual(['x', 'y'])
   })
 
   it('function', () => {
@@ -245,7 +245,7 @@ describe('reflection', () => {
   it('constraint', () => {
     const C = Number.withConstraint(n => n > 9)
     expectLiteralField(C, 'tag', 'constraint')
-    expectLiteralField(C.Underlying, 'tag', 'number')
+    expectLiteralField(C.underlying, 'tag', 'number')
   })
 })
 
@@ -292,28 +292,28 @@ describe('reflection', () => {
       check<typeof X.value>(X)
       break
     case 'array':
-      check<(Static<typeof X.Element>)[]>(X)
+      check<(Static<typeof X.element>)[]>(X)
       break
     case 'record':
-      check<{ [K in keyof typeof X.Fields]: Static<typeof X.Fields['K']> }>(X)
+      check<{ [K in keyof typeof X.fields]: Static<typeof X.fields['K']> }>(X)
       break
     case 'optional':
-      check<{ [K in keyof typeof X.Fields]?: Static<typeof X.Fields['K']> }>(X)
+      check<{ [K in keyof typeof X.fields]?: Static<typeof X.fields['K']> }>(X)
       break
     case 'tuple':
-      check<[Static<typeof X.Components[0]>, Static<typeof X.Components[1]>]>(X)
+      check<[Static<typeof X.components[0]>, Static<typeof X.components[1]>]>(X)
       break
     case 'union':
-      check<Static<typeof X.Alternatives[0]> | Static<typeof X.Alternatives[1]>>(X)
+      check<Static<typeof X.alternatives[0]> | Static<typeof X.alternatives[1]>>(X)
       break
     case 'intersect':
-      check<Static<typeof X.Intersectees[0]> & Static<typeof X.Intersectees[1]>>(X)
+      check<Static<typeof X.intersectees[0]> & Static<typeof X.intersectees[1]>>(X)
       break
     case 'function':
       check<(...args: any[]) => any>(X)
       break
     case 'constraint':
-      check<Static<typeof X.Underlying>>(X)
+      check<Static<typeof X.underlying>>(X)
   }
 
   return X

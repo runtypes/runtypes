@@ -23,31 +23,31 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
         : String(value)
     }
     case 'array':
-      return `${show(true)(refl.Element)}[]`
+      return `${show(true)(refl.element)}[]`
     case 'dictionary':
       return `{ [_: ${refl.keyType}]: {} }`
     case 'record': {
-      const keys = Object.keys(refl.Fields)
+      const keys = Object.keys(refl.fields)
       return keys.length ? `{ ${keys
-        .map(k => `${k}: ${show(false)(refl.Fields[k])};`)
+        .map(k => `${k}: ${show(false)(refl.fields[k])};`)
         .join(' ')
       } }` : '{}'
     }
     case 'optional': {
-      const keys = Object.keys(refl.Fields)
+      const keys = Object.keys(refl.fields)
       return keys.length ? `{ ${keys
-        .map(k => `${k}?: ${show(false)(refl.Fields[k])};`)
+        .map(k => `${k}?: ${show(false)(refl.fields[k])};`)
         .join(' ')
       } }` : '{}'
     }
     case 'tuple':
-      return `[${refl.Components.map(show(false)).join(', ')}]`
+      return `[${refl.components.map(show(false)).join(', ')}]`
     case 'union':
-      return parenthesize(`${refl.Alternatives.map(show(true)).join(' | ')}`)
+      return parenthesize(`${refl.alternatives.map(show(true)).join(' | ')}`)
     case 'intersect':
-      return parenthesize(`${refl.Intersectees.map(show(true)).join(' & ')}`)
+      return parenthesize(`${refl.intersectees.map(show(true)).join(' & ')}`)
     case 'constraint':
-      return show(needsParens)(refl.Underlying)
+      return show(needsParens)(refl.underlying)
   }
 }
 

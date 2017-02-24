@@ -10,6 +10,6 @@ const Day = Union(
   Literal('Saturday'),
 )
 
-for (const day of Day.Alternatives.map(lit => lit.value)) {
+for (const day of Day.alternatives.map(lit => lit.value)) {
   console.log(`Good morning, it's ${day}!`)
 }
