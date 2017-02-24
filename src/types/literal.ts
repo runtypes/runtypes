@@ -1,6 +1,9 @@
 import { Runtype, create } from './base'
 import { ValidationError } from '../validation-error'
 
+/**
+ * The super type of all literal types.
+ */
 export type LiteralBase = undefined | null | boolean | number | string
 
 export interface Literal<A extends LiteralBase> extends Runtype<A> {
@@ -9,7 +12,7 @@ export interface Literal<A extends LiteralBase> extends Runtype<A> {
 }
 
 /**
- * Construct a literal runtype.
+ * Construct a runtype for a type literal.
  */
 export function Literal<A extends LiteralBase>(value: A): Literal<A> {
   return create<Literal<A>>(x => {
@@ -20,11 +23,11 @@ export function Literal<A extends LiteralBase>(value: A): Literal<A> {
 }
 
 /**
- * Validates that a value is undefined.
+ * An alias for Literal(undefined).
  */
 export const Undefined = Literal(undefined)
 
 /**
- * Validates that a value is null.
+ * An alias for Literal(null).
  */
 export const Null = Literal(null)
