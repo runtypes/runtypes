@@ -232,14 +232,18 @@ export function Tuple(...runtypes: Runtype<any>[]) {
  */
 export function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): Runtype<{ [_: string]: V }>
 export function Dictionary<V>(v: Runtype<V>, keyType: 'number'): Runtype<{ [_: number]: V }>
-export function Dictionary<V>(v: Runtype<V>, keyType?: 'string' | 'number') {
+export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
   return runtype((xs: {[k: string]: V}) => {
     if (xs === null || xs === undefined)
       throw new ValidationError(`Expected a defined non-null value but was ${typeof xs}`)
     if (typeof xs !== 'object')
       throw new ValidationError(`Expected an object but was ${typeof xs}`)
-    if (keyType !== 'number' && Array.isArray(xs))
-      throw new ValidationError(`Expected a dictionary but was array`)
+    if (Object.getPrototypeOf(xs) !== Object.prototype) {
+      if (!Array.isArray(xs))
+        throw new ValidationError(`Expected simple object but was complex`)
+      else if (keyType === 'string')
+        throw new ValidationError(`Expected a dictionary but was array`)
+    }
     for (const key of Object.keys(xs)) {
       // Object.keys is always a string array
       if (keyType === 'number') {

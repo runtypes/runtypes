@@ -63,6 +63,8 @@ type RuntypeName = keyof typeof runtypes
 
 const runtypeNames = Object.keys(runtypes) as RuntypeName[]
 
+class Foo { x: 'blah' } // Should not be recognized as a Dictionary
+
 const testValues: { value: Always, passes: RuntypeName[] }[] = [
   { value: undefined, passes: ['Undefined', 'Void'] },
   { value: null, passes: ['Null', 'Void'] },
@@ -81,7 +83,8 @@ const testValues: { value: Always, passes: RuntypeName[] }[] = [
   { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
   { value: ['1', '2'], passes: ['NumberDictionary'] },
   { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
-  { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] }
+  { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
+  { value: new Foo(), passes: [] },
 ]
 
 for (const { value, passes } of testValues) {
