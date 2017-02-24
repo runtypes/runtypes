@@ -1,10 +1,10 @@
-import { Runtype } from './index'
+import { Reflect } from './index'
 
-const show = (needsParens: boolean) => ({ reflect: T }: Runtype<any>): string => {
+const show = (needsParens: boolean) => (refl: Reflect): string => {
 
   const parenthesize = (s: string) => needsParens ? `(${s})` : s
 
-  switch (T.tag) {
+  switch (refl.tag) {
     // Primitive types
     case 'always':
     case 'never':
@@ -13,41 +13,41 @@ const show = (needsParens: boolean) => ({ reflect: T }: Runtype<any>): string =>
     case 'number':
     case 'string':
     case 'function':
-      return T.tag
+      return refl.tag
 
     // Complex types
     case 'literal': {
-      const { value } = T
+      const { value } = refl
       return typeof value === 'string'
         ? `"${value}"`
         : String(value)
     }
     case 'array':
-      return `${show(true)(T.Element)}[]`
+      return `${show(true)(refl.Element)}[]`
     case 'dictionary':
-      return `{ [_: ${T.keyType}]: {} }`
+      return `{ [_: ${refl.keyType}]: {} }`
     case 'record': {
-      const keys = Object.keys(T.Fields)
+      const keys = Object.keys(refl.Fields)
       return keys.length ? `{ ${keys
-        .map(k => `${k}: ${show(false)(T.Fields[k])};`)
+        .map(k => `${k}: ${show(false)(refl.Fields[k])};`)
         .join(' ')
       } }` : '{}'
     }
     case 'optional': {
-      const keys = Object.keys(T.Fields)
+      const keys = Object.keys(refl.Fields)
       return keys.length ? `{ ${keys
-        .map(k => `${k}?: ${show(false)(T.Fields[k])};`)
+        .map(k => `${k}?: ${show(false)(refl.Fields[k])};`)
         .join(' ')
       } }` : '{}'
     }
     case 'tuple':
-      return `[${T.Components.map(show(false)).join(', ')}]`
+      return `[${refl.Components.map(show(false)).join(', ')}]`
     case 'union':
-      return parenthesize(`${T.Alternatives.map(show(true)).join(' | ')}`)
+      return parenthesize(`${refl.Alternatives.map(show(true)).join(' | ')}`)
     case 'intersect':
-      return parenthesize(`${T.Intersectees.map(show(true)).join(' & ')}`)
+      return parenthesize(`${refl.Intersectees.map(show(true)).join(' & ')}`)
     case 'constraint':
-      return show(needsParens)(T.Underlying)
+      return show(needsParens)(refl.Underlying)
   }
 }
 
