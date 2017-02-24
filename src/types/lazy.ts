@@ -1,4 +1,4 @@
-import { Rt, create } from './runtype'
+import { Rt, create } from '../runtype'
 
 /**
  * Construct a possibly-recursive Runtype.

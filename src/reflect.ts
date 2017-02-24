@@ -1,4 +1,4 @@
-import { Runtype } from './types/runtype'
+import { Runtype } from './runtype'
 import { always } from './types/always'
 import { LiteralBase } from './types/literal'
 

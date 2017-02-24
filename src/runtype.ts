@@ -1,6 +1,6 @@
-import { Result, Union, Union2, Intersect, Intersect2, Constraint } from '../index'
-import { Reflect } from '../reflect'
-import show from '../show'
+import { Result, Union, Union2, Intersect, Intersect2, Constraint } from './index'
+import { Reflect } from './reflect'
+import show from './show'
 
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.

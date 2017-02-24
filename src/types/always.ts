@@ -1,4 +1,4 @@
-import { Runtype, create } from './runtype'
+import { Runtype, create } from '../runtype'
 
 export type always = {} | void | null
 

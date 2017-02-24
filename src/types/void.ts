@@ -1,4 +1,4 @@
-import { Runtype, create } from './runtype'
+import { Runtype, create } from '../runtype'
 import { ValidationError } from '../validation-error'
 
 export interface Void extends Runtype<void> { tag: 'void' }

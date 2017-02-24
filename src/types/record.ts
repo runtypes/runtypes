@@ -1,4 +1,4 @@
-import { Runtype, Rt, Static, create } from './runtype'
+import { Runtype, Rt, Static, create } from '../runtype'
 import { hasKey } from '../util'
 import { ValidationError } from '../validation-error'
 

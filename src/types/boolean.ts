@@ -1,4 +1,4 @@
-import { Runtype, create } from './runtype'
+import { Runtype, create } from '../runtype'
 import { ValidationError } from '../validation-error'
 
 export interface Boolean extends Runtype<boolean> { tag: 'boolean' }
