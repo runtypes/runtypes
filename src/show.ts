@@ -25,7 +25,7 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
     case 'array':
       return `${show(true)(refl.element)}[]`
     case 'dictionary':
-      return `{ [_: ${refl.keyType}]: {} }`
+      return `{ [_: ${refl.keyType}]: ${show(false)(refl.valType)} }`
     case 'record': {
       const keys = Object.keys(refl.fields)
       return keys.length ? `{ ${keys

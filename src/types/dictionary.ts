@@ -2,22 +2,24 @@ import { Runtype, create, Rt } from '../runtype'
 import { Record } from './record'
 import { ValidationError } from '../validation-error'
 
-export interface StringDictionary<V> extends Runtype<{ [_: string]: V }> {
+export interface StringDictionary<V extends Rt> extends Runtype<{ [_: string]: V }> {
   tag: 'dictionary'
   keyType: 'string'
+  valType: V
 }
 
-export interface NumberDictionary<V> extends Runtype<{ [_: number]: V }> {
+export interface NumberDictionary<V extends Rt> extends Runtype<{ [_: number]: V }> {
   tag: 'dictionary'
   keyType: 'number'
+  valType: V
 }
 
 /**
  * Construct a runtype for arbitrary dictionaries.
  */
-export function Dictionary<V>(v: Runtype<V>, keyType?: 'string'): StringDictionary<V>
-export function Dictionary<V>(v: Runtype<V>, keyType?: 'number'): NumberDictionary<V>
-export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
+export function Dictionary<V extends Rt>(v: V, keyType?: 'string'): StringDictionary<V>
+export function Dictionary<V extends Rt>(v: V, keyType?: 'number'): NumberDictionary<V>
+export function Dictionary<V extends Rt>(valType: V, keyType = 'string') {
   return create<Rt>(x => {
     Record({}).check(x)
 
@@ -37,9 +39,9 @@ export function Dictionary<V>(v: Runtype<V>, keyType = 'string') {
         if (isNaN(+key))
           throw new ValidationError(`Expected dictionary key to be a number but was string`)
       }
-      v.check((x as any)[key])
+      valType.check((x as any)[key])
     }
 
     return x
-  }, { tag: 'dictionary', keyType })
+  }, { tag: 'dictionary', keyType, valType })
 }

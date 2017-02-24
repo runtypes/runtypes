@@ -34,8 +34,9 @@ const cases: [Reflect, string][] = [
   [Literal(3), '3'],
   [Literal('foo'), '"foo"'],
   [Array(String), 'string[]'],
-  [Dictionary(Always), '{ [_: string]: {} }'],
-  [Dictionary(Always, 'number'), '{ [_: number]: {} }'],
+  [Dictionary(Array(Boolean)), '{ [_: string]: boolean[] }'],
+  [Dictionary(Array(Boolean), 'string'), '{ [_: string]: boolean[] }'],
+  [Dictionary(Array(Boolean), 'number'), '{ [_: number]: boolean[] }'],
   [Record({}), '{}'],
   [
     Record({ x: String, y: Array(Boolean) }),
