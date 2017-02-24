@@ -213,66 +213,84 @@ export interface Tuple1<
 }
 
 export interface Tuple2<
-  A extends Rt,
-  B extends Rt,
-> extends Runtype<[Static<A>, Static<B>]> {
+  A extends Rt, B extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>
+]> {
   tag: 'tuple'
   Components: [A, B]
 }
 
 export interface Tuple3<
-  A extends Rt,
-  B extends Rt,
-  C extends Rt,
-> extends Runtype<[Static<A>, Static<B>, Static<C>]> {
+  A extends Rt, B extends Rt, C extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>, Static<C>
+]> {
   tag: 'tuple'
   Components: [A, B, C]
 }
 
 export interface Tuple4<
-  A extends Rt,
-  B extends Rt,
-  C extends Rt,
-  D extends Rt,
-> extends Runtype<[Static<A>, Static<B>, Static<C>, Static<D>]> {
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>, Static<C>, Static<D>
+]> {
   tag: 'tuple'
   Components: [A, B, C, D]
 }
 
 export interface Tuple5<
-  A extends Rt,
-  B extends Rt,
-  C extends Rt,
-  D extends Rt,
-  E extends Rt,
-> extends Runtype<[Static<A>, Static<B>, Static<C>, Static<D>, Static<E>]> {
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>, Static<C>, Static<D>, Static<E>
+]> {
   tag: 'tuple'
   Components: [A, B, C, D, E]
 }
 
 export interface Tuple6<
-  A extends Rt,
-  B extends Rt,
-  C extends Rt,
-  D extends Rt,
-  E extends Rt,
-  F extends Rt,
-> extends Runtype<[Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>]> {
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>
+]> {
   tag: 'tuple'
   Components: [A, B, C, D, E, F]
 }
 
 export interface Tuple7<
-  A extends Rt,
-  B extends Rt,
-  C extends Rt,
-  D extends Rt,
-  E extends Rt,
-  F extends Rt,
-  G extends Rt,
-> extends Runtype<[Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>]> {
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>
+]> {
   tag: 'tuple'
   Components: [A, B, C, D, E, F, G]
+}
+
+export interface Tuple8<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>, Static<H>
+]> {
+  tag: 'tuple'
+  Components: [A, B, C, D, E, F, G, H]
+}
+
+export interface Tuple9<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>, Static<H>, Static<I>
+]> {
+  tag: 'tuple'
+  Components: [A, B, C, D, E, F, G, H, I]
+}
+
+export interface Tuple10<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt,
+> extends Runtype<[
+  Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>, Static<H>, Static<I>, Static<J>
+]> {
+  tag: 'tuple'
+  Components: [A, B, C, D, E, F, G, H, I, J]
 }
 
 /**
@@ -299,6 +317,15 @@ export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E 
 export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt>(
   A: A, B: B, C: C, D: D, E: E, F: F, G: G,
 ): Tuple7<A, B, C, D, E, F, G>
+export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H,
+): Tuple8<A, B, C, D, E, F, G, H>
+export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I,
+): Tuple9<A, B, C, D, E, F, G, H, I>
+export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
+): Tuple10<A, B, C, D, E, F, G, H, I, J>
 export function Tuple(...Components: Runtype<any>[]) {
   return runtype(x => {
     const xs = Arr(Always).check(x)
@@ -435,392 +462,93 @@ export interface Union4<
   Alternatives: [A, B, C, D]
 }
 
+export interface Union5<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt,
+> extends Runtype<
+  Static<A> | Static<B> | Static<C> | Static<D> | Static<E>
+> {
+  tag: 'union'
+  Alternatives: [A, B, C, D, E]
+}
+
+export interface Union6<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt,
+> extends Runtype<
+  Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F>
+> {
+  tag: 'union'
+  Alternatives: [A, B, C, D, E, F]
+}
+
+export interface Union7<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt,
+> extends Runtype<
+  Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G>
+> {
+  tag: 'union'
+  Alternatives: [A, B, C, D, E, F, G]
+}
+
+export interface Union8<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt,
+> extends Runtype<
+  Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H>
+> {
+  tag: 'union'
+  Alternatives: [A, B, C, D, E, F, G, H]
+}
+
+export interface Union9<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt,
+> extends Runtype<
+  Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H> | Static<I>
+> {
+  tag: 'union'
+  Alternatives: [A, B, C, D, E, F, G, H, I]
+}
+
+export interface Union10<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt,
+> extends Runtype<
+  Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H> | Static<I> | Static<J>
+> {
+  tag: 'union'
+  Alternatives: [A, B, C, D, E, F, G, H, I, J]
+}
+
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
 export function Union<A extends Rt>(
-  a: A,
+  A: A,
 ): Union1<A>
 export function Union<A extends Rt, B extends Rt>(
-  a: A, b: B,
+  A: A, B: B,
 ): Union2<A, B>
 export function Union<A extends Rt, B extends Rt, C extends Rt>(
-  a: A, b: B, c: C,
+  A: A, B: B, C: C,
 ): Union3<A, B, C>
 export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt>(
-  a: A, b: B, c: C, d: D
+  A: A, B: B, C: C, D: D,
 ): Union4<A, B, C, D>
-export function Union<A, B, C, D, E>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-): Runtype<A | B | C | D | E>
-export function Union<A, B, C, D, E, F>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-): Runtype<A | B | C | D | E | F>
-export function Union<A, B, C, D, E, F, G>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-): Runtype<A | B | C | D | E | F | G>
-export function Union<A, B, C, D, E, F, G, H>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-): Runtype<A | B | C | D | E | F | G | H>
-export function Union<A, B, C, D, E, F, G, H, I>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-): Runtype<A | B | C | D | E | F | G | H | I>
-export function Union<A, B, C, D, E, F, G, H, I, J>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-): Runtype<A | B | C | D | E | F | G | H | I | J>
-export function Union<A, B, C, D, E, F, G, H, I, J, K>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  l: Runtype<L>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-  w: Runtype<W>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-  w: Runtype<W>,
-  x: Runtype<X>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-  w: Runtype<W>,
-  x: Runtype<X>,
-  y: Runtype<Y>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y>
-export function Union<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-  w: Runtype<W>,
-  x: Runtype<X>,
-  y: Runtype<Y>,
-  z: Runtype<Z>,
-): Runtype<A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z>
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt>(
+  A: A, B: B, C: C, D: D, E: E,
+): Union5<A, B, C, D, E>
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F,
+): Union6<A, B, C, D, E, F>
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G,
+): Union7<A, B, C, D, E, F, G>
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H,
+): Union8<A, B, C, D, E, F, G, H>
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I,
+): Union9<A, B, C, D, E, F, G, H, I>
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
+): Union10<A, B, C, D, E, F, G, H, I, J>
 export function Union(...Alternatives: Runtype<any>[]) {
   return runtype(x => {
     for (const { guard } of Alternatives)
@@ -847,398 +575,111 @@ export interface Intersect2<
   tag: 'intersect'
   Intersectees: [A, B]
 }
+export interface Intersect3<
+  A extends Rt, B extends Rt, C extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C]
+}
+
+export interface Intersect4<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D]
+}
+
+export interface Intersect5<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E]
+}
+
+export interface Intersect6<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F]
+}
+
+export interface Intersect7<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F, G]
+}
+
+export interface Intersect8<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F, G, H]
+}
+
+export interface Intersect9<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H> & Static<I>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F, G, H, I]
+}
+
+export interface Intersect10<
+  A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt,
+> extends Runtype<
+  Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H> & Static<I> & Static<J>
+> {
+  tag: 'intersect'
+  Intersectees: [A, B, C, D, E, F, G, H, I, J]
+}
 
 /**
  * Construct an intersection runtype from runtypes for its alternatives.
  */
 export function Intersect<A extends Rt>(
-  A: A
+  A: A,
 ): Intersect1<A>
 export function Intersect<A extends Rt, B extends Rt>(
-  A: A, B: B
+  A: A, B: B,
 ): Intersect2<A, B>
-export function Intersect<A, B, C>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-): Runtype<A & B & C>
-export function Intersect<A, B, C, D>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-): Runtype<A & B & C & D>
-export function Intersect<A, B, C, D, E>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-): Runtype<A & B & C & D & E>
-export function Intersect<A, B, C, D, E, F>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-): Runtype<A & B & C & D & E & F>
-export function Intersect<A, B, C, D, E, F, G>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-): Runtype<A & B & C & D & E & F & G>
-export function Intersect<A, B, C, D, E, F, G, H>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-): Runtype<A & B & C & D & E & F & G & H>
-export function Intersect<A, B, C, D, E, F, G, H, I>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-): Runtype<A & B & C & D & E & F & G & H & I>
-export function Intersect<A, B, C, D, E, F, G, H, I, J>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-): Runtype<A & B & C & D & E & F & G & H & I & J>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  l: Runtype<L>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-  w: Runtype<W>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-  w: Runtype<W>,
-  x: Runtype<X>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-  w: Runtype<W>,
-  x: Runtype<X>,
-  y: Runtype<Y>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X & Y>
-export function Intersect<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z>(
-  a: Runtype<A>,
-  b: Runtype<B>,
-  c: Runtype<C>,
-  d: Runtype<D>,
-  e: Runtype<E>,
-  f: Runtype<F>,
-  g: Runtype<G>,
-  h: Runtype<H>,
-  i: Runtype<I>,
-  j: Runtype<J>,
-  k: Runtype<K>,
-  m: Runtype<M>,
-  n: Runtype<N>,
-  o: Runtype<O>,
-  p: Runtype<P>,
-  q: Runtype<Q>,
-  r: Runtype<R>,
-  s: Runtype<S>,
-  t: Runtype<T>,
-  u: Runtype<U>,
-  v: Runtype<V>,
-  w: Runtype<W>,
-  x: Runtype<X>,
-  y: Runtype<Y>,
-  z: Runtype<Z>,
-): Runtype<A & B & C & D & E & F & G & H & I & J & K & L & M & N & O & P & Q & R & S & T & U & V & W & X & Y & Z>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt>(
+  A: A, B: B, C: C,
+): Intersect3<A, B, C>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt>(
+  A: A, B: B, C: C, D: D,
+): Intersect4<A, B, C, D>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt>(
+  A: A, B: B, C: C, D: D, E: E,
+): Intersect5<A, B, C, D, E>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F,
+): Intersect6<A, B, C, D, E, F>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G,
+): Intersect7<A, B, C, D, E, F, G>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H,
+): Intersect8<A, B, C, D, E, F, G, H>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I,
+): Intersect9<A, B, C, D, E, F, G, H, I>
+export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
+  A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
+): Intersect10<A, B, C, D, E, F, G, H, I, J>
 export function Intersect(...Intersectees: Runtype<any>[]) {
   return runtype(x => {
     for (const { check } of Intersectees)
