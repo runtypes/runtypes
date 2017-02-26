@@ -124,10 +124,10 @@ describe('contracts', () => {
     const f = (x: string) => x.length
     expect(Contract(String, Number).enforce(f)('hel')).toBe(3)
     try {
-      (Contract(String, Number).enforce(f) as any)(3)
+      ;(Contract(String, Number).enforce(f) as any)(3)
       fail('contract was violated but no exception was thrown')
 
-      (Contract(String, String).enforce(f as any))('hi')
+      ;(Contract(String, String).enforce(f as any))('hi')
       fail('contract was violated but no exception was thrown')
     } catch (e) {/* success */}
   })
@@ -136,10 +136,10 @@ describe('contracts', () => {
     const f = (x: string, y: boolean) => y ? x.length : 4
     expect(Contract(String, Boolean, Number).enforce(f)('hello', false)).toBe(4)
     try {
-      (Contract(String, Boolean, Number).enforce(f) as any)('hello')
+      ;(Contract(String, Boolean, Number).enforce(f) as any)('hello')
       fail('contract was violated but no exception was thrown')
 
-      (Contract(String, Boolean, Number).enforce(f) as any)('hello', 3)
+      ;(Contract(String, Boolean, Number).enforce(f) as any)('hello', 3)
       fail('contract was violated but no exception was thrown')
     } catch (e) {/* success */}
   })
