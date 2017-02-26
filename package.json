@@ -17,9 +17,9 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^18.1.1",
-    "jest": "^18.1.0",
-    "ts-jest": "^18.0.3",
-    "typescript": "2.1.6",
+    "jest": "^19.0.2",
+    "ts-jest": "^19.0.0",
+    "typescript": "2.2.1",
     "xyz": "^2.1.0"
   },
   "keywords:": [
