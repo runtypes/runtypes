@@ -1,13 +1,13 @@
-import { Runtype, Rt } from '../runtype';
+import { Runtype, Rt, Static } from '../runtype';
 export interface StringDictionary<V extends Rt> extends Runtype<{
-    [_: string]: V;
+    [_: string]: Static<V>;
 }> {
     tag: 'dictionary';
     key: 'string';
     value: V;
 }
 export interface NumberDictionary<V extends Rt> extends Runtype<{
-    [_: number]: V;
+    [_: number]: Static<V>;
 }> {
     tag: 'dictionary';
     key: 'number';
