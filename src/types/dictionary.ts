@@ -1,14 +1,14 @@
-import { Runtype, create, Rt } from '../runtype'
+import { Runtype, create, Rt, Static } from '../runtype'
 import { Record } from './record'
 import { ValidationError } from '../validation-error'
 
-export interface StringDictionary<V extends Rt> extends Runtype<{ [_: string]: V }> {
+export interface StringDictionary<V extends Rt> extends Runtype<{ [_: string]: Static<V> }> {
   tag: 'dictionary'
   key: 'string'
   value: V
 }
 
-export interface NumberDictionary<V extends Rt> extends Runtype<{ [_: number]: V }> {
+export interface NumberDictionary<V extends Rt> extends Runtype<{ [_: number]: Static<V> }> {
   tag: 'dictionary'
   key: 'number'
   value: V
