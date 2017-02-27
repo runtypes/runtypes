@@ -1,5 +1,7 @@
 import { Union, Literal } from '../index'
+import { Static } from '../runtype'
 
+// Define the runtype
 const Day = Union(
   Literal('Sunday'),
   Literal('Monday'),
@@ -10,6 +12,12 @@ const Day = Union(
   Literal('Saturday'),
 )
 
-for (const day of Day.alternatives.map(lit => lit.value)) {
+// Extract the static type
+type Day = Static<typeof Day> // = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday'
+
+// Extract enumerated literal values
+const days: Day[] = Day.alternatives.map(lit => lit.value)
+
+for (const day of days) {
   console.log(`Good morning, it's ${day}!`)
 }
