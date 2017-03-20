@@ -53,7 +53,8 @@ const runtypes = {
   Partial: Optional({ foo: String }).And(Record({ Boolean })),
   Function,
   Person,
-  MoreThanThree: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
+  MoreThanThree: Number.withConstraint(n => n > 3),
+  MoreThanThreeWithMessage: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
   DictionaryOfArrays: Dictionary(Array(Boolean))
@@ -71,7 +72,7 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: true, passes: ['Boolean', 'true'] },
   { value: false, passes: ['Boolean', 'false'] },
   { value: 3, passes: ['Number', '3', 'union1'] },
-  { value: 42, passes: ['Number', '42', 'MoreThanThree'] },
+  { value: 42, passes: ['Number', '42', 'MoreThanThree', 'MoreThanThreeWithMessage'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
