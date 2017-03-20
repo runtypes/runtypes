@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc --pretty",
     "test": "npm run build && jest --verbose --coverage",
+    "coveralls": "cat ./coverage/remapped/lcov.info | ./node_modules/.bin/coveralls",
     "develop": "jest --watchAll",
     "release": "npm run release:patch",
     "release:patch": "xyz --increment patch",
@@ -17,6 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^18.1.1",
+    "coveralls": "^2.12.0",
     "jest": "^19.0.2",
     "ts-jest": "^19.0.0",
     "typescript": "2.2.1",
