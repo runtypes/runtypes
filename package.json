@@ -45,6 +45,11 @@
       "\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor"
     },
     "testResultsProcessor": "<rootDir>/node_modules/ts-jest/coverageprocessor.js",
+    "globals": {
+      "__TS_CONFIG__": {
+        "target": "es6"
+      }
+    },
     "testEnvironment": "node"
   }
 }

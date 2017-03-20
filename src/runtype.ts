@@ -98,6 +98,12 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
   }
 }
 
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
 export function validationError(message: string) {
-  return new Error(message)
+  return new ValidationError(message)
 }
