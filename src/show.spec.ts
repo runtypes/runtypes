@@ -79,9 +79,10 @@ const cases: [Reflect, string][] = [
 ]
 
 for (const [T, expected] of cases) {
-  const name = show(T)
-  it(name, () => {
-    expect(name).toBe(expected)
+  const s = show(T)
+  it(s, () => {
+    expect(s).toBe(expected)
+    expect(T.toString()).toBe(`Runtype<${s}>`)
   })
 }
 
