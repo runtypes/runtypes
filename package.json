@@ -45,10 +45,6 @@
       "\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor"
     },
     "testResultsProcessor": "<rootDir>/node_modules/ts-jest/coverageprocessor.js",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "validation-error\\.ts"
-    ],
     "testEnvironment": "node"
   }
 }

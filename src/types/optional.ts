@@ -1,8 +1,7 @@
-import { Runtype, Rt, Static, create } from '../runtype'
+import { Runtype, Rt, Static, create, validationError } from '../runtype'
 import { Union } from '../index'
 import { Undefined } from './literal'
 import { hasKey } from '../util'
-import { ValidationError } from '../validation-error'
 
 export interface Optional<O extends {[_ in string]: Rt }> extends Runtype<{[K in keyof O]?: Static<O[K]> }> {
   tag: 'optional'
@@ -15,7 +14,7 @@ export interface Optional<O extends {[_ in string]: Rt }> extends Runtype<{[K in
 export function Optional<O extends { [_: string]: Rt }>(fields: O) {
   return create<Optional<O>>(x => {
     if (x === null || x === undefined)
-      throw new ValidationError(`Expected a defined non-null value but was ${typeof x}`)
+      throw validationError(`Expected a defined non-null value but was ${typeof x}`)
 
     // tslint:disable-next-line:forin
     for (const key in fields)

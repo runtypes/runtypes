@@ -1,5 +1,4 @@
-import { Runtype, create } from '../runtype'
-import { ValidationError } from '../validation-error'
+import { Runtype, create, validationError } from '../runtype'
 
 export interface String extends Runtype<string> { tag: 'string' }
 
@@ -8,6 +7,6 @@ export interface String extends Runtype<string> { tag: 'string' }
  */
 export const String = create<String>(x => {
   if (typeof x !== 'string')
-    throw new ValidationError(`Expected string but was ${typeof x}`)
+    throw validationError(`Expected string but was ${typeof x}`)
   return x
 }, { tag: 'string' })

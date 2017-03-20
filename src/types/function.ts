@@ -1,5 +1,4 @@
-import { Runtype, create } from '../runtype'
-import { ValidationError } from '../validation-error'
+import { Runtype, create, validationError } from '../runtype'
 
 export interface Function extends Runtype<(...args: any[]) => any> { tag: 'function' }
 
@@ -8,6 +7,6 @@ export interface Function extends Runtype<(...args: any[]) => any> { tag: 'funct
  */
 export const Function = create<Function>(x => {
   if (typeof x !== 'function')
-    throw new ValidationError(`Expected a function but was ${typeof x}`)
+    throw validationError(`Expected a function but was ${typeof x}`)
   return x
 }, { tag: 'function' })

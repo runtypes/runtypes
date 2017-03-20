@@ -97,3 +97,7 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
     return Constraint(A, constraint)
   }
 }
+
+export function validationError(message: string) {
+  return new Error(message)
+}
