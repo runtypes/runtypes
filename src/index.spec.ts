@@ -50,7 +50,7 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
-  Partial: Record({ Boolean }).And(Optional({ foo: String })),
+  Partial: Optional({ foo: String }).And(Record({ Boolean })),
   Function,
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
