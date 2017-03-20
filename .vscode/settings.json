@@ -3,6 +3,7 @@
 
     // Files to exclude from the sidebar
     "files.exclude": {
-        "lib/": true
+        "lib/": true,
+        "coverage/": true
     }
 }
