@@ -6,7 +6,7 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "tsc --pretty",
-    "test": "npm run build && jest --verbose",
+    "test": "npm run build && jest --verbose --coverage",
     "develop": "jest --watchAll",
     "release": "npm run release:patch",
     "release:patch": "xyz --increment patch",
@@ -40,8 +40,9 @@
       "ts"
     ],
     "transform": {
-      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor"
+      "\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor"
     },
+    "testResultsProcessor": "<rootDir>/node_modules/ts-jest/coverageprocessor.js",
     "testEnvironment": "node"
   }
 }

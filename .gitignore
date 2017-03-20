@@ -1,6 +1,12 @@
-# Exclude built test files
+# Compiled test files
 lib/**/*.spec.*
 
-node_modules
+# Code coverage output
+coverage/
+
+# NPM stuff
+node_modules/
 npm-debug.log*
+
+# Mac stuff
 .DS_Store
