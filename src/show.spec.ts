@@ -38,6 +38,7 @@ const cases: [Reflect, string][] = [
   [Dictionary(Array(Boolean), 'string'), '{ [_: string]: boolean[] }'],
   [Dictionary(Array(Boolean), 'number'), '{ [_: number]: boolean[] }'],
   [Record({}), '{}'],
+  [Optional({}), '{}'],
   [
     Record({ x: String, y: Array(Boolean) }),
     '{ x: string; y: boolean[]; }'
