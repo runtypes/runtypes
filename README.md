@@ -1,4 +1,4 @@
-# Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes) [![Coverage Status](https://coveralls.io/repos/pelotom/runtypes/badge.svg?branch=master)](https://coveralls.io/pelotom/runtypes?branch=master)
+# Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes) [![Coverage Status](https://coveralls.io/repos/pelotom/runtypes/badge.svg?branch=master)](https://coveralls.io/github/pelotom/runtypes?branch=master)
 
 ### Safely bring untyped data into the fold
 
