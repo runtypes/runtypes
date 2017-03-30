@@ -48,3 +48,7 @@ export declare type Rt = Runtype<any>;
  */
 export declare type Static<A extends Rt> = A['_falseWitness'];
 export declare function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A;
+export declare class ValidationError extends Error {
+    constructor(message: string);
+}
+export declare function validationError(message: string): ValidationError;
