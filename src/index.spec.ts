@@ -79,6 +79,7 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
+  { value: { Boolean: true, foo: 5 }, passes: [] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
   { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
@@ -86,6 +87,7 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
   { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
   { value: new Foo(), passes: [] },
+  { value: { Boolean: true, Number: '5' }, passes: ['Partial'] }
 ]
 
 for (const { value, passes } of testValues) {

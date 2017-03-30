@@ -18,8 +18,13 @@ export function Optional<O extends { [_: string]: Rt }>(fields: O) {
 
     // tslint:disable-next-line:forin
     for (const key in fields)
-      if (hasKey(key, x))
-        Union(fields[key], Undefined).check(x[key])
+      if (hasKey(key, x)) {
+        try {
+          Union(fields[key], Undefined).check(x[key])
+        } catch ({ message }) {
+          throw validationError(`In key ${key}: ${message}`)
+        }
+      }
 
     return x as Partial<O>
   }, { tag: 'optional', fields })
