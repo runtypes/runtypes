@@ -16,9 +16,13 @@ export function Record<O extends { [_: string]: Rt }>(fields: O) {
 
     // tslint:disable-next-line:forin
     for (const key in fields) {
-      if (hasKey(key, x))
-        fields[key].check(x[key])
-      else
+      if (hasKey(key, x)) {
+        try {
+          fields[key].check(x[key])
+        } catch ({ message }) {
+          throw validationError(`In key ${key}: ${message}`)
+        }
+      } else
         throw validationError(`Missing property ${key}`)
     }
 
