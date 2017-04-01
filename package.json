@@ -6,9 +6,10 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "tsc --pretty",
+    "build:watch": "tsc --noEmit --pretty --watch",
     "test": "npm run build && jest --verbose --coverage",
+    "test:watch": "jest --watchAll",
     "coveralls": "cat ./coverage/remapped/lcov.info | ./node_modules/.bin/coveralls",
-    "develop": "jest --watchAll",
     "release": "npm run release:patch",
     "release:patch": "xyz --increment patch",
     "release:minor": "xyz --increment minor",
