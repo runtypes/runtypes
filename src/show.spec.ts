@@ -11,7 +11,7 @@ import {
   Array,
   Dictionary,
   Record,
-  Optional,
+  Partial,
   Tuple,
   Union,
   Intersect,
@@ -38,13 +38,13 @@ const cases: [Reflect, string][] = [
   [Dictionary(Array(Boolean), 'string'), '{ [_: string]: boolean[] }'],
   [Dictionary(Array(Boolean), 'number'), '{ [_: number]: boolean[] }'],
   [Record({}), '{}'],
-  [Optional({}), '{}'],
+  [Partial({}), '{}'],
   [
     Record({ x: String, y: Array(Boolean) }),
     '{ x: string; y: boolean[]; }'
   ],
   [
-    Optional({ x: String, y: Array(Boolean) }),
+    Partial({ x: String, y: Array(Boolean) }),
     '{ x?: string; y?: boolean[]; }'
   ],
   [

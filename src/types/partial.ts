@@ -3,16 +3,16 @@ import { Union } from '../index'
 import { Undefined } from './literal'
 import { hasKey } from '../util'
 
-export interface Optional<O extends {[_ in string]: Rt }> extends Runtype<{[K in keyof O]?: Static<O[K]> }> {
-  tag: 'optional'
+export interface Part<O extends {[_ in string]: Rt }> extends Runtype<{[K in keyof O]?: Static<O[K]> }> {
+  tag: 'partial'
   fields: O
 }
 
 /**
- * Construct a runtype for records of optional values.
+ * Construct a runtype for partial records
  */
-export function Optional<O extends { [_: string]: Rt }>(fields: O) {
-  return create<Optional<O>>(x => {
+export function Part<O extends { [_: string]: Rt }>(fields: O) {
+  return create<Part<O>>(x => {
     if (x === null || x === undefined)
       throw validationError(`Expected a defined non-null value but was ${typeof x}`)
 
@@ -27,5 +27,7 @@ export function Optional<O extends { [_: string]: Rt }>(fields: O) {
       }
 
     return x as Partial<O>
-  }, { tag: 'optional', fields })
+  }, { tag: 'partial', fields })
 }
+
+export { Part as Partial }

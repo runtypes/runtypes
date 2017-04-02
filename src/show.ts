@@ -33,7 +33,7 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
         .join(' ')
       } }` : '{}'
     }
-    case 'optional': {
+    case 'partial': {
       const keys = Object.keys(refl.fields)
       return keys.length ? `{ ${keys
         .map(k => `${k}?: ${show(false)(refl.fields[k])};`)

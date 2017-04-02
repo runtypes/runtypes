@@ -13,7 +13,7 @@ import {
   Array,
   Dictionary,
   Record,
-  Optional,
+  Partial,
   Tuple, Tuple2,
   Union, Union2,
   Intersect, Intersect2,
@@ -50,7 +50,7 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
-  Partial: Optional({ foo: String }).And(Record({ Boolean })),
+  Partial: Partial({ foo: String }).And(Record({ Boolean })),
   Function,
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3),
@@ -213,9 +213,9 @@ describe('reflection', () => {
     expectLiteralField(Rec.fields.y, 'value', 3)
   })
 
-  it('optional', () => {
-    const Opt = Optional({ x: Number, y: Literal(3) })
-    expectLiteralField(Opt, 'tag', 'optional')
+  it('partial', () => {
+    const Opt = Partial({ x: Number, y: Literal(3) })
+    expectLiteralField(Opt, 'tag', 'partial')
     expectLiteralField(Opt.fields.x, 'tag', 'number')
     expectLiteralField(Opt.fields.y, 'tag', 'literal')
     expectLiteralField(Opt.fields.y, 'value', 3)
@@ -264,7 +264,7 @@ describe('reflection', () => {
   | Literal<boolean | number | string>
   | Array<Reflect>
   | Record<{ [_ in string]: Reflect }>
-  | Optional<{ [_ in string]: Reflect }>
+  | Partial<{ [_ in string]: Reflect }>
   | Tuple2<Reflect, Reflect>
   | Union2<Reflect, Reflect>
   | Intersect2<Reflect, Reflect>
@@ -300,7 +300,7 @@ describe('reflection', () => {
     case 'record':
       check<{ [K in keyof typeof X.fields]: Static<typeof X.fields['K']> }>(X)
       break
-    case 'optional':
+    case 'partial':
       check<{ [K in keyof typeof X.fields]?: Static<typeof X.fields['K']> }>(X)
       break
     case 'tuple':
