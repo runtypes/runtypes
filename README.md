@@ -1,5 +1,7 @@
 # Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes) [![Coverage Status](https://coveralls.io/repos/pelotom/runtypes/badge.svg?branch=master)](https://coveralls.io/github/pelotom/runtypes?branch=master)
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/pelotom/runtypes.svg)](https://greenkeeper.io/)
+
 ### Safely bring untyped data into the fold
 
 Runtypes allow you to take values about which you have no assurances and check that they conform to some type `A`.
