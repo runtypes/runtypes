@@ -2368,9 +2368,9 @@
       "dev": true
     },
     "ts-jest": {
-      "version": "19.0.7",
-      "from": "ts-jest@19.0.7",
-      "resolved": "https://registry.npmjs.org/ts-jest/-/ts-jest-19.0.7.tgz",
+      "version": "19.0.6",
+      "from": "ts-jest@19.0.6",
+      "resolved": "https://registry.npmjs.org/ts-jest/-/ts-jest-19.0.6.tgz",
       "dev": true,
       "dependencies": {
         "camelcase": {
