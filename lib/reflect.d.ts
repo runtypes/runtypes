@@ -27,7 +27,7 @@ export declare type Reflect = {
 } & Runtype<{
     [_ in string]: always;
 }> | {
-    tag: 'optional';
+    tag: 'partial';
     fields: {
         [_: string]: Reflect;
     };
