@@ -1,4 +1,7 @@
 language: node_js
+before_script:
+  - npm install ts-jest@19.0.7
+  - npm ls --depth=0
 node_js:
   - node
 after_success: 'npm run coveralls'
