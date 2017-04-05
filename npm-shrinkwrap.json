@@ -1,6 +1,6 @@
 {
   "name": "runtypes",
-  "version": "0.9.2",
+  "version": "0.10.1",
   "dependencies": {
     "@types/jest": {
       "version": "19.2.2",
@@ -369,6 +369,12 @@
       "resolved": "https://registry.npmjs.org/ci-info/-/ci-info-1.0.0.tgz",
       "dev": true
     },
+    "cli-spinner": {
+      "version": "0.2.6",
+      "from": "cli-spinner@>=0.2.5 <0.3.0",
+      "resolved": "https://registry.npmjs.org/cli-spinner/-/cli-spinner-0.2.6.tgz",
+      "dev": true
+    },
     "cliui": {
       "version": "2.1.0",
       "from": "cliui@>=2.1.0 <3.0.0",
@@ -413,6 +419,12 @@
       "version": "1.1.1",
       "from": "color-name@>=1.1.1 <2.0.0",
       "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.1.tgz",
+      "dev": true
+    },
+    "colors": {
+      "version": "1.1.2",
+      "from": "colors@>=1.1.2 <2.0.0",
+      "resolved": "https://registry.npmjs.org/colors/-/colors-1.1.2.tgz",
       "dev": true
     },
     "combined-stream": {
@@ -2455,6 +2467,26 @@
       "resolved": "https://registry.npmjs.org/uglify-to-browserify/-/uglify-to-browserify-1.0.2.tgz",
       "dev": true,
       "optional": true
+    },
+    "unicons": {
+      "version": "0.0.3",
+      "from": "unicons@0.0.3",
+      "resolved": "https://registry.npmjs.org/unicons/-/unicons-0.0.3.tgz",
+      "dev": true
+    },
+    "updtr": {
+      "version": "1.0.0",
+      "from": "updtr@>=1.0.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/updtr/-/updtr-1.0.0.tgz",
+      "dev": true,
+      "dependencies": {
+        "async": {
+          "version": "1.5.2",
+          "from": "async@>=1.4.2 <2.0.0",
+          "resolved": "https://registry.npmjs.org/async/-/async-1.5.2.tgz",
+          "dev": true
+        }
+      }
     },
     "util-deprecate": {
       "version": "1.0.2",
