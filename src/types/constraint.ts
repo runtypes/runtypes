@@ -6,7 +6,9 @@ export interface Constraint<A extends Rt> extends Runtype<Static<A>> {
   underlying: A
 }
 
-export function Constraint<A extends Rt>(underlying: A, constraint: (x: A) => boolean | string) {
+export type ConstraintCheck<T> = (x: T) => boolean | string
+
+export function Constraint<A extends Rt>(underlying: A, constraint: ConstraintCheck<A>) {
   return create<Constraint<A>>(x => {
     const typed = underlying.check(x)
     const result = constraint(typed)

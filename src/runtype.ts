@@ -1,4 +1,4 @@
-import { Result, Union, Union2, Intersect, Intersect2, Constraint } from './index'
+import { Result, Union, Union2, Intersect, Intersect2, Constraint, ConstraintCheck } from './index'
 import { Reflect } from './reflect'
 import show from './show'
 
@@ -93,7 +93,7 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
     return Intersect(A, B)
   }
 
-  function withConstraint(constraint: (x: A) => boolean | string): Constraint<A> {
+  function withConstraint(constraint: ConstraintCheck<A>): Constraint<A> {
     return Constraint(A, constraint)
   }
 }

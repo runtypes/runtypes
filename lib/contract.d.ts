@@ -1,36 +1,47 @@
-import { Runtype } from './index';
+import { Runtype, ConstraintCheck } from './index';
 export interface Contract0<Z> {
     enforce(f: () => Z): () => Z;
+    withConstraint(constraint: ConstraintCheck<void>): Contract0<Z>;
 }
 export interface Contract1<A, Z> {
     enforce(f: (a: A) => Z): (a: A) => Z;
+    withConstraint(constraint: ConstraintCheck<[A]>): Contract1<A, Z>;
 }
 export interface Contract2<A, B, Z> {
     enforce(f: (a: A, b: B) => Z): (a: A, b: B) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B]>): Contract2<A, B, Z>;
 }
 export interface Contract3<A, B, C, Z> {
     enforce(f: (a: A, b: B, c: C) => Z): (a: A, b: B, c: C) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B, C]>): Contract3<A, B, C, Z>;
 }
 export interface Contract4<A, B, C, D, Z> {
     enforce(f: (a: A, b: B, c: C, d: D) => Z): (a: A, b: B, c: C, d: D) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B, C, D]>): Contract4<A, B, C, D, Z>;
 }
 export interface Contract5<A, B, C, D, E, Z> {
     enforce(f: (a: A, b: B, c: C, d: D, e: E) => Z): (a: A, b: B, c: C, d: D, e: E) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B, C, D, E]>): Contract5<A, B, C, D, E, Z>;
 }
 export interface Contract6<A, B, C, D, E, F, Z> {
     enforce(f: (a: A, b: B, c: C, d: D, e: E, f: F) => Z): (a: A, b: B, c: C, d: D, e: E, f: F) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B, C, D, E, F]>): Contract6<A, B, C, D, E, F, Z>;
 }
 export interface Contract7<A, B, C, D, E, F, G, Z> {
     enforce(f: (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => Z): (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B, C, D, E, F, G]>): Contract7<A, B, C, D, E, F, G, Z>;
 }
 export interface Contract8<A, B, C, D, E, F, G, H, Z> {
     enforce(f: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => Z): (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B, C, D, E, F, G, H]>): Contract8<A, B, C, D, E, F, G, H, Z>;
 }
 export interface Contract9<A, B, C, D, E, F, G, H, I, Z> {
     enforce(f: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I) => Z): (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B, C, D, E, F, G, H, I]>): Contract9<A, B, C, D, E, F, G, H, I, Z>;
 }
 export interface Contract10<A, B, C, D, E, F, G, H, I, J, Z> {
     enforce(f: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J) => Z): (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J) => Z;
+    withConstraint(constraint: ConstraintCheck<[A, B, C, D, E, F, G, H, I, J]>): Contract10<A, B, C, D, E, F, G, H, I, J, Z>;
 }
 /**
  * Create a function contract.
