@@ -1,13 +1,16 @@
 {
   "name": "runtypes",
-  "version": "0.9.1",
+  "version": "0.10.1",
   "description": "Runtime validation for static types",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "tsc --pretty",
-    "test": "npm run build && jest --verbose",
-    "develop": "jest --watchAll",
+    "build:watch": "tsc --noEmit --pretty --watch",
+    "test": "npm run build && jest --no-cache --verbose --coverage",
+    "test:watch": "jest --watchAll",
+    "coveralls": "cat ./coverage/remapped/lcov.info | ./node_modules/.bin/coveralls",
+    "upgrade": "updtr && npm shrinkwrap --dev",
     "release": "npm run release:patch",
     "release:patch": "xyz --increment patch",
     "release:minor": "xyz --increment minor",
@@ -16,10 +19,12 @@
   "author": "Thomas Crockett",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^18.1.1",
+    "@types/jest": "^19.2.2",
+    "coveralls": "^2.13.0",
     "jest": "^19.0.2",
-    "ts-jest": "^19.0.0",
-    "typescript": "2.2.1",
+    "ts-jest": "^19.0.8",
+    "typescript": "2.2.2",
+    "updtr": "^1.0.0",
     "xyz": "^2.1.0"
   },
   "keywords:": [
@@ -40,7 +45,13 @@
       "ts"
     ],
     "transform": {
-      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor"
+      "\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor"
+    },
+    "testResultsProcessor": "<rootDir>/node_modules/ts-jest/coverageprocessor.js",
+    "globals": {
+      "__TS_CONFIG__": {
+        "target": "es6"
+      }
     },
     "testEnvironment": "node"
   }

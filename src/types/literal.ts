@@ -1,5 +1,4 @@
-import { Runtype, create } from '../runtype'
-import { ValidationError } from '../validation-error'
+import { Runtype, create, validationError } from '../runtype'
 
 /**
  * The super type of all literal types.
@@ -17,7 +16,7 @@ export interface Literal<A extends LiteralBase> extends Runtype<A> {
 export function Literal<A extends LiteralBase>(value: A): Literal<A> {
   return create<Literal<A>>(x => {
     if (x !== value)
-      throw new ValidationError(`Expected literal '${value}' but was '${x}'`)
+      throw validationError(`Expected literal '${value}' but was '${x}'`)
     return x as A
   }, { tag: 'literal', value })
 }

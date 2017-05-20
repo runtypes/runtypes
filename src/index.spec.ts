@@ -13,7 +13,7 @@ import {
   Array,
   Dictionary,
   Record,
-  Optional,
+  Partial,
   Tuple, Tuple2,
   Union, Union2,
   Intersect, Intersect2,
@@ -50,10 +50,11 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
-  Partial: Record({ Boolean }).And(Optional({ foo: String })),
+  Partial: Partial({ foo: String }).And(Record({ Boolean })),
   Function,
   Person,
-  MoreThanThree: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
+  MoreThanThree: Number.withConstraint(n => n > 3),
+  MoreThanThreeWithMessage: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
   DictionaryOfArrays: Dictionary(Array(Boolean))
@@ -71,13 +72,14 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: true, passes: ['Boolean', 'true'] },
   { value: false, passes: ['Boolean', 'false'] },
   { value: 3, passes: ['Number', '3', 'union1'] },
-  { value: 42, passes: ['Number', '42', 'MoreThanThree'] },
+  { value: 42, passes: ['Number', '42', 'MoreThanThree', 'MoreThanThreeWithMessage'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
+  { value: { Boolean: true, foo: 5 }, passes: [] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
   { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
@@ -85,6 +87,7 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
   { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
   { value: new Foo(), passes: [] },
+  { value: { Boolean: true, Number: '5' }, passes: ['Partial'] }
 ]
 
 for (const { value, passes } of testValues) {
@@ -210,9 +213,9 @@ describe('reflection', () => {
     expectLiteralField(Rec.fields.y, 'value', 3)
   })
 
-  it('optional', () => {
-    const Opt = Optional({ x: Number, y: Literal(3) })
-    expectLiteralField(Opt, 'tag', 'optional')
+  it('partial', () => {
+    const Opt = Partial({ x: Number, y: Literal(3) })
+    expectLiteralField(Opt, 'tag', 'partial')
     expectLiteralField(Opt.fields.x, 'tag', 'number')
     expectLiteralField(Opt.fields.y, 'tag', 'literal')
     expectLiteralField(Opt.fields.y, 'value', 3)
@@ -261,7 +264,7 @@ describe('reflection', () => {
   | Literal<boolean | number | string>
   | Array<Reflect>
   | Record<{ [_ in string]: Reflect }>
-  | Optional<{ [_ in string]: Reflect }>
+  | Partial<{ [_ in string]: Reflect }>
   | Tuple2<Reflect, Reflect>
   | Union2<Reflect, Reflect>
   | Intersect2<Reflect, Reflect>
@@ -297,7 +300,7 @@ describe('reflection', () => {
     case 'record':
       check<{ [K in keyof typeof X.fields]: Static<typeof X.fields['K']> }>(X)
       break
-    case 'optional':
+    case 'partial':
       check<{ [K in keyof typeof X.fields]?: Static<typeof X.fields['K']> }>(X)
       break
     case 'tuple':

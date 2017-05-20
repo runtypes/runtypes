@@ -1,6 +1,5 @@
-import { Runtype, create, Rt, Static } from '../runtype'
+import { Runtype, create, Rt, Static, validationError } from '../runtype'
 import { Record } from './record'
-import { ValidationError } from '../validation-error'
 
 export interface StringDictionary<V extends Rt> extends Runtype<{ [_: string]: Static<V> }> {
   tag: 'dictionary'
@@ -24,20 +23,20 @@ export function Dictionary<V extends Rt>(value: V, key = 'string') {
     Record({}).check(x)
 
     if (typeof x !== 'object')
-      throw new ValidationError(`Expected an object but was ${typeof x}`)
+      throw validationError(`Expected an object but was ${typeof x}`)
 
     if (Object.getPrototypeOf(x) !== Object.prototype) {
       if (!Array.isArray(x))
-        throw new ValidationError(`Expected simple object but was complex`)
+        throw validationError(`Expected simple object but was complex`)
       else if (key === 'string')
-        throw new ValidationError(`Expected dictionary but was array`)
+        throw validationError(`Expected dictionary but was array`)
     }
 
     for (const k in x) {
       // Object keys are always strings
       if (key === 'number') {
         if (isNaN(+k))
-          throw new ValidationError(`Expected dictionary key to be a number but was string`)
+          throw validationError(`Expected dictionary key to be a number but was string`)
       }
       value.check((x as any)[k])
     }

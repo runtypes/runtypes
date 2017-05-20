@@ -1,5 +1,4 @@
-import { Runtype, create } from '../runtype'
-import { ValidationError } from '../validation-error'
+import { Runtype, create, validationError } from '../runtype'
 
 export interface Void extends Runtype<void> { tag: 'void' }
 
@@ -8,6 +7,6 @@ export interface Void extends Runtype<void> { tag: 'void' }
  */
 export const Void = create<Void>(x => {
   if (x !== undefined && x !== null)
-    throw new ValidationError(`Expected null but was ${typeof x}`)
+    throw validationError(`Expected null but was ${typeof x}`)
   return x
 }, { tag: 'void' })

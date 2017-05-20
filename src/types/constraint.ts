@@ -1,6 +1,5 @@
-import { Runtype, Rt, Static, create } from '../runtype'
+import { Runtype, Rt, Static, create, validationError } from '../runtype'
 import { String } from './string'
-import { ValidationError } from '../validation-error'
 
 export interface Constraint<A extends Rt> extends Runtype<Static<A>> {
   tag: 'constraint'
@@ -14,11 +13,10 @@ export function Constraint<A extends Rt>(underlying: A, constraint: (x: A) => bo
     const result = constraint(typed)
     if (String.guard(result) || !result || (correction && correction(typed) !== typed)) {
       if (String.guard(result))
-        throw new ValidationError(result)
+        throw validationError(result)
       else
-        throw new ValidationError('Failed constraint check')
+        throw validationError('Failed constraint check')
     }
-
     return typed
   }, { tag: 'constraint', underlying, correction })
 }

@@ -1,5 +1,4 @@
-import { Runtype, Rt, Static, create } from '../runtype'
-import { ValidationError } from '../validation-error'
+import { Runtype, Rt, Static, create, validationError } from '../runtype'
 
 interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
   tag: 'array'
@@ -12,7 +11,7 @@ interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
 function Arr<E extends Rt>(element: E): Arr<E> {
   return create<Arr<E>>(xs => {
     if (!Array.isArray(xs))
-      throw new ValidationError(`Expected array but was ${typeof xs}`)
+      throw validationError(`Expected array but was ${typeof xs}`)
     for (const x of xs)
       element.check(x)
     return xs

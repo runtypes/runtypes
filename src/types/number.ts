@@ -1,5 +1,4 @@
-import { Runtype, create } from '../runtype'
-import { ValidationError } from '../validation-error'
+import { Runtype, create, validationError } from '../runtype'
 
 export interface Number extends Runtype<number> { tag: 'number' }
 
@@ -8,6 +7,6 @@ export interface Number extends Runtype<number> { tag: 'number' }
  */
 export const Number = create<Number>(x => {
   if (typeof x !== 'number')
-    throw new ValidationError(`Expected number but was ${typeof x}`)
+    throw validationError(`Expected number but was ${typeof x}`)
   return x
 }, { tag: 'number' })

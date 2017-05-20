@@ -1,5 +1,5 @@
 import { Runtype } from './index'
-import { ValidationError } from './validation-error'
+import { validationError } from './runtype'
 
 export interface Contract0<Z> {
   enforce(
@@ -165,7 +165,7 @@ export function Contract(...runtypes: Runtype<any>[]) {
   return {
     enforce: (f: (...args: any[]) => any) => (...args: any[]) => {
       if (args.length < argTypes.length)
-        throw new ValidationError(`Expected ${argTypes.length} arguments but only received ${args.length}`)
+        throw validationError(`Expected ${argTypes.length} arguments but only received ${args.length}`)
       for (let i = 0; i < argTypes.length; i++)
         argTypes[i].check(args[i])
       return returnType.check(f(...args))
