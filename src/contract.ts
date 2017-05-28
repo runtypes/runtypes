@@ -178,13 +178,12 @@ export function Contract(...runtypes: Runtype<any>[]) {
   let argsTuple = Tuple.apply(null, argTypes)
 
   const result = {
-    reflect: {
-      argTypes: argsTuple,
-      returnType
-    },
+    tag: 'contract',
+    argTypes: argsTuple,
+    returnType,
     withConstraint: (...args: any[]) => {
       argsTuple = argsTuple.withConstraint(...args)
-      result.reflect.argTypes = argsTuple
+      result.argTypes = argsTuple
       return result;
     },
     enforce: (f: (...args: any[]) => any) => (...args: any[]) => {
