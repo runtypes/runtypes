@@ -1,12 +1,19 @@
 import { Runtype, Rt, Static, create, validationError } from '../runtype'
 import { String } from './string'
 
+export type ConstraintCheck<T> = (x: T) => boolean | string
+export type ConstraintCorrection<T> = (x: T) => T
+export type ConstraintRightInverse<T> = (x: T) => T
+
 export interface Constraint<A extends Rt> extends Runtype<Static<A>> {
   tag: 'constraint'
-  underlying: A
+  underlying: A,
+  constraint: ConstraintCheck<A>,
+  correction?: ConstraintCorrection<A>,
+  rightInverse?: ConstraintRightInverse<A>
 }
 
-export function Constraint<A extends Rt>(underlying: A, constraint: (x: A) => boolean | string) {
+export function Constraint<A extends Rt>(underlying: A, constraint: ConstraintCheck<A>, correction?: ConstraintCorrection<A>, rightInverse?: ConstraintRightInverse<A>) {
   return create<Constraint<A>>(x => {
     const typed = underlying.check(x)
     const result = constraint(typed)
@@ -15,5 +22,5 @@ export function Constraint<A extends Rt>(underlying: A, constraint: (x: A) => bo
     else if (!result)
       throw validationError('Failed constraint check')
     return typed
-  }, { tag: 'constraint', underlying })
+  }, { tag: 'constraint', underlying, constraint, correction, rightInverse })
 }

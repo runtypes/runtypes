@@ -1,4 +1,4 @@
-import { Result, Union, Union2, Intersect, Intersect2, Constraint } from './index'
+import { Result, Union, Union2, Intersect, Intersect2, Constraint, ConstraintCheck, ConstraintCorrection, ConstraintRightInverse } from './index'
 import { Reflect } from './reflect'
 import show from './show'
 
@@ -39,7 +39,7 @@ export interface Runtype<A> {
    * for some reason. May also return a string which indicates an
    * error and provides a descriptive message.
    */
-  withConstraint(constraint: (x: A) => boolean | string): Constraint<this>
+  withConstraint(constraint: ConstraintCheck<A>, correction?: ConstraintCorrection<A>, rightInverse?: ConstraintRightInverse<A>): Constraint<this>
 
   /**
    * Convert this to a Reflect, capable of introspecting the structure of the type.
@@ -93,8 +93,9 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
     return Intersect(A, B)
   }
 
-  function withConstraint(constraint: (x: A) => boolean | string): Constraint<A> {
-    return Constraint(A, constraint)
+
+  function withConstraint(constraint: ConstraintCheck<A>, correction?: ConstraintCorrection<A>, rightInverse?: ConstraintRightInverse<A>): Constraint<A> {
+    return Constraint(A, constraint, correction, rightInverse)
   }
 }
 

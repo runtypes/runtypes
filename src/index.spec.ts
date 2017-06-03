@@ -146,6 +146,22 @@ describe('contracts', () => {
       fail('contract was violated but no exception was thrown')
     } catch (e) {/* success */}
   })
+
+  it('2 args with constraint', () => {
+    const f = (x: string, y: boolean) => y ? x.length : 4
+    const contract = Contract(String, Boolean, Number).withConstraint(
+      ([x, y]) => !!(x.length && !y)
+    );
+    expect(contract.enforce(f)('hello', false)).toBe(4)
+    try {
+      ;(contract.enforce(f) as any)('hello', true)
+      fail('contract was violated but no exception was thrown')
+
+      ;(contract.enforce(f) as any)('', false)
+      fail('contract was violated but no exception was thrown')
+    } catch (e) {/* success */}
+  })
+
 })
 
 describe('reflection', () => {
