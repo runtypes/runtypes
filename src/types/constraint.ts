@@ -22,5 +22,5 @@ export function Constraint<A extends Rt>(underlying: A, constraint: ConstraintCh
     else if (!result)
       throw validationError('Failed constraint check')
     return typed
-  }, { tag: 'constraint', underlying, correction, rightInverse })
+  }, { tag: 'constraint', underlying, constraint, correction, rightInverse })
 }

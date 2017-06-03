@@ -1,4 +1,4 @@
-import { Result, Union2, Intersect2, Constraint } from './index';
+import { Result, Union2, Intersect2, Constraint, ConstraintCheck, ConstraintCorrection, ConstraintRightInverse } from './index';
 import { Reflect } from './reflect';
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
@@ -32,7 +32,7 @@ export interface Runtype<A> {
      * for some reason. May also return a string which indicates an
      * error and provides a descriptive message.
      */
-    withConstraint(constraint: (x: A) => boolean | string): Constraint<this>;
+    withConstraint(constraint: ConstraintCheck<A>, correction?: ConstraintCorrection<A>, rightInverse?: ConstraintRightInverse<A>): Constraint<this>;
     /**
      * Convert this to a Reflect, capable of introspecting the structure of the type.
      */
