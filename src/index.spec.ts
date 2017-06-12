@@ -56,6 +56,7 @@ const runtypes = {
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3),
   MoreThanThreeWithMessage: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
+  ArrayNumber: Array(Number),
   CustomArray: Custom(Array(Number), (x, args) => x.length > args.min, 'Length', {min:3}),
   CustomArrayWithMessage: Custom(Array(Number), (x, args) => x.length > args.min || `Length array is not greater ${args.min}`, 'Length', {min:3}),
   Dictionary: Dictionary(String),
@@ -90,8 +91,9 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
   { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
   { value: new Foo(), passes: [] },
+  { value: [1, 2, 4], passes: ['ArrayNumber'] },
   { value: { Boolean: true, Number: '5' }, passes: ['Partial'] },
-  { value: [1, 2, 3, 4], passes: ['CustomArray', 'CustomArrayWithMessage'] }
+  { value: [1, 2, 3, 4], passes: ['ArrayNumber', 'CustomArray', 'CustomArrayWithMessage'] }
 ]
 
 for (const { value, passes } of testValues) {
