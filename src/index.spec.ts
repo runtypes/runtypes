@@ -20,6 +20,7 @@ import {
   Function,
   Lazy,
   Constraint,
+  Custom,
   Contract,
   Reflect,
 } from './index'
@@ -55,6 +56,8 @@ const runtypes = {
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3),
   MoreThanThreeWithMessage: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
+  CustomArray: Custom(Array(Number), (x, args) => x.length > args.min, 'Length', {min:3}),
+  CustomArrayWithMessage: Custom(Array(Number), (x, args) => x.length > args.min || `Length array is not greater ${args.min}`, 'Length', {min:3}),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
   DictionaryOfArrays: Dictionary(Array(Boolean))
@@ -87,7 +90,8 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
   { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
   { value: new Foo(), passes: [] },
-  { value: { Boolean: true, Number: '5' }, passes: ['Partial'] }
+  { value: { Boolean: true, Number: '5' }, passes: ['Partial'] },
+  { value: [1, 2, 3, 4], passes: ['CustomArray', 'CustomArrayWithMessage'] }
 ]
 
 for (const { value, passes } of testValues) {
@@ -249,6 +253,12 @@ describe('reflection', () => {
     const C = Number.withConstraint(n => n > 9)
     expectLiteralField(C, 'tag', 'constraint')
     expectLiteralField(C.underlying, 'tag', 'number')
+  })
+
+  it('custom', () => {
+    const C = Custom(Array(Number), (x, args) => x.length > args.min, 'Length', {min:3})
+    expectLiteralField(C, 'tag', 'Length')
+    expectLiteralField(C.underlying, 'tag', 'array')
   })
 })
 
