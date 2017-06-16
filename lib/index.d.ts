@@ -19,4 +19,3 @@ export * from './types/intersect';
 export * from './types/function';
 export * from './types/lazy';
 export * from './types/constraint';
-export * from './types/custom';

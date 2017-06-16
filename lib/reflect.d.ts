@@ -1,6 +1,7 @@
 import { Runtype } from './runtype';
 import { always } from './types/always';
 import { LiteralBase } from './types/literal';
+import { ConstraintCheck } from './types/constraint';
 export declare type Reflect = {
     tag: 'always';
 } & Runtype<always> | {
@@ -53,4 +54,9 @@ export declare type Reflect = {
 } & Runtype<(...args: any[]) => any> | {
     tag: 'constraint';
     underlying: Reflect;
+    constraint: ConstraintCheck<Reflect>;
+    args?: {
+        tag: string;
+        [_: string]: any;
+    };
 } & Runtype<always>;

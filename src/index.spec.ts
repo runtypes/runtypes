@@ -20,7 +20,6 @@ import {
   Function,
   Lazy,
   Constraint,
-  Custom,
   Contract,
   Reflect,
 } from './index'
@@ -57,8 +56,8 @@ const runtypes = {
   MoreThanThree: Number.withConstraint(n => n > 3),
   MoreThanThreeWithMessage: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
   ArrayNumber: Array(Number),
-  CustomArray: Custom(Array(Number), (x, args) => x.length > args.min, 'Length', {min:3}),
-  CustomArrayWithMessage: Custom(Array(Number), (x, args) => x.length > args.min || `Length array is not greater ${args.min}`, 'Length', {min:3}),
+  CustomArray: Array(Number).withConstraint(x => x.length > 3, {tag: 'lenght', min:3}),
+  CustomArrayWithMessage: Array(Number).withConstraint(x => x.length > 3 || `Length array is not greater 3`, {tag: 'lenght', min:3}),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
   DictionaryOfArrays: Dictionary(Array(Boolean))
@@ -256,12 +255,6 @@ describe('reflection', () => {
     expectLiteralField(C, 'tag', 'constraint')
     expectLiteralField(C.underlying, 'tag', 'number')
   })
-
-  it('custom', () => {
-    const C = Custom(Array(Number), (x, args) => x.length > args.min, 'Length', {min:3})
-    expectLiteralField(C, 'tag', 'Length')
-    expectLiteralField(C.underlying, 'tag', 'array')
-  })
 })
 
 // Static tests of reflection
@@ -281,7 +274,7 @@ describe('reflection', () => {
   | Union2<Reflect, Reflect>
   | Intersect2<Reflect, Reflect>
   | Function
-  | Constraint<Reflect>
+  | Constraint<Reflect, any>
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({})
   switch (X.tag) {

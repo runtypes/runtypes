@@ -1,6 +1,7 @@
 import { Runtype } from './runtype'
 import { always } from './types/always'
 import { LiteralBase } from './types/literal'
+import { ConstraintCheck } from './types/constraint'
 
 export type Reflect =
   | { tag: 'always' } & Runtype<always>
@@ -18,4 +19,4 @@ export type Reflect =
   | { tag: 'union'; alternatives: Reflect[] } & Runtype<always>
   | { tag: 'intersect'; intersectees: Reflect[] } & Runtype<always>
   | { tag: 'function' } & Runtype<(...args: any[]) => any>
-  | { tag: 'constraint'; underlying: Reflect } & Runtype<always>
+  | { tag: 'constraint'; underlying: Reflect; constraint: ConstraintCheck<Reflect>; args?: { tag: string, [_: string]:any } } & Runtype<always>
