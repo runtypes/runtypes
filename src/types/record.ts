@@ -24,12 +24,14 @@ export function Record<O extends { [_: string]: Rt }>(fields: O) {
         }
       } else {
         const reflect = fields[key] as any;
-        if (reflect.tag === "union") {
+        if (reflect.tag && reflect.tag === "union") {
           const alternatives: any[] = reflect.alternatives;
           const foundUndefined = alternatives.filter((a) => a.tag === "literal" && a.value === undefined);
           if (foundUndefined.length === 0) {
             throw validationError(`Missing property '${key}'`)
           }
+        } else {
+          throw validationError(`Missing property '${key}'`)
         }
 
       }
