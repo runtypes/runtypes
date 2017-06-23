@@ -1,7 +1,7 @@
 import { Runtype, Rt, Static, create, validationError } from '../runtype'
 import { hasKey } from '../util'
 
-export interface Record<O extends { [_ in string]: Rt }> extends Runtype<{[K in keyof O]: Static<O[K]> }> {
+export interface Record<O extends {[_ in string]: Rt }> extends Runtype<{[K in keyof O]: Static<O[K]> }> {
   tag: 'record'
   fields: O
 }
@@ -22,8 +22,19 @@ export function Record<O extends { [_: string]: Rt }>(fields: O) {
         } catch ({ message }) {
           throw validationError(`In key ${key}: ${message}`)
         }
-      } else
-        throw validationError(`Missing property ${key}`)
+      } else {
+        const reflect = fields[key] as any;
+        if (reflect.tag && reflect.tag === "union") {
+          const alternatives: any[] = reflect.alternatives;
+          const foundUndefined = alternatives.filter((a) => a.tag === "literal" && a.value === undefined);
+          if (foundUndefined.length === 0) {
+            throw validationError(`Missing property '${key}'`)
+          }
+        } else {
+          throw validationError(`Missing property '${key}'`)
+        }
+
+      }
     }
 
     return x as O
