@@ -14,11 +14,11 @@
   "author": "Thomas Crockett",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^19.2.2",
+    "@types/jest": "20.0.2",
     "coveralls": "^2.13.0",
-    "jest": "^19.0.2",
-    "ts-jest": "^19.0.8",
-    "typescript": "2.2.2",
+    "jest": "20.0.4",
+    "ts-jest": "19.0.14",
+    "typescript": "2.4.1",
     "xyz": "^2.1.0"
   },
   "keywords:": [
