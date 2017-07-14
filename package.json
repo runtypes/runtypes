@@ -7,14 +7,9 @@
   "scripts": {
     "build": "tsc --pretty",
     "build:watch": "tsc --noEmit --pretty --watch",
-    "test": "npm run build && jest --no-cache --verbose --coverage",
+    "test": "yarn run build && jest --no-cache --verbose --coverage",
     "test:watch": "jest --watchAll",
-    "coveralls": "cat ./coverage/remapped/lcov.info | ./node_modules/.bin/coveralls",
-    "upgrade": "updtr && npm shrinkwrap --dev",
-    "release": "npm run release:patch",
-    "release:patch": "xyz --increment patch",
-    "release:minor": "xyz --increment minor",
-    "release:major": "xyz --increment major"
+    "coveralls": "cat ./coverage/remapped/lcov.info | ./node_modules/.bin/coveralls"
   },
   "author": "Thomas Crockett",
   "license": "MIT",
