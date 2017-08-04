@@ -55,8 +55,5 @@ export declare type Reflect = {
     tag: 'constraint';
     underlying: Reflect;
     constraint: ConstraintCheck<Reflect>;
-    args?: {
-        tag: string;
-        [_: string]: any;
-    };
+    args?: any;
 } & Runtype<always>;

@@ -93,7 +93,7 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
     return Intersect(A, B)
   }
 
-  function withConstraint<K extends {tag: string}>(constraint: ConstraintCheck<A>, args?: K): Constraint<A, K> {
+  function withConstraint<K>(constraint: ConstraintCheck<A>, args?: K): Constraint<A, K> {
     return Constraint(A, constraint, args)
   }
 }
