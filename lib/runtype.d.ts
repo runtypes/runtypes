@@ -32,9 +32,7 @@ export interface Runtype<A> {
      * for some reason. May also return a string which indicates an
      * error and provides a descriptive message.
      */
-    withConstraint<K extends {
-        tag: string;
-    }>(constraint: ConstraintCheck<this>, args?: K): Constraint<this, K>;
+    withConstraint<K>(constraint: ConstraintCheck<this>, args?: K): Constraint<this, K>;
     /**
      * Convert this to a Reflect, capable of introspecting the structure of the type.
      */
