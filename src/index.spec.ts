@@ -55,6 +55,9 @@ const runtypes = {
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3),
   MoreThanThreeWithMessage: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
+  ArrayNumber: Array(Number),
+  CustomArray: Array(Number).withConstraint(x => x.length > 3, {tag: 'lenght', min:3}),
+  CustomArrayWithMessage: Array(Number).withConstraint(x => x.length > 3 || `Length array is not greater 3`, {tag: 'lenght', min:3}),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
   DictionaryOfArrays: Dictionary(Array(Boolean))
@@ -87,7 +90,9 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
   { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
   { value: new Foo(), passes: [] },
-  { value: { Boolean: true, Number: '5' }, passes: ['Partial'] }
+  { value: [1, 2, 4], passes: ['ArrayNumber'] },
+  { value: { Boolean: true, Number: '5' }, passes: ['Partial'] },
+  { value: [1, 2, 3, 4], passes: ['ArrayNumber', 'CustomArray', 'CustomArrayWithMessage'] }
 ]
 
 for (const { value, passes } of testValues) {
@@ -269,7 +274,7 @@ describe('reflection', () => {
   | Union2<Reflect, Reflect>
   | Intersect2<Reflect, Reflect>
   | Function
-  | Constraint<Reflect>
+  | Constraint<Reflect, any>
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({})
   switch (X.tag) {
