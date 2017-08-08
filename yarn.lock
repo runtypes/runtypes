@@ -1960,7 +1960,7 @@ sax@^1.2.1:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
 
-"semver@2 || 3 || 4 || 5", semver@5.3.x, semver@^5.3.0:
+"semver@2 || 3 || 4 || 5", semver@^5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
 
@@ -2301,12 +2301,6 @@ xml-name-validator@^2.0.1:
 xtend@^4.0.0, xtend@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.1.tgz#a5c6d532be656e23db820efb943a1f04998d63af"
-
-xyz@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/xyz/-/xyz-2.1.0.tgz#c3ca897f156d2178bd818cd503f94b0a3b52fa6c"
-  dependencies:
-    semver "5.3.x"
 
 y18n@^3.2.1:
   version "3.2.1"
