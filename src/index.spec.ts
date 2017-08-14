@@ -22,6 +22,7 @@ import {
   Constraint,
   Contract,
   Reflect,
+  InstanceOf
 } from './index'
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
@@ -30,6 +31,9 @@ const union1 = Union(Literal(3), String, boolTuple, record1)
 
 type Person = { name: string, likes: Person[] }
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }))
+
+class SomeClass {}
+class SomeOtherClass {}
 
 const runtypes = {
   Always,
@@ -60,7 +64,10 @@ const runtypes = {
   CustomArrayWithMessage: Array(Number).withConstraint(x => x.length > 3 || `Length array is not greater 3`, {tag: 'lenght', min:3}),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
-  DictionaryOfArrays: Dictionary(Array(Boolean))
+  DictionaryOfArrays: Dictionary(Array(Boolean)),
+  InstanceOfSomeClass: InstanceOf(SomeClass),
+  InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
+  DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass)))
 }
 
 type RuntypeName = keyof typeof runtypes
@@ -92,7 +99,9 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: new Foo(), passes: [] },
   { value: [1, 2, 4], passes: ['ArrayNumber'] },
   { value: { Boolean: true, Number: '5' }, passes: ['Partial'] },
-  { value: [1, 2, 3, 4], passes: ['ArrayNumber', 'CustomArray', 'CustomArrayWithMessage'] }
+  { value: [1, 2, 3, 4], passes: ['ArrayNumber', 'CustomArray', 'CustomArrayWithMessage'] },
+  { value: new SomeClass(), passes: ['InstanceOfSomeClass'] },
+  { value: {xxx: [new SomeClass()]}, passes: ['DictionaryOfArraysOfSomeClass'] }
 ]
 
 for (const { value, passes } of testValues) {
@@ -255,7 +264,13 @@ describe('reflection', () => {
     expectLiteralField(C, 'tag', 'constraint')
     expectLiteralField(C.underlying, 'tag', 'number')
   })
-})
+
+  it('instanceof', () => {
+    class Test {}
+    expectLiteralField(InstanceOf(Test), "tag", "instanceof")
+    expectLiteralField(Dictionary(Array(InstanceOf(Test))), "tag", "dictionary")
+  })
+}) 
 
 // Static tests of reflection
 ;(
@@ -275,6 +290,7 @@ describe('reflection', () => {
   | Intersect2<Reflect, Reflect>
   | Function
   | Constraint<Reflect, any>
+  | InstanceOf<Reflect>
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({})
   switch (X.tag) {
@@ -322,6 +338,10 @@ describe('reflection', () => {
       break
     case 'constraint':
       check<Static<typeof X.underlying>>(X)
+      break;
+    case 'instanceof':
+      check<Static<typeof X.ctor>>(X)
+      break;
   }
 
   return X

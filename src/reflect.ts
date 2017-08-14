@@ -20,3 +20,4 @@ export type Reflect =
   | { tag: 'intersect'; intersectees: Reflect[] } & Runtype<always>
   | { tag: 'function' } & Runtype<(...args: any[]) => any>
   | { tag: 'constraint'; underlying: Reflect; constraint: ConstraintCheck<Reflect>; args?: any } & Runtype<always>
+  | { tag: 'instanceof', ctor: Reflect } & Runtype<any>

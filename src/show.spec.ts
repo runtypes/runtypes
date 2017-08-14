@@ -17,9 +17,12 @@ import {
   Intersect,
   Function,
   Lazy,
+  InstanceOf,
   Reflect,
 } from './index'
 import show from './show'
+
+class TestClass {}
 
 const cases: [Reflect, string][] = [
   [Always, 'always'],
@@ -39,6 +42,8 @@ const cases: [Reflect, string][] = [
   [Dictionary(Array(Boolean), 'number'), '{ [_: number]: boolean[] }'],
   [Record({}), '{}'],
   [Partial({}), '{}'],
+  [InstanceOf(TestClass), "InstanceOf<TestClass>"],
+  [Array(InstanceOf(TestClass)), "InstanceOf<TestClass>[]"],
   [
     Record({ x: String, y: Array(Boolean) }),
     '{ x: string; y: boolean[]; }'

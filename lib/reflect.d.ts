@@ -56,4 +56,7 @@ export declare type Reflect = {
     underlying: Reflect;
     constraint: ConstraintCheck<Reflect>;
     args?: any;
-} & Runtype<always>;
+} & Runtype<always> | {
+    tag: 'instanceof';
+    ctor: Reflect;
+} & Runtype<any>;
