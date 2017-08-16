@@ -22,7 +22,8 @@ import {
   Constraint,
   Contract,
   Reflect,
-  InstanceOf
+  InstanceOf,
+  IInstanceOfFunction
 } from './index'
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
@@ -290,7 +291,7 @@ describe('reflection', () => {
   | Intersect2<Reflect, Reflect>
   | Function
   | Constraint<Reflect, any>
-  | InstanceOf<Reflect>
+  | InstanceOf<IInstanceOfFunction>
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({})
   switch (X.tag) {
@@ -340,7 +341,7 @@ describe('reflection', () => {
       check<Static<typeof X.underlying>>(X)
       break;
     case 'instanceof':
-      check<Static<typeof X.ctor>>(X)
+      check<typeof X.ctor>(X)
       break;
   }
 

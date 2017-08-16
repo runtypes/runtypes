@@ -1,6 +1,8 @@
 import { Runtype } from "../runtype";
-export interface InstanceOf<V> extends Runtype<V> {
+export interface IInstanceOfFunction extends Function {
+}
+export interface InstanceOf<V extends IInstanceOfFunction> extends Runtype<V> {
     tag: "instanceof";
     ctor: V;
 }
-export declare function InstanceOf<V extends Function>(ctor: V): InstanceOf<V>;
+export declare function InstanceOf<V extends IInstanceOfFunction>(ctor: V): InstanceOf<V>;

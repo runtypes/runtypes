@@ -1,11 +1,14 @@
 import { Runtype, create, validationError } from "../runtype";
 
-export interface InstanceOf<V> extends Runtype<V> {
+export interface IInstanceOfFunction extends Function {}
+  
+export interface InstanceOf<V extends IInstanceOfFunction> extends Runtype<V> {
   tag: "instanceof";
   ctor: V;
 }
 
-export function InstanceOf<V extends Function>(ctor: V) {
+
+export function InstanceOf<V extends IInstanceOfFunction>(ctor: V) {
   return create<InstanceOf<V>>(
     x => {
       if (!(x instanceof ctor)) {
