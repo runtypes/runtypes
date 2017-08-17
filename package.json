@@ -9,7 +9,7 @@
     "build:watch": "tsc --noEmit --pretty --watch",
     "test": "yarn build && jest --no-cache --verbose --coverage",
     "test:watch": "jest --watchAll",
-    "coveralls": "cat ./coverage/remapped/lcov.info | ./node_modules/.bin/coveralls"
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "author": "Thomas Crockett",
   "license": "MIT",
