@@ -23,8 +23,9 @@ import {
   Contract,
   Reflect,
   InstanceOf,
-  IInstanceOfFunction
 } from './index'
+
+import { Constructor } from "./types/InstanceOf"
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
 const record1 = Record({ Boolean, Number })
@@ -291,7 +292,7 @@ describe('reflection', () => {
   | Intersect2<Reflect, Reflect>
   | Function
   | Constraint<Reflect, any>
-  | InstanceOf<IInstanceOfFunction>
+  | InstanceOf<Constructor>
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({})
   switch (X.tag) {

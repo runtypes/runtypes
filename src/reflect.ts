@@ -2,7 +2,7 @@ import { Runtype } from './runtype'
 import { always } from './types/always'
 import { LiteralBase } from './types/literal'
 import { ConstraintCheck } from './types/constraint'
-import { IInstanceOfFunction } from "./types/instanceof"
+import { Constructor } from "./types/instanceof"
 
 export type Reflect =
   | { tag: 'always' } & Runtype<always>
@@ -21,4 +21,4 @@ export type Reflect =
   | { tag: 'intersect'; intersectees: Reflect[] } & Runtype<always>
   | { tag: 'function' } & Runtype<(...args: any[]) => any>
   | { tag: 'constraint'; underlying: Reflect; constraint: ConstraintCheck<Reflect>; args?: any } & Runtype<always>
-  | { tag: 'instanceof', ctor: IInstanceOfFunction } & Runtype<any>
+  | { tag: 'instanceof', ctor: Constructor } & Runtype<any>

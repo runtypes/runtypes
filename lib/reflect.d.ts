@@ -2,7 +2,7 @@ import { Runtype } from './runtype';
 import { always } from './types/always';
 import { LiteralBase } from './types/literal';
 import { ConstraintCheck } from './types/constraint';
-import { IInstanceOfFunction } from "./types/instanceof";
+import { Constructor } from "./types/instanceof";
 export declare type Reflect = {
     tag: 'always';
 } & Runtype<always> | {
@@ -59,5 +59,5 @@ export declare type Reflect = {
     args?: any;
 } & Runtype<always> | {
     tag: 'instanceof';
-    ctor: IInstanceOfFunction;
+    ctor: Constructor;
 } & Runtype<any>;
