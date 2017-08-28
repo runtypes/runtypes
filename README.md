@@ -204,3 +204,7 @@ divide(10, 2) // 5
 
 divide(10, 0) // Throws error: division by zero
 ```
+
+## Related libraries
+
+- [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
