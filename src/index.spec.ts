@@ -25,7 +25,7 @@ import {
   InstanceOf,
 } from './index'
 
-import { Constructor } from "./types/InstanceOf"
+import { Constructor } from "./types/instanceof"
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
 const record1 = Record({ Boolean, Number })
