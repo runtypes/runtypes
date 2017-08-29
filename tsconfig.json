@@ -11,7 +11,7 @@
         "outDir": "lib",
         "forceConsistentCasingInFileNames": true
     },
-    "include": [
-        "src/**/*"
+    "files": [
+        "src/index.ts"
     ]
 }
