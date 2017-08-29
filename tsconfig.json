@@ -8,7 +8,8 @@
         "noUnusedParameters": true,
         "declaration": true,
         "sourceMap": false,
-        "outDir": "lib"
+        "outDir": "lib",
+        "forceConsistentCasingInFileNames": true
     },
     "include": [
         "src/**/*"
