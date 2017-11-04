@@ -1,9 +1,9 @@
-import { Runtype, Rt, Static, create, validationError } from '../runtype'
+import { Runtype, Static, create, validationError } from '../runtype'
 import { Union } from '../index'
 import { Undefined } from './literal'
 import { hasKey } from '../util'
 
-export interface Part<O extends {[_ in string]: Rt }> extends Runtype<{[K in keyof O]?: Static<O[K]> }> {
+export interface Part<O extends {[_ in string]: Runtype }> extends Runtype<{[K in keyof O]?: Static<O[K]> }> {
   tag: 'partial'
   fields: O
 }
@@ -11,7 +11,7 @@ export interface Part<O extends {[_ in string]: Rt }> extends Runtype<{[K in key
 /**
  * Construct a runtype for partial records
  */
-export function Part<O extends { [_: string]: Rt }>(fields: O) {
+export function Part<O extends { [_: string]: Runtype }>(fields: O) {
   return create<Part<O>>(x => {
     if (x === null || x === undefined)
       throw validationError(`Expected a defined non-null value but was ${typeof x}`)

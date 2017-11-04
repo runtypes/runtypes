@@ -1,16 +1,16 @@
-import { Runtype, Rt, Static, create, validationError } from '../runtype'
+import { Runtype, Static, create, validationError } from '../runtype'
 import { String } from './string'
 
-export type ConstraintCheck<A extends Rt> = (x: Static<A>) => boolean | string
+export type ConstraintCheck<A extends Runtype> = (x: Static<A>) => boolean | string
 
-export interface Constraint<A extends Rt, K> extends Runtype<Static<A>> {
+export interface Constraint<A extends Runtype, K> extends Runtype<Static<A>> {
   tag: 'constraint'
   underlying: A,
   constraint: ConstraintCheck<A>,
   args?: K
 }
 
-export function Constraint<A extends Rt, K>(underlying: A, constraint: ConstraintCheck<A>, args?: K) {
+export function Constraint<A extends Runtype, K>(underlying: A, constraint: ConstraintCheck<A>, args?: K) {
   return create<Constraint<A, K>>(x => {
     const typed = underlying.check(x)
     const result = constraint(typed)

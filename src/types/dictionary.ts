@@ -1,13 +1,13 @@
-import { Runtype, create, Rt, Static, validationError } from '../runtype'
+import { Runtype, create, Static, validationError } from '../runtype'
 import { Record } from './record'
 
-export interface StringDictionary<V extends Rt> extends Runtype<{ [_: string]: Static<V> }> {
+export interface StringDictionary<V extends Runtype> extends Runtype<{ [_: string]: Static<V> }> {
   tag: 'dictionary'
   key: 'string'
   value: V
 }
 
-export interface NumberDictionary<V extends Rt> extends Runtype<{ [_: number]: Static<V> }> {
+export interface NumberDictionary<V extends Runtype> extends Runtype<{ [_: number]: Static<V> }> {
   tag: 'dictionary'
   key: 'number'
   value: V
@@ -16,10 +16,10 @@ export interface NumberDictionary<V extends Rt> extends Runtype<{ [_: number]: S
 /**
  * Construct a runtype for arbitrary dictionaries.
  */
-export function Dictionary<V extends Rt>(value: V, key?: 'string'): StringDictionary<V>
-export function Dictionary<V extends Rt>(value: V, key?: 'number'): NumberDictionary<V>
-export function Dictionary<V extends Rt>(value: V, key = 'string'): any {
-  return create<Rt>(x => {
+export function Dictionary<V extends Runtype>(value: V, key?: 'string'): StringDictionary<V>
+export function Dictionary<V extends Runtype>(value: V, key?: 'number'): NumberDictionary<V>
+export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
+  return create<Runtype>(x => {
     Record({}).check(x)
 
     if (typeof x !== 'object')

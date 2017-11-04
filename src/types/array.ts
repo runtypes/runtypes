@@ -1,6 +1,6 @@
-import { Runtype, Rt, Static, create, validationError } from '../runtype'
+import { Runtype, Static, create, validationError } from '../runtype'
 
-interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
+interface Arr<E extends Runtype> extends Runtype<Static<E>[]> {
   tag: 'array'
   element: E
 }
@@ -8,7 +8,7 @@ interface Arr<E extends Rt> extends Runtype<Static<E>[]> {
 /**
  * Construct an array runtype from a runtype for its elements.
  */
-function Arr<E extends Rt>(element: E): Arr<E> {
+function Arr<E extends Runtype>(element: E): Arr<E> {
   return create<Arr<E>>(xs => {
     if (!Array.isArray(xs))
       throw validationError(`Expected array but was ${typeof xs}`)

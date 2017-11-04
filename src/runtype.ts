@@ -5,7 +5,7 @@ import show from './show'
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export interface Runtype<A> {
+export interface Runtype<A = any> {
   /**
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
@@ -26,12 +26,12 @@ export interface Runtype<A> {
   /**
    * Union this Runtype with another.
    */
-  Or<B extends Rt>(B: B): Union2<this, B>
+  Or<B extends Runtype>(B: B): Union2<this, B>
 
   /**
    * Intersect this Runtype with another.
    */
-  And<B extends Rt>(B: B): Intersect2<this, B>
+  And<B extends Runtype>(B: B): Intersect2<this, B>
 
   /**
    * Provide a function which validates some arbitrary constraint,
@@ -50,16 +50,11 @@ export interface Runtype<A> {
 }
 
 /**
- * Just a convenient synonym for internal use in defining new Runtypes.
- */
-export type Rt = Runtype<any>
-
-/**
  * Obtains the static type associated with a Runtype.
  */
-export type Static<A extends Rt> = A['_falseWitness']
+export type Static<A extends Runtype> = A['_falseWitness']
 
-export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
+export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): A {
 
   A.check = check
   A.validate = validate
@@ -85,11 +80,11 @@ export function create<A extends Rt>(check: (x: {}) => Static<A>, A: any): A {
     return validate(x).success
   }
 
-  function Or<B extends Rt>(B: B): Union2<A, B> {
+  function Or<B extends Runtype>(B: B): Union2<A, B> {
     return Union(A, B)
   }
 
-  function And<B extends Rt>(B: B): Intersect2<A, B> {
+  function And<B extends Runtype>(B: B): Intersect2<A, B> {
     return Intersect(A, B)
   }
 

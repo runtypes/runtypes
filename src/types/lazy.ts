@@ -1,9 +1,9 @@
-import { Rt, create } from '../runtype'
+import { Runtype, create } from '../runtype'
 
 /**
  * Construct a possibly-recursive Runtype.
  */
-export function Lazy<A extends Rt>(delayed: () => A) {
+export function Lazy<A extends Runtype>(delayed: () => A) {
   const data: any = {
     get tag() { return (getWrapped() as any)['tag'] }
   }

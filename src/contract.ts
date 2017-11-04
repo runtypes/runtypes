@@ -158,7 +158,7 @@ export function Contract<A, B, C, D, E, F, G, H, I, J, Z>(
   J: Runtype<J>,
   Z: Runtype<Z>,
 ): Contract10<A, B, C, D, E, F, G, H, I, J, Z>
-export function Contract(...runtypes: Runtype<any>[]) {
+export function Contract(...runtypes: Runtype[]) {
   const lastIndex = runtypes.length - 1
   const argTypes = runtypes.slice(0, lastIndex)
   const returnType = runtypes[lastIndex]
