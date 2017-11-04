@@ -2,4 +2,4 @@ language: node_js
 node_js:
   - node
 cache: yarn
-after_success: 'npm run coveralls'
+after_success: 'yarn coveralls'
