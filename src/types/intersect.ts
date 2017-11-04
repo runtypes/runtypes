@@ -122,7 +122,7 @@ export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt
 export function Intersect<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
   A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
 ): Intersect10<A, B, C, D, E, F, G, H, I, J>
-export function Intersect(...intersectees: Runtype<any>[]) {
+export function Intersect(...intersectees: Runtype<any>[]): any {
   return create(x => {
     for (const { check } of intersectees)
       check(x)

@@ -123,7 +123,7 @@ export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E 
 export function Tuple<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, F extends Rt, G extends Rt, H extends Rt, I extends Rt, J extends Rt>(
   A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I, J: J,
 ): Tuple10<A, B, C, D, E, F, G, H, I, J>
-export function Tuple(...components: Runtype<any>[]) {
+export function Tuple(...components: Runtype<any>[]): any {
   return create(x => {
     const xs = Arr(Always).check(x)
     if (xs.length < components.length)

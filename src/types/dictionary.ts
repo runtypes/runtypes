@@ -16,9 +16,9 @@ export interface NumberDictionary<V extends Rt> extends Runtype<{ [_: number]: S
 /**
  * Construct a runtype for arbitrary dictionaries.
  */
-export function Dictionary<V extends Rt>(v: V, key?: 'string'): StringDictionary<V>
-export function Dictionary<V extends Rt>(v: V, key?: 'number'): NumberDictionary<V>
-export function Dictionary<V extends Rt>(value: V, key = 'string') {
+export function Dictionary<V extends Rt>(value: V, key?: 'string'): StringDictionary<V>
+export function Dictionary<V extends Rt>(value: V, key?: 'number'): NumberDictionary<V>
+export function Dictionary<V extends Rt>(value: V, key = 'string'): any {
   return create<Rt>(x => {
     Record({}).check(x)
 
