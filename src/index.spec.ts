@@ -34,8 +34,12 @@ const union1 = Union(Literal(3), String, boolTuple, record1)
 type Person = { name: string, likes: Person[] }
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }))
 
-class SomeClass {}
-class SomeOtherClass {}
+class SomeClass {
+  constructor(n: number) {}
+}
+class SomeOtherClass {
+  constructor(n: number) {}
+}
 
 const runtypes = {
   Always,
@@ -102,8 +106,8 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: [1, 2, 4], passes: ['ArrayNumber'] },
   { value: { Boolean: true, Number: '5' }, passes: ['Partial'] },
   { value: [1, 2, 3, 4], passes: ['ArrayNumber', 'CustomArray', 'CustomArrayWithMessage'] },
-  { value: new SomeClass(), passes: ['InstanceOfSomeClass'] },
-  { value: {xxx: [new SomeClass()]}, passes: ['DictionaryOfArraysOfSomeClass'] }
+  { value: new SomeClass(42), passes: ['InstanceOfSomeClass'] },
+  { value: {xxx: [new SomeClass(55)]}, passes: ['DictionaryOfArraysOfSomeClass'] }
 ]
 
 for (const { value, passes } of testValues) {
@@ -272,7 +276,7 @@ describe('reflection', () => {
     expectLiteralField(InstanceOf(Test), "tag", "instanceof")
     expectLiteralField(Dictionary(Array(InstanceOf(Test))), "tag", "dictionary")
   })
-}) 
+})
 
 // Static tests of reflection
 ;(
