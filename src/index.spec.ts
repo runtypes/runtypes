@@ -9,6 +9,7 @@ import {
   Boolean,
   Number,
   String,
+  DateTime,
   Literal,
   Array,
   Dictionary,
@@ -55,6 +56,7 @@ const runtypes = {
   3: Literal(3),
   42: Literal(42),
   String,
+  DateTime,
   'hello world': Literal('hello world'),
   boolArray: Array(Boolean),
   boolTuple,
@@ -107,7 +109,8 @@ const testValues: { value: always, passes: RuntypeName[] }[] = [
   { value: { Boolean: true, Number: '5' }, passes: ['Partial'] },
   { value: [1, 2, 3, 4], passes: ['ArrayNumber', 'CustomArray', 'CustomArrayWithMessage'] },
   { value: new SomeClass(42), passes: ['InstanceOfSomeClass'] },
-  { value: {xxx: [new SomeClass(55)]}, passes: ['DictionaryOfArraysOfSomeClass'] }
+  { value: {xxx: [new SomeClass(55)]}, passes: ['DictionaryOfArraysOfSomeClass'] },
+  { value: new Date(), passes: ['DateTime'] }
 ]
 
 for (const { value, passes } of testValues) {
