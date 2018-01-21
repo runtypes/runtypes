@@ -182,7 +182,7 @@ There's also a top-level `match` function which allows testing an ad-hoc sequenc
 ```ts
 const makeANumber = match(
   [Number, n => n * 3],
-  [Boolean, b => (b ? 1 : 0)],
+  [Boolean, b => b ? 1 : 0],
   [String, s => s.length],
 );
 
@@ -194,7 +194,7 @@ To allow the function to be applied to anything and then handle match failures, 
 ```ts
 const makeANumber = match(
   [Number, n => n * 3],
-  [Boolean, b => (b ? 1 : 0)],
+  [Boolean, b => b ? 1 : 0],
   [String, s => s.length],
   [Always, () => 42]
 );
