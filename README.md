@@ -166,11 +166,38 @@ function disembark(obj: {}) {
 The `Union` runtype offers the ability to do type-safe, exhaustive case analysis across its variants using the `match` method:
 
 ```ts
-const isHabitable = SpaceObject.match(asteroid => false, planet => planet.habitable);
+const isHabitable = SpaceObject.match(
+  asteroid => false,
+  planet => planet.habitable,
+  ship => true
+);
 
 if (isHabitable(spaceObject)) {
   // ...
 }
+```
+
+There's also a top-level `match` function which allows testing an ad-hoc sequence of runtypes:
+
+```ts
+const makeANumber = match(
+  [Number, n => n * 3],
+  [Boolean, b => (b ? 1 : 0)],
+  [String, s => s.length],
+);
+
+makeANumber(9); // = 27
+```
+
+To allow the function to be applied to anything and then handle match failures, simply use an `Always` case at the end:
+
+```ts
+const makeANumber = match(
+  [Number, n => n * 3],
+  [Boolean, b => (b ? 1 : 0)],
+  [String, s => s.length],
+  [Always, () => 42]
+);
 ```
 
 ## Constraint checking

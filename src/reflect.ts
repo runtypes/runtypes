@@ -25,7 +25,7 @@ export type Reflect =
   | {
       tag: 'constraint';
       underlying: Reflect;
-      constraint: ConstraintCheck<Runtype<always>>;
+      constraint: ConstraintCheck<Runtype<never>>;
       args?: any;
     } & Runtype<always>
   | { tag: 'instanceof'; ctor: Constructor<always> } & Runtype<always>;

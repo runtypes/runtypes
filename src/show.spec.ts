@@ -19,7 +19,7 @@ import {
   Lazy,
   InstanceOf,
   Reflect,
-} from './index';
+} from '.';
 import show from './show';
 
 class TestClass {}

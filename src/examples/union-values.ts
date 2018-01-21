@@ -1,4 +1,4 @@
-import { Static, Union, Literal } from '../index';
+import { Static, Union, Literal, match } from '../index';
 
 // Define the runtype
 const Day = Union(
@@ -20,3 +20,9 @@ const days: Day[] = Day.alternatives.map(lit => lit.value);
 for (const day of days) {
   console.log(`Good morning, it's ${day}!`);
 }
+
+const isWeekend = match(
+  [Literal('Sunday'), () => true],
+  [Literal('Saturday'), () => true],
+  [Day, () => false],
+);

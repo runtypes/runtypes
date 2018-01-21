@@ -39,10 +39,10 @@ type Person = { name: string; likes: Person[] };
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }));
 
 class SomeClass {
-  constructor(n: number) {}
+  constructor(public n: number) {}
 }
 class SomeOtherClass {
-  constructor(n: number) {}
+  constructor(public n: number) {}
 }
 
 const runtypes = {
@@ -307,7 +307,7 @@ describe('reflection', () => {
     | Intersect2<Reflect, Reflect>
     | Function
     | Constraint<Reflect, any>
-    | InstanceOf<Constructor>,
+    | InstanceOf<Constructor<never>>,
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({});
   switch (X.tag) {
