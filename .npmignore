@@ -1,5 +1,5 @@
-# Compiled output
-lib/
+# Compiled test files
+lib/**/*.spec.*
 
 # Code coverage output
 coverage/
