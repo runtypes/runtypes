@@ -10,7 +10,7 @@ import {
   Union,
   Static,
   match,
-} from '../index';
+} from '..';
 
 const NonNegative = Number.withConstraint(n => n >= 0);
 type NonNegative = Static<typeof NonNegative>; // = number
