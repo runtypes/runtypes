@@ -1,17 +1,27 @@
 import { Runtype as Rt, Case } from '.';
 
-export function match<A extends Rt, Z>(cases: [PairCase<A, Z>]): (x: any) => Z;
+export function match<A extends Rt, Z>(a: PairCase<A, Z>): (x: any) => Z;
 export function match<A extends Rt, B extends Rt, Z>(
-  cases: [PairCase<A, Z>, PairCase<B, Z>],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
 ): (x: any) => Z;
 export function match<A extends Rt, B extends Rt, C extends Rt, Z>(
-  cases: [PairCase<A, Z>, PairCase<B, Z>, PairCase<C, Z>],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
+  c: PairCase<C, Z>,
 ): (x: any) => Z;
 export function match<A extends Rt, B extends Rt, C extends Rt, D extends Rt, Z>(
-  cases: [PairCase<A, Z>, PairCase<B, Z>, PairCase<C, Z>, PairCase<D, Z>],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
+  c: PairCase<C, Z>,
+  d: PairCase<D, Z>,
 ): (x: any) => Z;
 export function match<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt, Z>(
-  cases: [PairCase<A, Z>, PairCase<B, Z>, PairCase<C, Z>, PairCase<D, Z>, PairCase<E, Z>],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
+  c: PairCase<C, Z>,
+  d: PairCase<D, Z>,
+  e: PairCase<E, Z>,
 ): (x: any) => Z;
 export function match<
   A extends Rt,
@@ -22,14 +32,12 @@ export function match<
   F extends Rt,
   Z
 >(
-  cases: [
-    PairCase<A, Z>,
-    PairCase<B, Z>,
-    PairCase<C, Z>,
-    PairCase<D, Z>,
-    PairCase<E, Z>,
-    PairCase<F, Z>
-  ],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
+  c: PairCase<C, Z>,
+  d: PairCase<D, Z>,
+  e: PairCase<E, Z>,
+  f: PairCase<F, Z>,
 ): (x: any) => Z;
 export function match<
   A extends Rt,
@@ -41,15 +49,13 @@ export function match<
   G extends Rt,
   Z
 >(
-  cases: [
-    PairCase<A, Z>,
-    PairCase<B, Z>,
-    PairCase<C, Z>,
-    PairCase<D, Z>,
-    PairCase<E, Z>,
-    PairCase<F, Z>,
-    PairCase<G, Z>
-  ],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
+  c: PairCase<C, Z>,
+  d: PairCase<D, Z>,
+  e: PairCase<E, Z>,
+  f: PairCase<F, Z>,
+  g: PairCase<G, Z>,
 ): (x: any) => Z;
 export function match<
   A extends Rt,
@@ -62,16 +68,14 @@ export function match<
   H extends Rt,
   Z
 >(
-  cases: [
-    PairCase<A, Z>,
-    PairCase<B, Z>,
-    PairCase<C, Z>,
-    PairCase<D, Z>,
-    PairCase<E, Z>,
-    PairCase<F, Z>,
-    PairCase<G, Z>,
-    PairCase<H, Z>
-  ],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
+  c: PairCase<C, Z>,
+  d: PairCase<D, Z>,
+  e: PairCase<E, Z>,
+  f: PairCase<F, Z>,
+  g: PairCase<G, Z>,
+  h: PairCase<H, Z>,
 ): (x: any) => Z;
 export function match<
   A extends Rt,
@@ -85,17 +89,15 @@ export function match<
   I extends Rt,
   Z
 >(
-  cases: [
-    PairCase<A, Z>,
-    PairCase<B, Z>,
-    PairCase<C, Z>,
-    PairCase<D, Z>,
-    PairCase<E, Z>,
-    PairCase<F, Z>,
-    PairCase<G, Z>,
-    PairCase<H, Z>,
-    PairCase<I, Z>
-  ],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
+  c: PairCase<C, Z>,
+  d: PairCase<D, Z>,
+  e: PairCase<E, Z>,
+  f: PairCase<F, Z>,
+  g: PairCase<G, Z>,
+  h: PairCase<H, Z>,
+  i: PairCase<I, Z>,
 ): (x: any) => Z;
 export function match<
   A extends Rt,
@@ -110,20 +112,18 @@ export function match<
   J extends Rt,
   Z
 >(
-  cases: [
-    PairCase<A, Z>,
-    PairCase<B, Z>,
-    PairCase<C, Z>,
-    PairCase<D, Z>,
-    PairCase<E, Z>,
-    PairCase<F, Z>,
-    PairCase<G, Z>,
-    PairCase<H, Z>,
-    PairCase<I, Z>,
-    PairCase<J, Z>
-  ],
+  a: PairCase<A, Z>,
+  b: PairCase<B, Z>,
+  c: PairCase<C, Z>,
+  d: PairCase<D, Z>,
+  e: PairCase<E, Z>,
+  f: PairCase<F, Z>,
+  g: PairCase<G, Z>,
+  h: PairCase<H, Z>,
+  i: PairCase<I, Z>,
+  j: PairCase<J, Z>,
 ): (x: any) => Z;
-export function match<Z>(cases: PairCase<any, Z>[]): (x: any) => Z {
+export function match<Z>(...cases: PairCase<any, Z>[]): (x: any) => Z {
   return x => {
     for (const [T, f] of cases) if (T.guard(x)) return f(x);
     throw new Error('No alternatives were matched');

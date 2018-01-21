@@ -214,7 +214,7 @@ export function Union<
   J: J,
 ): Union10<A, B, C, D, E, F, G, H, I, J>;
 export function Union(...alternatives: Rt[]): any {
-  const match = (cases: any[]) => (x: any) => {
+  const match = (...cases: any[]) => (x: any) => {
     for (let i = 0; i < alternatives.length; i++) {
       if (alternatives[i].guard(x)) {
         return cases[i](x);
@@ -232,19 +232,19 @@ export function Union(...alternatives: Rt[]): any {
 }
 
 export interface Match1<A extends Rt> {
-  <Z>(cases: [Case<A, Z>]): (x: Static1<A>) => Z;
+  <Z>(a: Case<A, Z>): (x: Static1<A>) => Z;
 }
 export interface Match2<A extends Rt, B extends Rt> {
-  <Z>(cases: [Case<A, Z>, Case<B, Z>]): (x: Static2<A, B>) => Z;
+  <Z>(a: Case<A, Z>, b: Case<B, Z>): (x: Static2<A, B>) => Z;
 }
 export interface Match3<A extends Rt, B extends Rt, C extends Rt> {
-  <Z>(cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>]): (x: Static3<A, B, C>) => Z;
+  <Z>(a: Case<A, Z>, b: Case<B, Z>, c: Case<C, Z>): (x: Static3<A, B, C>) => Z;
 }
 export interface Match4<A extends Rt, B extends Rt, C extends Rt, D extends Rt> {
-  <Z>(cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>, Case<D, Z>]): (x: Static4<A, B, C, D>) => Z;
+  <Z>(a: Case<A, Z>, b: Case<B, Z>, c: Case<C, Z>, d: Case<D, Z>): (x: Static4<A, B, C, D>) => Z;
 }
 export interface Match5<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt> {
-  <Z>(cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>, Case<D, Z>, Case<E, Z>]): (
+  <Z>(a: Case<A, Z>, b: Case<B, Z>, c: Case<C, Z>, d: Case<D, Z>, e: Case<E, Z>): (
     x: Static5<A, B, C, D, E>,
   ) => Z;
 }
@@ -256,7 +256,7 @@ export interface Match6<
   E extends Rt,
   F extends Rt
 > {
-  <Z>(cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>, Case<D, Z>, Case<E, Z>, Case<F, Z>]): (
+  <Z>(a: Case<A, Z>, b: Case<B, Z>, c: Case<C, Z>, d: Case<D, Z>, e: Case<E, Z>, f: Case<F, Z>): (
     x: Static6<A, B, C, D, E, F>,
   ) => Z;
 }
@@ -270,7 +270,13 @@ export interface Match7<
   G extends Rt
 > {
   <Z>(
-    cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>, Case<D, Z>, Case<E, Z>, Case<F, Z>, Case<G, Z>],
+    a: Case<A, Z>,
+    b: Case<B, Z>,
+    c: Case<C, Z>,
+    d: Case<D, Z>,
+    e: Case<E, Z>,
+    f: Case<F, Z>,
+    g: Case<G, Z>,
   ): (x: Static7<A, B, C, D, E, F, G>) => Z;
 }
 export interface Match8<
@@ -284,16 +290,14 @@ export interface Match8<
   H extends Rt
 > {
   <Z>(
-    cases: [
-      Case<A, Z>,
-      Case<B, Z>,
-      Case<C, Z>,
-      Case<D, Z>,
-      Case<E, Z>,
-      Case<F, Z>,
-      Case<G, Z>,
-      Case<H, Z>
-    ],
+    a: Case<A, Z>,
+    b: Case<B, Z>,
+    c: Case<C, Z>,
+    d: Case<D, Z>,
+    e: Case<E, Z>,
+    f: Case<F, Z>,
+    g: Case<G, Z>,
+    h: Case<H, Z>,
   ): (x: Static8<A, B, C, D, E, F, G, H>) => Z;
 }
 export interface Match9<
@@ -308,17 +312,15 @@ export interface Match9<
   I extends Rt
 > {
   <Z>(
-    cases: [
-      Case<A, Z>,
-      Case<B, Z>,
-      Case<C, Z>,
-      Case<D, Z>,
-      Case<E, Z>,
-      Case<F, Z>,
-      Case<G, Z>,
-      Case<H, Z>,
-      Case<I, Z>
-    ],
+    a: Case<A, Z>,
+    b: Case<B, Z>,
+    c: Case<C, Z>,
+    d: Case<D, Z>,
+    e: Case<E, Z>,
+    f: Case<F, Z>,
+    g: Case<G, Z>,
+    h: Case<H, Z>,
+    i: Case<I, Z>,
   ): (x: Static9<A, B, C, D, E, F, G, H, I>) => Z;
 }
 export interface Match10<
@@ -334,18 +336,16 @@ export interface Match10<
   J extends Rt
 > {
   <Z>(
-    cases: [
-      Case<A, Z>,
-      Case<B, Z>,
-      Case<C, Z>,
-      Case<D, Z>,
-      Case<E, Z>,
-      Case<F, Z>,
-      Case<G, Z>,
-      Case<H, Z>,
-      Case<I, Z>,
-      Case<J, Z>
-    ],
+    a: Case<A, Z>,
+    b: Case<B, Z>,
+    c: Case<C, Z>,
+    d: Case<D, Z>,
+    e: Case<E, Z>,
+    f: Case<F, Z>,
+    g: Case<G, Z>,
+    h: Case<H, Z>,
+    i: Case<I, Z>,
+    j: Case<J, Z>,
   ): (x: Static10<A, B, C, D, E, F, G, H, I, J>) => Z;
 }
 

@@ -166,7 +166,7 @@ function disembark(obj: {}) {
 The `Union` runtype offers the ability to do type-safe, exhaustive case analysis across its variants using the `match` method:
 
 ```ts
-const isHabitable = SpaceObject.match([asteroid => false, planet => planet.habitable]);
+const isHabitable = SpaceObject.match(asteroid => false, planet => planet.habitable);
 
 if (isHabitable(spaceObject)) {
   // ...
