@@ -169,7 +169,7 @@ The `Union` runtype offers the ability to do type-safe, exhaustive case analysis
 const isHabitable = SpaceObject.match(
   asteroid => false,
   planet => planet.habitable,
-  ship => true
+  ship => true,
 );
 
 if (isHabitable(spaceObject)) {
