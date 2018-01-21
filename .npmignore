@@ -1,6 +1,9 @@
 # Compiled test files
 lib/**/*.spec.*
 
+# Examples
+examples/
+
 # Code coverage output
 coverage/
 

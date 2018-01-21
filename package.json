@@ -19,7 +19,7 @@
     "jest": "21.2.1",
     "prettier": "^1.10.2",
     "ts-jest": "^21.1.4",
-    "typescript": "2.6.1"
+    "typescript": "^2.6.2"
   },
   "keywords:": [
     "runtime",
@@ -43,5 +43,6 @@
     },
     "mapCoverage": true,
     "testEnvironment": "node"
-  }
+  },
+  "dependencies": {}
 }

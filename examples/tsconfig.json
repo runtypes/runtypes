@@ -4,12 +4,9 @@
     "target": "es5",
     "lib": ["es2015", "dom"],
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "declaration": true,
     "sourceMap": false,
     "outDir": "lib",
     "forceConsistentCasingInFileNames": true
-  },
-  "exclude": ["./lib/**/*", "./examples/**/*"]
+  }
 }

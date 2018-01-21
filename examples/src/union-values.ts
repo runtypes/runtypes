@@ -1,4 +1,4 @@
-import { Static, Union, Literal, match } from '..';
+import { Static, Union, Literal, match } from 'runtypes';
 
 // Define the runtype
 const Day = Union(

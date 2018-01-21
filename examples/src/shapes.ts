@@ -1,6 +1,6 @@
 // Inspired by https://github.com/Microsoft/TypeScript/issues/165#issuecomment-342989523
 
-import { match, Record, Number, Union, Static } from '..';
+import { match, Record, Number, Union, Static } from 'runtypes';
 
 const Square = Record({ size: Number });
 const Rectangle = Record({ width: Number, height: Number });
