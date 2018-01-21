@@ -1,96 +1,94 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype as Rt, Static, create } from '../runtype';
 
-export interface Union1<A extends Runtype> extends Runtype<Static<A>> {
+export interface Union1<A extends Rt> extends Rt<Static1<A>> {
   tag: 'union';
   alternatives: [A];
+  match: Match1<A>;
 }
 
-export interface Union2<A extends Runtype, B extends Runtype>
-  extends Runtype<Static<A> | Static<B>> {
+export interface Union2<A extends Rt, B extends Rt> extends Rt<Static2<A, B>> {
   tag: 'union';
   alternatives: [A, B];
+  match: Match2<A, B>;
 }
 
-export interface Union3<A extends Runtype, B extends Runtype, C extends Runtype>
-  extends Runtype<Static<A> | Static<B> | Static<C>> {
+export interface Union3<A extends Rt, B extends Rt, C extends Rt> extends Rt<Static3<A, B, C>> {
   tag: 'union';
   alternatives: [A, B, C];
+  match: Match3<A, B, C>;
 }
 
-export interface Union4<A extends Runtype, B extends Runtype, C extends Runtype, D extends Runtype>
-  extends Runtype<Static<A> | Static<B> | Static<C> | Static<D>> {
+export interface Union4<A extends Rt, B extends Rt, C extends Rt, D extends Rt>
+  extends Rt<Static<A> | Static<B> | Static<C> | Static<D>> {
   tag: 'union';
   alternatives: [A, B, C, D];
+  match: Match4<A, B, C, D>;
 }
 
-export interface Union5<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype
-> extends Runtype<Static<A> | Static<B> | Static<C> | Static<D> | Static<E>> {
+export interface Union5<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt>
+  extends Rt<Static<A> | Static<B> | Static<C> | Static<D> | Static<E>> {
   tag: 'union';
   alternatives: [A, B, C, D, E];
+  match: Match5<A, B, C, D, E>;
 }
 
 export interface Union6<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype
-> extends Runtype<Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F>> {
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt
+> extends Rt<Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F>> {
   tag: 'union';
   alternatives: [A, B, C, D, E, F];
+  match: Match6<A, B, C, D, E, F>;
 }
 
 export interface Union7<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype,
-  G extends Runtype
->
-  extends Runtype<
-      Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G>
-    > {
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt
+> extends Rt<Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G>> {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G];
+  match: Match7<A, B, C, D, E, F, G>;
 }
 
 export interface Union8<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype,
-  G extends Runtype,
-  H extends Runtype
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt
 >
-  extends Runtype<
+  extends Rt<
       Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H>
     > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H];
+  match: Match8<A, B, C, D, E, F, G, H>;
 }
 
 export interface Union9<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype,
-  G extends Runtype,
-  H extends Runtype,
-  I extends Runtype
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt
 >
-  extends Runtype<
+  extends Rt<
       | Static<A>
       | Static<B>
       | Static<C>
@@ -103,21 +101,22 @@ export interface Union9<
     > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I];
+  match: Match9<A, B, C, D, E, F, G, H, I>;
 }
 
 export interface Union10<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype,
-  G extends Runtype,
-  H extends Runtype,
-  I extends Runtype,
-  J extends Runtype
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt
 >
-  extends Runtype<
+  extends Rt<
       | Static<A>
       | Static<B>
       | Static<C>
@@ -131,80 +130,77 @@ export interface Union10<
     > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J];
+  match: Match10<A, B, C, D, E, F, G, H, I, J>;
 }
 
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-export function Union<A extends Runtype>(A: A): Union1<A>;
-export function Union<A extends Runtype, B extends Runtype>(A: A, B: B): Union2<A, B>;
-export function Union<A extends Runtype, B extends Runtype, C extends Runtype>(
-  A: A,
-  B: B,
-  C: C,
-): Union3<A, B, C>;
-export function Union<A extends Runtype, B extends Runtype, C extends Runtype, D extends Runtype>(
+export function Union<A extends Rt>(A: A): Union1<A>;
+export function Union<A extends Rt, B extends Rt>(A: A, B: B): Union2<A, B>;
+export function Union<A extends Rt, B extends Rt, C extends Rt>(A: A, B: B, C: C): Union3<A, B, C>;
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt>(
   A: A,
   B: B,
   C: C,
   D: D,
 ): Union4<A, B, C, D>;
+export function Union<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt>(
+  A: A,
+  B: B,
+  C: C,
+  D: D,
+  E: E,
+): Union5<A, B, C, D, E>;
 export function Union<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype
->(A: A, B: B, C: C, D: D, E: E): Union5<A, B, C, D, E>;
-export function Union<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt
 >(A: A, B: B, C: C, D: D, E: E, F: F): Union6<A, B, C, D, E, F>;
 export function Union<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype,
-  G extends Runtype
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt
 >(A: A, B: B, C: C, D: D, E: E, F: F, G: G): Union7<A, B, C, D, E, F, G>;
 export function Union<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype,
-  G extends Runtype,
-  H extends Runtype
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt
 >(A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H): Union8<A, B, C, D, E, F, G, H>;
 export function Union<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype,
-  G extends Runtype,
-  H extends Runtype,
-  I extends Runtype
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt
 >(A: A, B: B, C: C, D: D, E: E, F: F, G: G, H: H, I: I): Union9<A, B, C, D, E, F, G, H, I>;
 export function Union<
-  A extends Runtype,
-  B extends Runtype,
-  C extends Runtype,
-  D extends Runtype,
-  E extends Runtype,
-  F extends Runtype,
-  G extends Runtype,
-  H extends Runtype,
-  I extends Runtype,
-  J extends Runtype
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt
 >(
   A: A,
   B: B,
@@ -217,12 +213,224 @@ export function Union<
   I: I,
   J: J,
 ): Union10<A, B, C, D, E, F, G, H, I, J>;
-export function Union(...alternatives: Runtype[]): any {
+export function Union(...alternatives: Rt[]): any {
+  const match = (cases: any[]) => (x: any) => {
+    for (let i = 0; i < alternatives.length; i++) {
+      if (alternatives[i].guard(x)) {
+        return cases[i](x);
+      }
+    }
+  };
+
   return create(
     x => {
       for (const { guard } of alternatives) if (guard(x)) return x;
       throw new Error('No alternatives were matched');
     },
-    { tag: 'union', alternatives },
+    { tag: 'union', alternatives, match },
   );
 }
+
+export interface Match1<A extends Rt> {
+  <Z>(cases: [Case<A, Z>]): (x: Static1<A>) => Z;
+}
+export interface Match2<A extends Rt, B extends Rt> {
+  <Z>(cases: [Case<A, Z>, Case<B, Z>]): (x: Static2<A, B>) => Z;
+}
+export interface Match3<A extends Rt, B extends Rt, C extends Rt> {
+  <Z>(cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>]): (x: Static3<A, B, C>) => Z;
+}
+export interface Match4<A extends Rt, B extends Rt, C extends Rt, D extends Rt> {
+  <Z>(cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>, Case<D, Z>]): (x: Static4<A, B, C, D>) => Z;
+}
+export interface Match5<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt> {
+  <Z>(cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>, Case<D, Z>, Case<E, Z>]): (
+    x: Static5<A, B, C, D, E>,
+  ) => Z;
+}
+export interface Match6<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt
+> {
+  <Z>(cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>, Case<D, Z>, Case<E, Z>, Case<F, Z>]): (
+    x: Static6<A, B, C, D, E, F>,
+  ) => Z;
+}
+export interface Match7<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt
+> {
+  <Z>(
+    cases: [Case<A, Z>, Case<B, Z>, Case<C, Z>, Case<D, Z>, Case<E, Z>, Case<F, Z>, Case<G, Z>],
+  ): (x: Static7<A, B, C, D, E, F, G>) => Z;
+}
+export interface Match8<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt
+> {
+  <Z>(
+    cases: [
+      Case<A, Z>,
+      Case<B, Z>,
+      Case<C, Z>,
+      Case<D, Z>,
+      Case<E, Z>,
+      Case<F, Z>,
+      Case<G, Z>,
+      Case<H, Z>
+    ],
+  ): (x: Static8<A, B, C, D, E, F, G, H>) => Z;
+}
+export interface Match9<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt
+> {
+  <Z>(
+    cases: [
+      Case<A, Z>,
+      Case<B, Z>,
+      Case<C, Z>,
+      Case<D, Z>,
+      Case<E, Z>,
+      Case<F, Z>,
+      Case<G, Z>,
+      Case<H, Z>,
+      Case<I, Z>
+    ],
+  ): (x: Static9<A, B, C, D, E, F, G, H, I>) => Z;
+}
+export interface Match10<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt
+> {
+  <Z>(
+    cases: [
+      Case<A, Z>,
+      Case<B, Z>,
+      Case<C, Z>,
+      Case<D, Z>,
+      Case<E, Z>,
+      Case<F, Z>,
+      Case<G, Z>,
+      Case<H, Z>,
+      Case<I, Z>,
+      Case<J, Z>
+    ],
+  ): (x: Static10<A, B, C, D, E, F, G, H, I, J>) => Z;
+}
+
+export type Case<T extends Rt, Result> = (v: Static<T>) => Result;
+
+export type Static1<A extends Rt> = Static<A>;
+export type Static2<A extends Rt, B extends Rt> = Static<A> | Static<B>;
+export type Static3<A extends Rt, B extends Rt, C extends Rt> = Static<A> | Static<B> | Static<C>;
+export type Static4<A extends Rt, B extends Rt, C extends Rt, D extends Rt> =
+  | Static<A>
+  | Static<B>
+  | Static<C>
+  | Static<D>;
+export type Static5<A extends Rt, B extends Rt, C extends Rt, D extends Rt, E extends Rt> =
+  | Static<A>
+  | Static<B>
+  | Static<C>
+  | Static<D>
+  | Static<E>;
+export type Static6<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt
+> = Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F>;
+export type Static7<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt
+> = Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G>;
+export type Static8<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt
+> = Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H>;
+export type Static9<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt
+> =
+  | Static<A>
+  | Static<B>
+  | Static<C>
+  | Static<D>
+  | Static<E>
+  | Static<F>
+  | Static<G>
+  | Static<H>
+  | Static<I>;
+export type Static10<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt
+> =
+  | Static<A>
+  | Static<B>
+  | Static<C>
+  | Static<D>
+  | Static<E>
+  | Static<F>
+  | Static<G>
+  | Static<H>
+  | Static<I>
+  | Static<J>;
