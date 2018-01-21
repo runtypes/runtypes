@@ -17,44 +17,40 @@ npm install --save runtypes
 Suppose you have objects which represent asteroids, planets, ships and crew members. In TypeScript, you might write their types like so:
 
 ```ts
-type Vector = [number, number, number]
+type Vector = [number, number, number];
 
 type Asteroid = {
-  type: 'asteroid'
-  location: Vector
-  mass: number
-}
+  type: 'asteroid';
+  location: Vector;
+  mass: number;
+};
 
 type Planet = {
-  type: 'planet'
-  location: Vector
-  mass: number
-  population: number
-  habitable: boolean
-}
+  type: 'planet';
+  location: Vector;
+  mass: number;
+  population: number;
+  habitable: boolean;
+};
 
-type Rank =
-  | 'captain'
-  | 'first mate'
-  | 'officer'
-  | 'ensign'
+type Rank = 'captain' | 'first mate' | 'officer' | 'ensign';
 
 type CrewMember = {
-  name: string
-  age: number
-  rank: Rank
-  home: Planet
-}
+  name: string;
+  age: number;
+  rank: Rank;
+  home: Planet;
+};
 
 type Ship = {
-  type: 'ship'
-  location: Vector
-  mass: number
-  name: string
-  crew: CrewMember[]
-}
+  type: 'ship';
+  location: Vector;
+  mass: number;
+  name: string;
+  crew: CrewMember[];
+};
 
-type SpaceObject = Asteroid | Planet | Ship
+type SpaceObject = Asteroid | Planet | Ship;
 ```
 
 If the objects which are supposed to have these shapes are loaded from some external source, perhaps a JSON file, we need to
@@ -62,15 +58,15 @@ validate that the objects conform to their specifications. We do so by building 
 manner:
 
 ```ts
-import { Boolean, Number, String, Literal, Array, Tuple, Record, Union } from 'runtypes'
+import { Boolean, Number, String, Literal, Array, Tuple, Record, Union } from 'runtypes';
 
-const Vector = Tuple(Number, Number, Number)
+const Vector = Tuple(Number, Number, Number);
 
 const Asteroid = Record({
   type: Literal('asteroid'),
   location: Vector,
   mass: Number,
-})
+});
 
 const Planet = Record({
   type: Literal('planet'),
@@ -78,21 +74,21 @@ const Planet = Record({
   mass: Number,
   population: Number,
   habitable: Boolean,
-})
+});
 
 const Rank = Union(
   Literal('captain'),
   Literal('first mate'),
   Literal('officer'),
   Literal('ensign'),
-)
+);
 
 const CrewMember = Record({
   name: String,
   age: Number,
   rank: Rank,
   home: Planet,
-})
+});
 
 const Ship = Record({
   type: Literal('ship'),
@@ -100,9 +96,9 @@ const Ship = Record({
   mass: Number,
   name: String,
   crew: Array(CrewMember),
-})
+});
 
-const SpaceObject = Union(Asteroid, Planet, Ship)
+const SpaceObject = Union(Asteroid, Planet, Ship);
 ```
 
 (See the [examples](src/examples) directory for an expanded version of this.)
@@ -111,7 +107,7 @@ Now if we are given a putative `SpaceObject` we can validate it like so:
 
 ```ts
 // spaceObject: SpaceObject
-const spaceObject = SpaceObject.check(obj)
+const spaceObject = SpaceObject.check(obj);
 ```
 
 If the object doesn't conform to the type specification, `check` will throw an exception.
@@ -134,19 +130,19 @@ twice, once at the type level and then again at the value level, is a pain and n
 Fortunately you can define a static `Asteroid` type which is an alias to the `Runtype`-derived type like so:
 
 ```ts
-import { Static } from 'runtypes'
+import { Static } from 'runtypes';
 
-type Asteroid = Static<typeof Asteroid>
+type Asteroid = Static<typeof Asteroid>;
 ```
 
 which achieves the same result as
 
 ```ts
 type Asteroid = {
-  type: 'asteroid'
-  coordinates: [number, number, number]
-  mass: number
-}
+  type: 'asteroid';
+  coordinates: [number, number, number];
+  mass: number;
+};
 ```
 
 ## Type guards
@@ -155,13 +151,25 @@ In addition to providing a `check` method, runtypes can be used as [type guards]
 
 ```ts
 function disembark(obj: {}) {
-    if (SpaceObject.guard(obj)) {
-        // obj: SpaceObject
-        if (obj.type === 'ship') {
-            // obj: Ship
-            obj.crew = []
-        }
+  if (SpaceObject.guard(obj)) {
+    // obj: SpaceObject
+    if (obj.type === 'ship') {
+      // obj: Ship
+      obj.crew = [];
     }
+  }
+}
+```
+
+## Pattern matching
+
+The `Union` runtype offers the ability to do type-safe, exhaustive case analysis across its variants using the `match` method:
+
+```ts
+const isHabitable = SpaceObject.match([asteroid => false, planet => planet.habitable]);
+
+if (isHabitable(spaceObject)) {
+  // ...
 }
 ```
 
@@ -170,19 +178,18 @@ function disembark(obj: {}) {
 Beyond mere type checking, we can add arbitrary runtime constraints to a `Runtype`:
 
 ```ts
-const Positive = Number.withConstraint(n => n > 0)
+const Positive = Number.withConstraint(n => n > 0);
 
-Positive.check(-3) // Throws error: Failed constraint check
+Positive.check(-3); // Throws error: Failed constraint check
 ```
 
 You can provide more descriptive error messages for failed constraints by returning
 a string instead of `false`:
 
-
 ```ts
-const Positive = Number.withConstraint(n => n > 0 || `${n} is not positive`)
+const Positive = Number.withConstraint(n => n > 0 || `${n} is not positive`);
 
-Positive.check(-3) // Throws error: -3 is not positive
+Positive.check(-3); // Throws error: -3 is not positive
 ```
 
 ## Function contracts
@@ -197,14 +204,14 @@ const divide = Contract(
   Number,
   Number.withConstraint(n => n !== 0 || 'division by zero'),
   // Return type:
-  Number
-).enforce((n, m) => n / m)
+  Number,
+).enforce((n, m) => n / m);
 
-divide(10, 2) // 5
+divide(10, 2); // 5
 
-divide(10, 0) // Throws error: division by zero
+divide(10, 0); // Throws error: division by zero
 ```
 
 ## Related libraries
 
-- [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
+* [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
