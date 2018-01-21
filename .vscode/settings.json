@@ -1,9 +1,9 @@
 {
-    "typescript.tsdk": "./node_modules/typescript/lib",
+  "typescript.tsdk": "./node_modules/typescript/lib",
 
-    // Files to exclude from the sidebar
-    "files.exclude": {
-        "lib/": true,
-        "coverage/": true
-    }
+  // Files to exclude from the sidebar
+  "files.exclude": {
+    "lib/": true,
+    "coverage/": true
+  }
 }

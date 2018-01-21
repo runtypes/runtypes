@@ -1,17 +1,15 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es5",
-        "lib": ["es2015"],
-        "strict": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "declaration": true,
-        "sourceMap": false,
-        "outDir": "lib",
-        "forceConsistentCasingInFileNames": true
-    },
-    "files": [
-        "src/index.ts"
-    ]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "lib": ["es2015"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "declaration": true,
+    "sourceMap": false,
+    "outDir": "lib",
+    "forceConsistentCasingInFileNames": true
+  },
+  "files": ["src/index.ts"]
 }
