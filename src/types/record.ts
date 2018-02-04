@@ -1,4 +1,4 @@
-import { Runtype, Static, create, validationError } from '../runtype';
+import { Runtype, Static, createIncremental, validationError } from '../runtype';
 import { hasKey } from '../util';
 
 export interface Record<O extends { [_ in string]: Runtype }>
@@ -11,23 +11,18 @@ export interface Record<O extends { [_ in string]: Runtype }>
  * Construct a record runtype from runtypes for its values.
  */
 export function Record<O extends { [_: string]: Runtype }>(fields: O) {
-  return create<Record<O>>(
-    x => {
+  return createIncremental<Record<O>>(
+    function*(x) {
       if (x === null || x === undefined)
-        throw validationError(`Expected a defined non-null value but was ${typeof x}`);
+        yield `Expected a defined non-null value but was ${typeof x}`;
 
-      // tslint:disable-next-line:forin
-      for (const key in fields) {
-        if (hasKey(key, x)) {
-          try {
-            fields[key].check(x[key]);
-          } catch ({ message }) {
-            throw validationError(`In key ${key}: ${message}`);
-          }
-        } else throw validationError(`Missing property ${key}`);
-      }
+      for (const key in fields) if (!hasKey(key, x)) yield `Missing property ${key}`;
 
-      return x as O;
+      const checkers = Object.keys(fields).map(key => [key, fields[key]._checker(x[key])]);
+
+      for (const [key, checker] of checkers)
+        for (const message of checker)
+          yield message === undefined ? undefined : `In key ${key}: ${message}`;
     },
     { tag: 'record', fields },
   );

@@ -231,11 +231,12 @@ export function Union(...alternatives: Rt[]): any {
         for (const [index, checker] of checkers.entries()) {
           const { done, value } = checker.next();
           if (done) {
-            if (Object.keys(errors).length === checkers.length)
+            if (Object.keys(errors).length === checkers.length) {
               yield 'No alternatives were matched';
+            }
             return;
           }
-          if (errors[index] === undefined) errors[index] = value;
+          if (value !== undefined && errors[index] === undefined) errors[index] = value;
           yield;
         }
       }

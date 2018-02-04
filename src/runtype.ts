@@ -113,7 +113,7 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
 
   function* checker(value: any) {
     const result = validate(value);
-    if (!result.success) yield result.message;
+    yield result.success ? undefined : result.message;
   }
 
   function validate(value: any): Result<A> {
