@@ -1,4 +1,4 @@
-import { Runtype, Static, createIncremental, validationError } from '../runtype';
+import { Runtype, Static, createIncremental } from '../runtype';
 import { hasKey } from '../util';
 
 export interface Record<O extends { [_ in string]: Runtype }>
