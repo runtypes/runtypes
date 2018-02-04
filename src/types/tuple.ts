@@ -230,7 +230,7 @@ export function Tuple(...components: Runtype[]): any {
       if (x.length < components.length)
         yield `Expected array of ${components.length} but was ${x.length}`;
       for (let i = 0; i < components.length; i++) {
-        for (const message of components[i]._checker(x[i])) {
+        for (const message of components[i]._checkIncrementally(x[i])) {
           yield message;
         }
       }

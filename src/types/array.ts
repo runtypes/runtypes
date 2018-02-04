@@ -12,7 +12,7 @@ function Arr<E extends Runtype>(element: E): Arr<E> {
   return createIncremental<Arr<E>>(
     function*(xs) {
       if (!Array.isArray(xs)) yield `Expected array but was ${typeof xs}`;
-      else for (const x of xs) for (const message of element._checker(x)) yield message;
+      else for (const x of xs) for (const message of element._checkIncrementally(x)) yield message;
     },
     { tag: 'array', element },
   );

@@ -18,7 +18,10 @@ export function Record<O extends { [_: string]: Runtype }>(fields: O) {
 
       for (const key in fields) if (!hasKey(key, x)) yield `Missing property ${key}`;
 
-      const checkers = Object.keys(fields).map(key => [key, fields[key]._checker(x[key])]);
+      const checkers = Object.keys(fields).map(key => [
+        key,
+        fields[key]._checkIncrementally(x[key]),
+      ]);
 
       for (const [key, checker] of checkers)
         for (const message of checker)

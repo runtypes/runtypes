@@ -224,7 +224,7 @@ export function Union(...alternatives: Rt[]): any {
 
   return createIncremental(
     function*(x) {
-      for (const checker of alternatives.map(alt => alt._checker(x))) {
+      for (const checker of alternatives.map(alt => alt._checkIncrementally(x))) {
         let foundError = false;
         for (const message of checker) {
           if (message !== undefined) {

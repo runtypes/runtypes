@@ -46,7 +46,7 @@ export interface Runtype<A = any> {
    */
   reflect: Reflect;
 
-  /* @internal */ _checker: IncrementalChecker;
+  /* @internal */ _checkIncrementally: IncrementalChecker;
 
   /* @internal */ _falseWitness: A;
 }
@@ -61,7 +61,7 @@ export function createIncremental<A extends Runtype>(checker: IncrementalChecker
     for (const err of checker(x)) if (err) throw new Error(err);
     return x;
   };
-  A._checker = checker;
+  A._checkIncrementally = checker;
   A.validate = validate;
   A.guard = guard;
   A.Or = Or;
@@ -100,7 +100,7 @@ export function createIncremental<A extends Runtype>(checker: IncrementalChecker
 
 export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): A {
   A.check = check;
-  A._checker = checker;
+  A._checkIncrementally = checkIncrementally;
   A.validate = validate;
   A.guard = guard;
   A.Or = Or;
@@ -111,7 +111,7 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
 
   return A;
 
-  function* checker(value: any) {
+  function* checkIncrementally(value: any) {
     const result = validate(value);
     yield result.success ? undefined : result.message;
   }
