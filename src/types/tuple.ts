@@ -1,4 +1,4 @@
-import { Runtype, Static, create, validationError } from '../runtype';
+import { Runtype, Static, create, validationError, createIncremental } from '../runtype';
 import { Always } from './always';
 import { Array as Arr } from './array';
 
@@ -221,13 +221,19 @@ export function Tuple<
   J: J,
 ): Tuple10<A, B, C, D, E, F, G, H, I, J>;
 export function Tuple(...components: Runtype[]): any {
-  return create(
-    x => {
-      const xs = Arr(Always).check(x);
-      if (xs.length < components.length)
-        throw validationError(`Expected array of ${components.length} but was ${xs.length}`);
-      for (let i = 0; i < components.length; i++) components[i].check(xs[i]);
-      return x;
+  return createIncremental(
+    function*(x) {
+      if (!Array.isArray(x)) {
+        yield `Expected array but was ${typeof x}`;
+        return;
+      }
+      if (x.length < components.length)
+        yield `Expected array of ${components.length} but was ${x.length}`;
+      for (let i = 0; i < components.length; i++) {
+        for (const message of components[i]._checker(x[i])) {
+          yield message;
+        }
+      }
     },
     { tag: 'tuple', components },
   );
