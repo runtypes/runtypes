@@ -6,6 +6,7 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "downlevelIteration": true,
     "declaration": true,
     "sourceMap": false,
     "outDir": "lib",

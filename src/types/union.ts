@@ -1,4 +1,4 @@
-import { Runtype as Rt, Static, create } from '../runtype';
+import { Runtype as Rt, Static, createIncremental } from '../runtype';
 
 export interface Union1<A extends Rt> extends Rt<Static1<A>> {
   tag: 'union';
@@ -222,10 +222,23 @@ export function Union(...alternatives: Rt[]): any {
     }
   };
 
-  return create(
-    x => {
-      for (const { guard } of alternatives) if (guard(x)) return x;
-      throw new Error('No alternatives were matched');
+  return createIncremental(
+    function*(x) {
+      const checkers = alternatives.map(alt => alt._checker(x));
+      const errors: { [k in string]?: string } = {};
+
+      while (true) {
+        for (const [index, checker] of checkers.entries()) {
+          const { done, value } = checker.next();
+          if (done) {
+            if (Object.keys(errors).length === checkers.length)
+              yield 'No alternatives were matched';
+            return;
+          }
+          if (errors[index] === undefined) errors[index] = value;
+          yield;
+        }
+      }
     },
     { tag: 'union', alternatives, match },
   );

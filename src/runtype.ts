@@ -46,6 +46,8 @@ export interface Runtype<A = any> {
    */
   reflect: Reflect;
 
+  /* @internal */ _checker: IncrementalChecker;
+
   /* @internal */ _falseWitness: A;
 }
 
@@ -54,8 +56,12 @@ export interface Runtype<A = any> {
  */
 export type Static<A extends Runtype> = A['_falseWitness'];
 
-export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): A {
-  A.check = check;
+export function createIncremental<A extends Runtype>(checker: IncrementalChecker, A: any): A {
+  A.check = (x: any) => {
+    for (const err of checker(x)) if (err) throw new Error(err);
+    return x;
+  };
+  A._checker = checker;
   A.validate = validate;
   A.guard = guard;
   A.Or = Or;
@@ -65,6 +71,50 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
   A.toString = () => `Runtype<${show(A)}>`;
 
   return A;
+
+  function validate(value: any): Result<A> {
+    try {
+      A.check(value);
+      return { success: true, value };
+    } catch ({ message }) {
+      return { success: false, message };
+    }
+  }
+
+  function guard(x: any): x is A {
+    return validate(x).success;
+  }
+
+  function Or<B extends Runtype>(B: B): Union2<A, B> {
+    return Union(A, B);
+  }
+
+  function And<B extends Runtype>(B: B): Intersect2<A, B> {
+    return Intersect(A, B);
+  }
+
+  function withConstraint<K>(constraint: ConstraintCheck<A>, args?: K): Constraint<A, K> {
+    return Constraint(A, constraint, args);
+  }
+}
+
+export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): A {
+  A.check = check;
+  A._checker = checker;
+  A.validate = validate;
+  A.guard = guard;
+  A.Or = Or;
+  A.And = And;
+  A.withConstraint = withConstraint;
+  A.reflect = A;
+  A.toString = () => `Runtype<${show(A)}>`;
+
+  return A;
+
+  function* checker(value: any) {
+    const result = validate(value);
+    if (!result.success) yield result.message;
+  }
 
   function validate(value: any): Result<A> {
     try {
@@ -101,3 +151,7 @@ export class ValidationError extends Error {
 export function validationError(message: string) {
   return new ValidationError(message);
 }
+
+export type Problem = string;
+
+export type IncrementalChecker = (x: any) => IterableIterator<Problem | undefined>;
