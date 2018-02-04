@@ -224,22 +224,18 @@ export function Union(...alternatives: Rt[]): any {
 
   return createIncremental(
     function*(x) {
-      const checkers = alternatives.map(alt => alt._checker(x));
-      const errors: { [k in string]?: string } = {};
-
-      while (true) {
-        for (const [index, checker] of checkers.entries()) {
-          const { done, value } = checker.next();
-          if (done) {
-            if (Object.keys(errors).length === checkers.length) {
-              yield 'No alternatives were matched';
-            }
-            return;
+      for (const checker of alternatives.map(alt => alt._checker(x))) {
+        let foundError = false;
+        for (const message of checker) {
+          if (message !== undefined) {
+            foundError = true;
+            break;
           }
-          if (value !== undefined && errors[index] === undefined) errors[index] = value;
-          yield;
         }
+        if (!foundError) return;
       }
+
+      yield 'No alternatives were matched';
     },
     { tag: 'union', alternatives, match },
   );
