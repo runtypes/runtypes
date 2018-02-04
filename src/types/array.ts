@@ -1,4 +1,4 @@
-import { Runtype, Static, create, validationError } from '../runtype';
+import { Runtype, Static, createIncremental } from '../runtype';
 
 interface Arr<E extends Runtype> extends Runtype<Static<E>[]> {
   tag: 'array';
@@ -9,11 +9,10 @@ interface Arr<E extends Runtype> extends Runtype<Static<E>[]> {
  * Construct an array runtype from a runtype for its elements.
  */
 function Arr<E extends Runtype>(element: E): Arr<E> {
-  return create<Arr<E>>(
-    xs => {
-      if (!Array.isArray(xs)) throw validationError(`Expected array but was ${typeof xs}`);
-      for (const x of xs) element.check(x);
-      return xs;
+  return createIncremental<Arr<E>>(
+    function*(xs) {
+      if (!Array.isArray(xs)) yield `Expected array but was ${typeof xs}`;
+      else for (const x of xs) for (const message of element._checker(x)) yield message;
     },
     { tag: 'array', element },
   );
