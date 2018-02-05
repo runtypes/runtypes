@@ -138,39 +138,33 @@ export function match<
   j: PairCase<J, Z>,
 ): Matcher10<A, B, C, D, E, F, G, H, I, J, Z>;
 export function match<Z>(...cases: PairCase<Runtype, Z>[]): (x: any) => Z {
-  interface CaseEntry {
-    checks: IterableIterator<string | undefined>;
-    handle: Case<Runtype, Z>;
-  }
-
   return x => {
-    const caseRecord: Record<string, CaseEntry> = {};
-    cases.forEach(([type, handle], index) => {
-      caseRecord[index] = { checks: type._checkIncrementally(x), handle };
-    });
+    const caseThreads = cases.map(([type, handle]) => ({
+      checks: type._checkIncrementally(x),
+      handle,
+    }));
 
-    while (true) {
-      const keys = Object.keys(caseRecord);
+    while (caseThreads.length > 0) {
+      let i = 0;
+      while (i < caseThreads.length) {
+        const { checks, handle } = caseThreads[i];
 
-      if (!keys.length) throw new Error('No alternatives were matched');
+        // If this is the last case, assume it matches and handle it
+        if (caseThreads.length === 1) return handle(x);
 
-      if (keys.length === 1) return caseRecord[keys[0]].handle(x);
+        // Perform the next incremental check for this case
+        const { done, value: error } = checks.next();
 
-      let first = true;
-      for (const k of keys) {
-        const { checks, handle } = caseRecord[k];
-        const { done, value } = checks.next();
+        // If the top case is finished checking call its handler
+        if (done && i === 0) return handle(x);
 
-        if (done && first) return handle(x);
-
-        if (value !== undefined) {
-          delete caseRecord[k];
-          break;
-        }
-
-        first = false;
+        // If a case has an error remove it from consideration
+        if (error !== undefined) caseThreads.splice(i, 1);
+        else i++;
       }
     }
+
+    throw new Error('No alternatives were matched');
   };
 }
 
