@@ -160,11 +160,14 @@ export function match<Z>(...cases: PairCase<Runtype, Z>[]): (x: any) => Z {
       for (const k of keys) {
         const { checks, handle } = caseRecord[k];
         const { done, value } = checks.next();
+
         if (done && first) return handle(x);
+
         if (value !== undefined) {
           delete caseRecord[k];
           break;
         }
+
         first = false;
       }
     }
