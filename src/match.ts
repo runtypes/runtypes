@@ -12,6 +12,7 @@ import {
   Matcher1,
   Matcher2,
 } from '.';
+import { Runtype, IncrementalChecker } from './runtype';
 
 export function match<A extends Rt, Z>(a: PairCase<A, Z>): Matcher1<A, Z>;
 export function match<A extends Rt, B extends Rt, Z>(
@@ -136,10 +137,37 @@ export function match<
   i: PairCase<I, Z>,
   j: PairCase<J, Z>,
 ): Matcher10<A, B, C, D, E, F, G, H, I, J, Z>;
-export function match<Z>(...cases: PairCase<any, Z>[]): (x: any) => Z {
+export function match<Z>(...cases: PairCase<Runtype, Z>[]): (x: any) => Z {
+  interface CaseEntry {
+    checks: IterableIterator<string | undefined>;
+    handle: Case<Runtype, Z>;
+  }
+
   return x => {
-    for (const [T, f] of cases) if (T.guard(x)) return f(x);
-    throw new Error('No alternatives were matched');
+    const caseRecord: Record<string, CaseEntry> = {};
+    cases.forEach(([type, handle], index) => {
+      caseRecord[index] = { checks: type._checkIncrementally(x), handle };
+    });
+
+    while (true) {
+      const keys = Object.keys(caseRecord);
+
+      if (!keys.length) throw new Error('No alternatives were matched');
+
+      if (keys.length === 1) return caseRecord[keys[0]].handle(x);
+
+      let first = true;
+      for (const k of keys) {
+        const { checks, handle } = caseRecord[k];
+        const { done, value } = checks.next();
+        if (done && first) return handle(x);
+        if (value !== undefined) {
+          delete caseRecord[k];
+          break;
+        }
+        first = false;
+      }
+    }
   };
 }
 
