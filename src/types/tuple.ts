@@ -1,6 +1,4 @@
-import { Runtype, Static, create, validationError, createIncremental } from '../runtype';
-import { Always } from './always';
-import { Array as Arr } from './array';
+import { Runtype, Static, createIncremental } from '../runtype';
 
 export interface Tuple1<A extends Runtype> extends Runtype<[Static<A>]> {
   tag: 'tuple';

@@ -12,7 +12,7 @@ import {
   Matcher1,
   Matcher2,
 } from '.';
-import { Runtype, IncrementalChecker } from './runtype';
+import { Runtype } from './runtype';
 
 export function match<A extends Rt, Z>(a: PairCase<A, Z>): Matcher1<A, Z>;
 export function match<A extends Rt, B extends Rt, Z>(
