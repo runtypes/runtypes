@@ -133,6 +133,37 @@ export interface Union10<
   match: Match10<A, B, C, D, E, F, G, H, I, J>;
 }
 
+export interface Union11<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt,
+  K extends Rt
+>
+  extends Rt<
+      | Static<A>
+      | Static<B>
+      | Static<C>
+      | Static<D>
+      | Static<E>
+      | Static<F>
+      | Static<G>
+      | Static<H>
+      | Static<I>
+      | Static<J>
+      | Static<K>
+    > {
+  tag: 'union';
+  alternatives: [A, B, C, D, E, F, G, H, I, J, K];
+  match: Match11<A, B, C, D, E, F, G, H, I, J, K>;
+}
+
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
@@ -358,6 +389,33 @@ export interface Match10<
     j: Case<J, Z>,
   ): Matcher10<A, B, C, D, E, F, G, H, I, J, Z>;
 }
+export interface Match11<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt,
+  K extends Rt
+> {
+  <Z>(
+    a: Case<A, Z>,
+    b: Case<B, Z>,
+    c: Case<C, Z>,
+    d: Case<D, Z>,
+    e: Case<E, Z>,
+    f: Case<F, Z>,
+    g: Case<G, Z>,
+    h: Case<H, Z>,
+    i: Case<I, Z>,
+    j: Case<J, Z>,
+    k: Case<K, Z>,
+  ): Matcher11<A, B, C, D, E, F, G, H, I, J, K, Z>;
+}
 
 export type Case<T extends Rt, Result> = (v: Static<T>) => Result;
 
@@ -444,6 +502,30 @@ export type Static10<
   | Static<H>
   | Static<I>
   | Static<J>;
+export type Static11<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt,
+  K extends Rt
+> =
+  | Static<A>
+  | Static<B>
+  | Static<C>
+  | Static<D>
+  | Static<E>
+  | Static<F>
+  | Static<G>
+  | Static<H>
+  | Static<I>
+  | Static<J>
+  | Static<K>;
 
 export type Matcher1<A extends Rt, Z> = (x: Static1<A>) => Z;
 export type Matcher2<A extends Rt, B extends Rt, Z> = (x: Static2<A, B>) => Z;
@@ -509,3 +591,17 @@ export type Matcher10<
   J extends Rt,
   Z
 > = (x: Static10<A, B, C, D, E, F, G, H, I, J>) => Z;
+export type Matcher11<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt,
+  K extends Rt,
+  Z
+> = (x: Static11<A, B, C, D, E, F, G, H, I, J, K>) => Z;
