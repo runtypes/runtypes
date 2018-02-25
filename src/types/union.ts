@@ -244,6 +244,31 @@ export function Union<
   I: I,
   J: J,
 ): Union10<A, B, C, D, E, F, G, H, I, J>;
+export function Union<
+  A extends Rt,
+  B extends Rt,
+  C extends Rt,
+  D extends Rt,
+  E extends Rt,
+  F extends Rt,
+  G extends Rt,
+  H extends Rt,
+  I extends Rt,
+  J extends Rt,
+  K extends Rt
+>(
+  A: A,
+  B: B,
+  C: C,
+  D: D,
+  E: E,
+  F: F,
+  G: G,
+  H: H,
+  I: I,
+  J: J,
+  K: K,
+): Union11<A, B, C, D, E, F, G, H, I, J, K>;
 export function Union(...alternatives: Rt[]): any {
   const match = (...cases: any[]) => (x: any) => {
     for (let i = 0; i < alternatives.length; i++) {
