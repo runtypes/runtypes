@@ -1,6 +1,6 @@
 {
   "name": "runtypes",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Runtime validation for static types",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
