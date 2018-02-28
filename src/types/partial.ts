@@ -3,7 +3,7 @@ import { Union } from '../index';
 import { Undefined } from './literal';
 import { hasKey } from '../util';
 
-export interface Part<O extends { [_ in string]: Runtype }>
+export interface Part<O extends { [_ in never]: Runtype }>
   extends Runtype<{ [K in keyof O]?: Static<O[K]> }> {
   tag: 'partial';
   fields: O;
