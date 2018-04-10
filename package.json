@@ -6,7 +6,8 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "tsc --pretty",
-    "format": "prettier $([ \"$CI\" == true ] && echo --list-different || echo --write) './**/*.{ts,tsx,js,json,css}'",
+    "format":
+      "prettier $([ \"$CI\" == true ] && echo --list-different || echo --write) './**/*.{ts,tsx,js,json,css}'",
     "test": "yarn build && jest --no-cache --verbose --coverage",
     "test:watch": "jest --watchAll",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
@@ -19,14 +20,9 @@
     "jest": "21.2.1",
     "prettier": "^1.10.2",
     "ts-jest": "^21.1.4",
-    "typescript": "^2.6.2"
+    "typescript": "2.8.1"
   },
-  "keywords:": [
-    "runtime",
-    "type",
-    "validation",
-    "typescript"
-  ],
+  "keywords:": ["runtime", "type", "validation", "typescript"],
   "repository": {
     "type": "git",
     "url": "https://github.com/pelotom/runtypes"
@@ -34,10 +30,7 @@
   "jest": {
     "verbose": false,
     "testRegex": ".*/*.spec.ts$",
-    "moduleFileExtensions": [
-      "js",
-      "ts"
-    ],
+    "moduleFileExtensions": ["js", "ts"],
     "transform": {
       "\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor"
     },

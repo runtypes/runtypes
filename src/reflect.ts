@@ -18,7 +18,7 @@ export type Reflect =
   | { tag: 'dictionary'; key: 'string' | 'number'; value: Reflect } & Runtype<{
       [_: string]: always;
     }>
-  | { tag: 'tuple'; components: Reflect[] } & Runtype<[always]>
+  | { tag: 'tuple'; components: Reflect[] } & Runtype<always[]>
   | { tag: 'union'; alternatives: Reflect[] } & Runtype<always>
   | { tag: 'intersect'; intersectees: Reflect[] } & Runtype<always>
   | { tag: 'function' } & Runtype<(...args: any[]) => any>
