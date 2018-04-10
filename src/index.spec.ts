@@ -88,7 +88,7 @@ type RuntypeName = keyof typeof runtypes;
 const runtypeNames = Object.keys(runtypes) as RuntypeName[];
 
 class Foo {
-  x: 'blah';
+  x!: 'blah';
 } // Should not be recognized as a Dictionary
 
 const testValues: { value: always; passes: RuntypeName[] }[] = [
