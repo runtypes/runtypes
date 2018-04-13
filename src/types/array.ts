@@ -12,7 +12,15 @@ function Arr<E extends Runtype>(element: E): Arr<E> {
   return create<Arr<E>>(
     xs => {
       if (!Array.isArray(xs)) throw validationError(`Expected array but was ${typeof xs}`);
-      for (const x of xs) element.check(x);
+
+      for (const x of xs) {
+        try {
+          element.check(x);
+        } catch ({ message, key }) {
+          throw validationError(message, key ? `[${xs.indexOf(x)}].${key}` : `[${xs.indexOf(x)}]`);
+        }
+      }
+
       return xs;
     },
     { tag: 'array', element },

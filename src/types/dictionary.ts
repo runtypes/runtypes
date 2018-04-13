@@ -21,12 +21,18 @@ export function Dictionary<V extends Runtype>(value: V, key?: 'number'): NumberD
 export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
   return create<Runtype>(
     x => {
-      Record({}).check(x);
+      try {
+        Record({}).check(x);
+      } catch (e) {
+        throw validationError(`Expected a dictionary [${key}: ${value}], but got ${typeof x}`);
+      }
 
-      if (typeof x !== 'object') throw validationError(`Expected an object but was ${typeof x}`);
+      if (typeof x !== 'object')
+        throw validationError(`Expected a dictionary [${key}: ${value}] but was ${typeof x}`);
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
-        if (!Array.isArray(x)) throw validationError(`Expected simple object but was complex`);
+        if (!Array.isArray(x))
+          throw validationError(`Expected a dictionary [${key}: ${value}] but was ${Object.getPrototypeOf(x)}`);
         else if (key === 'string') throw validationError(`Expected dictionary but was array`);
       }
 
@@ -36,7 +42,12 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
           if (isNaN(+k))
             throw validationError(`Expected dictionary key to be a number but was string`);
         }
-        value.check((x as any)[k]);
+
+        try {
+          value.check((x as any)[k]);
+        } catch ({ key: nestedKey, message }) {
+          throw validationError(message, `${k}.${nestedKey}`);
+        }
       }
 
       return x;
