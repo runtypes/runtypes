@@ -9,7 +9,7 @@ export interface Void extends Runtype<void> {
  */
 export const Void = create<Void>(
   x => {
-    if (x !== undefined && x !== null) throw validationError(`Expected null but was ${typeof x}`);
+    if (x !== undefined && x !== null) throw validationError(`Expected null, but was ${typeof x}`);
     return x;
   },
   { tag: 'void' },

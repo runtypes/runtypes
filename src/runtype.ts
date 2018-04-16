@@ -93,11 +93,14 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
 }
 
 export class ValidationError extends Error {
-  constructor(message: string) {
+  key?: string;
+
+  constructor(message: string, key?: string) {
     super(message);
+    this.key = key;
   }
 }
 
-export function validationError(message: string) {
-  return new ValidationError(message);
+export function validationError(message: string, key?: string) {
+  return new ValidationError(message, key);
 }

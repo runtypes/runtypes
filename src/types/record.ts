@@ -1,5 +1,6 @@
 import { Runtype, Static, create, validationError } from '../runtype';
 import { hasKey } from '../util';
+import show from '../show';
 
 export interface Record<O extends { [_: string]: Runtype }>
   extends Runtype<{ [K in keyof O]: Static<O[K]> }> {
@@ -13,18 +14,20 @@ export interface Record<O extends { [_: string]: Runtype }>
 export function Record<O extends { [_: string]: Runtype }>(fields: O) {
   return create<Record<O>>(
     x => {
-      if (x === null || x === undefined)
-        throw validationError(`Expected a defined non-null value but was ${typeof x}`);
+      if (x === null || x === undefined) {
+        const a = create<any>(x, { tag: 'record', fields });
+        throw validationError(`Expected ${show(a)}, but was ${x}`);
+      }
 
       // tslint:disable-next-line:forin
       for (const key in fields) {
         if (hasKey(key, x)) {
           try {
             fields[key].check(x[key]);
-          } catch ({ message }) {
-            throw validationError(`In key ${key}: ${message}`);
+          } catch ({ key: nestedKey, message }) {
+            throw validationError(message, nestedKey ? `${key}.${nestedKey}` : key);
           }
-        } else throw validationError(`Missing property ${key}`);
+        } else throw validationError(`Expected ${key} to be ${show(fields[key].reflect)}`, key);
       }
 
       return x as O;

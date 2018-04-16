@@ -223,10 +223,25 @@ export function Tuple<
 export function Tuple(...components: Runtype[]): any {
   return create(
     x => {
-      const xs = Arr(Always).check(x);
+      let xs;
+
+      try {
+        xs = Arr(Always).check(x);
+      } catch ({ key, message }) {
+        throw validationError(`Expected tuple to be an array: ${message}`, key);
+      }
+
       if (xs.length < components.length)
-        throw validationError(`Expected array of ${components.length} but was ${xs.length}`);
-      for (let i = 0; i < components.length; i++) components[i].check(xs[i]);
+        throw validationError(`Expected an array of ${components.length}, but was ${xs.length}`);
+
+      for (let i = 0; i < components.length; i++) {
+        try {
+          components[i].check(xs[i]);
+        } catch ({ message, key: nestedKey }) {
+          throw validationError(message, nestedKey ? `[${i}].${nestedKey}` : `[${i}]`);
+        }
+      }
+
       return x;
     },
     { tag: 'tuple', components },
