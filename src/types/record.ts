@@ -27,7 +27,7 @@ export function Record<O extends { [_: string]: Runtype }>(fields: O) {
           } catch ({ key: nestedKey, message }) {
             throw validationError(message, nestedKey ? `${key}.${nestedKey}` : key);
           }
-        } else throw validationError(`Expected ${key} to be ${fields[key].toString()}`, key);
+        } else throw validationError(`Expected ${key} to be ${show(fields[key].reflect)}`, key);
       }
 
       return x as O;
