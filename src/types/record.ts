@@ -16,7 +16,7 @@ export function Record<O extends { [_: string]: Runtype }>(fields: O) {
     x => {
       if (x === null || x === undefined) {
         const a = create<any>(x, { tag: 'record', fields });
-        throw validationError(`Expected ${show(a)} but value was ${x}`);
+        throw validationError(`Expected ${show(a)}, but was ${x}`);
       }
 
       // tslint:disable-next-line:forin

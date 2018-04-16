@@ -18,7 +18,7 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
     x => {
       if (x === null || x === undefined) {
         const a = create<any>(x, { tag: 'partial', fields });
-        throw validationError(`Expected a ${show(a)} value but was ${x}`);
+        throw validationError(`Expected a ${show(a)}, but was ${x}`);
       }
 
       // tslint:disable-next-line:forin
@@ -27,11 +27,8 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
           let FieldType = Union(fields[key], Undefined);
           try {
             FieldType.check(x[key]);
-          } catch ({ key: nestedKey }) {
-            throw validationError(
-              `Expected ${show(FieldType.reflect)}, got ${JSON.stringify(x[key])}`,
-              nestedKey ? `${key}.${nestedKey}` : key,
-            );
+          } catch ({ message, key: nestedKey }) {
+            throw validationError(message, nestedKey ? `${key}.${nestedKey}` : key);
           }
         }
 
