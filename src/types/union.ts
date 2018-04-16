@@ -1,4 +1,4 @@
-import { Runtype as Rt, Static, create } from '../runtype';
+import { Runtype as Rt, Static, create, validationError } from '../runtype';
 import show from '../show';
 
 export interface Union1<A extends Rt> extends Rt<Static1<A>> {
@@ -966,7 +966,7 @@ export function Union(...alternatives: Rt[]): any {
   return create(
     x => {
       for (const { guard } of alternatives) if (guard(x)) return x;
-      throw new Error(
+      throw validationError(
         `None of the alternatives ${alternatives.map(a =>
           show(a.reflect),
         )} matched ${JSON.stringify(x)}`,
