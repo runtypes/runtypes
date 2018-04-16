@@ -1,5 +1,6 @@
 import { Runtype, create, Static, validationError } from '../runtype';
 import { Record } from './record';
+import show from '../show';
 
 export interface StringDictionary<V extends Runtype> extends Runtype<{ [_: string]: Static<V> }> {
   tag: 'dictionary';
@@ -24,29 +25,37 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
       try {
         Record({}).check(x);
       } catch (e) {
-        throw validationError(`Expected a dictionary [${key}: ${value}], but got ${typeof x}`);
+        throw validationError(
+          `Expected a dictionary [${key}: ${show(value.reflect)}], but was ${
+            x === undefined || x === null ? x : typeof x
+          }`,
+        );
       }
 
       if (typeof x !== 'object')
-        throw validationError(`Expected a dictionary [${key}: ${value}] but was ${typeof x}`);
+        throw validationError(
+          `Expected a dictionary [${key}: ${show(value.reflect)}], but was ${typeof x}`,
+        );
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
         if (!Array.isArray(x))
-          throw validationError(`Expected a dictionary [${key}: ${value}] but was ${Object.getPrototypeOf(x)}`);
-        else if (key === 'string') throw validationError(`Expected dictionary but was array`);
+          throw validationError(
+            `Expected a dictionary [${key}: ${value}], but was ${Object.getPrototypeOf(x)}`,
+          );
+        else if (key === 'string') throw validationError(`Expected a dictionary, but was array`);
       }
 
       for (const k in x) {
         // Object keys are always strings
         if (key === 'number') {
           if (isNaN(+k))
-            throw validationError(`Expected dictionary key to be a number but was string`);
+            throw validationError(`Expected dictionary key to be a number, but was string`);
         }
 
         try {
           value.check((x as any)[k]);
         } catch ({ key: nestedKey, message }) {
-          throw validationError(message, `${k}.${nestedKey}`);
+          throw validationError(message, nestedKey ? `${k}.${nestedKey}` : k);
         }
       }
 
