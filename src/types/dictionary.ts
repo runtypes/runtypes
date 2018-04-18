@@ -25,24 +25,26 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
       try {
         Record({}).check(x);
       } catch (e) {
+        const a = create<any>(x as never, { tag: 'dictionary', key, value });
         throw validationError(
-          `Expected dictionary [${key}: ${show(value.reflect)}], but was ${
+          `Expected dictionary ${show(a.reflect)}, but was ${
             x === undefined || x === null ? x : typeof x
           }`,
         );
       }
 
-      if (typeof x !== 'object')
-        throw validationError(
-          `Expected dictionary [${key}: ${show(value.reflect)}], but was ${typeof x}`,
-        );
+      if (typeof x !== 'object') {
+        const a = create<any>(x as never, { tag: 'dictionary', key, value });
+        throw validationError(`Expected dictionary ${show(a.reflect)}, but was ${typeof x}`);
+      }
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
-        if (!Array.isArray(x))
+        if (!Array.isArray(x)) {
+          const a = create<any>(x as never, { tag: 'dictionary', key, value });
           throw validationError(
-            `Expected dictionary [${key}: ${value}], but was ${Object.getPrototypeOf(x)}`,
+            `Expected dictionary ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`,
           );
-        else if (key === 'string') throw validationError(`Expected dictionary, but was array`);
+        } else if (key === 'string') throw validationError(`Expected dictionary, but was array`);
       }
 
       for (const k in x) {
