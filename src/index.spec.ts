@@ -236,19 +236,23 @@ describe('check errors', () => {
   });
 
   it('dictionary', () => {
-    assertThrows(null, Dictionary(String), 'Expected dictionary [string: string], but was null');
+    assertThrows(
+      null,
+      Dictionary(String),
+      'Expected dictionary { [_: string]: string }, but was null',
+    );
   });
 
   it('dictionary invalid type', () => {
     assertThrows(
       undefined,
       Dictionary(Record({ name: String })),
-      'Expected dictionary [string: { name: string; }], but was undefined',
+      'Expected dictionary { [_: string]: { name: string; } }, but was undefined',
     );
     assertThrows(
       1,
       Dictionary(Record({ name: String })),
-      'Expected dictionary [string: { name: string; }], but was number',
+      'Expected dictionary { [_: string]: { name: string; } }, but was number',
     );
   });
 
@@ -311,7 +315,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number | undefined, but was object null',
+      'Expected number | undefined, but was object',
       'age',
     );
   });
@@ -324,13 +328,13 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected { title: string; }[] | undefined, but was object [{"title":2}]',
+      'Expected { title: string; }[] | undefined, but was object',
       'likes',
     );
   });
 
   it('union', () => {
-    assertThrows(false, Union(Number, String), 'Expected number | string, but was boolean false');
+    assertThrows(false, Union(Number, String), 'Expected number | string, but was boolean');
   });
 });
 
