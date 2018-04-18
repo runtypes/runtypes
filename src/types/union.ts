@@ -968,7 +968,7 @@ export function Union(...alternatives: Rt[]): any {
       for (const { guard } of alternatives) if (guard(x)) return x;
 
       const a = create<any>(x as never, { tag: 'union', alternatives });
-      throw validationError(`Expected a ${show(a)}, but was ${typeof x} ${JSON.stringify(x)}`);
+      throw validationError(`Expected ${show(a)}, but was ${typeof x} ${JSON.stringify(x)}`);
     },
     { tag: 'union', alternatives, match },
   );

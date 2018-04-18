@@ -11,7 +11,7 @@ export const Number = create<Number>(
   x => {
     if (typeof x !== 'number')
       throw validationError(
-        `Expected a number, but was ${x === null || x === undefined ? x : typeof x}`,
+        `Expected number, but was ${x === null || x === undefined ? x : typeof x}`,
       );
     return x;
   },

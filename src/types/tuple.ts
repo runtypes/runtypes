@@ -232,7 +232,9 @@ export function Tuple(...components: Runtype[]): any {
       }
 
       if (xs.length < components.length)
-        throw validationError(`Expected an array of ${components.length}, but was ${xs.length}`);
+        throw validationError(
+          `Expected an array of length ${components.length}, but was ${xs.length}`,
+        );
 
       for (let i = 0; i < components.length; i++) {
         try {

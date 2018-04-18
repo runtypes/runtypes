@@ -18,7 +18,7 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
     x => {
       if (x === null || x === undefined) {
         const a = create<any>(x, { tag: 'partial', fields });
-        throw validationError(`Expected a ${show(a)}, but was ${x}`);
+        throw validationError(`Expected ${show(a)}, but was ${x}`);
       }
 
       // tslint:disable-next-line:forin

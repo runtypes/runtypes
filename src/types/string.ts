@@ -11,7 +11,7 @@ export const String = create<String>(
   x => {
     if (typeof x !== 'string')
       throw validationError(
-        `Expected a string, but was ${x === null || x === undefined ? x : typeof x}`,
+        `Expected string, but was ${x === null || x === undefined ? x : typeof x}`,
       );
     return x;
   },

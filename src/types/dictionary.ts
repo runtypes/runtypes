@@ -26,7 +26,7 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
         Record({}).check(x);
       } catch (e) {
         throw validationError(
-          `Expected a dictionary [${key}: ${show(value.reflect)}], but was ${
+          `Expected dictionary [${key}: ${show(value.reflect)}], but was ${
             x === undefined || x === null ? x : typeof x
           }`,
         );
@@ -34,15 +34,15 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
 
       if (typeof x !== 'object')
         throw validationError(
-          `Expected a dictionary [${key}: ${show(value.reflect)}], but was ${typeof x}`,
+          `Expected dictionary [${key}: ${show(value.reflect)}], but was ${typeof x}`,
         );
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
         if (!Array.isArray(x))
           throw validationError(
-            `Expected a dictionary [${key}: ${value}], but was ${Object.getPrototypeOf(x)}`,
+            `Expected dictionary [${key}: ${value}], but was ${Object.getPrototypeOf(x)}`,
           );
-        else if (key === 'string') throw validationError(`Expected a dictionary, but was array`);
+        else if (key === 'string') throw validationError(`Expected dictionary, but was array`);
       }
 
       for (const k in x) {

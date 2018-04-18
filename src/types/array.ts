@@ -11,7 +11,7 @@ interface Arr<E extends Runtype> extends Runtype<Static<E>[]> {
 function Arr<E extends Runtype>(element: E): Arr<E> {
   return create<Arr<E>>(
     xs => {
-      if (!Array.isArray(xs)) throw validationError(`Expected an array, but was ${typeof xs}`);
+      if (!Array.isArray(xs)) throw validationError(`Expected array, but was ${typeof xs}`);
 
       for (const x of xs) {
         try {

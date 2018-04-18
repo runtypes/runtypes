@@ -188,212 +188,149 @@ describe('contracts', () => {
 
 describe('check errors', () => {
   it('tuple type', () => {
-    try {
-      const Check = Tuple(Number, String, Boolean);
-      Check.check([false, '0', true]);
-      fail("tuple passed, eventhough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a number, but was boolean');
-      expect(e.key).toBe('[0]');
-    }
+    assertThrows(
+      [false, '0', true],
+      Tuple(Number, String, Boolean),
+      'Expected number, but was boolean',
+      '[0]',
+    );
   });
 
   it('tuple length', () => {
-    try {
-      const Check = Tuple(Number, String, Boolean);
-      Check.check([0, '0']);
-      fail("tuple passed, eventhough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected an array of 3, but was 2');
-      expect(e.key).toBe(undefined);
-    }
+    assertThrows(
+      [0, '0'],
+      Tuple(Number, String, Boolean),
+      'Expected an array of length 3, but was 2',
+    );
   });
 
   it('tuple nested', () => {
-    try {
-      const Nested = Record({ name: String });
-      const Check = Tuple(Number, Nested);
-      Check.check([0, { name: 0 }]);
-      fail("tuple passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a string, but was number');
-      expect(e.key).toBe('[1].name');
-    }
+    assertThrows(
+      [0, { name: 0 }],
+      Tuple(Number, Record({ name: String })),
+      'Expected string, but was number',
+      '[1].name',
+    );
   });
 
   it('array', () => {
-    try {
-      const Check = Array(Number);
-      Check.check([0, 2, 'test']);
-      fail("array passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a number, but was string');
-      expect(e.key).toBe('[2]');
-    }
+    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string', '[2]');
   });
 
   it('array nested', () => {
-    try {
-      const Nested = Record({ name: String });
-      const Check = Array(Nested);
-      Check.check([{ name: 'Foo' }, { name: false }]);
-      fail("array passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a string, but was boolean');
-      expect(e.key).toBe('[1].name');
-    }
+    assertThrows(
+      [{ name: 'Foo' }, { name: false }],
+      Array(Record({ name: String })),
+      'Expected string, but was boolean',
+      '[1].name',
+    );
   });
 
   it('array null', () => {
-    try {
-      const Nested = Record({ name: String });
-      const Check = Array(Nested);
-      Check.check([{ name: 'Foo' }, null]);
-      fail("array passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected { name: string; }, but was null');
-      expect(e.key).toBe('[1]');
-    }
+    assertThrows(
+      [{ name: 'Foo' }, null],
+      Array(Record({ name: String })),
+      'Expected { name: string; }, but was null',
+      '[1]',
+    );
   });
 
   it('dictionary', () => {
-    try {
-      const Check = Dictionary(String);
-      Check.check(null);
-      fail("dictionary passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a dictionary [string: string], but was null');
-      expect(e.key).toBe(undefined);
-    }
+    assertThrows(null, Dictionary(String), 'Expected dictionary [string: string], but was null');
   });
 
   it('dictionary invalid type', () => {
-    try {
-      const Value = Record({ name: String });
-      const Check = Dictionary(Value);
-      Check.check(undefined);
-      fail("dictionary passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe(
-        'Expected a dictionary [string: { name: string; }], but was undefined',
-      );
-      expect(e.key).toBe(undefined);
-    }
-
-    try {
-      const Value = Record({ name: String });
-      const Check = Dictionary(Value);
-      Check.check(1);
-      fail("dictionary passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a dictionary [string: { name: string; }], but was number');
-      expect(e.key).toBe(undefined);
-    }
+    assertThrows(
+      undefined,
+      Dictionary(Record({ name: String })),
+      'Expected dictionary [string: { name: string; }], but was undefined',
+    );
+    assertThrows(
+      1,
+      Dictionary(Record({ name: String })),
+      'Expected dictionary [string: { name: string; }], but was number',
+    );
   });
 
   it('dictionary complex', () => {
-    try {
-      const Value = Record({ name: String });
-      const Check = Dictionary(Value);
-      Check.check({ foo: { name: false } });
-      fail("dictionary passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a string, but was boolean');
-      expect(e.key).toBe('foo.name');
-    }
+    assertThrows(
+      { foo: { name: false } },
+      Dictionary(Record({ name: String })),
+      'Expected string, but was boolean',
+      'foo.name',
+    );
   });
 
   it('string dictionary', () => {
-    try {
-      const Check = Dictionary(String);
-      Check.check({ foo: 'bar', test: true });
-      fail("dictionary passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a string, but was boolean');
-      expect(e.key).toBe('test');
-    }
+    assertThrows(
+      { foo: 'bar', test: true },
+      Dictionary(String),
+      'Expected string, but was boolean',
+      'test',
+    );
   });
 
   it('number dictionary', () => {
-    try {
-      const Check = Dictionary(String, 'number');
-      Check.check({ 1: 'bar', 2: 20 });
-      fail("dictionary passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a string, but was number');
-      expect(e.key).toBe('2');
-    }
+    assertThrows(
+      { 1: 'bar', 2: 20 },
+      Dictionary(String, 'number'),
+      'Expected string, but was number',
+      '2',
+    );
   });
 
   it('record', () => {
-    try {
-      const Check = Record({
+    assertThrows(
+      { name: 'Jack', age: '10' },
+      Record({
         name: String,
         age: Number,
-      });
-      Check.check({ name: 'Jack', age: '10' });
-      fail("record passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a number, but was string');
-      expect(e.key).toBe('age');
-    }
+      }),
+      'Expected number, but was string',
+      'age',
+    );
   });
 
   it('record complex', () => {
-    try {
-      const Check = Record({
+    assertThrows(
+      { name: 'Jack', age: 10, likes: [{ title: false }] },
+      Record({
         name: String,
         age: Number,
         likes: Array(Record({ title: String })),
-      });
-      Check.check({ name: 'Jack', age: 10, likes: [{ title: false }] });
-      fail("record passed eventough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a string, but was boolean');
-      expect(e.key).toBe('likes.[0].title');
-    }
+      }),
+      'Expected string, but was boolean',
+      'likes.[0].title',
+    );
   });
 
   it('partial', () => {
-    try {
-      const Check = Partial({
+    assertThrows(
+      { name: 'Jack', age: null },
+      Partial({
         name: String,
         age: Number,
-      });
-      Check.check({ name: 'Jack', age: null });
-      fail("partial passed eventhough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a number | undefined, but was object null');
-      expect(e.key).toBe('age');
-    }
+      }),
+      'Expected number | undefined, but was object null',
+      'age',
+    );
   });
 
   it('partial complex', () => {
-    try {
-      const Check = Partial({
+    assertThrows(
+      { name: 'Jack', likes: [{ title: 2 }] },
+      Partial({
         name: String,
         age: Number,
         likes: Array(Record({ title: String })),
-      });
-      Check.check({ name: 'Jack', likes: [{ title: 2 }] });
-      fail("partial passed eventhough should've failed");
-    } catch (e) {
-      expect(e.message).toBe(
-        'Expected a { title: string; }[] | undefined, but was object [{"title":2}]',
-      );
-      expect(e.key).toBe('likes');
-    }
+      }),
+      'Expected { title: string; }[] | undefined, but was object [{"title":2}]',
+      'likes',
+    );
   });
 
   it('union', () => {
-    try {
-      const Check = Union(Number, String);
-      Check.check(false);
-      fail("union passed eventhough should've failed");
-    } catch (e) {
-      expect(e.message).toBe('Expected a number | string, but was boolean false');
-      expect(e.key).toBe(undefined);
-    }
+    assertThrows(false, Union(Number, String), 'Expected number | string, but was boolean false');
   });
 });
 
@@ -594,4 +531,14 @@ function assertAccepts<A>(value: always, runtype: Runtype<A>) {
 function assertRejects<A>(value: always, runtype: Runtype<A>) {
   const result = runtype.validate(value);
   if (result.success === true) fail('value passed validation even though it was not expected to');
+}
+
+function assertThrows<A>(value: always, runtype: Runtype<A>, error: string, key?: string) {
+  try {
+    runtype.check(value);
+    fail('value passed validation even though it was not expected to');
+  } catch ({ message: errorMessage, key: errorKey }) {
+    expect(errorMessage).toBe(error);
+    expect(errorKey).toBe(key);
+  }
 }
