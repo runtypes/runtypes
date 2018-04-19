@@ -236,23 +236,19 @@ describe('check errors', () => {
   });
 
   it('dictionary', () => {
-    assertThrows(
-      null,
-      Dictionary(String),
-      'Expected dictionary { [_: string]: string }, but was null',
-    );
+    assertThrows(null, Dictionary(String), 'Expected { [_: string]: string }, but was null');
   });
 
   it('dictionary invalid type', () => {
     assertThrows(
       undefined,
       Dictionary(Record({ name: String })),
-      'Expected dictionary { [_: string]: { name: string; } }, but was undefined',
+      'Expected { [_: string]: { name: string; } }, but was undefined',
     );
     assertThrows(
       1,
       Dictionary(Record({ name: String })),
-      'Expected dictionary { [_: string]: { name: string; } }, but was number',
+      'Expected { [_: string]: { name: string; } }, but was number',
     );
   });
 

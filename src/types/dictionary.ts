@@ -1,5 +1,4 @@
 import { Runtype, create, Static, validationError } from '../runtype';
-import { Record } from './record';
 import show from '../show';
 
 export interface StringDictionary<V extends Runtype> extends Runtype<{ [_: string]: Static<V> }> {
@@ -22,28 +21,20 @@ export function Dictionary<V extends Runtype>(value: V, key?: 'number'): NumberD
 export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
   return create<Runtype>(
     x => {
-      try {
-        Record({}).check(x);
-      } catch (e) {
+      if (x === null || x === undefined) {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
-        throw validationError(
-          `Expected dictionary ${show(a.reflect)}, but was ${
-            x === undefined || x === null ? x : typeof x
-          }`,
-        );
+        throw validationError(`Expected ${show(a)}, but was ${x}`);
       }
 
       if (typeof x !== 'object') {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
-        throw validationError(`Expected dictionary ${show(a.reflect)}, but was ${typeof x}`);
+        throw validationError(`Expected ${show(a.reflect)}, but was ${typeof x}`);
       }
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
         if (!Array.isArray(x)) {
           const a = create<any>(x as never, { tag: 'dictionary', key, value });
-          throw validationError(
-            `Expected dictionary ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`,
-          );
+          throw validationError(`Expected ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`);
         } else if (key === 'string') throw validationError(`Expected dictionary, but was array`);
       }
 

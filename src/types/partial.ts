@@ -27,8 +27,8 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
           let FieldType = Union(fields[key], Undefined);
           try {
             FieldType.check(x[key]);
-          } catch ({ message, key: nestedKey }) {
-            throw validationError(message, nestedKey ? `${key}.${nestedKey}` : key);
+          } catch ({ message }) {
+            throw validationError(message, key);
           }
         }
 
