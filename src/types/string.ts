@@ -9,7 +9,10 @@ export interface String extends Runtype<string> {
  */
 export const String = create<String>(
   x => {
-    if (typeof x !== 'string') throw validationError(`Expected string but was ${typeof x}`);
+    if (typeof x !== 'string')
+      throw validationError(
+        `Expected string, but was ${x === null || x === undefined ? x : typeof x}`,
+      );
     return x;
   },
   { tag: 'string' },

@@ -8,8 +8,8 @@ export interface Never extends Runtype<never> {
  * Validates nothing (always fails).
  */
 export const Never = create<Never>(
-  () => {
-    throw validationError('Expected nothing but got something');
+  x => {
+    throw validationError(`Expected nothing, but was ${x}`);
   },
   { tag: 'never' },
 );

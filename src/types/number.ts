@@ -9,7 +9,10 @@ export interface Number extends Runtype<number> {
  */
 export const Number = create<Number>(
   x => {
-    if (typeof x !== 'number') throw validationError(`Expected number but was ${typeof x}`);
+    if (typeof x !== 'number')
+      throw validationError(
+        `Expected number, but was ${x === null || x === undefined ? x : typeof x}`,
+      );
     return x;
   },
   { tag: 'number' },

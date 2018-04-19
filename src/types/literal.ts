@@ -16,7 +16,7 @@ export interface Literal<A extends LiteralBase> extends Runtype<A> {
 export function Literal<A extends LiteralBase>(value: A): Literal<A> {
   return create<Literal<A>>(
     x => {
-      if (x !== value) throw validationError(`Expected literal '${value}' but was '${x}'`);
+      if (x !== value) throw validationError(`Expected literal '${value}', but was '${x}'`);
       return x as A;
     },
     { tag: 'literal', value },

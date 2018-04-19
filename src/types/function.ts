@@ -9,7 +9,7 @@ export interface Function extends Runtype<(...args: any[]) => any> {
  */
 export const Function = create<Function>(
   x => {
-    if (typeof x !== 'function') throw validationError(`Expected a function but was ${typeof x}`);
+    if (typeof x !== 'function') throw validationError(`Expected function, but was ${typeof x}`);
     return x;
   },
   { tag: 'function' },

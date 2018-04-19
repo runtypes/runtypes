@@ -13,7 +13,7 @@ export function InstanceOf<V>(ctor: Constructor<V>) {
   return create<InstanceOf<V>>(
     x => {
       if (!(x instanceof ctor)) {
-        throw validationError(`Expected a ${(ctor as any).name} but was ${typeof x}`);
+        throw validationError(`Expected ${(ctor as any).name}, but was ${typeof x}`);
       }
       return x as V;
     },

@@ -69,11 +69,13 @@ const runtypes = {
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3),
   MoreThanThreeWithMessage: Number.withConstraint(n => n > 3 || `${n} is not greater than 3`),
+  ArrayString: Array(String),
   ArrayNumber: Array(Number),
+  ArrayPerson: Array(Person),
   CustomArray: Array(Number).withConstraint(x => x.length > 3, { tag: 'lenght', min: 3 }),
   CustomArrayWithMessage: Array(Number).withConstraint(
     x => x.length > 3 || `Length array is not greater 3`,
-    { tag: 'lenght', min: 3 },
+    { tag: 'length', min: 3 },
   ),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
@@ -106,9 +108,14 @@ const testValues: { value: always; passes: RuntypeName[] }[] = [
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
   { value: { Boolean: true, foo: 5 }, passes: [] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
+  { value: { name: undefined, likes: [] }, passes: [] },
+  { value: { name: 'Jimmy', likes: [{ name: undefined, likes: [] }] }, passes: [] },
   { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
   { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
-  { value: ['1', '2'], passes: ['NumberDictionary'] },
+  { value: ['1', '2'], passes: ['ArrayString', 'NumberDictionary'] },
+  { value: ['1', 2], passes: [] },
+  { value: [{ name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }], passes: ['ArrayPerson'] },
+  { value: [{ name: null, likes: [] }], passes: [] },
   { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
   { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
   { value: new Foo(), passes: [] },
@@ -176,6 +183,154 @@ describe('contracts', () => {
     } catch (e) {
       /* success */
     }
+  });
+});
+
+describe('check errors', () => {
+  it('tuple type', () => {
+    assertThrows(
+      [false, '0', true],
+      Tuple(Number, String, Boolean),
+      'Expected number, but was boolean',
+      '[0]',
+    );
+  });
+
+  it('tuple length', () => {
+    assertThrows(
+      [0, '0'],
+      Tuple(Number, String, Boolean),
+      'Expected an array of length 3, but was 2',
+    );
+  });
+
+  it('tuple nested', () => {
+    assertThrows(
+      [0, { name: 0 }],
+      Tuple(Number, Record({ name: String })),
+      'Expected string, but was number',
+      '[1].name',
+    );
+  });
+
+  it('array', () => {
+    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string', '[2]');
+  });
+
+  it('array nested', () => {
+    assertThrows(
+      [{ name: 'Foo' }, { name: false }],
+      Array(Record({ name: String })),
+      'Expected string, but was boolean',
+      '[1].name',
+    );
+  });
+
+  it('array null', () => {
+    assertThrows(
+      [{ name: 'Foo' }, null],
+      Array(Record({ name: String })),
+      'Expected { name: string; }, but was null',
+      '[1]',
+    );
+  });
+
+  it('dictionary', () => {
+    assertThrows(null, Dictionary(String), 'Expected { [_: string]: string }, but was null');
+  });
+
+  it('dictionary invalid type', () => {
+    assertThrows(
+      undefined,
+      Dictionary(Record({ name: String })),
+      'Expected { [_: string]: { name: string; } }, but was undefined',
+    );
+    assertThrows(
+      1,
+      Dictionary(Record({ name: String })),
+      'Expected { [_: string]: { name: string; } }, but was number',
+    );
+  });
+
+  it('dictionary complex', () => {
+    assertThrows(
+      { foo: { name: false } },
+      Dictionary(Record({ name: String })),
+      'Expected string, but was boolean',
+      'foo.name',
+    );
+  });
+
+  it('string dictionary', () => {
+    assertThrows(
+      { foo: 'bar', test: true },
+      Dictionary(String),
+      'Expected string, but was boolean',
+      'test',
+    );
+  });
+
+  it('number dictionary', () => {
+    assertThrows(
+      { 1: 'bar', 2: 20 },
+      Dictionary(String, 'number'),
+      'Expected string, but was number',
+      '2',
+    );
+  });
+
+  it('record', () => {
+    assertThrows(
+      { name: 'Jack', age: '10' },
+      Record({
+        name: String,
+        age: Number,
+      }),
+      'Expected number, but was string',
+      'age',
+    );
+  });
+
+  it('record complex', () => {
+    assertThrows(
+      { name: 'Jack', age: 10, likes: [{ title: false }] },
+      Record({
+        name: String,
+        age: Number,
+        likes: Array(Record({ title: String })),
+      }),
+      'Expected string, but was boolean',
+      'likes.[0].title',
+    );
+  });
+
+  it('partial', () => {
+    assertThrows(
+      { name: 'Jack', age: null },
+      Partial({
+        name: String,
+        age: Number,
+      }),
+      'Expected number, but was null',
+      'age',
+    );
+  });
+
+  it('partial complex', () => {
+    assertThrows(
+      { name: 'Jack', likes: [{ title: 2 }] },
+      Partial({
+        name: String,
+        age: Number,
+        likes: Array(Record({ title: String })),
+      }),
+      'Expected string, but was number',
+      'likes.[0].title',
+    );
+  });
+
+  it('union', () => {
+    assertThrows(false, Union(Number, String), 'Expected number | string, but was boolean');
   });
 });
 
@@ -376,4 +531,14 @@ function assertAccepts<A>(value: always, runtype: Runtype<A>) {
 function assertRejects<A>(value: always, runtype: Runtype<A>) {
   const result = runtype.validate(value);
   if (result.success === true) fail('value passed validation even though it was not expected to');
+}
+
+function assertThrows<A>(value: always, runtype: Runtype<A>, error: string, key?: string) {
+  try {
+    runtype.check(value);
+    fail('value passed validation even though it was not expected to');
+  } catch ({ message: errorMessage, key: errorKey }) {
+    expect(errorMessage).toBe(error);
+    expect(errorKey).toBe(key);
+  }
 }
