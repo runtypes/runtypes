@@ -1,6 +1,4 @@
 import { Runtype, Static, create, validationError } from '../runtype';
-import { Union } from '../index';
-import { Undefined } from './literal';
 import { hasKey } from '../util';
 import show from '../show';
 
@@ -22,15 +20,15 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
       }
 
       // tslint:disable-next-line:forin
-      for (const key in fields)
-        if (hasKey(key, x)) {
-          let FieldType = Union(fields[key], Undefined);
+      for (const key in fields) {
+        if (hasKey(key, x) && x[key] !== undefined) {
           try {
-            FieldType.check(x[key]);
-          } catch ({ message }) {
-            throw validationError(message, key);
+            fields[key].check(x[key]);
+          } catch ({ message, key: nestedKey }) {
+            throw validationError(message, nestedKey ? `${key}.${nestedKey}` : key);
           }
         }
+      }
 
       return x as Partial<O>;
     },

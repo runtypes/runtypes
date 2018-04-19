@@ -311,7 +311,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number | undefined, but was object',
+      'Expected number, but was null',
       'age',
     );
   });
@@ -324,8 +324,8 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected { title: string; }[] | undefined, but was object',
-      'likes',
+      'Expected string, but was number',
+      'likes.[0].title',
     );
   });
 
