@@ -11,6 +11,7 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
     case 'boolean':
     case 'number':
     case 'string':
+    case 'symbol':
     case 'function':
       return refl.tag;
 

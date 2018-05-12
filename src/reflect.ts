@@ -11,6 +11,7 @@ export type Reflect =
   | { tag: 'boolean' } & Runtype<boolean>
   | { tag: 'number' } & Runtype<number>
   | { tag: 'string' } & Runtype<string>
+  | { tag: 'symbol' } & Runtype<symbol>
   | { tag: 'literal'; value: LiteralBase } & Runtype<LiteralBase>
   | { tag: 'array'; element: Reflect } & Runtype<always[]>
   | { tag: 'record'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]: always }>
