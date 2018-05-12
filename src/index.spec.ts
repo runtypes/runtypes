@@ -1,5 +1,4 @@
 import {
-  __global,
   Runtype,
   Static,
   Always,
@@ -11,7 +10,7 @@ import {
   Boolean,
   Number,
   String,
-  Symbol,
+  Symbol as Sym,
   Literal,
   Array,
   Dictionary,
@@ -62,8 +61,8 @@ const runtypes = {
   42: Literal(42),
   String,
   'hello world': Literal('hello world'),
-  Symbol,
-  symbolArray: Array(Symbol),
+  Sym,
+  symbolArray: Array(Sym),
   boolArray: Array(Boolean),
   boolTuple,
   record1,
@@ -105,11 +104,8 @@ const testValues: { value: always; passes: RuntypeName[] }[] = [
   { value: 3, passes: ['Number', '3', 'union1'] },
   { value: 42, passes: ['Number', '42', 'MoreThanThree', 'MoreThanThreeWithMessage'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
-  {
-    value: [__global.Symbol('0'), __global.Symbol(42), __global.Symbol()],
-    passes: ['symbolArray'],
-  },
-  { value: __global.Symbol.for('runtypes'), passes: ['Symbol'] },
+  { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
+  { value: Symbol.for('runtypes'), passes: ['Sym'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
   { value: { Boolean: true }, passes: ['Partial'] },
@@ -372,7 +368,7 @@ describe('reflection', () => {
   });
 
   it('symbol', () => {
-    expectLiteralField(Symbol, 'tag', 'symbol');
+    expectLiteralField(Sym, 'tag', 'symbol');
   });
 
   it('literal', () => {
@@ -466,7 +462,7 @@ describe('reflection', () => {
     | Boolean
     | Number
     | String
-    | Symbol
+    | Sym
     | Literal<boolean | number | string>
     | Array<Reflect>
     | Record<{ [_ in string]: Reflect }>

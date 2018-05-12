@@ -1,15 +1,13 @@
 import { Runtype, create, validationError } from '../runtype';
 
-export const __global = Function('return this')();
-
-export interface Symbol extends Runtype<symbol> {
+interface Sym extends Runtype<symbol> {
   tag: 'symbol';
 }
 
 /**
  * Validates that a value is a symbol.
  */
-export const Symbol = create<Symbol>(
+const Sym = create<Sym>(
   x => {
     if (typeof x !== 'symbol')
       throw validationError(
@@ -19,3 +17,5 @@ export const Symbol = create<Symbol>(
   },
   { tag: 'symbol' },
 );
+
+export { Sym as Symbol };
