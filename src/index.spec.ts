@@ -41,10 +41,10 @@ type Person = { name: string; likes: Person[] };
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }));
 
 class SomeClass {
-  constructor(public n: number) {}
+  constructor(public n: number) { }
 }
 class SomeOtherClass {
-  constructor(public n: number) {}
+  constructor(public n: number) { }
 }
 
 const runtypes = {
@@ -448,13 +448,13 @@ describe('reflection', () => {
   });
 
   it('instanceof', () => {
-    class Test {}
+    class Test { }
     expectLiteralField(InstanceOf(Test), 'tag', 'instanceof');
     expectLiteralField(Dictionary(Array(InstanceOf(Test))), 'tag', 'dictionary');
   });
 
   it('brand', () => {
-    const C = Number.withBrand('someNumber') as Brand<'someNumber', Number>;
+    const C = Number.withBrand('someNumber');
     expectLiteralField(C, 'tag', 'brand');
     expectLiteralField(C.entity, 'tag', 'number');
   });
