@@ -40,51 +40,6 @@ const union1 = Union(Literal(3), String, boolTuple, record1);
 type Person = { name: string; likes: Person[] };
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }));
 
-// Branded type tests
-{
-  const A = String.withBrand('A');
-  type A = Static<typeof A>;
-
-  // Also `Brand(name, runtype)` can be used
-  const B = Brand('B', String.withConstraint(x => /NYANPASU/.test(x)));
-  type B = Static<typeof B>;
-
-  // Merging is possible
-  const C = Brand('A', String.withBrand('B'));
-  type C = Static<typeof C>;
-
-  // FAIL: A static type-checking error happens here
-  const a1: A = 'NYANPASU';
-
-  // PASS: These are OK
-  const a2 = 'NYANPASU~' as A;
-  const a3: A = a2;
-
-  // PASS: The type of this should be infered as `A`
-  const a4 = a2;
-
-  try {
-    // PASS: No error thrown here, because `Brand` is for static type-checking at all
-    const b1: B = B.check('NYANPASU' as A);
-    const b2: B = B.check(a4);
-    const b3: B = B.check(a4 as C);
-  } catch (err) {
-    // Hence should not reach here
-    console.log('`check` method of branded type not working correctly');
-  }
-
-  // FAIL: These should emit errors
-  const c1: C = A.check('NYANPASU!');
-  const c2: C = B.check('NYANPASU!!!') as A;
-
-  // PASS: These are possible, because `C` is equivalent to `A & B`
-  const c3: C = A.check('NYANPASU...') as C;
-  const c4: C = B.check('NYANPASU.') as A & B;
-  const c5: C = A.withBrand('B').check('NYANPASU?');
-  const c6: C = B.withBrand('A').check('NYANPASU~*');
-  const c7: C = C.withBrand('A').check('*NYANPASU*');
-}
-
 class SomeClass {
   constructor(public n: number) {}
 }

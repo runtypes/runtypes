@@ -8,7 +8,6 @@ import {
   ConstraintCheck,
   Brand,
 } from './index';
-import { RuntypeName } from './types/brand';
 import { Reflect } from './reflect';
 import show from './show';
 
@@ -54,7 +53,7 @@ export interface Runtype<A = any> {
   /**
    * Adds a brand to the type.
    */
-  withBrand<B extends string>(brand: B): Runtype<Static<this> & { [RuntypeName]: B }>;
+  withBrand<B extends string>(brand: B): Brand<B, this>;
 
   /**
    * Convert this to a Reflect, capable of introspecting the structure of the type.
@@ -107,7 +106,7 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
     return Constraint(A, constraint, args);
   }
 
-  function withBrand<B extends string>(B: B): Runtype<Static<A> & { [RuntypeName]: B }> {
+  function withBrand<B extends string>(B: B): Brand<B, A> {
     return Brand(B, A);
   }
 }

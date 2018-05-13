@@ -14,8 +14,9 @@ export interface Brand<B extends string, A extends Runtype>
 }
 
 export function Brand<B extends string, A extends Runtype>(brand: B, entity: A) {
-  return create<Runtype<Static<A> & { [RuntypeName]: B }>>(
-    x => entity.check(x) as Static<Brand<B, Static<A>>>,
-    { tag: 'brand', brand, entity },
-  );
+  return create<Brand<B, A>>(x => entity.check(x) as Static<Brand<B, A>>, {
+    tag: 'brand',
+    brand,
+    entity,
+  });
 }
