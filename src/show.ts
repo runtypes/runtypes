@@ -47,6 +47,8 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
     case 'instanceof':
       const name = (refl.ctor as any).name;
       return `InstanceOf<${name}>`;
+    case 'brand':
+      return show(needsParens)(refl.entity);
   }
 };
 

@@ -22,3 +22,4 @@ export * from './types/function';
 export { InstanceOf } from './types/instanceof';
 export * from './types/lazy';
 export * from './types/constraint';
+export { Brand } from './types/brand';

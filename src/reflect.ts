@@ -29,4 +29,5 @@ export type Reflect =
       constraint: ConstraintCheck<Runtype<never>>;
       args?: any;
     } & Runtype<always>
-  | { tag: 'instanceof'; ctor: Constructor<always> } & Runtype<always>;
+  | { tag: 'instanceof'; ctor: Constructor<always> } & Runtype<always>
+  | { tag: 'brand'; brand: string; entity: Reflect } & Runtype<always>;
