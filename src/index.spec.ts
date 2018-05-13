@@ -28,6 +28,7 @@ import {
   Contract,
   Reflect,
   InstanceOf,
+  Brand,
 } from './index';
 
 import { Constructor } from './types/instanceof';
@@ -40,10 +41,10 @@ type Person = { name: string; likes: Person[] };
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }));
 
 class SomeClass {
-  constructor(public n: number) {}
+  constructor(public n: number) { }
 }
 class SomeOtherClass {
-  constructor(public n: number) {}
+  constructor(public n: number) { }
 }
 
 const runtypes = {
@@ -447,9 +448,15 @@ describe('reflection', () => {
   });
 
   it('instanceof', () => {
-    class Test {}
+    class Test { }
     expectLiteralField(InstanceOf(Test), 'tag', 'instanceof');
     expectLiteralField(Dictionary(Array(InstanceOf(Test))), 'tag', 'dictionary');
+  });
+
+  it('brand', () => {
+    const C = Number.withBrand('someNumber');
+    expectLiteralField(C, 'tag', 'brand');
+    expectLiteralField(C.entity, 'tag', 'number');
   });
 });
 
@@ -472,7 +479,8 @@ describe('reflection', () => {
     | Intersect2<Reflect, Reflect>
     | Function
     | Constraint<Reflect, any>
-    | InstanceOf<Constructor<never>>,
+    | InstanceOf<Constructor<never>>
+    | Brand<string, Reflect>,
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({});
   switch (X.tag) {
@@ -526,6 +534,9 @@ describe('reflection', () => {
       break;
     case 'instanceof':
       check<typeof X.ctor>(X);
+      break;
+    case 'brand':
+      check<Static<typeof X.entity>>(X);
       break;
   }
 

@@ -1,4 +1,13 @@
-import { Result, Union, Union2, Intersect, Intersect2, Constraint, ConstraintCheck } from './index';
+import {
+  Result,
+  Union,
+  Union2,
+  Intersect,
+  Intersect2,
+  Constraint,
+  ConstraintCheck,
+  Brand,
+} from './index';
 import { Reflect } from './reflect';
 import show from './show';
 
@@ -42,6 +51,11 @@ export interface Runtype<A = any> {
   withConstraint<K>(constraint: ConstraintCheck<this>, args?: K): Constraint<this, K>;
 
   /**
+   * Adds a brand to the type.
+   */
+  withBrand<B extends string>(brand: B): Brand<B, this>;
+
+  /**
    * Convert this to a Reflect, capable of introspecting the structure of the type.
    */
   reflect: Reflect;
@@ -61,6 +75,7 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
   A.Or = Or;
   A.And = And;
   A.withConstraint = withConstraint;
+  A.withBrand = withBrand;
   A.reflect = A;
   A.toString = () => `Runtype<${show(A)}>`;
 
@@ -89,6 +104,10 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
 
   function withConstraint<K>(constraint: ConstraintCheck<A>, args?: K): Constraint<A, K> {
     return Constraint(A, constraint, args);
+  }
+
+  function withBrand<B extends string>(B: B): Brand<B, A> {
+    return Brand(B, A);
   }
 }
 

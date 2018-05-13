@@ -7,6 +7,7 @@ import {
   Boolean,
   Number,
   String,
+  Symbol,
   Literal,
   Array,
   Dictionary,
@@ -33,6 +34,7 @@ const cases: [Reflect, string][] = [
   [Boolean, 'boolean'],
   [Number, 'number'],
   [String, 'string'],
+  [Symbol, 'symbol'],
   [Literal(true), 'true'],
   [Literal(3), '3'],
   [Literal('foo'), '"foo"'],
@@ -52,6 +54,8 @@ const cases: [Reflect, string][] = [
   [Function, 'function'],
   [Lazy(() => Boolean), 'boolean'],
   [Number.withConstraint(x => x > 3), 'number'],
+  [Number.withBrand('someNumber'), 'number'],
+  [Number.withBrand('someNumber').withConstraint(x => x > 3), 'number'],
 
   // Parenthesization
   [Boolean.And(Number.Or(String)), 'boolean & (number | string)'],
