@@ -1,4 +1,5 @@
 lib
 coverage
 README.md
+package.json
 examples/src/**/*
