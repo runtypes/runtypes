@@ -110,16 +110,3 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
     return Brand(B, A);
   }
 }
-
-export class ValidationError extends Error {
-  key?: string;
-
-  constructor(message: string, key?: string) {
-    super(message);
-    this.key = key;
-  }
-}
-
-export function validationError(message: string, key?: string) {
-  return new ValidationError(message, key);
-}

@@ -1,4 +1,5 @@
-import { Runtype, create, validationError } from '../runtype';
+import { Runtype, create } from '../runtype';
+import { ValidationError } from '../errors';
 
 export interface Constructor<V> {
   new (...args: any[]): V;
@@ -13,7 +14,7 @@ export function InstanceOf<V>(ctor: Constructor<V>) {
   return create<InstanceOf<V>>(
     x => {
       if (!(x instanceof ctor)) {
-        throw validationError(`Expected ${(ctor as any).name}, but was ${typeof x}`);
+        throw new ValidationError(`Expected ${(ctor as any).name}, but was ${typeof x}`);
       }
       return x as V;
     },

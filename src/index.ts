@@ -3,6 +3,7 @@ export * from './reflect';
 export * from './result';
 export * from './contract';
 export * from './match';
+export * from './errors';
 export * from './types/always';
 export * from './types/never';
 export * from './types/void';

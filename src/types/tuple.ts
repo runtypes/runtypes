@@ -1,6 +1,7 @@
-import { Runtype, Static, create, validationError } from '../runtype';
+import { Runtype, Static, create } from '../runtype';
 import { Always } from './always';
 import { Array as Arr } from './array';
+import { ValidationError } from '../errors';
 
 export interface Tuple1<A extends Runtype> extends Runtype<[Static<A>]> {
   tag: 'tuple';
@@ -228,11 +229,11 @@ export function Tuple(...components: Runtype[]): any {
       try {
         xs = Arr(Always).check(x);
       } catch ({ key, message }) {
-        throw validationError(`Expected tuple to be an array: ${message}`, key);
+        throw new ValidationError(`Expected tuple to be an array: ${message}`, key);
       }
 
       if (xs.length < components.length)
-        throw validationError(
+        throw new ValidationError(
           `Expected an array of length ${components.length}, but was ${xs.length}`,
         );
 
@@ -240,7 +241,7 @@ export function Tuple(...components: Runtype[]): any {
         try {
           components[i].check(xs[i]);
         } catch ({ message, key: nestedKey }) {
-          throw validationError(message, nestedKey ? `[${i}].${nestedKey}` : `[${i}]`);
+          throw new ValidationError(message, nestedKey ? `[${i}].${nestedKey}` : `[${i}]`);
         }
       }
 
