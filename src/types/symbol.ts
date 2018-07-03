@@ -1,4 +1,5 @@
-import { Runtype, create, validationError } from '../runtype';
+import { Runtype, create } from '../runtype';
+import { ValidationError } from '../errors';
 
 interface Sym extends Runtype<symbol> {
   tag: 'symbol';
@@ -10,7 +11,7 @@ interface Sym extends Runtype<symbol> {
 const Sym = create<Sym>(
   x => {
     if (typeof x !== 'symbol')
-      throw validationError(
+      throw new ValidationError(
         `Expected symbol, but was ${x === null || x === undefined ? x : typeof x}`,
       );
     return x;
