@@ -18,7 +18,10 @@ function Arr<E extends Runtype>(element: E): Arr<E> {
         try {
           element.check(x);
         } catch ({ message, key }) {
-          throw new ValidationError(message, key ? `[${xs.indexOf(x)}].${key}` : `[${xs.indexOf(x)}]`);
+          throw new ValidationError(
+            message,
+            key ? `[${xs.indexOf(x)}].${key}` : `[${xs.indexOf(x)}]`,
+          );
         }
       }
 
