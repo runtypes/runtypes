@@ -87,6 +87,7 @@ const runtypes = {
   InstanceOfSomeClass: InstanceOf(SomeClass),
   InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
   DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
+  OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -111,7 +112,7 @@ const testValues: { value: always; passes: RuntypeName[] }[] = [
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
-  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial'] },
+  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey'] },
   { value: { Boolean: true, foo: 5 }, passes: [] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: undefined, likes: [] }, passes: [] },
@@ -130,6 +131,8 @@ const testValues: { value: always; passes: RuntypeName[] }[] = [
   { value: [1, 2, 3, 4], passes: ['ArrayNumber', 'CustomArray', 'CustomArrayWithMessage'] },
   { value: new SomeClass(42), passes: ['InstanceOfSomeClass'] },
   { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass'] },
+  { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
+  { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
 ];
 
 for (const { value, passes } of testValues) {
@@ -293,6 +296,18 @@ describe('check errors', () => {
         age: Number,
       }),
       'Expected number, but was string',
+      'age',
+    );
+  });
+
+  it('record missing keys', () => {
+    assertThrows(
+      { name: 'Jack' },
+      Record({
+        name: String,
+        age: Number,
+      }),
+      'Expected number, but was undefined',
       'age',
     );
   });
