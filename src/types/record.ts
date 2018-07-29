@@ -21,13 +21,11 @@ export function Record<O extends { [_: string]: Runtype }>(fields: O) {
 
       // tslint:disable-next-line:forin
       for (const key in fields) {
-        if (hasKey(key, x)) {
-          try {
-            fields[key].check(x[key]);
-          } catch ({ key: nestedKey, message }) {
-            throw validationError(message, nestedKey ? `${key}.${nestedKey}` : key);
-          }
-        } else throw validationError(`Expected ${key} to be ${show(fields[key].reflect)}`, key);
+        try {
+          fields[key].check(hasKey(key, x) ? x[key] : undefined);
+        } catch ({ key: nestedKey, message }) {
+          throw validationError(message, nestedKey ? `${key}.${nestedKey}` : key);
+        }
       }
 
       return x as O;
