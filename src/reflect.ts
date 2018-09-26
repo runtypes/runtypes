@@ -1,11 +1,10 @@
 import { Runtype } from './runtype';
-import { always } from './types/always';
 import { LiteralBase } from './types/literal';
 import { ConstraintCheck } from './types/constraint';
 import { Constructor } from './types/instanceof';
 
 export type Reflect =
-  | { tag: 'always' } & Runtype<always>
+  | { tag: 'unknown' } & Runtype
   | { tag: 'never' } & Runtype<never>
   | { tag: 'void' } & Runtype<void>
   | { tag: 'boolean' } & Runtype<boolean>
@@ -13,21 +12,21 @@ export type Reflect =
   | { tag: 'string' } & Runtype<string>
   | { tag: 'symbol' } & Runtype<symbol>
   | { tag: 'literal'; value: LiteralBase } & Runtype<LiteralBase>
-  | { tag: 'array'; element: Reflect } & Runtype<always[]>
-  | { tag: 'record'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]: always }>
-  | { tag: 'partial'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]?: always }>
+  | { tag: 'array'; element: Reflect } & Runtype<unknown[]>
+  | { tag: 'record'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]: unknown }>
+  | { tag: 'partial'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]?: unknown }>
   | { tag: 'dictionary'; key: 'string' | 'number'; value: Reflect } & Runtype<{
-      [_: string]: always;
+      [_: string]: unknown;
     }>
-  | { tag: 'tuple'; components: Reflect[] } & Runtype<always[]>
-  | { tag: 'union'; alternatives: Reflect[] } & Runtype<always>
-  | { tag: 'intersect'; intersectees: Reflect[] } & Runtype<always>
+  | { tag: 'tuple'; components: Reflect[] } & Runtype<unknown[]>
+  | { tag: 'union'; alternatives: Reflect[] } & Runtype
+  | { tag: 'intersect'; intersectees: Reflect[] } & Runtype
   | { tag: 'function' } & Runtype<(...args: any[]) => any>
   | {
       tag: 'constraint';
       underlying: Reflect;
       constraint: ConstraintCheck<Runtype<never>>;
       args?: any;
-    } & Runtype<always>
-  | { tag: 'instanceof'; ctor: Constructor<always> } & Runtype<always>
-  | { tag: 'brand'; brand: string; entity: Reflect } & Runtype<always>;
+    } & Runtype
+  | { tag: 'instanceof'; ctor: Constructor<unknown> } & Runtype
+  | { tag: 'brand'; brand: string; entity: Reflect } & Runtype;

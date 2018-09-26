@@ -5,7 +5,7 @@ export interface Never extends Runtype<never> {
 }
 
 /**
- * Validates nothing (always fails).
+ * Validates nothing (unknown fails).
  */
 export const Never = create<Never>(
   x => {

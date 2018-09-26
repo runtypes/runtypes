@@ -1,5 +1,5 @@
 import {
-  Always,
+  Unknown,
   Never,
   Undefined,
   Null,
@@ -26,7 +26,7 @@ import show from './show';
 class TestClass {}
 
 const cases: [Reflect, string][] = [
-  [Always, 'always'],
+  [Unknown, 'unknown'],
   [Never, 'never'],
   [Undefined, 'undefined'],
   [Null, 'null'],

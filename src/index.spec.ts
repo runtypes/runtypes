@@ -1,8 +1,7 @@
 import {
   Runtype,
   Static,
-  Always,
-  always,
+  Unknown,
   Never,
   Undefined,
   Null,
@@ -48,7 +47,7 @@ class SomeOtherClass {
 }
 
 const runtypes = {
-  Always,
+  Unknown,
   Never,
   Undefined,
   Null,
@@ -98,7 +97,7 @@ class Foo {
   x!: 'blah';
 } // Should not be recognized as a Dictionary
 
-const testValues: { value: always; passes: RuntypeName[] }[] = [
+const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: undefined, passes: ['Undefined', 'Void'] },
   { value: null, passes: ['Null', 'Void'] },
   { value: true, passes: ['Boolean', 'true'] },
@@ -140,7 +139,7 @@ for (const { value, passes } of testValues) {
   describe(valueName, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
-    shouldPass.Always = true;
+    shouldPass.Unknown = true;
 
     if (value !== undefined && value !== null) shouldPass.Empty = true;
 
@@ -359,8 +358,8 @@ describe('reflection', () => {
   const X = Literal('x');
   const Y = Literal('y');
 
-  it('always', () => {
-    expectLiteralField(Always, 'tag', 'always');
+  it('unknown', () => {
+    expectLiteralField(Unknown, 'tag', 'unknown');
   });
 
   it('never', () => {
@@ -405,13 +404,13 @@ describe('reflection', () => {
   });
 
   it('string dictionary', () => {
-    const Rec = Dictionary(Always);
+    const Rec = Dictionary(Unknown);
     expectLiteralField(Rec, 'tag', 'dictionary');
     expectLiteralField(Rec, 'key', 'string');
   });
 
   it('number dictionary', () => {
-    const Rec = Dictionary(Always, 'number');
+    const Rec = Dictionary(Unknown, 'number');
     expectLiteralField(Rec, 'tag', 'dictionary');
     expectLiteralField(Rec, 'key', 'number');
   });
@@ -478,7 +477,7 @@ describe('reflection', () => {
 // Static tests of reflection
 (
   X:
-    | Always
+    | Unknown
     | Never
     | Void
     | Boolean
@@ -499,8 +498,8 @@ describe('reflection', () => {
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({});
   switch (X.tag) {
-    case 'always':
-      check<always>(X);
+    case 'unknown':
+      check<unknown>(X);
       break;
     case 'never':
       check<never>(X);
@@ -562,17 +561,17 @@ function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v:
   expect(o[k]).toBe(v);
 }
 
-function assertAccepts<A>(value: always, runtype: Runtype<A>) {
+function assertAccepts<A>(value: unknown, runtype: Runtype<A>) {
   const result = runtype.validate(value);
   if (result.success === false) fail(result.message);
 }
 
-function assertRejects<A>(value: always, runtype: Runtype<A>) {
+function assertRejects<A>(value: unknown, runtype: Runtype<A>) {
   const result = runtype.validate(value);
   if (result.success === true) fail('value passed validation even though it was not expected to');
 }
 
-function assertThrows<A>(value: always, runtype: Runtype<A>, error: string, key?: string) {
+function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key?: string) {
   try {
     runtype.check(value);
     fail('value passed validation even though it was not expected to');

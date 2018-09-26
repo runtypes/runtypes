@@ -3,7 +3,7 @@ export * from './reflect';
 export * from './result';
 export * from './contract';
 export * from './match';
-export * from './types/always';
+export * from './types/unknown';
 export * from './types/never';
 export * from './types/void';
 export { Literal, Undefined, Null } from './types/literal';

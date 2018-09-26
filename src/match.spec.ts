@@ -1,4 +1,4 @@
-import { Literal, String, Number, match, Always } from '.';
+import { Literal, String, Number, match, Unknown } from '.';
 
 describe('match', () => {
   it('works', () => {
@@ -7,7 +7,7 @@ describe('match', () => {
       [Number, n => n + 9],
       [String, s => s.length * 2],
       [
-        Always,
+        Unknown,
         () => {
           throw new Error('woops');
         },

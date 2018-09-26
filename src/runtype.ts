@@ -14,23 +14,23 @@ import show from './show';
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export interface Runtype<A = any> {
+export interface Runtype<A = unknown> {
   /**
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
    */
-  check(x: any): A;
+  check(x: unknown): A;
 
   /**
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: any): Result<A>;
+  validate(x: unknown): Result<A>;
 
   /**
    * A type guard for this runtype.
    */
-  guard(x: any): x is A;
+  guard(x: unknown): x is A;
 
   /**
    * Union this Runtype with another.

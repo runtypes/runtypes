@@ -39,7 +39,7 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
       }
 
       for (const k in x) {
-        // Object keys are always strings
+        // Object keys are unknown strings
         if (key === 'number') {
           if (isNaN(+k))
             throw validationError(`Expected dictionary key to be a number, but was string`);

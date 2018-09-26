@@ -5,7 +5,7 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
 
   switch (refl.tag) {
     // Primitive types
-    case 'always':
+    case 'unknown':
     case 'never':
     case 'void':
     case 'boolean':

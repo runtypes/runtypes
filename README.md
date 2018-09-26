@@ -189,14 +189,14 @@ const makeANumber = match(
 makeANumber(9); // = 27
 ```
 
-To allow the function to be applied to anything and then handle match failures, simply use an `Always` case at the end:
+To allow the function to be applied to anything and then handle match failures, simply use an `Unknown` case at the end:
 
 ```ts
 const makeANumber = match(
   [Number, n => n * 3],
   [Boolean, b => b ? 1 : 0],
   [String, s => s.length],
-  [Always, () => 42]
+  [Unknown, () => 42]
 );
 ```
 

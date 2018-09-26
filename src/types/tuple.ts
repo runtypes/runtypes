@@ -1,5 +1,5 @@
 import { Runtype, Static, create, validationError } from '../runtype';
-import { Always } from './always';
+import { Unknown } from './unknown';
 import { Array as Arr } from './array';
 
 export interface Tuple1<A extends Runtype> extends Runtype<[Static<A>]> {
@@ -226,7 +226,7 @@ export function Tuple(...components: Runtype[]): any {
       let xs;
 
       try {
-        xs = Arr(Always).check(x);
+        xs = Arr(Unknown).check(x);
       } catch ({ key, message }) {
         throw validationError(`Expected tuple to be an array: ${message}`, key);
       }
