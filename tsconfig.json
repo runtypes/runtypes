@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "lib": ["es2015", "dom", "es7"],
+    "lib": ["es2015", "dom"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
