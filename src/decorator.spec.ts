@@ -1,36 +1,44 @@
-import { check, checked, String, Number, Array, Void } from '.';
+import { check, checked, String } from '.';
 
 describe('Decorators', () => {
   describe('@checked', () => {
     describe('parameter length', () => {
       it('works', () => {
         expect(() => {
-          // @ts-ignore
           class Class {
             @checked(String)
-            static method(s: string) {}
+            static method(s: string) {
+              return s;
+            }
           }
+          return Class;
         }).not.toThrow();
         expect(() => {
-          // @ts-ignore
           class Class {
             @checked(String, String)
-            static method(s: string) {}
+            static method(s: string) {
+              return s;
+            }
           }
+          return Class;
         }).toThrow();
         expect(() => {
-          // @ts-ignore
           class Class {
             @checked()
-            static method(s: string) {}
+            static method(s: string) {
+              return s;
+            }
           }
+          return Class;
         }).toThrow();
         expect(() => {
-          // @ts-ignore
           class Class {
             @checked(String, String)
-            static method(s: string = 'initial', t: string = 'initial') {}
+            static method(s: string = 'initial', t: string = 'initial') {
+              return { s, t };
+            }
           }
+          return Class;
         }).not.toThrow();
       });
     });
@@ -38,9 +46,13 @@ describe('Decorators', () => {
       it('works', () => {
         class Class {
           @checked(String)
-          static method1(s: string) {}
+          static method1(s: string) {
+            return s;
+          }
           @checked(String.withConstraint(s => /^world$/.test(s)))
-          static method2(s: string) {}
+          static method2(s: string) {
+            return s;
+          }
         }
         expect(() => {
           Class.method1('hello');
@@ -58,25 +70,31 @@ describe('Decorators', () => {
     describe('parameter length', () => {
       it('works', () => {
         expect(() => {
-          // @ts-ignore
           class Class {
             @checked(String)
-            static method(@check s: string) {}
+            static method(@check s: string) {
+              return s;
+            }
           }
+          return Class;
         }).not.toThrow();
         expect(() => {
-          // @ts-ignore
           class Class {
             @checked(String, String)
-            static method(@check s: string, t: string) {}
+            static method(@check s: string, t: string) {
+              return { s, t };
+            }
           }
+          return Class;
         }).toThrow();
         expect(() => {
-          // @ts-ignore
           class Class {
             @checked(String)
-            static method(@check s: string, t: string) {}
+            static method(@check s: string, t: string) {
+              return { s, t };
+            }
           }
+          return Class;
         }).not.toThrow();
       });
     });
@@ -84,9 +102,13 @@ describe('Decorators', () => {
       it('works', () => {
         class Class {
           @checked(String)
-          static method1(@check s: string) {}
+          static method1(@check s: string) {
+            return s;
+          }
           @checked(String.withConstraint(s => /^world$/.test(s)))
-          static method2(s: string, @check t: string) {}
+          static method2(s: string, @check t: string) {
+            return { s, t };
+          }
         }
         expect(() => {
           Class.method1('hello');
