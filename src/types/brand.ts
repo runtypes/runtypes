@@ -4,10 +4,10 @@ export const RuntypeName = Symbol('RuntypeName');
 
 export interface Brand<B extends string, A extends Runtype>
   extends Runtype<
-      Static<A> & {
-        [RuntypeName]: B;
-      }
-    > {
+    Static<A> & {
+      [RuntypeName]: B;
+    }
+  > {
   tag: 'brand';
   brand: B;
   entity: A;

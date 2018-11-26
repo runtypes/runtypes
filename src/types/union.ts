@@ -71,8 +71,8 @@ export interface Union8<
   H extends Rt
 >
   extends Rt<
-      Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H>
-    > {
+    Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H];
   match: Match8<A, B, C, D, E, F, G, H>;
@@ -90,16 +90,16 @@ export interface Union9<
   I extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I];
   match: Match9<A, B, C, D, E, F, G, H, I>;
@@ -118,17 +118,17 @@ export interface Union10<
   J extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J];
   match: Match10<A, B, C, D, E, F, G, H, I, J>;
@@ -148,18 +148,18 @@ export interface Union11<
   K extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K];
   match: Match11<A, B, C, D, E, F, G, H, I, J, K>;
@@ -180,19 +180,19 @@ export interface Union12<
   L extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L];
   match: Match12<A, B, C, D, E, F, G, H, I, J, K, L>;
@@ -214,20 +214,20 @@ export interface Union13<
   M extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-      | Static<M>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+    | Static<M>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L, M];
   match: Match13<A, B, C, D, E, F, G, H, I, J, K, L, M>;
@@ -250,21 +250,21 @@ export interface Union14<
   N extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-      | Static<M>
-      | Static<N>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+    | Static<M>
+    | Static<N>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L, M, N];
   match: Match14<A, B, C, D, E, F, G, H, I, J, K, L, M, N>;
@@ -288,22 +288,22 @@ export interface Union15<
   O extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-      | Static<M>
-      | Static<N>
-      | Static<O>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+    | Static<M>
+    | Static<N>
+    | Static<O>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O];
   match: Match15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>;
@@ -328,23 +328,23 @@ export interface Union16<
   P extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-      | Static<M>
-      | Static<N>
-      | Static<O>
-      | Static<P>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+    | Static<M>
+    | Static<N>
+    | Static<O>
+    | Static<P>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P];
   match: Match16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>;
@@ -370,24 +370,24 @@ export interface Union17<
   Q extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-      | Static<M>
-      | Static<N>
-      | Static<O>
-      | Static<P>
-      | Static<Q>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+    | Static<M>
+    | Static<N>
+    | Static<O>
+    | Static<P>
+    | Static<Q>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q];
   match: Match17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>;
@@ -414,25 +414,25 @@ export interface Union18<
   R extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-      | Static<M>
-      | Static<N>
-      | Static<O>
-      | Static<P>
-      | Static<Q>
-      | Static<R>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+    | Static<M>
+    | Static<N>
+    | Static<O>
+    | Static<P>
+    | Static<Q>
+    | Static<R>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R];
   match: Match18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R>;
@@ -460,26 +460,26 @@ export interface Union19<
   S extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-      | Static<M>
-      | Static<N>
-      | Static<O>
-      | Static<P>
-      | Static<Q>
-      | Static<R>
-      | Static<S>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+    | Static<M>
+    | Static<N>
+    | Static<O>
+    | Static<P>
+    | Static<Q>
+    | Static<R>
+    | Static<S>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S];
   match: Match19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S>;
@@ -508,27 +508,27 @@ export interface Union20<
   T extends Rt
 >
   extends Rt<
-      | Static<A>
-      | Static<B>
-      | Static<C>
-      | Static<D>
-      | Static<E>
-      | Static<F>
-      | Static<G>
-      | Static<H>
-      | Static<I>
-      | Static<J>
-      | Static<K>
-      | Static<L>
-      | Static<M>
-      | Static<N>
-      | Static<O>
-      | Static<P>
-      | Static<Q>
-      | Static<R>
-      | Static<S>
-      | Static<T>
-    > {
+    | Static<A>
+    | Static<B>
+    | Static<C>
+    | Static<D>
+    | Static<E>
+    | Static<F>
+    | Static<G>
+    | Static<H>
+    | Static<I>
+    | Static<J>
+    | Static<K>
+    | Static<L>
+    | Static<M>
+    | Static<N>
+    | Static<O>
+    | Static<P>
+    | Static<Q>
+    | Static<R>
+    | Static<S>
+    | Static<T>
+  > {
   tag: 'union';
   alternatives: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T];
   match: Match20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T>;

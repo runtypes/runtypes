@@ -59,8 +59,8 @@ export interface Intersect7<
   G extends Runtype
 >
   extends Runtype<
-      Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G>
-    > {
+    Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G>
+  > {
   tag: 'intersect';
   intersectees: [A, B, C, D, E, F, G];
 }
@@ -76,8 +76,8 @@ export interface Intersect8<
   H extends Runtype
 >
   extends Runtype<
-      Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H>
-    > {
+    Static<A> & Static<B> & Static<C> & Static<D> & Static<E> & Static<F> & Static<G> & Static<H>
+  > {
   tag: 'intersect';
   intersectees: [A, B, C, D, E, F, G, H];
 }
@@ -94,16 +94,16 @@ export interface Intersect9<
   I extends Runtype
 >
   extends Runtype<
-      Static<A> &
-        Static<B> &
-        Static<C> &
-        Static<D> &
-        Static<E> &
-        Static<F> &
-        Static<G> &
-        Static<H> &
-        Static<I>
-    > {
+    Static<A> &
+      Static<B> &
+      Static<C> &
+      Static<D> &
+      Static<E> &
+      Static<F> &
+      Static<G> &
+      Static<H> &
+      Static<I>
+  > {
   tag: 'intersect';
   intersectees: [A, B, C, D, E, F, G, H, I];
 }
@@ -121,17 +121,17 @@ export interface Intersect10<
   J extends Runtype
 >
   extends Runtype<
-      Static<A> &
-        Static<B> &
-        Static<C> &
-        Static<D> &
-        Static<E> &
-        Static<F> &
-        Static<G> &
-        Static<H> &
-        Static<I> &
-        Static<J>
-    > {
+    Static<A> &
+      Static<B> &
+      Static<C> &
+      Static<D> &
+      Static<E> &
+      Static<F> &
+      Static<G> &
+      Static<H> &
+      Static<I> &
+      Static<J>
+  > {
   tag: 'intersect';
   intersectees: [A, B, C, D, E, F, G, H, I, J];
 }
