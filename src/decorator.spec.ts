@@ -122,4 +122,20 @@ describe('Decorators', () => {
       });
     });
   });
+  describe('return value', () => {
+    it('works', () => {
+      class Class {
+        @checked(String)
+        static method1(s: string) {
+          return s;
+        }
+        @checked(String.withConstraint(s => /^world$/.test(s)))
+        static method2(s: string, @check t: string) {
+          return { s, t };
+        }
+      }
+      expect(Class.method1('hello')).toBe('hello');
+      expect(Class.method2('hello', 'world')).toEqual({ s: 'hello', t: 'world' });
+    });
+  });
 });
