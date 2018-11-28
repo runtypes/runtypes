@@ -72,7 +72,6 @@ export function checked(...runtypes: Runtype[]) {
               throw new ValidationError(`${methodId}, argument #${parameterIndex}: ${err.message}`);
             }
           });
-
           return method.apply(this, args);
         };
       } else {
@@ -89,6 +88,7 @@ export function checked(...runtypes: Runtype[]) {
               throw new ValidationError(`${methodId}, argument #${typeIndex}: ${err.message}`);
             }
           });
+          return method.apply(this, args);
         };
       } else {
         throw new Error('Number of `@checked` runtypes exceeds actual parameter length.');
