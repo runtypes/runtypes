@@ -1,4 +1,5 @@
-import { Runtype, create, validationError } from '../runtype';
+import { Runtype, create } from '../runtype';
+import { ValidationError } from '../errors';
 
 export interface Boolean extends Runtype<boolean> {
   tag: 'boolean';
@@ -9,7 +10,7 @@ export interface Boolean extends Runtype<boolean> {
  */
 export const Boolean = create<Boolean>(
   x => {
-    if (typeof x !== 'boolean') throw validationError(`Expected boolean, but was ${typeof x}`);
+    if (typeof x !== 'boolean') throw new ValidationError(`Expected boolean, but was ${typeof x}`);
     return x;
   },
   { tag: 'boolean' },

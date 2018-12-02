@@ -1,5 +1,6 @@
-import { Runtype, create, Static, validationError } from '../runtype';
+import { Runtype, create, Static } from '../runtype';
 import show from '../show';
+import { ValidationError } from '../errors';
 
 export interface StringDictionary<V extends Runtype> extends Runtype<{ [_: string]: Static<V> }> {
   tag: 'dictionary';
@@ -23,32 +24,35 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
     x => {
       if (x === null || x === undefined) {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
-        throw validationError(`Expected ${show(a)}, but was ${x}`);
+        throw new ValidationError(`Expected ${show(a)}, but was ${x}`);
       }
 
       if (typeof x !== 'object') {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
-        throw validationError(`Expected ${show(a.reflect)}, but was ${typeof x}`);
+        throw new ValidationError(`Expected ${show(a.reflect)}, but was ${typeof x}`);
       }
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
         if (!Array.isArray(x)) {
           const a = create<any>(x as never, { tag: 'dictionary', key, value });
-          throw validationError(`Expected ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`);
-        } else if (key === 'string') throw validationError(`Expected dictionary, but was array`);
+          throw new ValidationError(
+            `Expected ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`,
+          );
+        } else if (key === 'string')
+          throw new ValidationError(`Expected dictionary, but was array`);
       }
 
       for (const k in x) {
         // Object keys are unknown strings
         if (key === 'number') {
           if (isNaN(+k))
-            throw validationError(`Expected dictionary key to be a number, but was string`);
+            throw new ValidationError(`Expected dictionary key to be a number, but was string`);
         }
 
         try {
           value.check((x as any)[k]);
         } catch ({ key: nestedKey, message }) {
-          throw validationError(message, nestedKey ? `${k}.${nestedKey}` : k);
+          throw new ValidationError(message, nestedKey ? `${k}.${nestedKey}` : k);
         }
       }
 

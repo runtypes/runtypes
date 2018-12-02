@@ -1,6 +1,7 @@
-import { Runtype, ValidationError } from './runtype';
+import { Runtype } from './runtype';
 
 import 'reflect-metadata';
+import { ValidationError } from './errors';
 
 const CHECKED_PARAMETER_INDICES = Symbol.for('runtypes:checked-parameter-indices');
 

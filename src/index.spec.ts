@@ -31,6 +31,7 @@ import {
 } from './index';
 
 import { Constructor } from './types/instanceof';
+import { ValidationError } from './errors';
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean);
 const record1 = Record({ Boolean, Number });
@@ -575,7 +576,10 @@ function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key
   try {
     runtype.check(value);
     fail('value passed validation even though it was not expected to');
-  } catch ({ message: errorMessage, key: errorKey }) {
+  } catch (exception) {
+    const { message: errorMessage, key: errorKey } = exception;
+
+    expect(exception).toBeInstanceOf(ValidationError);
     expect(errorMessage).toBe(error);
     expect(errorKey).toBe(key);
   }
