@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc --pretty",
     "format": "node scripts/format.js",
-    "test": "jest $([ \"$CI\" == true ] && echo --coverage || echo --watch)",
+    "test": "jest $([ \"$CI\" = true ] && echo --coverage || echo --watch)",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "author": "Thomas Crockett",
