@@ -242,4 +242,4 @@ divide(10, 0); // Throws error: division by zero
 ## Related libraries
 
 * [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
-* [rest.ts] (https://github.com/hmil/rest.ts) Allows building type safe and runtime-checked APIs
+* [rest.ts](https://github.com/hmil/rest.ts) Allows building type safe and runtime-checked APIs
