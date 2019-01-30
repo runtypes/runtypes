@@ -267,14 +267,14 @@ const RegisteredShip = Ship.And(Record({
   // We may or may not know the ship's classification
   shipClass: Union(Literal('military'), Literal('civilian')),
 
- // We may not know the ship's rank (allowed to be undefined as part of `Partial`),
+ // We may not know the ship's rank (so we allow it to be undefined via `Partial`),
  // we may also know that a civilian ship doesn't have a rank (e.g. null)
   rank: Rank.Or(Null),
 }));
 ```
 
 If a record has keys which _must be present_ but can be null, then use
-the `Record` runtype or the `And` combinators normally instead.
+the `Record` runtype normally instead.
 
 ```ts
 const MilitaryShip = Ship.And(Record({
