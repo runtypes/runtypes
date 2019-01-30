@@ -265,7 +265,7 @@ const RegisteredShip = Ship.And(Record({
   isRegistered: Literal(true),
 })).And(Partial({
   // We may or may not know the ship's classification
-  name: Union(Literal('military'), Literal('civilian')),
+  shipClass: Union(Literal('military'), Literal('civilian')),
 
  // We may not know the ship's rank (allowed to be undefined as part of `Partial`),
  // we may also know that a civilian ship doesn't have a rank (e.g. null)
