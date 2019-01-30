@@ -254,7 +254,7 @@ const MyStringVoidable: String.Or(Void);   // string | void      (e.g. 'text', n
 ```
 
 If a `Record` may or may not have some keys, we can declare the optional
-keys using `myRecord.Partial`.  Partial keys validate successfully if
+keys using `myRecord.And(Partial({ ... }))`.  Partial keys validate successfully if
 they are absent or undefined (but not null) or the type specified
 (which can be null).
 
@@ -263,14 +263,14 @@ they are absent or undefined (but not null) or the type specified
 const RegisteredShip = Ship.And({
   // All registered ships must have this flag
   isRegistered: Literal(true),
-}).Partial({
+}).And(Partial({
   // We may or may not know the ship's classification
   name: Union(Literal('military'), Literal('civilian')),
 
   // We may not know the ship's rank (undefined),
   // we may also know that a civilian ship doesn't have a rank (null)
   rank: Rank.Or(Null),
-});
+}));
 ```
 
 If a record has keys which _must be present_ but can be null, then use
