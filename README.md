@@ -239,6 +239,52 @@ divide(10, 2); // 5
 divide(10, 0); // Throws error: division by zero
 ```
 
+## Optional values
+
+Runtypes can be used to represent a variable that may be null or undefined
+as well as representing keys within records that may or moy not be present.
+
+
+```ts
+// For variables that might be undefined or null
+const MyString = String;                    // string             (e.g. 'text')
+const MyStringMaybe = String.Or(Undefined); // string | undefined (e.g. 'text', undefined)
+const MyStringNullable = String.Or(Null);   // string | null      (e.g. 'text', null)
+const MyStringVoidable = String.Or(Void);   // string | void      (e.g. 'text', null, undefined)
+```
+
+If a `Record` may or may not have some keys, we can declare the optional
+keys using `myRecord.And(Partial({ ... }))`.  Partial keys validate successfully if
+they are absent or undefined (but not null) or the type specified
+(which can be null).
+
+```ts
+// Using `Ship` from above
+const RegisteredShip = Ship.And(Record({
+  // All registered ships must have this flag
+  isRegistered: Literal(true),
+})).And(Partial({
+  // We may or may not know the ship's classification
+  shipClass: Union(Literal('military'), Literal('civilian')),
+
+  // We may not know the ship's rank (so we allow it to be undefined via `Partial`),
+  // we may also know that a civilian ship doesn't have a rank (e.g. null)
+  rank: Rank.Or(Null),
+}));
+```
+
+If a record has keys which _must be present_ but can be null, then use
+the `Record` runtype normally instead.
+
+```ts
+const MilitaryShip = Ship.And(Record({
+  shipClass: Literal('military'),
+  
+  // Must NOT be undefined, but can be null
+  lastDeployedTimestamp: Number.Or(Null),
+}));
+```
+
 ## Related libraries
 
 * [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
