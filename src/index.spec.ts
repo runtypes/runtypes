@@ -88,6 +88,8 @@ const runtypes = {
   InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
   DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
   OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
+  ReadonlyNumberArray: Array(Number).asReadonly(),
+  ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -126,13 +128,17 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
   { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
   { value: new Foo(), passes: [] },
-  { value: [1, 2, 4], passes: ['ArrayNumber'] },
+  { value: [1, 2, 4], passes: ['ArrayNumber', 'ReadonlyNumberArray'] },
   { value: { Boolean: true, Number: '5' }, passes: ['Partial'] },
-  { value: [1, 2, 3, 4], passes: ['ArrayNumber', 'CustomArray', 'CustomArrayWithMessage'] },
+  {
+    value: [1, 2, 3, 4],
+    passes: ['ArrayNumber', 'ReadonlyNumberArray', 'CustomArray', 'CustomArrayWithMessage'],
+  },
   { value: new SomeClass(42), passes: ['InstanceOfSomeClass'] },
   { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass'] },
   { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
   { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
+  { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord'] },
 ];
 
 for (const { value, passes } of testValues) {
@@ -244,6 +250,33 @@ describe('check errors', () => {
     );
   });
 
+  it('readonly array', () => {
+    assertThrows(
+      [0, 2, 'test'],
+      Array(Number).asReadonly(),
+      'Expected number, but was string',
+      '[2]',
+    );
+  });
+
+  it('readonly array nested', () => {
+    assertThrows(
+      [{ name: 'Foo' }, { name: false }],
+      Array(Record({ name: String })).asReadonly(),
+      'Expected string, but was boolean',
+      '[1].name',
+    );
+  });
+
+  it('readonly array null', () => {
+    assertThrows(
+      [{ name: 'Foo' }, null],
+      Array(Record({ name: String })).asReadonly(),
+      'Expected { name: string; }, but was null',
+      '[1]',
+    );
+  });
+
   it('dictionary', () => {
     assertThrows(null, Dictionary(String), 'Expected { [_: string]: string }, but was null');
   });
@@ -325,6 +358,43 @@ describe('check errors', () => {
     );
   });
 
+  it('readonly record', () => {
+    assertThrows(
+      { name: 'Jack', age: '10' },
+      Record({
+        name: String,
+        age: Number,
+      }).asReadonly(),
+      'Expected number, but was string',
+      'age',
+    );
+  });
+
+  it('readonly record missing keys', () => {
+    assertThrows(
+      { name: 'Jack' },
+      Record({
+        name: String,
+        age: Number,
+      }).asReadonly(),
+      'Expected number, but was undefined',
+      'age',
+    );
+  });
+
+  it('readonly record complex', () => {
+    assertThrows(
+      { name: 'Jack', age: 10, likes: [{ title: false }] },
+      Record({
+        name: String,
+        age: Number,
+        likes: Array(Record({ title: String }).asReadonly()),
+      }).asReadonly(),
+      'Expected string, but was boolean',
+      'likes.[0].title',
+    );
+  });
+
   it('partial', () => {
     assertThrows(
       { name: 'Jack', age: null },
@@ -396,6 +466,14 @@ describe('reflection', () => {
     expectLiteralField(Array(X), 'tag', 'array');
     expectLiteralField(Array(X).element, 'tag', 'literal');
     expectLiteralField(Array(X).element, 'value', 'x');
+    expectLiteralField(Array(X), 'isReadonly', false);
+  });
+
+  it('array (asReadonly)', () => {
+    expectLiteralField(Array(X).asReadonly(), 'tag', 'array');
+    expectLiteralField(Array(X).asReadonly().element, 'tag', 'literal');
+    expectLiteralField(Array(X).asReadonly().element, 'value', 'x');
+    expectLiteralField(Array(X).asReadonly(), 'isReadonly', true);
   });
 
   it('tuple', () => {
@@ -422,6 +500,16 @@ describe('reflection', () => {
     expectLiteralField(Rec.fields.x, 'tag', 'number');
     expectLiteralField(Rec.fields.y, 'tag', 'literal');
     expectLiteralField(Rec.fields.y, 'value', 3);
+    expectLiteralField(Rec, 'isReadonly', false);
+  });
+
+  it('record (asReadonly)', () => {
+    const Rec = Record({ x: Number, y: Literal(3) }).asReadonly();
+    expectLiteralField(Rec, 'tag', 'record');
+    expectLiteralField(Rec.fields.x, 'tag', 'number');
+    expectLiteralField(Rec.fields.y, 'tag', 'literal');
+    expectLiteralField(Rec.fields.y, 'value', 3);
+    expectLiteralField(Rec, 'isReadonly', true);
   });
 
   it('partial', () => {
@@ -486,8 +574,10 @@ describe('reflection', () => {
     | String
     | Sym
     | Literal<boolean | number | string>
-    | Array<Reflect>
-    | Record<{ [_ in string]: Reflect }>
+    | Array<Reflect, false>
+    | Array<Reflect, true>
+    | Record<{ [_ in string]: Reflect }, false>
+    | Record<{ [_ in string]: Reflect }, true>
     | Partial<{ [_ in string]: Reflect }>
     | Tuple2<Reflect, Reflect>
     | Union2<Reflect, Reflect>
@@ -524,10 +614,10 @@ describe('reflection', () => {
       check<typeof X.value>(X);
       break;
     case 'array':
-      check<(Static<typeof X.element>)[]>(X);
+      check<ReadonlyArray<Static<typeof X.element>>>(X);
       break;
     case 'record':
-      check<{ [K in keyof typeof X.fields]: Static<typeof X.fields['K']> }>(X);
+      check<{ readonly [K in keyof typeof X.fields]: Static<typeof X.fields[K]> }>(X);
       break;
     case 'partial':
       check<{ [K in keyof typeof X.fields]?: Static<typeof X.fields['K']> }>(X);

@@ -12,8 +12,10 @@ export type Reflect =
   | { tag: 'string' } & Runtype<string>
   | { tag: 'symbol' } & Runtype<symbol>
   | { tag: 'literal'; value: LiteralBase } & Runtype<LiteralBase>
-  | { tag: 'array'; element: Reflect } & Runtype<unknown[]>
-  | { tag: 'record'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]: unknown }>
+  | { tag: 'array'; element: Reflect; isReadonly: boolean } & Runtype<ReadonlyArray<unknown>>
+  | { tag: 'record'; fields: { [_: string]: Reflect }; isReadonly: boolean } & Runtype<
+      { readonly [_ in string]: unknown }
+    >
   | { tag: 'partial'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]?: unknown }>
   | { tag: 'dictionary'; key: 'string' | 'number'; value: Reflect } & Runtype<{
       [_: string]: unknown;
