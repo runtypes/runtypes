@@ -30,7 +30,7 @@ const cases: [Reflect, string][] = [
   [Never, 'never'],
   [Undefined, 'undefined'],
   [Null, 'null'],
-  [Void, 'void'],
+  [Void, 'unknown'],
   [Boolean, 'boolean'],
   [Number, 'number'],
   [String, 'string'],

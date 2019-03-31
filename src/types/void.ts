@@ -1,18 +1,10 @@
-import { Runtype, create } from '../runtype';
-import { ValidationError } from '../errors';
+import { Unknown } from './unknown';
 
-export interface Void extends Runtype<void> {
-  tag: 'void';
-}
+export type Void = Unknown;
 
 /**
- * Validates that a value is void (null or undefined).
+ * Void is an alias for Unknown
+ *
+ * @deprecated Please use Unknown instead
  */
-export const Void = create<Void>(
-  x => {
-    if (x !== undefined && x !== null)
-      throw new ValidationError(`Expected null, but was ${typeof x}`);
-    return x;
-  },
-  { tag: 'void' },
-);
+export const Void = Unknown;

@@ -141,6 +141,7 @@ for (const { value, passes } of testValues) {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
     shouldPass.Unknown = true;
+    shouldPass.Void = true;
 
     if (value !== undefined && value !== null) shouldPass.Empty = true;
 
@@ -368,7 +369,7 @@ describe('reflection', () => {
   });
 
   it('void', () => {
-    expectLiteralField(Void, 'tag', 'void');
+    expectLiteralField(Void, 'tag', 'unknown');
   });
 
   it('boolean', () => {
@@ -504,9 +505,6 @@ describe('reflection', () => {
       break;
     case 'never':
       check<never>(X);
-      break;
-    case 'void':
-      check<void>(X);
       break;
     case 'boolean':
       check<boolean>(X);
