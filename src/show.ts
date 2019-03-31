@@ -21,13 +21,15 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
       return typeof value === 'string' ? `"${value}"` : String(value);
     }
     case 'array':
-      return `${show(true)(refl.element)}[]`;
+      return `${readonlyTag(refl)}${show(true)(refl.element)}[]`;
     case 'dictionary':
       return `{ [_: ${refl.key}]: ${show(false)(refl.value)} }`;
     case 'record': {
       const keys = Object.keys(refl.fields);
       return keys.length
-        ? `{ ${keys.map(k => `${k}: ${show(false)(refl.fields[k])};`).join(' ')} }`
+        ? `{ ${keys
+            .map(k => `${readonlyTag(refl)}${k}: ${show(false)(refl.fields[k])};`)
+            .join(' ')} }`
         : '{}';
     }
     case 'partial': {
@@ -53,3 +55,7 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
 };
 
 export default show(false);
+
+function readonlyTag({ isReadonly }: { isReadonly: boolean }): string {
+  return isReadonly ? 'readonly ' : '';
+}
