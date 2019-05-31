@@ -219,6 +219,59 @@ const Positive = Number.withConstraint(n => n > 0 || `${n} is not positive`);
 Positive.check(-3); // Throws error: -3 is not positive
 ```
 
+You can set a custom name for your runtype, which will be used in default error
+messages and reflection, by using the `name` prop on the optional `options`
+parameter: 
+
+```typescript
+const C = Number.withConstraint(n => n > 0, {name: 'PositiveNumber'});
+```
+
+To change the type, there are two ways to do it: passing a type guard function
+to a new `Runtype.withGuard()` method, or using the familiar
+`Runtype.withConstraint()` method. (Both methods also accept an `options`
+parameter to optionally set the name.) 
+
+Using a type guard function is the easiest option to change the static type,
+because TS will infer the desired type from the return type of the guard
+function.
+
+```typescript
+// use Buffer.isBuffer, which is typed as: isBuffer(obj: any): obj is Buffer;
+const B = Unknown.withGuard(Buffer.isBuffer);
+type T = Static<typeof B>; // T is Buffer
+```
+
+However, if you want to return a custom error message from your constraint
+function, you can't do this with a type guard because these functions can only
+return boolean values.  Instead, you can roll your own constraint function and
+use the `withConstraint<T>()` method. Remember to specify the type parameter for
+the `Constraint` because it can't be inferred from your check function!
+
+```typescript
+const check = (o: any) => Buffer.isBuffer(o) || 'Dude, not a Buffer!';
+const B = Unknown.withConstraint<Buffer>(check);
+type T = Static<typeof B>; // T will have type of `Buffer`
+```
+
+One important choice when changing `Constraint` static types is choosing the
+correct underlying type. The implementation of `Constraint` will validate the
+underlying type *before* running your constraint function. So it's important to
+use a lowest-common-denominator type that will pass validation for all expected
+inputs of your constraint function or type guard.  If there's no obvious
+lowest-common-denominator type, you can always use `Unknown` as the underlying
+type, as shown in the `Buffer` examples above.  
+
+Speaking of base types, if you're using a type guard function and your base type
+is `Unknown`, then there's a convenience runtype `Guard` available, which is a
+shorthand for `Unknown.withGuard`.
+
+```typescript
+// use Buffer.isBuffer, which is typed as: isBuffer(obj: any): obj is Buffer;
+const B = Guard(Buffer.isBuffer);
+type T = Static<typeof B>; // T will have type of `Buffer`
+```
+
 ## Function contracts
 
 Runtypes along with constraint checking are a natural fit for enforcing function
