@@ -43,12 +43,42 @@ export interface Runtype<A = unknown> {
   And<B extends Runtype>(B: B): Intersect2<this, B>;
 
   /**
-   * Provide a function which validates some arbitrary constraint,
-   * returning true if the constraint is met, false if it failed
-   * for some reason. May also return a string which indicates an
-   * error and provides a descriptive message.
+   * Use an arbitrary constraint function to validate a runtype, and optionally
+   * to change its name and/or its static type.
+   *
+   * @template T - Optionally override the static type of the resulting runtype
+   * @param {(x: Static<this>) => boolean | string} constraint - Custom function
+   * that returns `true` if the constraint is satisfied, `false` or a custom
+   * error message if not.
+   * @param [options]
+   * @param {string} [options.name] - allows setting the name of this
+   * constrained runtype, which is helpful in reflection or diagnostic
+   * use-cases.
    */
-  withConstraint<K>(constraint: ConstraintCheck<this>, args?: K): Constraint<this, K>;
+  withConstraint<T extends Static<this>, K = unknown>(
+    constraint: ConstraintCheck<this>,
+    options?: { name?: string; args?: K },
+  ): Constraint<this, T, K>;
+
+  /**
+   * Helper function to convert an underlying Runtype into another static type
+   * via a type guard function.  The static type of the runtype is inferred from
+   * the type of the guard function.
+   *
+   * @template T - Typically inferred from the return type of the type guard
+   * function, so usually not needed to specify manually.
+   * @param {(x: Static<this>) => x is T} guard - Type guard function (see
+   * https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards)
+   *
+   * @param [options]
+   * @param {string} [options.name] - allows setting the name of this
+   * constrained runtype, which is helpful in reflection or diagnostic
+   * use-cases.
+   */
+  withGuard<T extends Static<this>, K = unknown>(
+    guard: (x: Static<this>) => x is T,
+    options?: { name?: string; args?: K },
+  ): Constraint<this, T, K>;
 
   /**
    * Adds a brand to the type.
@@ -75,6 +105,7 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
   A.Or = Or;
   A.And = And;
   A.withConstraint = withConstraint;
+  A.withGuard = withGuard;
   A.withBrand = withBrand;
   A.reflect = A;
   A.toString = () => `Runtype<${show(A)}>`;
@@ -102,8 +133,18 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
     return Intersect(A, B);
   }
 
-  function withConstraint<K>(constraint: ConstraintCheck<A>, args?: K): Constraint<A, K> {
-    return Constraint(A, constraint, args);
+  function withConstraint<T extends Static<A>, K = unknown>(
+    constraint: ConstraintCheck<A>,
+    options?: { name?: string; args?: K },
+  ): Constraint<A, T, K> {
+    return Constraint<A, T, K>(A, constraint, options);
+  }
+
+  function withGuard<T extends Static<A>, K = unknown>(
+    guard: (x: Static<A>) => x is T,
+    options?: { name?: string; args?: K },
+  ): Constraint<A, T, K> {
+    return Constraint<A, T, K>(A, guard, options);
   }
 
   function withBrand<B extends string>(B: B): Brand<B, A> {

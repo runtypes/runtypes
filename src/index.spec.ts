@@ -28,6 +28,7 @@ import {
   Reflect,
   InstanceOf,
   Brand,
+  Guard,
 } from './index';
 
 import { Constructor } from './types/instanceof';
@@ -45,6 +46,17 @@ class SomeClass {
 }
 class SomeOtherClass {
   constructor(public n: number) {}
+}
+const SOMECLASS_TAG = 'I am a SomeClass instance (any version)';
+class SomeClassV1 {
+  constructor(public n: number) {}
+  public _someClassTag = SOMECLASS_TAG;
+  public static isSomeClass = (o: any): o is SomeClassV1 => o._someClassTag === SOMECLASS_TAG;
+}
+class SomeClassV2 {
+  constructor(public n: number) {}
+  public _someClassTag = SOMECLASS_TAG;
+  public static isSomeClass = (o: any): o is SomeClassV2 => o._someClassTag === SOMECLASS_TAG;
 }
 
 const runtypes = {
@@ -77,16 +89,28 @@ const runtypes = {
   ArrayString: Array(String),
   ArrayNumber: Array(Number),
   ArrayPerson: Array(Person),
-  CustomArray: Array(Number).withConstraint(x => x.length > 3, { tag: 'lenght', min: 3 }),
+  CustomArray: Array(Number).withConstraint(x => x.length > 3, { args: { tag: 'length', min: 3 } }),
   CustomArrayWithMessage: Array(Number).withConstraint(
     x => x.length > 3 || `Length array is not greater 3`,
-    { tag: 'length', min: 3 },
+    { args: { tag: 'length', min: 3 } },
   ),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
   DictionaryOfArrays: Dictionary(Array(Boolean)),
   InstanceOfSomeClass: InstanceOf(SomeClass),
   InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
+  CustomGuardConstraint: Unknown.withGuard(SomeClassV2.isSomeClass),
+  CustomGuardType: Guard(SomeClassV2.isSomeClass),
+  ChangeType: Unknown.withConstraint<SomeClass>(SomeClassV2.isSomeClass),
+  ChangeTypeAndName: Unknown.withConstraint<SomeClass>(
+    (o: any) => o._someClassTag === SOMECLASS_TAG,
+    {
+      name: 'SomeClass',
+    },
+  ),
+  GuardChangeTypeAndName: Guard((o: any): o is SomeClass => o._someClassTag === SOMECLASS_TAG, {
+    name: 'SomeClass',
+  }),
   DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
   OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
   ReadonlyNumberArray: Array(Number).asReadonly(),
@@ -138,7 +162,26 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
     value: [1, 2, 3, 4],
     passes: ['ArrayNumber', 'ReadonlyNumberArray', 'CustomArray', 'CustomArrayWithMessage'],
   },
-  { value: new SomeClass(42), passes: ['InstanceOfSomeClass'] },
+  {
+    value: new SomeClassV1(42),
+    passes: [
+      'CustomGuardType',
+      'CustomGuardConstraint',
+      'ChangeType',
+      'ChangeTypeAndName',
+      'GuardChangeTypeAndName',
+    ],
+  },
+  {
+    value: new SomeClassV2(42),
+    passes: [
+      'CustomGuardType',
+      'CustomGuardConstraint',
+      'ChangeType',
+      'ChangeTypeAndName',
+      'GuardChangeTypeAndName',
+    ],
+  },
   { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass'] },
   { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
   { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
@@ -425,6 +468,26 @@ describe('check errors', () => {
     );
   });
 
+  it('constraint standard message', () => {
+    assertThrows(
+      new SomeClass(1),
+      Unknown.withConstraint<SomeClass>((o: any) => o.n > 3, {
+        name: 'SomeClass',
+      }),
+      'Failed SomeClass check',
+    );
+  });
+
+  it('constraint custom message', () => {
+    assertThrows(
+      new SomeClass(1),
+      Unknown.withConstraint<SomeClass>((o: any) => (o.n > 3 ? true : 'n must be 3+'), {
+        name: 'SomeClass',
+      }),
+      'n must be 3+',
+    );
+  });
+
   it('union', () => {
     assertThrows(false, Union(Number, String), 'Expected number | string, but was boolean');
   });
@@ -550,9 +613,10 @@ describe('reflection', () => {
   });
 
   it('constraint', () => {
-    const C = Number.withConstraint(n => n > 9);
+    const C = Number.withConstraint(n => n > 0, { name: 'PositiveNumber' });
     expectLiteralField(C, 'tag', 'constraint');
     expectLiteralField(C.underlying, 'tag', 'number');
+    expectLiteralField(C, 'name', 'PositiveNumber');
   });
 
   it('instanceof', () => {
@@ -565,6 +629,27 @@ describe('reflection', () => {
     const C = Number.withBrand('someNumber');
     expectLiteralField(C, 'tag', 'brand');
     expectLiteralField(C.entity, 'tag', 'number');
+  });
+});
+
+describe('change static type with Constraint', () => {
+  const test = (value: SomeClassV1): SomeClassV2 => {
+    const C = Unknown.withConstraint<SomeClassV2>(SomeClassV2.isSomeClass, {
+      name: 'SomeClass',
+    });
+
+    if (C.guard(value)) {
+      return value;
+    } else {
+      return new SomeClassV2(3);
+    }
+  };
+  it('change static type', () => {
+    const value = new SomeClassV1(42);
+    const result = test(value);
+    // confirm that it's really a SomeClassV1, even though it's type-cast to SomeClassV2
+    expect(result instanceof SomeClassV1).toBe(true);
+    expect(result.n).toBe(42);
   });
 });
 
@@ -588,7 +673,7 @@ describe('reflection', () => {
     | Union2<Reflect, Reflect>
     | Intersect2<Reflect, Reflect>
     | Function
-    | Constraint<Reflect, any>
+    | Constraint<Reflect, any, any>
     | InstanceOf<Constructor<never>>
     | Brand<string, Reflect>,
 ): Reflect => {

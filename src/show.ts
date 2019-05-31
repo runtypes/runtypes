@@ -45,7 +45,7 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
     case 'intersect':
       return parenthesize(`${refl.intersectees.map(show(true)).join(' & ')}`);
     case 'constraint':
-      return show(needsParens)(refl.underlying);
+      return refl.name || show(needsParens)(refl.underlying);
     case 'instanceof':
       const name = (refl.ctor as any).name;
       return `InstanceOf<${name}>`;
