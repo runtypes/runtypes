@@ -16,7 +16,7 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
   return create<Part<O>>(
     x => {
       if (x === null || x === undefined) {
-        const a = create<any>(x, { tag: 'partial', fields });
+        const a = create<any>(x => x, { tag: 'partial', fields });
         throw new ValidationError(`Expected ${show(a)}, but was ${x}`);
       }
 

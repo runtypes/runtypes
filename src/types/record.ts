@@ -27,7 +27,7 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
     create(
       x => {
         if (x === null || x === undefined) {
-          const a = create<any>(x, { tag: 'record', fields });
+          const a = create<any>(x => x, { tag: 'record', fields });
           throw new ValidationError(`Expected ${show(a)}, but was ${x}`);
         }
 
