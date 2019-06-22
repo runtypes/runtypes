@@ -303,7 +303,6 @@ as well as representing keys within records that may or moy not be present.
 const MyString = String;                    // string             (e.g. 'text')
 const MyStringMaybe = String.Or(Undefined); // string | undefined (e.g. 'text', undefined)
 const MyStringNullable = String.Or(Null);   // string | null      (e.g. 'text', null)
-const MyStringVoidable = String.Or(Void);   // string | void      (e.g. 'text', null, undefined)
 ```
 
 If a `Record` may or may not have some keys, we can declare the optional
