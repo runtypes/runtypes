@@ -116,8 +116,8 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
     try {
       check(value);
       return { success: true, value };
-    } catch ({ message }) {
-      return { success: false, message };
+    } catch ({ message, key }) {
+      return { success: false, message, key };
     }
   }
 
