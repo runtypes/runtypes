@@ -26,6 +26,11 @@ export type Failure = {
    * A message indicating the reason validation failed.
    */
   message: string;
+
+  /**
+   * A key indicating the location at which validation failed.
+   */
+  key?: string;
 };
 
 /**
