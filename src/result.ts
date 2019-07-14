@@ -30,7 +30,7 @@ export type Failure = {
   /**
    * A key indicating the location at which validation failed.
    */
-  key: string;
+  key?: string;
 };
 
 /**
