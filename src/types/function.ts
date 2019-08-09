@@ -1,18 +1,23 @@
 import { Runtype, create } from '../runtype';
 import { ValidationError } from '../errors';
 
-export interface Function extends Runtype<(...args: any[]) => any> {
+type TFunction = (...args: any[]) => any;
+
+export interface Function extends Runtype<TFunction> {
   tag: 'function';
+}
+
+function guard(x: unknown): x is TFunction {
+  return typeof x === 'function';
 }
 
 /**
  * Construct a runtype for functions.
  */
 export const Function = create<Function>(
-  (x: any) => {
-    if (typeof x !== 'function')
-      throw new ValidationError(`Expected function, but was ${typeof x}`);
+  x => {
+    if (!guard(x)) throw new ValidationError(`Expected function, but was ${typeof x}`);
     return x;
   },
-  { tag: 'function' },
+  { tag: 'function', guard },
 );
