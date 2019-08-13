@@ -1,28 +1,40 @@
 import { Runtype } from './runtype';
-
-import 'reflect-metadata';
 import { ValidationError } from './errors';
 
-const CHECKED_PARAMETER_INDICES = Symbol.for('runtypes:checked-parameter-indices');
+type PropKey = string | symbol;
+const prototypes = new WeakMap<any, Map<PropKey, number[]>>();
 
 /**
  * A parameter decorator. Explicitly mark the parameter as checked on every method call in combination with `@checked` method decorator. The number of `@check` params must be the same as the number of provided runtypes into `@checked`.\
  * Usage:
  * ```ts
  * @checked(Runtype1, Runtype3)
- * method(@check p1: Runtype1, p2: number, @check p3: Runtype3) { ... }
+ * method(@check p1: Static1, p2: number, @check p3: Static3) { ... }
  * ```
  */
-export function check(target: any, propertyKey: string | symbol, parameterIndex: number) {
-  const existingValidParameterIndices: number[] =
-    Reflect.getOwnMetadata(CHECKED_PARAMETER_INDICES, target, propertyKey) || [];
-  existingValidParameterIndices.push(parameterIndex);
-  Reflect.defineMetadata(
-    CHECKED_PARAMETER_INDICES,
-    existingValidParameterIndices,
-    target,
-    propertyKey,
-  );
+export function check(target: any, propertyKey: PropKey, parameterIndex: number) {
+  const prototype = prototypes.get(target) || new Map();
+  prototypes.set(target, prototype);
+
+  const validParameterIndices = prototype.get(propertyKey) || [];
+  prototype.set(propertyKey, validParameterIndices);
+
+  validParameterIndices.push(parameterIndex);
+}
+
+function getValidParameterIndices(target: any, propertyKey: PropKey, runtypeCount: number) {
+  const prototype = prototypes.get(target);
+  const validParameterIndices = prototype && prototype.get(propertyKey);
+  if (validParameterIndices) {
+    // used with `@check` parameter decorator
+    return validParameterIndices;
+  }
+
+  const indices = [];
+  for (let i = 0; i < runtypeCount; i++) {
+    indices.push(i);
+  }
+  return indices;
 }
 
 /**
@@ -49,51 +61,30 @@ export function checked(...runtypes: Runtype[]) {
   if (runtypes.length === 0) {
     throw new Error('No runtype provided to `@checked`. Please remove the decorator.');
   }
-  return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+  return (target: any, propertyKey: PropKey, descriptor: PropertyDescriptor) => {
     const method: Function = descriptor.value!;
-    const className = target.name || target.constructor.name;
     const methodId =
-      className +
-      (target.name ? '' : '.prototype') +
+      (target.name || target.constructor.name + '.prototype') +
       (typeof propertyKey === 'string' ? `["${propertyKey}"]` : `[${String(propertyKey)}]`);
-    const validParameterIndices: number[] | undefined = Reflect.getOwnMetadata(
-      CHECKED_PARAMETER_INDICES,
-      target,
-      propertyKey,
-    );
-    if (validParameterIndices) {
-      // if used with `@check` parameter decorator
-      if (runtypes.length === validParameterIndices.length) {
-        descriptor.value = function(...args: any[]) {
-          runtypes.forEach((type, typeIndex) => {
-            const parameterIndex = validParameterIndices[typeIndex];
-            try {
-              type.check(args[parameterIndex]);
-            } catch (err) {
-              throw new ValidationError(`${methodId}, argument #${parameterIndex}: ${err.message}`);
-            }
-          });
-          return method.apply(this, args);
-        };
-      } else {
-        throw new Error('Number of `@checked` runtypes and @valid parameters not matched.');
-      }
-    } else {
-      // if used without `@check` parameter decorator
-      if (runtypes.length <= method.length) {
-        descriptor.value = function(...args: any[]) {
-          runtypes.forEach((type, typeIndex) => {
-            try {
-              type.check(args[typeIndex]);
-            } catch (err) {
-              throw new ValidationError(`${methodId}, argument #${typeIndex}: ${err.message}`);
-            }
-          });
-          return method.apply(this, args);
-        };
-      } else {
-        throw new Error('Number of `@checked` runtypes exceeds actual parameter length.');
-      }
+
+    const validParameterIndices = getValidParameterIndices(target, propertyKey, runtypes.length);
+    if (validParameterIndices.length !== runtypes.length) {
+      throw new Error('Number of `@checked` runtypes and @check parameters not matched.');
     }
+    if (validParameterIndices.length > method.length) {
+      throw new Error('Number of `@checked` runtypes exceeds actual parameter length.');
+    }
+
+    descriptor.value = function(...args: any[]) {
+      runtypes.forEach((type, typeIndex) => {
+        const parameterIndex = validParameterIndices[typeIndex];
+        try {
+          type.check(args[parameterIndex]);
+        } catch (err) {
+          throw new ValidationError(`${methodId}, argument #${parameterIndex}: ${err.message}`);
+        }
+      });
+      return method.apply(this, args);
+    };
   };
 }
