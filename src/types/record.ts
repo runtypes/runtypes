@@ -35,8 +35,11 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
         for (const key in fields) {
           try {
             fields[key].check(hasKey(key, x) ? x[key] : undefined);
-          } catch ({ key: nestedKey, message }) {
-            throw new ValidationError(message, nestedKey ? `${key}.${nestedKey}` : key);
+          } catch (err) {
+            if (!(err instanceof ValidationError)) {
+              throw err;
+            }
+            throw new ValidationError(err.message, err.key ? `${key}.${err.key}` : key);
           }
         }
 

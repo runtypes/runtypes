@@ -228,8 +228,11 @@ export function Tuple(...components: Runtype[]): any {
 
       try {
         xs = Arr(Unknown).check(x);
-      } catch ({ key, message }) {
-        throw new ValidationError(`Expected tuple to be an array: ${message}`, key);
+      } catch (err) {
+        if (!(err instanceof ValidationError)) {
+          throw err;
+        }
+        throw new ValidationError(`Expected tuple to be an array: ${err.message}`, err.key);
       }
 
       if (xs.length < components.length)
@@ -240,8 +243,11 @@ export function Tuple(...components: Runtype[]): any {
       for (let i = 0; i < components.length; i++) {
         try {
           components[i].check(xs[i]);
-        } catch ({ message, key: nestedKey }) {
-          throw new ValidationError(message, nestedKey ? `[${i}].${nestedKey}` : `[${i}]`);
+        } catch (err) {
+          if (!(err instanceof ValidationError)) {
+            throw err;
+          }
+          throw new ValidationError(err.message, err.key ? `[${i}].${err.key}` : `[${i}]`);
         }
       }
 

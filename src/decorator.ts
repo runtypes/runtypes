@@ -81,6 +81,9 @@ export function checked(...runtypes: Runtype[]) {
         try {
           type.check(args[parameterIndex]);
         } catch (err) {
+          if (!(err instanceof ValidationError)) {
+            throw err;
+          }
           throw new ValidationError(`${methodId}, argument #${parameterIndex}: ${err.message}`);
         }
       });

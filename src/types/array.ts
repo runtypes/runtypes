@@ -28,10 +28,13 @@ function InternalArr<E extends Runtype, RO extends boolean>(
         for (const x of xs) {
           try {
             element.check(x);
-          } catch ({ message, key }) {
+          } catch (err) {
+            if (!(err instanceof ValidationError)) {
+              throw err;
+            }
             throw new ValidationError(
-              message,
-              key ? `[${xs.indexOf(x)}].${key}` : `[${xs.indexOf(x)}]`,
+              err.message,
+              err.key ? `[${xs.indexOf(x)}].${err.key}` : `[${xs.indexOf(x)}]`,
             );
           }
         }

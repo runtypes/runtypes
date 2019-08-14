@@ -51,8 +51,11 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
 
         try {
           value.check((x as any)[k]);
-        } catch ({ key: nestedKey, message }) {
-          throw new ValidationError(message, nestedKey ? `${k}.${nestedKey}` : k);
+        } catch (err) {
+          if (!(err instanceof ValidationError)) {
+            throw err;
+          }
+          throw new ValidationError(err.message, err.key ? `${k}.${err.key}` : k);
         }
       }
 

@@ -9,6 +9,7 @@ import {
   Brand,
 } from './index';
 import { Reflect } from './reflect';
+import { ValidationError } from './errors';
 import show from './show';
 
 /**
@@ -116,8 +117,11 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
     try {
       check(value);
       return { success: true, value };
-    } catch ({ message, key }) {
-      return { success: false, message, key };
+    } catch (err) {
+      if (!(err instanceof ValidationError)) {
+        throw err;
+      }
+      return { success: false, message: err.message, key: err.key };
     }
   }
 

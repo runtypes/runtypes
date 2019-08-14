@@ -25,8 +25,11 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
         if (hasKey(key, x) && x[key] !== undefined) {
           try {
             fields[key].check(x[key]);
-          } catch ({ message, key: nestedKey }) {
-            throw new ValidationError(message, nestedKey ? `${key}.${nestedKey}` : key);
+          } catch (err) {
+            if (!(err instanceof ValidationError)) {
+              throw err;
+            }
+            throw new ValidationError(err.message, err.key ? `${key}.${err.key}` : key);
           }
         }
       }

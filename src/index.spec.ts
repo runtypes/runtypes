@@ -218,6 +218,9 @@ describe('contracts', () => {
       Contract(String).enforce(f as any)();
       fail('contract was violated but no exception was thrown');
     } catch (e) {
+      if (!(e instanceof ValidationError)) {
+        throw e;
+      }
       /* success */
     }
   });
@@ -231,6 +234,9 @@ describe('contracts', () => {
       Contract(String, String).enforce(f as any)('hi');
       fail('contract was violated but no exception was thrown');
     } catch (e) {
+      if (!(e instanceof ValidationError)) {
+        throw e;
+      }
       /* success */
     }
   });
@@ -244,6 +250,9 @@ describe('contracts', () => {
       (Contract(String, Boolean, Number).enforce(f) as any)('hello', 3);
       fail('contract was violated but no exception was thrown');
     } catch (e) {
+      if (!(e instanceof ValidationError)) {
+        throw e;
+      }
       /* success */
     }
   });
@@ -754,6 +763,9 @@ function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key
     runtype.check(value);
     fail('value passed validation even though it was not expected to');
   } catch (exception) {
+    if (!(exception instanceof ValidationError)) {
+      throw exception;
+    }
     const { message: errorMessage, key: errorKey } = exception;
 
     expect(exception).toBeInstanceOf(ValidationError);
