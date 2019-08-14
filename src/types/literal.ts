@@ -15,13 +15,12 @@ export interface Literal<A extends LiteralBase> extends Runtype<A> {
  * Construct a runtype for a type literal.
  */
 export function Literal<A extends LiteralBase>(value: A): Literal<A> {
-  const guard = (x: unknown): x is A => x === value;
   return create<Literal<A>>(
     x => {
-      if (!guard(x)) throw new ValidationError(`Expected literal '${value}', but was '${x}'`);
-      return x;
+      if (x !== value) throw new ValidationError(`Expected literal '${value}', but was '${x}'`);
+      return x as A;
     },
-    { tag: 'literal', value, guard },
+    { tag: 'literal', value },
   );
 }
 
