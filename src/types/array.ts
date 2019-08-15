@@ -1,5 +1,4 @@
 import { Runtype, Static, create } from '../runtype';
-import { ValidationError } from '../errors';
 
 type ArrayStaticType<E extends Runtype, RO extends boolean> = RO extends true
   ? ReadonlyArray<Static<E>>
@@ -23,20 +22,25 @@ function InternalArr<E extends Runtype, RO extends boolean>(
   return withExtraModifierFuncs(
     create(
       xs => {
-        if (!Array.isArray(xs)) throw new ValidationError(`Expected array, but was ${typeof xs}`);
+        if (!Array.isArray(xs)) {
+          return {
+            success: false,
+            message: `Expected array, but was ${xs === null ? xs : typeof xs}`,
+          };
+        }
 
         for (const x of xs) {
-          try {
-            element.check(x);
-          } catch ({ message, key }) {
-            throw new ValidationError(
-              message,
-              key ? `[${xs.indexOf(x)}].${key}` : `[${xs.indexOf(x)}]`,
-            );
+          let validated = element.validate(x);
+          if (!validated.success) {
+            return {
+              success: false,
+              message: validated.message,
+              key: validated.key ? `[${xs.indexOf(x)}].${validated.key}` : `[${xs.indexOf(x)}]`,
+            };
           }
         }
 
-        return xs;
+        return { success: true, value: xs };
       },
       { tag: 'array', isReadonly, element },
     ),

@@ -1,6 +1,5 @@
 import { Runtype, Static, create } from '../runtype';
 import { String } from './string';
-import { ValidationError } from '../errors';
 import { Unknown } from './unknown';
 
 export type ConstraintCheck<A extends Runtype> = (x: Static<A>) => boolean | string;
@@ -22,13 +21,18 @@ export function Constraint<A extends Runtype, T extends Static<A> = Static<A>, K
   options?: { name?: string; args?: K },
 ): Constraint<A, T, K> {
   return create<Constraint<A, T, K>>(
-    x => {
+    value => {
       const name = options && options.name;
-      const typed = underlying.check(x);
-      const result = constraint(typed);
-      if (String.guard(result)) throw new ValidationError(result);
-      else if (!result) throw new ValidationError(`Failed ${name || 'constraint'} check`);
-      return (typed as unknown) as T;
+      const validated = underlying.validate(value);
+
+      if (!validated.success) {
+        return validated;
+      }
+
+      const result = constraint(validated.value);
+      if (String.guard(result)) return { success: false, message: result };
+      else if (!result) return { success: false, message: `Failed ${name || 'constraint'} check` };
+      return { success: true, value: validated.value as T };
     },
     {
       tag: 'constraint',

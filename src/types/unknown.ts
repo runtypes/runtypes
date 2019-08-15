@@ -7,4 +7,4 @@ export interface Unknown extends Runtype {
 /**
  * Validates anything, but provides no new type information about it.
  */
-export const Unknown = create<Unknown>(x => x, { tag: 'unknown' });
+export const Unknown = create<Unknown>(value => ({ success: true, value }), { tag: 'unknown' });

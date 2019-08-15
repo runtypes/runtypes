@@ -1,7 +1,6 @@
 import { Runtype, Static, create } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
-import { ValidationError } from '../errors';
 
 export interface Part<O extends { [_: string]: Runtype }>
   extends Runtype<{ [K in keyof O]?: Static<O[K]> }> {
@@ -16,22 +15,24 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
   return create<Part<O>>(
     x => {
       if (x === null || x === undefined) {
-        const a = create<any>(x => x, { tag: 'partial', fields });
-        throw new ValidationError(`Expected ${show(a)}, but was ${x}`);
+        const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'partial', fields });
+        return { success: false, message: `Expected ${show(a)}, but was ${x}` };
       }
 
-      // tslint:disable-next-line:forin
       for (const key in fields) {
         if (hasKey(key, x) && x[key] !== undefined) {
-          try {
-            fields[key].check(x[key]);
-          } catch ({ message, key: nestedKey }) {
-            throw new ValidationError(message, nestedKey ? `${key}.${nestedKey}` : key);
+          let validated = fields[key].validate(x[key]);
+          if (!validated.success) {
+            return {
+              success: false,
+              message: validated.message,
+              key: validated.key ? `${key}.${validated.key}` : key,
+            };
           }
         }
       }
 
-      return x as Partial<O>;
+      return { success: true, value: x };
     },
     { tag: 'partial', fields },
   );
