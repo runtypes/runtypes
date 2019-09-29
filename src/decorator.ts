@@ -78,13 +78,11 @@ export function checked(...runtypes: Runtype[]) {
     descriptor.value = function(...args: any[]) {
       runtypes.forEach((type, typeIndex) => {
         const parameterIndex = validParameterIndices[typeIndex];
-        try {
-          type.check(args[parameterIndex]);
-        } catch (err) {
-          if (!(err instanceof ValidationError)) {
-            throw err;
-          }
-          throw new ValidationError(`${methodId}, argument #${parameterIndex}: ${err.message}`);
+        const validated = type.validate(args[parameterIndex]);
+        if (!validated.success) {
+          throw new ValidationError(
+            `${methodId}, argument #${parameterIndex}: ${validated.message}`,
+          );
         }
       });
       return method.apply(this, args);
