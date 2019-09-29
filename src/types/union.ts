@@ -1,6 +1,5 @@
 import { Runtype as Rt, Static, create } from '../runtype';
 import show from '../show';
-import { ValidationError } from '../errors';
 
 export interface Union1<A extends Rt> extends Rt<Static<A>> {
   tag: 'union';
@@ -966,11 +965,18 @@ export function Union(...alternatives: Rt[]): any {
   };
 
   return create(
-    x => {
-      for (const { guard } of alternatives) if (guard(x)) return x;
+    value => {
+      for (const { guard } of alternatives) {
+        if (guard(value)) {
+          return { success: true, value };
+        }
+      }
 
-      const a = create<any>(x as never, { tag: 'union', alternatives });
-      throw new ValidationError(`Expected ${show(a)}, but was ${typeof x}`);
+      const a = create<any>(value as never, { tag: 'union', alternatives });
+      return {
+        success: false,
+        message: `Expected ${show(a)}, but was ${value === null ? value : typeof value}`,
+      };
     },
     { tag: 'union', alternatives, match },
   );

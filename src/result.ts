@@ -1,7 +1,7 @@
 /**
  * A successful validation result.
  */
-export type Success<A> = {
+export type Success<T> = {
   /**
    * A tag indicating success.
    */
@@ -10,7 +10,7 @@ export type Success<A> = {
   /**
    * The original value, cast to its validated type.
    */
-  value: A;
+  value: T;
 };
 
 /**
@@ -36,4 +36,4 @@ export type Failure = {
 /**
  * The result of a type validation.
  */
-export type Result<A> = Success<A> | Failure;
+export type Result<T> = Success<T> | Failure;

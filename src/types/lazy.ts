@@ -20,6 +20,6 @@ export function Lazy<A extends Runtype>(delayed: () => A) {
   }
 
   return create<A>(x => {
-    return getWrapped().check(x);
+    return getWrapped().validate(x);
   }, data);
 }

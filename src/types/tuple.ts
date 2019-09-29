@@ -1,6 +1,5 @@
 import { Runtype, Static, create } from '../runtype';
 import { Array as Arr } from './array';
-import { ValidationError } from '../errors';
 import { Unknown } from './unknown';
 
 export interface Tuple1<A extends Runtype> extends Runtype<[Static<A>]> {
@@ -224,34 +223,38 @@ export function Tuple<
 export function Tuple(...components: Runtype[]): any {
   return create(
     x => {
-      let xs;
+      const validated = Arr(Unknown).validate(x);
 
-      try {
-        xs = Arr(Unknown).check(x);
-      } catch (err) {
-        if (!(err instanceof ValidationError)) {
-          throw err;
-        }
-        throw new ValidationError(`Expected tuple to be an array: ${err.message}`, err.key);
+      if (!validated.success) {
+        return {
+          success: false,
+          message: `Expected tuple to be an array: ${validated.message}`,
+          key: validated.key,
+        };
       }
 
-      if (xs.length < components.length)
-        throw new ValidationError(
-          `Expected an array of length ${components.length}, but was ${xs.length}`,
-        );
+      if (validated.value.length < components.length) {
+        return {
+          success: false,
+          message: `Expected an array of length ${components.length}, but was ${
+            validated.value.length
+          }`,
+        };
+      }
 
       for (let i = 0; i < components.length; i++) {
-        try {
-          components[i].check(xs[i]);
-        } catch (err) {
-          if (!(err instanceof ValidationError)) {
-            throw err;
-          }
-          throw new ValidationError(err.message, err.key ? `[${i}].${err.key}` : `[${i}]`);
+        let validatedComponent = components[i].validate(validated.value[i]);
+
+        if (!validatedComponent.success) {
+          return {
+            success: false,
+            message: validatedComponent.message,
+            key: validatedComponent.key ? `[${i}].${validatedComponent.key}` : `[${i}]`,
+          };
         }
       }
 
-      return x;
+      return { success: true, value: x };
     },
     { tag: 'tuple', components },
   );

@@ -1,7 +1,15 @@
 import { Reflect } from './index';
 
-const show = (needsParens: boolean) => (refl: Reflect): string => {
+const show = (needsParens: boolean, circular?: Reflect[]) => (refl: Reflect): string => {
   const parenthesize = (s: string) => (needsParens ? `(${s})` : s);
+
+  if (circular) {
+    if (circular.indexOf(refl) !== -1) {
+      return parenthesize(`CIRCULAR ${refl.tag}`);
+    }
+
+    circular.push(refl);
+  }
 
   switch (refl.tag) {
     // Primitive types
@@ -21,36 +29,36 @@ const show = (needsParens: boolean) => (refl: Reflect): string => {
       return typeof value === 'string' ? `"${value}"` : String(value);
     }
     case 'array':
-      return `${readonlyTag(refl)}${show(true)(refl.element)}[]`;
+      return `${readonlyTag(refl)}${show(true, circular || [])(refl.element)}[]`;
     case 'dictionary':
-      return `{ [_: ${refl.key}]: ${show(false)(refl.value)} }`;
+      return `{ [_: ${refl.key}]: ${show(false, circular || [])(refl.value)} }`;
     case 'record': {
       const keys = Object.keys(refl.fields);
       return keys.length
         ? `{ ${keys
-            .map(k => `${readonlyTag(refl)}${k}: ${show(false)(refl.fields[k])};`)
+            .map(k => `${readonlyTag(refl)}${k}: ${show(false, circular || [])(refl.fields[k])};`)
             .join(' ')} }`
         : '{}';
     }
     case 'partial': {
       const keys = Object.keys(refl.fields);
       return keys.length
-        ? `{ ${keys.map(k => `${k}?: ${show(false)(refl.fields[k])};`).join(' ')} }`
+        ? `{ ${keys.map(k => `${k}?: ${show(false, circular || [])(refl.fields[k])};`).join(' ')} }`
         : '{}';
     }
     case 'tuple':
-      return `[${refl.components.map(show(false)).join(', ')}]`;
+      return `[${refl.components.map(show(false, circular || [])).join(', ')}]`;
     case 'union':
-      return parenthesize(`${refl.alternatives.map(show(true)).join(' | ')}`);
+      return parenthesize(`${refl.alternatives.map(show(true, circular || [])).join(' | ')}`);
     case 'intersect':
-      return parenthesize(`${refl.intersectees.map(show(true)).join(' & ')}`);
+      return parenthesize(`${refl.intersectees.map(show(true, circular || [])).join(' & ')}`);
     case 'constraint':
-      return refl.name || show(needsParens)(refl.underlying);
+      return refl.name || show(needsParens, circular || [])(refl.underlying);
     case 'instanceof':
       const name = (refl.ctor as any).name;
       return `InstanceOf<${name}>`;
     case 'brand':
-      return show(needsParens)(refl.entity);
+      return show(needsParens, circular || [])(refl.entity);
   }
 };
 

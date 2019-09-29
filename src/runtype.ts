@@ -9,8 +9,8 @@ import {
   Brand,
 } from './index';
 import { Reflect } from './reflect';
-import { ValidationError } from './errors';
 import show from './show';
+import { ValidationError } from './errors';
 
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
@@ -20,18 +20,18 @@ export interface Runtype<A = unknown> {
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
    */
-  check(x: unknown): A;
+  check(x: any): A;
 
   /**
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: unknown): Result<A>;
+  validate(x: any): Result<A>;
 
   /**
    * A type guard for this runtype.
    */
-  guard(x: unknown): x is A;
+  guard(x: any): x is A;
 
   /**
    * Union this Runtype with another.
@@ -99,7 +99,7 @@ export interface Runtype<A = unknown> {
  */
 export type Static<A extends Runtype> = A['_falseWitness'];
 
-export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): A {
+export function create<A extends Runtype>(validate: (x: any) => Result<Static<A>>, A: any): A {
   A.check = check;
   A.validate = validate;
   A.guard = guard;
@@ -113,16 +113,12 @@ export function create<A extends Runtype>(check: (x: {}) => Static<A>, A: any): 
 
   return A;
 
-  function validate(value: any): Result<A> {
-    try {
-      check(value);
-      return { success: true, value };
-    } catch (err) {
-      if (!(err instanceof ValidationError)) {
-        throw err;
-      }
-      return { success: false, message: err.message, key: err.key };
+  function check(x: any) {
+    const validated = validate(x);
+    if (validated.success) {
+      return validated.value;
     }
+    throw new ValidationError(validated.message, validated.key);
   }
 
   function guard(x: any): x is A {
