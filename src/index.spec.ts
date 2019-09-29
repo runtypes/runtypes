@@ -51,12 +51,14 @@ const SOMECLASS_TAG = 'I am a SomeClass instance (any version)';
 class SomeClassV1 {
   constructor(public n: number) {}
   public _someClassTag = SOMECLASS_TAG;
-  public static isSomeClass = (o: any): o is SomeClassV1 => o._someClassTag === SOMECLASS_TAG;
+  public static isSomeClass = (o: any): o is SomeClassV1 =>
+    o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG;
 }
 class SomeClassV2 {
   constructor(public n: number) {}
   public _someClassTag = SOMECLASS_TAG;
-  public static isSomeClass = (o: any): o is SomeClassV2 => o._someClassTag === SOMECLASS_TAG;
+  public static isSomeClass = (o: any): o is SomeClassV2 =>
+    o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG;
 }
 
 const runtypes = {
@@ -103,14 +105,18 @@ const runtypes = {
   CustomGuardType: Guard(SomeClassV2.isSomeClass),
   ChangeType: Unknown.withConstraint<SomeClass>(SomeClassV2.isSomeClass),
   ChangeTypeAndName: Unknown.withConstraint<SomeClass>(
-    (o: any) => o._someClassTag === SOMECLASS_TAG,
+    (o: any) => o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG,
     {
       name: 'SomeClass',
     },
   ),
-  GuardChangeTypeAndName: Guard((o: any): o is SomeClass => o._someClassTag === SOMECLASS_TAG, {
-    name: 'SomeClass',
-  }),
+  GuardChangeTypeAndName: Guard(
+    (o: any): o is SomeClass =>
+      o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG,
+    {
+      name: 'SomeClass',
+    },
+  ),
   DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
   OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
   ReadonlyNumberArray: Array(Number).asReadonly(),

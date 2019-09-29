@@ -1,6 +1,5 @@
 import { Runtype, create, Static } from '../runtype';
 import show from '../show';
-import { ValidationError } from '../errors';
 
 export interface StringDictionary<V extends Runtype> extends Runtype<{ [_: string]: Static<V> }> {
   tag: 'dictionary';
@@ -24,39 +23,46 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
     x => {
       if (x === null || x === undefined) {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
-        throw new ValidationError(`Expected ${show(a)}, but was ${x}`);
+        return { success: false, message: `Expected ${show(a)}, but was ${x}` };
       }
 
       if (typeof x !== 'object') {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
-        throw new ValidationError(`Expected ${show(a.reflect)}, but was ${typeof x}`);
+        return { success: false, message: `Expected ${show(a.reflect)}, but was ${typeof x}` };
       }
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
         if (!Array.isArray(x)) {
           const a = create<any>(x as never, { tag: 'dictionary', key, value });
-          throw new ValidationError(
-            `Expected ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`,
-          );
+          return {
+            success: false,
+            message: `Expected ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`,
+          };
         } else if (key === 'string')
-          throw new ValidationError(`Expected dictionary, but was array`);
+          return { success: false, message: 'Expected dictionary, but was array' };
       }
 
       for (const k in x) {
         // Object keys are unknown strings
         if (key === 'number') {
           if (isNaN(+k))
-            throw new ValidationError(`Expected dictionary key to be a number, but was string`);
+            return {
+              success: false,
+              message: 'Expected dictionary key to be a number, but was string',
+            };
         }
 
-        try {
-          value.check((x as any)[k]);
-        } catch ({ key: nestedKey, message }) {
-          throw new ValidationError(message, nestedKey ? `${k}.${nestedKey}` : k);
+        let validated = value.validate((x as any)[k]);
+        if (!validated.success) {
+          return {
+            success: false,
+            message: validated.message,
+            key: validated.key ? `${k}.${validated.key}` : k,
+          };
         }
       }
 
-      return x;
+      return { success: true, value: x };
     },
     { tag: 'dictionary', key, value },
   );

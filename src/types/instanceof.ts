@@ -1,5 +1,4 @@
 import { Runtype, create } from '../runtype';
-import { ValidationError } from '../errors';
 
 export interface Constructor<V> {
   new (...args: any[]): V;
@@ -12,12 +11,15 @@ export interface InstanceOf<V> extends Runtype<V> {
 
 export function InstanceOf<V>(ctor: Constructor<V>) {
   return create<InstanceOf<V>>(
-    x => {
-      if (!(x instanceof ctor)) {
-        throw new ValidationError(`Expected ${(ctor as any).name}, but was ${typeof x}`);
-      }
-      return x as V;
-    },
+    value =>
+      value instanceof ctor
+        ? { success: true, value }
+        : {
+            success: false,
+            message: `Expected ${(ctor as any).name}, but was ${
+              value === null ? value : typeof value
+            }`,
+          },
     { tag: 'instanceof', ctor: ctor },
   );
 }

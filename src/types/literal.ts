@@ -1,5 +1,4 @@
 import { Runtype, create } from '../runtype';
-import { ValidationError } from '../errors';
 
 /**
  * The super type of all literal types.
@@ -12,15 +11,25 @@ export interface Literal<A extends LiteralBase> extends Runtype<A> {
 }
 
 /**
+ * Be aware of an Array of Symbols `[Symbol()]` which would throw "TypeError: Cannot convert a Symbol value to a string"
+ */
+function literal(value: unknown) {
+  return Array.isArray(value) ? String(value.map(String)) : String(value);
+}
+
+/**
  * Construct a runtype for a type literal.
  */
-export function Literal<A extends LiteralBase>(value: A): Literal<A> {
+export function Literal<A extends LiteralBase>(valueBase: A): Literal<A> {
   return create<Literal<A>>(
-    x => {
-      if (x !== value) throw new ValidationError(`Expected literal '${value}', but was '${x}'`);
-      return x as A;
-    },
-    { tag: 'literal', value },
+    value =>
+      value === valueBase
+        ? { success: true, value }
+        : {
+            success: false,
+            message: `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
+          },
+    { tag: 'literal', value: valueBase },
   );
 }
 

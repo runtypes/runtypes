@@ -1,5 +1,4 @@
 import { Runtype, create } from '../runtype';
-import { ValidationError } from '../errors';
 
 export interface Never extends Runtype<never> {
   tag: 'never';
@@ -9,8 +8,9 @@ export interface Never extends Runtype<never> {
  * Validates nothing (unknown fails).
  */
 export const Never = create<Never>(
-  x => {
-    throw new ValidationError(`Expected nothing, but was ${x}`);
-  },
+  value => ({
+    success: false,
+    message: `Expected nothing, but was ${value === null ? value : typeof value}`,
+  }),
   { tag: 'never' },
 );
