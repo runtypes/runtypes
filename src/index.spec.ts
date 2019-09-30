@@ -223,7 +223,8 @@ describe('contracts', () => {
     try {
       Contract(String).enforce(f as any)();
       fail('contract was violated but no exception was thrown');
-    } catch (e) {
+    } catch (exception) {
+      expect(exception).toBeInstanceOf(ValidationError);
       /* success */
     }
   });
@@ -236,7 +237,8 @@ describe('contracts', () => {
       fail('contract was violated but no exception was thrown');
       Contract(String, String).enforce(f as any)('hi');
       fail('contract was violated but no exception was thrown');
-    } catch (e) {
+    } catch (exception) {
+      expect(exception).toBeInstanceOf(ValidationError);
       /* success */
     }
   });
@@ -249,7 +251,8 @@ describe('contracts', () => {
       fail('contract was violated but no exception was thrown');
       (Contract(String, Boolean, Number).enforce(f) as any)('hello', 3);
       fail('contract was violated but no exception was thrown');
-    } catch (e) {
+    } catch (exception) {
+      expect(exception).toBeInstanceOf(ValidationError);
       /* success */
     }
   });
