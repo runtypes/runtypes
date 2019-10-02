@@ -1,65 +1,69 @@
 import { Reflect } from './index';
 
-const show = (needsParens: boolean, circular?: Reflect[]) => (refl: Reflect): string => {
+const show = (needsParens: boolean, circular: Reflect[] = []) => (refl: Reflect): string => {
   const parenthesize = (s: string) => (needsParens ? `(${s})` : s);
 
-  if (circular) {
-    if (circular.indexOf(refl) !== -1) {
-      return parenthesize(`CIRCULAR ${refl.tag}`);
-    }
-
-    circular.push(refl);
+  if (circular.indexOf(refl) !== -1) {
+    return parenthesize(`CIRCULAR ${refl.tag}`);
   }
 
-  switch (refl.tag) {
-    // Primitive types
-    case 'unknown':
-    case 'never':
-    case 'void':
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'symbol':
-    case 'function':
-      return refl.tag;
+  const idx = circular.length;
+  circular.push(refl);
 
-    // Complex types
-    case 'literal': {
-      const { value } = refl;
-      return typeof value === 'string' ? `"${value}"` : String(value);
+  try {
+    switch (refl.tag) {
+      // Primitive types
+      case 'unknown':
+      case 'never':
+      case 'void':
+      case 'boolean':
+      case 'number':
+      case 'string':
+      case 'symbol':
+      case 'function':
+        return refl.tag;
+
+      // Complex types
+      case 'literal': {
+        const { value } = refl;
+        return typeof value === 'string' ? `"${value}"` : String(value);
+      }
+      case 'array':
+        return `${readonlyTag(refl)}${show(true, circular)(refl.element)}[]`;
+      case 'dictionary':
+        return `{ [_: ${refl.key}]: ${show(false, circular)(refl.value)} }`;
+      case 'record': {
+        const keys = Object.keys(refl.fields);
+        return keys.length
+          ? `{ ${keys
+              .map(k => `${readonlyTag(refl)}${k}: ${show(false, circular)(refl.fields[k])};`)
+              .join(' ')} }`
+          : '{}';
+      }
+      case 'partial': {
+        const keys = Object.keys(refl.fields);
+        return keys.length
+          ? `{ ${keys.map(k => `${k}?: ${show(false, circular)(refl.fields[k])};`).join(' ')} }`
+          : '{}';
+      }
+      case 'tuple':
+        return `[${refl.components.map(show(false, circular)).join(', ')}]`;
+      case 'union':
+        return parenthesize(`${refl.alternatives.map(show(true, circular)).join(' | ')}`);
+      case 'intersect':
+        return parenthesize(`${refl.intersectees.map(show(true, circular)).join(' & ')}`);
+      case 'constraint':
+        return refl.name || show(needsParens, circular)(refl.underlying);
+      case 'instanceof':
+        const name = (refl.ctor as any).name;
+        return `InstanceOf<${name}>`;
+      case 'brand':
+        return show(needsParens, circular)(refl.entity);
     }
-    case 'array':
-      return `${readonlyTag(refl)}${show(true, circular || [])(refl.element)}[]`;
-    case 'dictionary':
-      return `{ [_: ${refl.key}]: ${show(false, circular || [])(refl.value)} }`;
-    case 'record': {
-      const keys = Object.keys(refl.fields);
-      return keys.length
-        ? `{ ${keys
-            .map(k => `${readonlyTag(refl)}${k}: ${show(false, circular || [])(refl.fields[k])};`)
-            .join(' ')} }`
-        : '{}';
-    }
-    case 'partial': {
-      const keys = Object.keys(refl.fields);
-      return keys.length
-        ? `{ ${keys.map(k => `${k}?: ${show(false, circular || [])(refl.fields[k])};`).join(' ')} }`
-        : '{}';
-    }
-    case 'tuple':
-      return `[${refl.components.map(show(false, circular || [])).join(', ')}]`;
-    case 'union':
-      return parenthesize(`${refl.alternatives.map(show(true, circular || [])).join(' | ')}`);
-    case 'intersect':
-      return parenthesize(`${refl.intersectees.map(show(true, circular || [])).join(' & ')}`);
-    case 'constraint':
-      return refl.name || show(needsParens, circular || [])(refl.underlying);
-    case 'instanceof':
-      const name = (refl.ctor as any).name;
-      return `InstanceOf<${name}>`;
-    case 'brand':
-      return show(needsParens, circular || [])(refl.entity);
+  } finally {
+    circular.splice(idx, 1);
   }
+  throw Error('impossible');
 };
 
 export default show(false);
