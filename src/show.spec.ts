@@ -50,6 +50,7 @@ const cases: [Reflect, string][] = [
   [Array(InstanceOf(TestClass)), 'InstanceOf<TestClass>[]'],
   [Record({ x: String, y: Array(Boolean) }), '{ x: string; y: boolean[]; }'],
   [Record({ x: String, y: Array(Boolean) }), '{ x: string; y: boolean[]; }'],
+  [Record({ x: Number }).And(Partial({ y: Number })), '{ x: number; } & { y?: number; }'],
   [
     Record({ x: String, y: Array(Boolean) }).asReadonly(),
     '{ readonly x: string; readonly y: boolean[]; }',
