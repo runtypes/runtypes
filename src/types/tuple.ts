@@ -99,7 +99,7 @@ export interface Tuple9<
       Static<F>,
       Static<G>,
       Static<H>,
-      Static<I>
+      Static<I>,
     ]
   > {
   tag: 'tuple';
@@ -129,7 +129,7 @@ export interface Tuple10<
       Static<G>,
       Static<H>,
       Static<I>,
-      Static<J>
+      Static<J>,
     ]
   > {
   tag: 'tuple';
@@ -236,9 +236,7 @@ export function Tuple(...components: Runtype[]): any {
       if (validated.value.length < components.length) {
         return {
           success: false,
-          message: `Expected an array of length ${components.length}, but was ${
-            validated.value.length
-          }`,
+          message: `Expected an array of length ${components.length}, but was ${validated.value.length}`,
         };
       }
 
