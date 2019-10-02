@@ -1,6 +1,6 @@
 import { Reflect } from './index';
 
-const show = (needsParens: boolean, circular = new Set<Reflect>()) => (refl: Reflect): string => {
+const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): string => {
   const parenthesize = (s: string) => (needsParens ? `(${s})` : s);
 
   if (circular.has(refl)) {
@@ -65,7 +65,7 @@ const show = (needsParens: boolean, circular = new Set<Reflect>()) => (refl: Ref
   throw Error('impossible');
 };
 
-export default show(false);
+export default show(false, new Set<Reflect>());
 
 function readonlyTag({ isReadonly }: { isReadonly: boolean }): string {
   return isReadonly ? 'readonly ' : '';
