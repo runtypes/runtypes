@@ -1,14 +1,13 @@
 import { Reflect } from './index';
 
-const show = (needsParens: boolean, circular: Reflect[] = []) => (refl: Reflect): string => {
+const show = (needsParens: boolean, circular = new Set<Reflect>()) => (refl: Reflect): string => {
   const parenthesize = (s: string) => (needsParens ? `(${s})` : s);
 
-  if (circular.indexOf(refl) !== -1) {
+  if (circular.has(refl)) {
     return parenthesize(`CIRCULAR ${refl.tag}`);
   }
 
-  const idx = circular.length;
-  circular.push(refl);
+  circular.add(refl);
 
   try {
     switch (refl.tag) {
@@ -61,7 +60,7 @@ const show = (needsParens: boolean, circular: Reflect[] = []) => (refl: Reflect)
         return show(needsParens, circular)(refl.entity);
     }
   } finally {
-    circular.splice(idx, 1);
+    circular.delete(refl);
   }
   throw Error('impossible');
 };
