@@ -21,6 +21,7 @@ import {
   Union2,
   Intersect,
   Intersect2,
+  Optional,
   Function,
   Lazy,
   Constraint,
@@ -118,7 +119,7 @@ const runtypes = {
     },
   ),
   DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
-  OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
+  OptionalKey: Record({ foo: String, bar: Optional(Number) }),
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
 };

@@ -17,6 +17,7 @@ export type Reflect =
       { readonly [_ in string]: unknown }
     >
   | { tag: 'partial'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]?: unknown }>
+  | { tag: 'optional' } & Runtype<unknown>
   | { tag: 'dictionary'; key: 'string' | 'number'; value: Reflect } & Runtype<{
       [_: string]: unknown;
     }>

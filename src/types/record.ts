@@ -1,10 +1,29 @@
 import { Runtype, Static, create } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
+import { Optional } from './optional';
+
+type FilterOptional<T> = Exclude<
+  {
+    [K in keyof T]: T[K] extends Optional<any> ? K : never;
+  }[keyof T],
+  undefined
+>;
+type FilterRequired<T> = Exclude<
+  {
+    [K in keyof T]: T[K] extends Optional<any> ? never : K;
+  }[keyof T],
+  undefined
+>;
 
 type RecordStaticType<O extends { [_: string]: Runtype }, RO extends boolean> = RO extends true
   ? { readonly [K in keyof O]: Static<O[K]> }
-  : { [K in keyof O]: Static<O[K]> };
+  : {
+      [K in FilterRequired<O>]: Static<O[K]>;
+    } &
+      {
+        [K in FilterOptional<O>]?: Static<O[K]>;
+      };
 
 export interface Record<O extends { [_: string]: Runtype }, RO extends boolean>
   extends Runtype<RecordStaticType<O, RO>> {
