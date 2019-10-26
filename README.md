@@ -292,6 +292,44 @@ divide(10, 2); // 5
 divide(10, 0); // Throws error: division by zero
 ```
 
+## Branded types
+
+Branded types is a way to emphasize the uniqueness of a type:
+
+```ts
+const Login = String.withBrand('Login');
+const Password = String.withBrand('Password').withConstraint(
+  str => str.length >= 8 || 'Too short password',
+);
+
+const fetchSignIn = Contract(
+  Login,
+  Password,
+  Unknown,
+).enforce((login, pass) => {/*...*/});
+
+const login = Login.check('myLogin');
+const password = Password.check('12345678');
+
+// static type ok, runtime ok
+fetchSignIn(login, password);
+
+// static type error, runtime error
+fetchSignIn(password, login);
+
+// static type error, runtime ok
+fetchSignIn('a@b.c', '12345678');
+```
+
+Branded types are like [opaque types](https://flow.org/en/docs/types/opaque-types) and work as expected, except it is impossible to use branded strings as a key [until we have nominal types](https://github.com/microsoft/TypeScript/pull/33038). Currently the workaround is to add a unique symbol to the main type:
+
+```ts
+const StringBranded = String.withBrand('StringBranded');
+type StringBranded = Static<typeof StringBranded>;
+// Then the type `StringBranded` is computed as:
+// string & { [RuntypeName]: "StringBranded" }
+```
+
 ## Optional values
 
 Runtypes can be used to represent a variable that may be null or undefined

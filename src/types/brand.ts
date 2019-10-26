@@ -1,12 +1,12 @@
 import { Runtype, Static, create } from '../runtype';
 
-export const RuntypeName = Symbol('RuntypeName');
+declare const RuntypeName: unique symbol;
 
 export interface Brand<B extends string, A extends Runtype>
   extends Runtype<
-    Static<A> & {
-      [RuntypeName]: B;
-    }
+    // TODO: replace it by unique (nominal) type (when it will be released)
+    // https://github.com/microsoft/TypeScript/pull/33038
+    Static<A> & { [RuntypeName]: B }
   > {
   tag: 'brand';
   brand: B;
