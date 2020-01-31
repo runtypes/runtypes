@@ -2,6 +2,7 @@ export { Runtype, Static } from './runtype';
 export * from './reflect';
 export * from './result';
 export * from './contract';
+export * from './asynccontract';
 export * from './match';
 export * from './errors';
 export * from './types/unknown';
