@@ -22,11 +22,15 @@ export interface AsyncContract4<A, B, C, D, Z> {
 }
 
 export interface AsyncContract5<A, B, C, D, E, Z> {
-  enforce(f: (a: A, b: B, c: C, d: D, e: E) => Promise<Z>): (a: A, b: B, c: C, d: D, e: E) => Promise<Z>;
+  enforce(
+    f: (a: A, b: B, c: C, d: D, e: E) => Promise<Z>,
+  ): (a: A, b: B, c: C, d: D, e: E) => Promise<Z>;
 }
 
 export interface AsyncContract6<A, B, C, D, E, F, Z> {
-  enforce(f: (a: A, b: B, c: C, d: D, e: E, f: F) => Promise<Z>): (a: A, b: B, c: C, d: D, e: E, f: F) => Promise<Z>;
+  enforce(
+    f: (a: A, b: B, c: C, d: D, e: E, f: F) => Promise<Z>,
+  ): (a: A, b: B, c: C, d: D, e: E, f: F) => Promise<Z>;
 }
 
 export interface AsyncContract7<A, B, C, D, E, F, G, Z> {
@@ -58,7 +62,11 @@ export interface AsyncContract10<A, B, C, D, E, F, G, H, I, J, Z> {
  */
 export function AsyncContract<Z>(Z: Runtype<Z>): AsyncContract0<Z>;
 export function AsyncContract<A, Z>(A: Runtype<A>, Z: Runtype<Z>): AsyncContract1<A, Z>;
-export function AsyncContract<A, B, Z>(A: Runtype<A>, B: Runtype<B>, Z: Runtype<Z>): AsyncContract2<A, B, Z>;
+export function AsyncContract<A, B, Z>(
+  A: Runtype<A>,
+  B: Runtype<B>,
+  Z: Runtype<Z>,
+): AsyncContract2<A, B, Z>;
 export function AsyncContract<A, B, C, Z>(
   A: Runtype<A>,
   B: Runtype<B>,
@@ -148,10 +156,10 @@ export function AsyncContract(...runtypes: Runtype[]) {
       for (let i = 0; i < argTypes.length; i++) argTypes[i].check(args[i]);
       const returnedPromise = f(...args);
       if (!(returnedPromise instanceof Promise))
-          throw new ValidationError(
-            `Expected function to return a promise, but instead got ${returnedPromise}`
-          )
-      return returnedPromise.then(returnType.check)
+        throw new ValidationError(
+          `Expected function to return a promise, but instead got ${returnedPromise}`,
+        );
+      return returnedPromise.then(returnType.check);
     },
   };
 }

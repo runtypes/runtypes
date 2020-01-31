@@ -10,7 +10,7 @@ describe('AsyncContract', () => {
   describe('when a function does return a promise', () => {
     it('should validate successfully', () => {
       const contractedFunction = AsyncContract(Number).enforce(() => Promise.resolve(7));
-      return contractedFunction()
-    })
+      return contractedFunction();
+    });
   });
 });
