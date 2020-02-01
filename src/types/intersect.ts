@@ -222,9 +222,9 @@ export function Intersect<
 ): Intersect10<A, B, C, D, E, F, G, H, I, J>;
 export function Intersect(...intersectees: Runtype[]): any {
   return create(
-    value => {
-      for (const { validate } of intersectees) {
-        let validated = validate(value);
+    (value, visitedSet, failedSet) => {
+      for (const { innerValidate } of intersectees) {
+        let validated = innerValidate(value, visitedSet, failedSet);
         if (!validated.success) {
           return validated;
         }

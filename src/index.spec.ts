@@ -63,6 +63,12 @@ const leftHand: Hand = { left: (null as any) as Hand };
 const rightHand: Hand = { right: leftHand };
 leftHand.left = rightHand;
 
+type Ambi = { left: Ambi } & { right: Ambi };
+const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Record({ left: Ambi }), Record({ right: Ambi })));
+const ambi: Ambi = { left: (null as any) as Ambi, right: (null as any) as Ambi };
+ambi.left = ambi;
+ambi.right = ambi;
+
 class SomeClass {
   constructor(public n: number) {}
 }
@@ -146,6 +152,7 @@ const runtypes = {
   Graph,
   SRDict,
   Hand,
+  Ambi,
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -222,6 +229,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: barbell, passes: ['Graph'] },
   { value: srDict, passes: ['SRDict'] },
   { value: leftHand, passes: ['Hand', 'SRDict'] },
+  { value: ambi, passes: ['Ambi', 'Hand', 'SRDict'] },
 ];
 
 const getCircularReplacer = () => {
