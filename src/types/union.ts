@@ -965,12 +965,13 @@ export function Union(...alternatives: Rt[]): any {
   };
 
   return create(
-    value => {
-      for (const { guard } of alternatives) {
-        if (guard(value)) {
+    (value, visitedSet, failedSet) => {
+      for (const { innerValidate } of alternatives) {
+        if (innerValidate(value, visitedSet, failedSet).success) {
           return { success: true, value };
         }
       }
+      failedSet.add(value);
 
       const a = create<any>(value as never, { tag: 'union', alternatives });
       return {

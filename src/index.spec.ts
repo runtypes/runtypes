@@ -57,6 +57,12 @@ const SRDict: Runtype<SRDict> = Lazy(() => Dictionary(SRDict));
 const srDict: SRDict = {};
 srDict['self'] = srDict;
 
+type Hand = { left: Hand } | { right: Hand };
+const Hand: Runtype<Hand> = Lazy(() => Union(Record({ left: Hand }), Record({ right: Hand })));
+const leftHand: Hand = { left: (null as any) as Hand };
+const rightHand: Hand = { right: leftHand };
+leftHand.left = rightHand;
+
 class SomeClass {
   constructor(public n: number) {}
 }
@@ -139,6 +145,7 @@ const runtypes = {
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
   Graph,
   SRDict,
+  Hand,
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -214,6 +221,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
   { value: barbell, passes: ['Graph'] },
   { value: srDict, passes: ['SRDict'] },
+  { value: leftHand, passes: ['Hand', 'SRDict'] },
 ];
 
 const getCircularReplacer = () => {
@@ -221,7 +229,7 @@ const getCircularReplacer = () => {
   return (_key: string, value: unknown) => {
     if (typeof value === 'object' && value !== null) {
       if (seen.has(value)) {
-        return;
+        return '<Circular Reference>';
       }
       seen.add(value);
     }
