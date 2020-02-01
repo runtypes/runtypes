@@ -11,7 +11,12 @@ describe('AsyncContract', () => {
   describe('when a function does return a promise, but for the wrong type', () => {
     it('throws a validation error asynchronously', async () => {
       const contractedFunction = AsyncContract(Number).enforce(() => Promise.resolve('hi' as any));
-      await expect(contractedFunction()).rejects;
+      try {
+        await contractedFunction();
+        fail();
+      } catch (e) {
+        expect(e).toBeInstanceOf(ValidationError);
+      }
     });
   });
   describe('when a function does return a promise', () => {
