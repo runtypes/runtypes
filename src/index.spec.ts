@@ -52,6 +52,11 @@ const nodeB: GraphNode = [nodeA];
 nodeA.push(nodeB);
 const barbell: Graph = [nodeA, nodeB];
 
+type SRDict = { [_: string]: SRDict };
+const SRDict: Runtype<SRDict> = Lazy(() => Dictionary(SRDict));
+const srDict: SRDict = {};
+srDict['self'] = srDict;
+
 class SomeClass {
   constructor(public n: number) {}
 }
@@ -133,6 +138,7 @@ const runtypes = {
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
   Graph,
+  SRDict,
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -207,6 +213,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: narcissist, passes: ['Person'] },
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
   { value: barbell, passes: ['Graph'] },
+  { value: srDict, passes: ['SRDict'] },
 ];
 
 const getCircularReplacer = () => {
