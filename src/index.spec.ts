@@ -52,6 +52,9 @@ const nodeB: GraphNode = [nodeA];
 nodeA.push(nodeB);
 const barbell: Graph = [nodeA, nodeB];
 
+type BarbellBall = [BarbellBall];
+const BarbellBall: Runtype<BarbellBall> = Lazy(() => Tuple(BarbellBall));
+
 type SRDict = { [_: string]: SRDict };
 const SRDict: Runtype<SRDict> = Lazy(() => Dictionary(SRDict));
 const srDict: SRDict = {};
@@ -153,6 +156,7 @@ const runtypes = {
   SRDict,
   Hand,
   Ambi,
+  BarbellBall,
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -226,7 +230,8 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord'] },
   { value: narcissist, passes: ['Person'] },
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
-  { value: barbell, passes: ['Graph'] },
+  { value: barbell, passes: ['Graph', 'BarbellBall'] },
+  { value: nodeA, passes: ['Graph', 'BarbellBall'] },
   { value: srDict, passes: ['SRDict'] },
   { value: leftHand, passes: ['Hand', 'SRDict'] },
   { value: ambi, passes: ['Ambi', 'Hand', 'SRDict'] },

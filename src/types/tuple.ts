@@ -222,10 +222,13 @@ export function Tuple<
 ): Tuple10<A, B, C, D, E, F, G, H, I, J>;
 export function Tuple(...components: Runtype[]): any {
   return create(
-    x => {
-      const validated = Arr(Unknown).validate(x);
+    (x, visitedSet, failedSet) => {
+      if (visitedSet.has(x) && !failedSet.has(x)) return { success: true, value: x };
+
+      const validated = Arr(Unknown).innerValidate(x, visitedSet, failedSet);
 
       if (!validated.success) {
+        failedSet.add(x);
         return {
           success: false,
           message: `Expected tuple to be an array: ${validated.message}`,
@@ -234,6 +237,7 @@ export function Tuple(...components: Runtype[]): any {
       }
 
       if (validated.value.length < components.length) {
+        failedSet.add(x);
         return {
           success: false,
           message: `Expected an array of length ${components.length}, but was ${validated.value.length}`,
@@ -241,9 +245,14 @@ export function Tuple(...components: Runtype[]): any {
       }
 
       for (let i = 0; i < components.length; i++) {
-        let validatedComponent = components[i].validate(validated.value[i]);
+        let validatedComponent = components[i].innerValidate(
+          validated.value[i],
+          visitedSet,
+          failedSet,
+        );
 
         if (!validatedComponent.success) {
+          failedSet.add(x);
           return {
             success: false,
             message: validatedComponent.message,
