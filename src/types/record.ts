@@ -24,7 +24,7 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
 ): Record<O, RO> {
   return withExtraModifierFuncs(
     create(
-      (x, visitedSet = new Set(), failedSet = new Set()) => {
+      (x, visitedSet, failedSet) => {
         if (x === null || x === undefined) {
           const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'record', fields });
           return { success: false, message: `Expected ${show(a)}, but was ${x}` };
@@ -33,7 +33,7 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
         if (visitedSet.has(x) && !failedSet.has(x)) return { success: true, value: x };
         visitedSet.add(x);
         for (const key in fields) {
-          let validated = fields[key].validate(
+          let validated = fields[key].innerValidate(
             hasKey(key, x) ? x[key] : undefined,
             visitedSet,
             failedSet,

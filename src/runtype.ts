@@ -26,7 +26,12 @@ export interface Runtype<A = unknown> {
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: any, visitedSet?: Set<unknown>, failedSet?: Set<unknown>): Result<A>;
+  validate(x: any): Result<A>;
+
+  /**
+   * Validation function used internally that additionally takes sets to track cycle breaking
+   */
+  innerValidate(x: any, visitedSet: Set<unknown>, failedSet: Set<unknown>): Result<A>;
 
   /**
    * A type guard for this runtype.
@@ -99,9 +104,13 @@ export interface Runtype<A = unknown> {
  */
 export type Static<A extends Runtype> = A['_falseWitness'];
 
-export function create<A extends Runtype>(validate: (x: any) => Result<Static<A>>, A: any): A {
+export function create<A extends Runtype>(
+  validate: (x: any, visitedSet: Set<unknown>, failedSet: Set<unknown>) => Result<Static<A>>,
+  A: any,
+): A {
   A.check = check;
-  A.validate = validate;
+  A.innerValidate = validate;
+  A.validate = (x: any) => validate(x, new Set(), new Set());
   A.guard = guard;
   A.Or = Or;
   A.And = And;
@@ -114,7 +123,7 @@ export function create<A extends Runtype>(validate: (x: any) => Result<Static<A>
   return A;
 
   function check(x: any) {
-    const validated = validate(x);
+    const validated = A.validate(x);
     if (validated.success) {
       return validated.value;
     }
@@ -122,7 +131,7 @@ export function create<A extends Runtype>(validate: (x: any) => Result<Static<A>
   }
 
   function guard(x: any): x is A {
-    return validate(x).success;
+    return A.validate(x).success;
   }
 
   function Or<B extends Runtype>(B: B): Union2<A, B> {
