@@ -971,7 +971,6 @@ export function Union(...alternatives: Rt[]): any {
           return { success: true, value };
         }
       }
-      failedSet.add(value);
 
       const a = create<any>(value as never, { tag: 'union', alternatives });
       return {
