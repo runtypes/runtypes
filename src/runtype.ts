@@ -26,7 +26,7 @@ export interface Runtype<A = unknown> {
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: any): Result<A>;
+  validate(x: any, visitedSet?: Set<unknown>, failedSet?: Set<unknown>): Result<A>;
 
   /**
    * A type guard for this runtype.
