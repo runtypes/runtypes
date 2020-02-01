@@ -225,6 +225,7 @@ export function Intersect(...intersectees: Runtype[]): any {
     (value, visitedSet, failedSet) => {
       for (const { innerValidate } of intersectees) {
         let validated = innerValidate(value, visitedSet, failedSet);
+        visitedSet.delete(value);
         if (!validated.success) {
           return validated;
         }

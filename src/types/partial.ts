@@ -19,10 +19,14 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
         return { success: false, message: `Expected ${show(a)}, but was ${x}` };
       }
 
+      if (visitedSet.has(x) && !failedSet.has(x)) return { success: true, value: x };
+      visitedSet.add(x);
+
       for (const key in fields) {
         if (hasKey(key, x) && x[key] !== undefined) {
           let validated = fields[key].innerValidate(x[key], visitedSet, failedSet);
           if (!validated.success) {
+            failedSet.add(x);
             return {
               success: false,
               message: validated.message,

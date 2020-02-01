@@ -250,6 +250,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: srDict, passes: ['SRDict'] },
   { value: leftHand, passes: ['Hand', 'SRDict'] },
   { value: ambi, passes: ['Ambi', 'Hand', 'SRDict'] },
+  { value: partialNarcissus, passes: ['PartialPerson'] },
 ];
 
 const getCircularReplacer = () => {
@@ -260,18 +261,14 @@ const getCircularReplacer = () => {
         return '<Circular Reference>';
       }
       seen.add(value);
-    }
+    } else if (typeof value === 'symbol' || typeof value === 'function') return value.toString();
     return value;
   };
 };
 
 for (const { value, passes } of testValues) {
   const valueName =
-    value === undefined
-      ? 'undefined'
-      : typeof value === 'function'
-      ? value.toString()
-      : JSON.stringify(value, getCircularReplacer());
+    value === undefined ? 'undefined' : JSON.stringify(value, getCircularReplacer());
   describe(`${valueName}`, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
