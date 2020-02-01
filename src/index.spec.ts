@@ -43,6 +43,15 @@ const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(P
 const narcissist: Person = { name: 'Narcissus', likes: [] };
 narcissist.likes = [narcissist];
 
+type GraphNode = GraphNode[]; // graph nodes are just arrays of their neighbors
+const GraphNode: Runtype<GraphNode> = Lazy(() => Array(GraphNode));
+type Graph = GraphNode[];
+const Graph: Runtype<Graph> = Array(GraphNode);
+const nodeA: GraphNode = [];
+const nodeB: GraphNode = [nodeA];
+nodeA.push(nodeB);
+const barbell: Graph = [nodeA, nodeB];
+
 class SomeClass {
   constructor(public n: number) {}
 }
@@ -123,6 +132,7 @@ const runtypes = {
   OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
+  Graph,
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -196,15 +206,25 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord'] },
   { value: narcissist, passes: ['Person'] },
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
+  { value: barbell, passes: ['Graph'] },
 ];
+
+const getCircularReplacer = () => {
+  const seen = new WeakSet();
+  return (_key: string, value: unknown) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+};
 
 for (const { value, passes } of testValues) {
   const valueName =
-    value === undefined
-      ? 'undefined'
-      : JSON.stringify(value, (_: string, v: unknown) =>
-          v === narcissist ? '<Narcissist Object>' : v,
-        );
+    value === undefined ? 'undefined' : JSON.stringify(value, getCircularReplacer());
   describe(valueName, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
