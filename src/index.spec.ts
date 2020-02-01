@@ -14,7 +14,7 @@ import {
   Array,
   Dictionary,
   Record,
-  Partial,
+  Partial as RTPartial,
   Tuple,
   Tuple2,
   Union,
@@ -72,6 +72,17 @@ const ambi: Ambi = { left: (null as any) as Ambi, right: (null as any) as Ambi }
 ambi.left = ambi;
 ambi.right = ambi;
 
+type PartialPerson = { likes?: PartialPerson } & { firstName: string };
+const PartialPerson: Runtype<PartialPerson> = Lazy(() =>
+  RTPartial({ firstName: String, likes: PartialPerson }).And(
+    Guard<{ firstName: string }>(
+      (p: any): p is { firstName: string } => p.firstName && typeof p.firstName === 'string',
+    ),
+  ),
+);
+const partialNarcissus: PartialPerson = { firstName: 'Narcissish' };
+partialNarcissus.likes = partialNarcissus;
+
 class SomeClass {
   constructor(public n: number) {}
 }
@@ -114,7 +125,7 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
-  Partial: Partial({ foo: String }).And(Record({ Boolean })),
+  Partial: RTPartial({ foo: String }).And(Record({ Boolean })),
   Function,
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3),
@@ -157,6 +168,7 @@ const runtypes = {
   Hand,
   Ambi,
   BarbellBall,
+  PartialPerson,
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -189,7 +201,10 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: undefined, likes: [] }, passes: [] },
   { value: { name: 'Jimmy', likes: [{ name: undefined, likes: [] }] }, passes: [] },
-  { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
+  {
+    value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] },
+    passes: ['Person'],
+  },
   { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
   { value: ['1', '2'], passes: ['ArrayString', 'NumberDictionary'] },
   { value: ['1', 2], passes: [] },
@@ -252,8 +267,12 @@ const getCircularReplacer = () => {
 
 for (const { value, passes } of testValues) {
   const valueName =
-    value === undefined ? 'undefined' : JSON.stringify(value, getCircularReplacer());
-  describe(valueName, () => {
+    value === undefined
+      ? 'undefined'
+      : typeof value === 'function'
+      ? value.toString()
+      : JSON.stringify(value, getCircularReplacer());
+  describe(`${valueName}`, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
     shouldPass.Unknown = true;
@@ -512,7 +531,7 @@ describe('check errors', () => {
   it('partial', () => {
     assertThrows(
       { name: 'Jack', age: null },
-      Partial({
+      RTPartial({
         name: String,
         age: Number,
       }),
@@ -524,7 +543,7 @@ describe('check errors', () => {
   it('partial complex', () => {
     assertThrows(
       { name: 'Jack', likes: [{ title: 2 }] },
-      Partial({
+      RTPartial({
         name: String,
         age: Number,
         likes: Array(Record({ title: String })),
@@ -647,7 +666,7 @@ describe('reflection', () => {
   });
 
   it('partial', () => {
-    const Opt = Partial({ x: Number, y: Literal(3) });
+    const Opt = RTPartial({ x: Number, y: Literal(3) });
     expectLiteralField(Opt, 'tag', 'partial');
     expectLiteralField(Opt.fields.x, 'tag', 'number');
     expectLiteralField(Opt.fields.y, 'tag', 'literal');
@@ -734,7 +753,7 @@ describe('change static type with Constraint', () => {
     | Array<Reflect, true>
     | Record<{ [_ in string]: Reflect }, false>
     | Record<{ [_ in string]: Reflect }, true>
-    | Partial<{ [_ in string]: Reflect }>
+    | RTPartial<{ [_ in string]: Reflect }>
     | Tuple2<Reflect, Reflect>
     | Union2<Reflect, Reflect>
     | Intersect2<Reflect, Reflect>
