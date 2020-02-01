@@ -40,6 +40,8 @@ const union1 = Union(Literal(3), String, boolTuple, record1);
 
 type Person = { name: string; likes: Person[] };
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }));
+const narcissist: Person = { name: 'Narcissus', likes: [] };
+narcissist.likes = [narcissist];
 
 class SomeClass {
   constructor(public n: number) {}
@@ -192,10 +194,15 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
   { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
   { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord'] },
+  { value: narcissist, passes: ['Person'] },
+  { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
 ];
 
 for (const { value, passes } of testValues) {
-  const valueName = value === undefined ? 'undefined' : JSON.stringify(value);
+  const valueName =
+    value === undefined
+      ? 'undefined'
+      : JSON.stringify(value, (_: string, v: unknown) => (v === narcissist ? 'narcissist' : v));
   describe(valueName, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
@@ -743,6 +750,15 @@ describe('change static type with Constraint', () => {
 
   return X;
 };
+
+describe('Self referential types', () => {
+  const narcissist: Person = { name: 'Narcissus', likes: [] };
+  narcissist.likes = [narcissist];
+
+  it('should successfully check a narcissist', () => {
+    expect(Person.guard(narcissist)).toBe(true);
+  });
+});
 
 function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v: V) {
   expect(o[k]).toBe(v);

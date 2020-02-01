@@ -22,6 +22,8 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
   fields: O,
   isReadonly: RO,
 ): Record<O, RO> {
+  const visitedSet = new Set();
+  const failedSet = new Set();
   return withExtraModifierFuncs(
     create(
       x => {
@@ -30,9 +32,12 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
           return { success: false, message: `Expected ${show(a)}, but was ${x}` };
         }
 
+        if (visitedSet.has(x) && !failedSet.has(x)) return { success: true, value: x };
+        visitedSet.add(x);
         for (const key in fields) {
           let validated = fields[key].validate(hasKey(key, x) ? x[key] : undefined);
           if (!validated.success) {
+            failedSet.add(x);
             return {
               success: false,
               message: validated.message,
