@@ -2,6 +2,11 @@ import { Runtype, Static, create } from '../runtype';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
 
+export interface Tuple0 extends Runtype {
+  tag: 'tuple';
+  components: [];
+}
+
 export interface Tuple1<A extends Runtype> extends Runtype<[Static<A>]> {
   tag: 'tuple';
   components: [A];
@@ -139,6 +144,7 @@ export interface Tuple10<
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
+export function Tuple(): Tuple0;
 export function Tuple<A extends Runtype>(A: A): Tuple1<A>;
 export function Tuple<A extends Runtype, B extends Runtype>(A: A, B: B): Tuple2<A, B>;
 export function Tuple<A extends Runtype, B extends Runtype, C extends Runtype>(
@@ -233,7 +239,7 @@ export function Tuple(...components: Runtype[]): any {
         };
       }
 
-      if (validated.value.length < components.length) {
+      if (validated.value.length !== components.length) {
         return {
           success: false,
           message: `Expected an array of length ${components.length}, but was ${validated.value.length}`,
