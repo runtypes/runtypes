@@ -167,25 +167,21 @@ type VisitedState = {
 function VisitedState(): VisitedState {
   const members: WeakMap<object, WeakMap<Runtype, true>> = new WeakMap();
 
-  const returned = {
-    add: (candidate: object, type: Runtype) => {
-      if (candidate === null || !(typeof candidate === 'object')) return returned;
-      const typeSet = members.get(candidate);
-      members.set(
-        candidate,
-        typeSet
-          ? typeSet.set(type, true)
-          : (new WeakMap() as WeakMap<Runtype, true>).set(type, true),
-      );
-
-      return returned;
-    },
-    has: (candidate: object, type: Runtype) => {
-      const typeSet = members.get(candidate);
-      const value = (typeSet && typeSet.get(type)) || false;
-      returned.add(candidate, type);
-      return value;
-    },
+  const add = (candidate: object, type: Runtype) => {
+    if (candidate === null || !(typeof candidate === 'object')) return;
+    const typeSet = members.get(candidate);
+    members.set(
+      candidate,
+      typeSet ? typeSet.set(type, true) : (new WeakMap() as WeakMap<Runtype, true>).set(type, true),
+    );
   };
-  return returned;
+
+  const has = (candidate: object, type: Runtype) => {
+    const typeSet = members.get(candidate);
+    const value = (typeSet && typeSet.get(type)) || false;
+    add(candidate, type);
+    return value;
+  };
+
+  return { has };
 }
