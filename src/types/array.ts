@@ -21,7 +21,7 @@ function InternalArr<E extends Runtype, RO extends boolean>(
 ): Arr<E, RO> {
   return withExtraModifierFuncs(
     create(
-      (xs, visitedSet, failedSet) => {
+      (xs, visitedSet, failedSet, self) => {
         if (!Array.isArray(xs)) {
           return {
             success: false,
@@ -29,12 +29,13 @@ function InternalArr<E extends Runtype, RO extends boolean>(
           };
         }
 
-        if (visitedSet.has(xs) && !failedSet.has(xs)) return { success: true, value: xs };
-        visitedSet.add(xs);
+        if (visitedSet.has(xs, self) && !failedSet.has(xs, self))
+          return { success: true, value: xs };
+        visitedSet.add(xs, self);
         for (const x of xs) {
           let validated = element.innerValidate(x, visitedSet, failedSet);
           if (!validated.success) {
-            failedSet.add(xs);
+            failedSet.add(xs, self);
             return {
               success: false,
               message: validated.message,

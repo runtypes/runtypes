@@ -31,7 +31,7 @@ export interface Runtype<A = unknown> {
   /**
    * Validation function used internally that additionally takes sets to track cycle breaking
    */
-  innerValidate(x: any, visitedSet: Set<unknown>, failedSet: Set<unknown>): Result<A>;
+  innerValidate(x: any, visitedSet: VisitedState, failedSet: VisitedState): Result<A>;
 
   /**
    * A type guard for this runtype.
@@ -105,12 +105,18 @@ export interface Runtype<A = unknown> {
 export type Static<A extends Runtype> = A['_falseWitness'];
 
 export function create<A extends Runtype>(
-  validate: (x: any, visitedSet: Set<unknown>, failedSet: Set<unknown>) => Result<Static<A>>,
+  validate: (
+    x: any,
+    visitedSet: VisitedState,
+    failedSet: VisitedState,
+    self: A,
+  ) => Result<Static<A>>,
   A: any,
 ): A {
   A.check = check;
-  A.innerValidate = validate;
-  A.validate = (x: any) => validate(x, new Set(), new Set());
+  A.innerValidate = (x: any, visitedSet: VisitedState, failedSet: VisitedState) =>
+    validate(x, visitedSet, failedSet, A);
+  A.validate = (x: any) => validate(x, VisitedState(), VisitedState(), A);
   A.guard = guard;
   A.Or = Or;
   A.And = And;
@@ -159,4 +165,27 @@ export function create<A extends Runtype>(
   function withBrand<B extends string>(B: B): Brand<B, A> {
     return Brand(B, A);
   }
+}
+
+type VisitedState = {
+  has: (candidate: object, type: Runtype) => boolean;
+  add: (candidate: object, type: Runtype) => VisitedState;
+};
+function VisitedState(): VisitedState {
+  const members: WeakMap<object, Set<Runtype>> = new WeakMap();
+
+  const returned = {
+    has: (candidate: object, type: Runtype) => {
+      const typeSet = members.get(candidate);
+      return !!typeSet && typeSet.has(type);
+    },
+    add: (candidate: object, type: Runtype) => {
+      if (candidate === null || !(typeof candidate === 'object')) return returned;
+      const typeSet = members.get(candidate);
+      members.set(candidate, typeSet ? typeSet.add(type) : (new Set() as Set<Runtype>).add(type));
+
+      return returned;
+    },
+  };
+  return returned;
 }

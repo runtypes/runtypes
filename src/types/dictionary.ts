@@ -20,7 +20,7 @@ export function Dictionary<V extends Runtype>(value: V, key?: 'string'): StringD
 export function Dictionary<V extends Runtype>(value: V, key?: 'number'): NumberDictionary<V>;
 export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
   return create<Runtype>(
-    (x, visitedSet, failedSet) => {
+    (x, visitedSet, failedSet, self) => {
       if (x === null || x === undefined) {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
         return { success: false, message: `Expected ${show(a)}, but was ${x}` };
@@ -42,8 +42,8 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
           return { success: false, message: 'Expected dictionary, but was array' };
       }
 
-      if (visitedSet.has(x) && !failedSet.has(x)) return { success: true, value: x };
-      visitedSet.add(x);
+      if (visitedSet.has(x, self) && !failedSet.has(x, self)) return { success: true, value: x };
+      visitedSet.add(x, self);
 
       for (const k in x) {
         // Object keys are unknown strings
@@ -57,7 +57,7 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
 
         let validated = value.innerValidate((x as any)[k], visitedSet, failedSet);
         if (!validated.success) {
-          failedSet.add(x);
+          failedSet.add(x, self);
           return {
             success: false,
             message: validated.message,
