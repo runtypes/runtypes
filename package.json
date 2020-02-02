@@ -8,7 +8,8 @@
     "build": "tsc --pretty",
     "format": "node scripts/format.js",
     "test": "jest $([ \"$CI\" = true ] && echo --coverage || echo --watch)",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
+    "typecheck": "tsc --noEmit --watch"
   },
   "author": "Thomas Crockett",
   "license": "MIT",
@@ -16,9 +17,9 @@
     "@types/jest": "24.0.18",
     "coveralls": "^3.0.6",
     "jest": "24.9.0",
-    "prettier": "^1.18.2",
+    "prettier": "^1.19.1",
     "ts-jest": "^24.1.0",
-    "typescript": "3.6.3"
+    "typescript": "3.7.5"
   },
   "keywords:": [
     "runtime",
