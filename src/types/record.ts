@@ -24,22 +24,16 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
 ): Record<O, RO> {
   return withExtraModifierFuncs(
     create(
-      (x, visitedSet, failedSet, self) => {
+      (x, visited, self) => {
         if (x === null || x === undefined) {
           const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'record', fields });
           return { success: false, message: `Expected ${show(a)}, but was ${x}` };
         }
 
-        if (visitedSet.has(x, self) && !failedSet.has(x, self)) return { success: true, value: x };
-        visitedSet.add(x, self);
+        if (visited.has(x, self)) return { success: true, value: x };
         for (const key in fields) {
-          let validated = fields[key].innerValidate(
-            hasKey(key, x) ? x[key] : undefined,
-            visitedSet,
-            failedSet,
-          );
+          let validated = fields[key].innerValidate(hasKey(key, x) ? x[key] : undefined, visited);
           if (!validated.success) {
-            failedSet.add(x, self);
             return {
               success: false,
               message: validated.message,

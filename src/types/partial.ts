@@ -13,20 +13,18 @@ export interface Part<O extends { [_: string]: Runtype }>
  */
 export function Part<O extends { [_: string]: Runtype }>(fields: O) {
   return create<Part<O>>(
-    (x, visitedSet, failedSet, self) => {
+    (x, visited, self) => {
       if (x === null || x === undefined) {
         const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'partial', fields });
         return { success: false, message: `Expected ${show(a)}, but was ${x}` };
       }
 
-      if (visitedSet.has(x, self) && !failedSet.has(x, self)) return { success: true, value: x };
-      visitedSet.add(x, self);
+      if (visited.has(x, self)) return { success: true, value: x };
 
       for (const key in fields) {
         if (hasKey(key, x) && x[key] !== undefined) {
-          let validated = fields[key].innerValidate(x[key], visitedSet, failedSet);
+          let validated = fields[key].innerValidate(x[key], visited);
           if (!validated.success) {
-            failedSet.add(x, self);
             return {
               success: false,
               message: validated.message,

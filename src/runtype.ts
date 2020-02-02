@@ -31,7 +31,7 @@ export interface Runtype<A = unknown> {
   /**
    * Validation function used internally that additionally takes sets to track cycle breaking
    */
-  innerValidate(x: any, visitedSet: VisitedState, failedSet: VisitedState): Result<A>;
+  innerValidate(x: any, visited: VisitedState): Result<A>;
 
   /**
    * A type guard for this runtype.
@@ -105,18 +105,12 @@ export interface Runtype<A = unknown> {
 export type Static<A extends Runtype> = A['_falseWitness'];
 
 export function create<A extends Runtype>(
-  validate: (
-    x: any,
-    visitedSet: VisitedState,
-    failedSet: VisitedState,
-    self: A,
-  ) => Result<Static<A>>,
+  validate: (x: any, visited: VisitedState, self: A) => Result<Static<A>>,
   A: any,
 ): A {
   A.check = check;
-  A.innerValidate = (x: any, visitedSet: VisitedState, failedSet: VisitedState) =>
-    validate(x, visitedSet, failedSet, A);
-  A.validate = (x: any) => validate(x, VisitedState(), VisitedState(), A);
+  A.innerValidate = (x: any, visited: VisitedState) => validate(x, visited, A);
+  A.validate = (x: any) => validate(x, VisitedState(), A);
   A.guard = guard;
   A.Or = Or;
   A.And = And;
@@ -172,19 +166,26 @@ type VisitedState = {
   add: (candidate: object, type: Runtype) => VisitedState;
 };
 function VisitedState(): VisitedState {
-  const members: WeakMap<object, Set<Runtype>> = new WeakMap();
+  const members: WeakMap<object, WeakMap<Runtype, true>> = new WeakMap();
 
   const returned = {
-    has: (candidate: object, type: Runtype) => {
-      const typeSet = members.get(candidate);
-      return !!typeSet && typeSet.has(type);
-    },
     add: (candidate: object, type: Runtype) => {
       if (candidate === null || !(typeof candidate === 'object')) return returned;
       const typeSet = members.get(candidate);
-      members.set(candidate, typeSet ? typeSet.add(type) : (new Set() as Set<Runtype>).add(type));
+      members.set(
+        candidate,
+        typeSet
+          ? typeSet.set(type, true)
+          : (new WeakMap() as WeakMap<Runtype, true>).set(type, true),
+      );
 
       return returned;
+    },
+    has: (candidate: object, type: Runtype) => {
+      const typeSet = members.get(candidate);
+      const value = typeSet && typeSet.get(type) || false;
+      returned.add(candidate, type);
+      return value;
     },
   };
   return returned;
