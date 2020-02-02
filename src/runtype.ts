@@ -17,6 +17,12 @@ import { ValidationError } from './errors';
  */
 export interface Runtype<A = unknown> {
   /**
+   * Verifies that a value conforms to this runtype. When given a value that does
+   * not conform to the runtype, throws an exception.
+   */
+  assert(x: any): asserts x is A;
+
+  /**
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
    */
@@ -104,6 +110,7 @@ export function create<A extends Runtype>(
   A: any,
 ): A {
   A.check = check;
+  A.assert = check;
   A.validate = (x: any, visited: VisitedState = VisitedState()) => validate(x, visited, A);
   A.guard = guard;
   A.Or = Or;

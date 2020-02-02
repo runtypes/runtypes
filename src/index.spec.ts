@@ -169,6 +169,7 @@ const runtypes = {
   Ambi,
   BarbellBall,
   PartialPerson,
+  EmptyTuple: Tuple(),
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -245,7 +246,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord'] },
   { value: narcissist, passes: ['Person'] },
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
-  { value: barbell, passes: ['Graph', 'BarbellBall'] },
+  { value: barbell, passes: ['Graph'] },
   { value: nodeA, passes: ['Graph', 'BarbellBall'] },
   { value: srDict, passes: ['SRDict'] },
   { value: leftHand, passes: ['Hand', 'SRDict'] },
@@ -356,6 +357,10 @@ describe('check errors', () => {
       'Expected string, but was number',
       '[1].name',
     );
+  });
+
+  it('tuple 0', () => {
+    assertAccepts([], Tuple());
   });
 
   it('array', () => {
