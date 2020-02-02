@@ -228,9 +228,7 @@ export function Tuple<
 ): Tuple10<A, B, C, D, E, F, G, H, I, J>;
 export function Tuple(...components: Runtype[]): any {
   return create(
-    (x, visited, self) => {
-      if (visited.has(x, self)) return { success: true, value: x };
-
+    (x, visited) => {
       const validated = Arr(Unknown).validate(x, visited);
 
       if (!validated.success) {

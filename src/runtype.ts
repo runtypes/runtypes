@@ -106,12 +106,15 @@ export interface Runtype<A = unknown> {
 export type Static<A extends Runtype> = A['_falseWitness'];
 
 export function create<A extends Runtype>(
-  validate: (x: any, visited: VisitedState, self: A) => Result<Static<A>>,
+  validate: (x: any, visited: VisitedState) => Result<Static<A>>,
   A: any,
 ): A {
   A.check = check;
   A.assert = check;
-  A.validate = (x: any, visited: VisitedState = VisitedState()) => validate(x, visited, A);
+  A.validate = (value: any, visited: VisitedState = VisitedState()) => {
+    if (visited.has(value, A)) return { success: true, value };
+    return validate(value, visited);
+  };
   A.guard = guard;
   A.Or = Or;
   A.And = And;

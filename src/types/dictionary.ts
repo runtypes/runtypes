@@ -20,7 +20,7 @@ export function Dictionary<V extends Runtype>(value: V, key?: 'string'): StringD
 export function Dictionary<V extends Runtype>(value: V, key?: 'number'): NumberDictionary<V>;
 export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
   return create<Runtype>(
-    (x, visited, self) => {
+    (x, visited) => {
       if (x === null || x === undefined) {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
         return { success: false, message: `Expected ${show(a)}, but was ${x}` };
@@ -41,8 +41,6 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
         } else if (key === 'string')
           return { success: false, message: 'Expected dictionary, but was array' };
       }
-
-      if (visited.has(x, self)) return { success: true, value: x };
 
       for (const k in x) {
         // Object keys are unknown strings
