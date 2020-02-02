@@ -23,7 +23,7 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
 
       for (const key in fields) {
         if (hasKey(key, x) && x[key] !== undefined) {
-          let validated = fields[key].innerValidate(x[key], visited);
+          let validated = fields[key].validate(x[key], visited);
           if (!validated.success) {
             return {
               success: false,

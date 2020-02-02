@@ -223,8 +223,8 @@ export function Intersect<
 export function Intersect(...intersectees: Runtype[]): any {
   return create(
     (value, visited) => {
-      for (const { innerValidate } of intersectees) {
-        let validated = innerValidate(value, visited);
+      for (const { validate } of intersectees) {
+        let validated = validate(value, visited);
         if (!validated.success) {
           return validated;
         }

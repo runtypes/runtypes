@@ -54,7 +54,7 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
             };
         }
 
-        let validated = value.innerValidate((x as any)[k], visited);
+        let validated = value.validate((x as any)[k], visited);
         if (!validated.success) {
           return {
             success: false,

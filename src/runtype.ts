@@ -26,12 +26,7 @@ export interface Runtype<A = unknown> {
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: any): Result<A>;
-
-  /**
-   * Validation function used internally that additionally takes sets to track cycle breaking
-   */
-  innerValidate(x: any, visited: VisitedState): Result<A>;
+  validate(x: any, visited?: VisitedState): Result<A>;
 
   /**
    * A type guard for this runtype.
@@ -109,8 +104,7 @@ export function create<A extends Runtype>(
   A: any,
 ): A {
   A.check = check;
-  A.innerValidate = (x: any, visited: VisitedState) => validate(x, visited, A);
-  A.validate = (x: any) => validate(x, VisitedState(), A);
+  A.validate = (x: any, visited: VisitedState = VisitedState()) => validate(x, visited, A);
   A.guard = guard;
   A.Or = Or;
   A.And = And;

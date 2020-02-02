@@ -966,8 +966,8 @@ export function Union(...alternatives: Rt[]): any {
 
   return create(
     (value, visited) => {
-      for (const { innerValidate } of alternatives) {
-        if (innerValidate(value, visited).success) {
+      for (const { validate } of alternatives) {
+        if (validate(value, visited).success) {
           return { success: true, value };
         }
       }

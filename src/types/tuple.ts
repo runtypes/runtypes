@@ -225,7 +225,7 @@ export function Tuple(...components: Runtype[]): any {
     (x, visited, self) => {
       if (visited.has(x, self)) return { success: true, value: x };
 
-      const validated = Arr(Unknown).innerValidate(x, visited);
+      const validated = Arr(Unknown).validate(x, visited);
 
       if (!validated.success) {
         return {
@@ -243,7 +243,7 @@ export function Tuple(...components: Runtype[]): any {
       }
 
       for (let i = 0; i < components.length; i++) {
-        let validatedComponent = components[i].innerValidate(validated.value[i], visited);
+        let validatedComponent = components[i].validate(validated.value[i], visited);
 
         if (!validatedComponent.success) {
           return {

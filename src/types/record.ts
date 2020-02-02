@@ -32,7 +32,7 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
 
         if (visited.has(x, self)) return { success: true, value: x };
         for (const key in fields) {
-          let validated = fields[key].innerValidate(hasKey(key, x) ? x[key] : undefined, visited);
+          let validated = fields[key].validate(hasKey(key, x) ? x[key] : undefined, visited);
           if (!validated.success) {
             return {
               success: false,

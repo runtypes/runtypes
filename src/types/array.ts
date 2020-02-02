@@ -31,7 +31,7 @@ function InternalArr<E extends Runtype, RO extends boolean>(
 
         if (visited.has(xs, self)) return { success: true, value: xs };
         for (const x of xs) {
-          let validated = element.innerValidate(x, visited);
+          let validated = element.validate(x, visited);
           if (!validated.success) {
             return {
               success: false,
