@@ -163,7 +163,6 @@ export function create<A extends Runtype>(
 
 type VisitedState = {
   has: (candidate: object, type: Runtype) => boolean;
-  add: (candidate: object, type: Runtype) => VisitedState;
 };
 function VisitedState(): VisitedState {
   const members: WeakMap<object, WeakMap<Runtype, true>> = new WeakMap();
@@ -183,7 +182,7 @@ function VisitedState(): VisitedState {
     },
     has: (candidate: object, type: Runtype) => {
       const typeSet = members.get(candidate);
-      const value = typeSet && typeSet.get(type) || false;
+      const value = (typeSet && typeSet.get(type)) || false;
       returned.add(candidate, type);
       return value;
     },
