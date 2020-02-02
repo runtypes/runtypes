@@ -121,6 +121,7 @@ const runtypes = {
   OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
+  EmptyTuple: Tuple(),
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -283,6 +284,10 @@ describe('check errors', () => {
       'Expected string, but was number',
       '[1].name',
     );
+  });
+
+  it('tuple 0', () => {
+    assertAccepts([], Tuple());
   });
 
   it('array', () => {
