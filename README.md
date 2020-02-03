@@ -337,6 +337,26 @@ const MilitaryShip = Ship.And(Record({
 }));
 ```
 
+## Readonly records and arrays
+
+Array and Record runtypes have a special function `.asReadonly()`, that creates a new runtype where the values are readonly.
+
+For example:
+
+```typescript
+const Asteroid = Record({
+  type: Literal('asteroid'),
+  location: Vector,
+  mass: Number,
+}).asReadonly()
+
+Static<typeof Asteroid> // { readonly type: 'asteroid', readonly location: Vector, readonly mass: number }
+
+const AsteroidArray = Array(Asteroid).asReadonly()
+
+Static<typeof AsteroidArray> // ReadonlyArray<Asteroid>
+```
+
 ## Related libraries
 
 * [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
