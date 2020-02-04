@@ -1,4 +1,4 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype, Static, create, innerValidate } from '../runtype';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
 
@@ -229,7 +229,7 @@ export function Tuple<
 export function Tuple(...components: Runtype[]): any {
   return create(
     (x, visited) => {
-      const validated = Arr(Unknown).validate(x, visited);
+      const validated = innerValidate(Arr(Unknown), x, visited);
 
       if (!validated.success) {
         return {
@@ -247,7 +247,7 @@ export function Tuple(...components: Runtype[]): any {
       }
 
       for (let i = 0; i < components.length; i++) {
-        let validatedComponent = components[i].validate(validated.value[i], visited);
+        let validatedComponent = innerValidate(components[i], validated.value[i], visited);
 
         if (!validatedComponent.success) {
           return {

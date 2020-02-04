@@ -32,7 +32,7 @@ export interface Runtype<A = unknown> {
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: any, visited?: VisitedState): Result<A>;
+  validate(x: any): Result<A>;
 
   /**
    * A type guard for this runtype.
@@ -111,10 +111,11 @@ export function create<A extends Runtype>(
 ): A {
   A.check = check;
   A.assert = check;
-  A.validate = (value: any, visited: VisitedState = VisitedState()) => {
+  A._innerValidate = (value: any, visited: VisitedState) => {
     if (visited.has(value, A)) return { success: true, value };
     return validate(value, visited);
   };
+  A.validate = (value: any) => A._innerValidate(value, VisitedState());
   A.guard = guard;
   A.Or = Or;
   A.And = And;
@@ -163,6 +164,14 @@ export function create<A extends Runtype>(
   function withBrand<B extends string>(B: B): Brand<B, A> {
     return Brand(B, A);
   }
+}
+
+export function innerValidate<A extends Runtype>(
+  targetType: A,
+  value: any,
+  visited: VisitedState,
+): Result<Static<A>> {
+  return (targetType as any)._innerValidate(value, visited);
 }
 
 type VisitedState = {

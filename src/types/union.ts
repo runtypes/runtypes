@@ -1,4 +1,4 @@
-import { Runtype as Rt, Static, create } from '../runtype';
+import { Runtype as Rt, Static, create, innerValidate } from '../runtype';
 import show from '../show';
 
 export interface Union1<A extends Rt> extends Rt<Static<A>> {
@@ -966,8 +966,8 @@ export function Union(...alternatives: Rt[]): any {
 
   return create(
     (value, visited) => {
-      for (const { validate } of alternatives) {
-        if (validate(value, visited).success) {
+      for (const targetType of alternatives) {
+        if (innerValidate(targetType, value, visited).success) {
           return { success: true, value };
         }
       }

@@ -1,4 +1,4 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype, Static, create, innerValidate } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
 
@@ -21,7 +21,7 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
 
       for (const key in fields) {
         if (hasKey(key, x) && x[key] !== undefined) {
-          let validated = fields[key].validate(x[key], visited);
+          let validated = innerValidate(fields[key], x[key], visited);
           if (!validated.success) {
             return {
               success: false,

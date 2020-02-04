@@ -1,4 +1,4 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype, Static, create, innerValidate } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
 
@@ -31,7 +31,7 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
         }
 
         for (const key in fields) {
-          let validated = fields[key].validate(hasKey(key, x) ? x[key] : undefined, visited);
+          let validated = innerValidate(fields[key], hasKey(key, x) ? x[key] : undefined, visited);
           if (!validated.success) {
             return {
               success: false,

@@ -1,4 +1,4 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype, Static, create, innerValidate } from '../runtype';
 
 type ArrayStaticType<E extends Runtype, RO extends boolean> = RO extends true
   ? ReadonlyArray<Static<E>>
@@ -30,7 +30,7 @@ function InternalArr<E extends Runtype, RO extends boolean>(
         }
 
         for (const x of xs) {
-          let validated = element.validate(x, visited);
+          let validated = innerValidate(element, x, visited);
           if (!validated.success) {
             return {
               success: false,
