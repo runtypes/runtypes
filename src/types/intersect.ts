@@ -1,4 +1,4 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype, Static, create, innerValidate } from '../runtype';
 
 export interface Intersect1<A extends Runtype> extends Runtype<Static<A>> {
   tag: 'intersect';
@@ -222,9 +222,9 @@ export function Intersect<
 ): Intersect10<A, B, C, D, E, F, G, H, I, J>;
 export function Intersect(...intersectees: Runtype[]): any {
   return create(
-    value => {
-      for (const { validate } of intersectees) {
-        let validated = validate(value);
+    (value, visited) => {
+      for (const targetType of intersectees) {
+        let validated = innerValidate(targetType, value, visited);
         if (!validated.success) {
           return validated;
         }

@@ -1,4 +1,4 @@
-import { Runtype, create, Static } from '../runtype';
+import { Runtype, create, Static, innerValidate } from '../runtype';
 import show from '../show';
 
 export interface StringDictionary<V extends Runtype> extends Runtype<{ [_: string]: Static<V> }> {
@@ -20,7 +20,7 @@ export function Dictionary<V extends Runtype>(value: V, key?: 'string'): StringD
 export function Dictionary<V extends Runtype>(value: V, key?: 'number'): NumberDictionary<V>;
 export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
   return create<Runtype>(
-    x => {
+    (x, visited) => {
       if (x === null || x === undefined) {
         const a = create<any>(x as never, { tag: 'dictionary', key, value });
         return { success: false, message: `Expected ${show(a)}, but was ${x}` };
@@ -52,7 +52,7 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
             };
         }
 
-        let validated = value.validate((x as any)[k]);
+        let validated = innerValidate(value, (x as any)[k], visited);
         if (!validated.success) {
           return {
             success: false,

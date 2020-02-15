@@ -1,4 +1,4 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype, Static, create, innerValidate } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
 
@@ -13,7 +13,7 @@ export interface Part<O extends { [_: string]: Runtype }>
  */
 export function Part<O extends { [_: string]: Runtype }>(fields: O) {
   return create<Part<O>>(
-    x => {
+    (x, visited) => {
       if (x === null || x === undefined) {
         const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'partial', fields });
         return { success: false, message: `Expected ${show(a)}, but was ${x}` };
@@ -21,7 +21,7 @@ export function Part<O extends { [_: string]: Runtype }>(fields: O) {
 
       for (const key in fields) {
         if (hasKey(key, x) && x[key] !== undefined) {
-          let validated = fields[key].validate(x[key]);
+          let validated = innerValidate(fields[key], x[key], visited);
           if (!validated.success) {
             return {
               success: false,

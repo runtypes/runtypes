@@ -1,4 +1,4 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype, Static, create, innerValidate } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
 
@@ -24,14 +24,14 @@ export function InternalRecord<O extends { [_: string]: Runtype }, RO extends bo
 ): Record<O, RO> {
   return withExtraModifierFuncs(
     create(
-      x => {
+      (x, visited) => {
         if (x === null || x === undefined) {
           const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'record', fields });
           return { success: false, message: `Expected ${show(a)}, but was ${x}` };
         }
 
         for (const key in fields) {
-          let validated = fields[key].validate(hasKey(key, x) ? x[key] : undefined);
+          let validated = innerValidate(fields[key], hasKey(key, x) ? x[key] : undefined, visited);
           if (!validated.success) {
             return {
               success: false,

@@ -105,10 +105,17 @@ export interface Runtype<A = unknown> {
  */
 export type Static<A extends Runtype> = A['_falseWitness'];
 
-export function create<A extends Runtype>(validate: (x: any) => Result<Static<A>>, A: any): A {
+export function create<A extends Runtype>(
+  validate: (x: any, visited: VisitedState) => Result<Static<A>>,
+  A: any,
+): A {
   A.check = check;
   A.assert = check;
-  A.validate = validate;
+  A._innerValidate = (value: any, visited: VisitedState) => {
+    if (visited.has(value, A)) return { success: true, value };
+    return validate(value, visited);
+  };
+  A.validate = (value: any) => A._innerValidate(value, VisitedState());
   A.guard = guard;
   A.Or = Or;
   A.And = And;
@@ -121,7 +128,7 @@ export function create<A extends Runtype>(validate: (x: any) => Result<Static<A>
   return A;
 
   function check(x: any) {
-    const validated = validate(x);
+    const validated = A.validate(x);
     if (validated.success) {
       return validated.value;
     }
@@ -129,7 +136,7 @@ export function create<A extends Runtype>(validate: (x: any) => Result<Static<A>
   }
 
   function guard(x: any): x is A {
-    return validate(x).success;
+    return A.validate(x).success;
   }
 
   function Or<B extends Runtype>(B: B): Union2<A, B> {
@@ -157,4 +164,37 @@ export function create<A extends Runtype>(validate: (x: any) => Result<Static<A>
   function withBrand<B extends string>(B: B): Brand<B, A> {
     return Brand(B, A);
   }
+}
+
+export function innerValidate<A extends Runtype>(
+  targetType: A,
+  value: any,
+  visited: VisitedState,
+): Result<Static<A>> {
+  return (targetType as any)._innerValidate(value, visited);
+}
+
+type VisitedState = {
+  has: (candidate: object, type: Runtype) => boolean;
+};
+function VisitedState(): VisitedState {
+  const members: WeakMap<object, WeakMap<Runtype, true>> = new WeakMap();
+
+  const add = (candidate: object, type: Runtype) => {
+    if (candidate === null || !(typeof candidate === 'object')) return;
+    const typeSet = members.get(candidate);
+    members.set(
+      candidate,
+      typeSet ? typeSet.set(type, true) : (new WeakMap() as WeakMap<Runtype, true>).set(type, true),
+    );
+  };
+
+  const has = (candidate: object, type: Runtype) => {
+    const typeSet = members.get(candidate);
+    const value = (typeSet && typeSet.get(type)) || false;
+    add(candidate, type);
+    return value;
+  };
+
+  return { has };
 }

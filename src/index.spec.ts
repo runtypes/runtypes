@@ -14,7 +14,7 @@ import {
   Array,
   Dictionary,
   Record,
-  Partial,
+  Partial as RTPartial,
   Tuple,
   Tuple2,
   Union,
@@ -40,6 +40,48 @@ const union1 = Union(Literal(3), String, boolTuple, record1);
 
 type Person = { name: string; likes: Person[] };
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }));
+const narcissist: Person = { name: 'Narcissus', likes: [] };
+narcissist.likes = [narcissist];
+
+type GraphNode = GraphNode[]; // graph nodes are just arrays of their neighbors
+const GraphNode: Runtype<GraphNode> = Lazy(() => Array(GraphNode));
+type Graph = GraphNode[];
+const Graph: Runtype<Graph> = Array(GraphNode);
+const nodeA: GraphNode = [];
+const nodeB: GraphNode = [nodeA];
+nodeA.push(nodeB);
+const barbell: Graph = [nodeA, nodeB];
+
+type BarbellBall = [BarbellBall];
+const BarbellBall: Runtype<BarbellBall> = Lazy(() => Tuple(BarbellBall));
+
+type SRDict = { [_: string]: SRDict };
+const SRDict: Runtype<SRDict> = Lazy(() => Dictionary(SRDict));
+const srDict: SRDict = {};
+srDict['self'] = srDict;
+
+type Hand = { left: Hand } | { right: Hand };
+const Hand: Runtype<Hand> = Lazy(() => Union(Record({ left: Hand }), Record({ right: Hand })));
+const leftHand: Hand = { left: (null as any) as Hand };
+const rightHand: Hand = { right: leftHand };
+leftHand.left = rightHand;
+
+type Ambi = { left: Ambi } & { right: Ambi };
+const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Record({ left: Ambi }), Record({ right: Ambi })));
+const ambi: Ambi = { left: (null as any) as Ambi, right: (null as any) as Ambi };
+ambi.left = ambi;
+ambi.right = ambi;
+
+type PartialPerson = { likes?: PartialPerson } & { firstName: string };
+const PartialPerson: Runtype<PartialPerson> = Lazy(() =>
+  RTPartial({ firstName: String, likes: PartialPerson }).And(
+    Guard<{ firstName: string }>(
+      (p: any): p is { firstName: string } => p.firstName && typeof p.firstName === 'string',
+    ),
+  ),
+);
+const partialNarcissus: PartialPerson = { firstName: 'Narcissish' };
+partialNarcissus.likes = partialNarcissus;
 
 class SomeClass {
   constructor(public n: number) {}
@@ -83,7 +125,7 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
-  Partial: Partial({ foo: String }).And(Record({ Boolean })),
+  Partial: RTPartial({ foo: String }).And(Record({ Boolean })),
   Function,
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3),
@@ -121,6 +163,12 @@ const runtypes = {
   OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
+  Graph,
+  SRDict,
+  Hand,
+  Ambi,
+  BarbellBall,
+  PartialPerson,
   EmptyTuple: Tuple(),
 };
 
@@ -154,7 +202,10 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: undefined, likes: [] }, passes: [] },
   { value: { name: 'Jimmy', likes: [{ name: undefined, likes: [] }] }, passes: [] },
-  { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
+  {
+    value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] },
+    passes: ['Person'],
+  },
   { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
   { value: ['1', '2'], passes: ['ArrayString', 'NumberDictionary'] },
   { value: ['1', 2], passes: [] },
@@ -193,11 +244,33 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
   { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
   { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord'] },
+  { value: narcissist, passes: ['Person'] },
+  { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
+  { value: barbell, passes: ['Graph'] },
+  { value: nodeA, passes: ['Graph', 'BarbellBall'] },
+  { value: srDict, passes: ['SRDict'] },
+  { value: leftHand, passes: ['Hand', 'SRDict'] },
+  { value: ambi, passes: ['Ambi', 'Hand', 'SRDict'] },
+  { value: partialNarcissus, passes: ['PartialPerson'] },
 ];
 
+const getCircularReplacer = () => {
+  const seen = new WeakSet();
+  return (_key: string, value: unknown) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return '<Circular Reference>';
+      }
+      seen.add(value);
+    } else if (typeof value === 'symbol' || typeof value === 'function') return value.toString();
+    return value;
+  };
+};
+
 for (const { value, passes } of testValues) {
-  const valueName = value === undefined ? 'undefined' : JSON.stringify(value);
-  describe(valueName, () => {
+  const valueName =
+    value === undefined ? 'undefined' : JSON.stringify(value, getCircularReplacer());
+  describe(`${valueName}`, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
     shouldPass.Unknown = true;
@@ -460,7 +533,7 @@ describe('check errors', () => {
   it('partial', () => {
     assertThrows(
       { name: 'Jack', age: null },
-      Partial({
+      RTPartial({
         name: String,
         age: Number,
       }),
@@ -472,7 +545,7 @@ describe('check errors', () => {
   it('partial complex', () => {
     assertThrows(
       { name: 'Jack', likes: [{ title: 2 }] },
-      Partial({
+      RTPartial({
         name: String,
         age: Number,
         likes: Array(Record({ title: String })),
@@ -595,7 +668,7 @@ describe('reflection', () => {
   });
 
   it('partial', () => {
-    const Opt = Partial({ x: Number, y: Literal(3) });
+    const Opt = RTPartial({ x: Number, y: Literal(3) });
     expectLiteralField(Opt, 'tag', 'partial');
     expectLiteralField(Opt.fields.x, 'tag', 'number');
     expectLiteralField(Opt.fields.y, 'tag', 'literal');
@@ -682,7 +755,7 @@ describe('change static type with Constraint', () => {
     | Array<Reflect, true>
     | Record<{ [_ in string]: Reflect }, false>
     | Record<{ [_ in string]: Reflect }, true>
-    | Partial<{ [_ in string]: Reflect }>
+    | RTPartial<{ [_ in string]: Reflect }>
     | Tuple2<Reflect, Reflect>
     | Union2<Reflect, Reflect>
     | Intersect2<Reflect, Reflect>
