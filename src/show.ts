@@ -45,12 +45,20 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
           ? `{ ${keys.map(k => `${k}?: ${show(false, circular)(refl.fields[k])};`).join(' ')} }`
           : '{}';
       }
+      case 'struct': {
+        const keys = Object.keys(refl.fields);
+        return keys.length
+          ? `{ ${keys.map(k => `${k}: ${show(false, circular)(refl.fields[k])};`).join(' ')} }`
+          : '{}';
+      }
       case 'tuple':
         return `[${refl.components.map(show(false, circular)).join(', ')}]`;
       case 'union':
         return parenthesize(`${refl.alternatives.map(show(true, circular)).join(' | ')}`);
       case 'intersect':
         return parenthesize(`${refl.intersectees.map(show(true, circular)).join(' & ')}`);
+      case 'maybe':
+        return `Maybe<${show(true, circular)(refl.type)}>`;
       case 'constraint':
         return refl.name || show(needsParens, circular)(refl.underlying);
       case 'instanceof':

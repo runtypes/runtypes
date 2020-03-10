@@ -26,3 +26,5 @@ export * from './types/lazy';
 export * from './types/constraint';
 export { Brand } from './types/brand';
 export * from './decorator';
+export * from './types/maybe';
+export * from './types/struct';

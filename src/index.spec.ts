@@ -29,6 +29,8 @@ import {
   InstanceOf,
   Brand,
   Guard,
+  Maybe,
+  Struct,
 } from './index';
 
 import { Constructor } from './types/instanceof';
@@ -37,6 +39,9 @@ import { ValidationError } from './errors';
 const boolTuple = Tuple(Boolean, Boolean, Boolean);
 const record1 = Record({ Boolean, Number });
 const union1 = Union(Literal(3), String, boolTuple, record1);
+const MaybeBoolean = Maybe(Boolean);
+const PartialStruct = Struct({ Boolean: Boolean, Number: Maybe(Number) });
+const StrictStruct = Struct({ Boolean, Number });
 
 type Person = { name: string; likes: Person[] };
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }));
@@ -125,6 +130,9 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
+  PartialStruct,
+  StrictStruct,
+  MaybeBoolean,
   Partial: RTPartial({ foo: String }).And(Record({ Boolean })),
   Function,
   Person,
@@ -181,10 +189,10 @@ class Foo {
 } // Should not be recognized as a Dictionary
 
 const testValues: { value: unknown; passes: RuntypeName[] }[] = [
-  { value: undefined, passes: ['Undefined', 'Void'] },
+  { value: undefined, passes: ['Undefined', 'Void', 'MaybeBoolean'] },
   { value: null, passes: ['Null', 'Void'] },
-  { value: true, passes: ['Boolean', 'true'] },
-  { value: false, passes: ['Boolean', 'false'] },
+  { value: true, passes: ['Boolean', 'true', 'MaybeBoolean'] },
+  { value: false, passes: ['Boolean', 'false', 'MaybeBoolean'] },
   { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1'] },
   {
     value: 42,
@@ -194,11 +202,15 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
   { value: Symbol.for('runtypes'), passes: ['Sym'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
-  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
-  { value: { Boolean: true }, passes: ['Partial'] },
-  { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
-  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey'] },
-  { value: { Boolean: true, foo: 5 }, passes: [] },
+  {
+    value: { Boolean: true, Number: 3 },
+    passes: ['record1', 'union1', 'Partial', 'PartialStruct', 'StrictStruct'],
+  },
+  { value: { Boolean: true, Number: undefined }, passes: ['PartialStruct', 'Partial'] },
+  { value: { Boolean: true }, passes: ['Partial', 'PartialStruct'] },
+  { value: { Boolean: true, foo: undefined }, passes: ['Partial', 'PartialStruct'] },
+  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey', 'PartialStruct'] },
+  { value: { Boolean: true, foo: 5 }, passes: ['PartialStruct'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: undefined, likes: [] }, passes: [] },
   { value: { name: 'Jimmy', likes: [{ name: undefined, likes: [] }] }, passes: [] },
@@ -762,7 +774,9 @@ describe('change static type with Constraint', () => {
     | Function
     | Constraint<Reflect, any, any>
     | InstanceOf<Constructor<never>>
-    | Brand<string, Reflect>,
+    | Brand<string, Reflect>
+    | Struct<{ [_ in string]: Reflect }>
+    | Maybe<Reflect>,
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({});
   switch (X.tag) {
@@ -817,6 +831,12 @@ describe('change static type with Constraint', () => {
     case 'brand':
       check<Static<typeof X.entity>>(X);
       break;
+    case 'struct':
+      check<{ [K in keyof typeof X.fields]?: Static<typeof X.fields['K']> }>(X);
+      break;
+    case 'maybe':
+      check<Static<typeof X.type> | undefined>(X);
+      break;
   }
 
   return X;
@@ -833,7 +853,10 @@ function assertAccepts<A>(value: unknown, runtype: Runtype<A>) {
 
 function assertRejects<A>(value: unknown, runtype: Runtype<A>) {
   const result = runtype.validate(value);
-  if (result.success === true) fail('value passed validation even though it was not expected to');
+  if (result.success === true) {
+    console.log(result);
+    fail('value passed validation even though it was not expected to');
+  }
 }
 
 function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key?: string) {

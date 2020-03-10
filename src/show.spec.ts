@@ -20,6 +20,8 @@ import {
   Lazy,
   InstanceOf,
   Reflect,
+  Maybe,
+  Struct,
 } from '.';
 import show from './show';
 
@@ -74,6 +76,8 @@ const cases: [Reflect, string][] = [
   [Boolean.And(Number.Or(String)), 'boolean & (number | string)'],
   [Boolean.Or(Number.And(String)), 'boolean | (number & string)'],
   [Boolean.Or(Record({ x: String, y: Number })), 'boolean | { x: string; y: number; }'],
+  [Maybe(Boolean), 'Maybe<boolean>'],
+  [Struct({ x: String, y: Number }), '{ x: string; y: number; }'],
 ];
 
 for (const [T, expected] of cases) {

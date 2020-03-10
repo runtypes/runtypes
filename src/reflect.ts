@@ -17,12 +17,14 @@ export type Reflect =
       { readonly [_ in string]: unknown }
     >)
   | ({ tag: 'partial'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]?: unknown }>)
+  | ({ tag: 'struct'; fields: { [_: string]: Reflect } } & Runtype<{ [_ in string]?: unknown }>)
   | ({ tag: 'dictionary'; key: 'string' | 'number'; value: Reflect } & Runtype<{
       [_: string]: unknown;
     }>)
   | ({ tag: 'tuple'; components: Reflect[] } & Runtype<unknown[]>)
   | ({ tag: 'union'; alternatives: Reflect[] } & Runtype)
   | ({ tag: 'intersect'; intersectees: Reflect[] } & Runtype)
+  | ({ tag: 'maybe'; type: Reflect } & Runtype)
   | ({ tag: 'function' } & Runtype<(...args: any[]) => any>)
   | ({
       tag: 'constraint';
