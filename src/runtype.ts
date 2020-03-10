@@ -29,6 +29,12 @@ export interface Runtype<A = unknown> {
   check(x: any): A;
 
   /**
+   * Verifies that a value conforms to this runtype. If so, returns the same value,
+   * statically typed. Otherwise throws an exception.
+   */
+  eval<T extends Runtype<A>>(a: Static<T>): Static<T>;
+
+  /**
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
@@ -110,6 +116,7 @@ export function create<A extends Runtype>(
   A: any,
 ): A {
   A.check = check;
+  A.eval = check;
   A.assert = check;
   A._innerValidate = (value: any, visited: VisitedState) => {
     if (visited.has(value, A)) return { success: true, value };
