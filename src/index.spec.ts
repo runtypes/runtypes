@@ -84,20 +84,20 @@ const partialNarcissus: PartialPerson = { firstName: 'Narcissish' };
 partialNarcissus.likes = partialNarcissus;
 
 class SomeClass {
-  constructor(public n: number) {}
+  constructor(public n: number) { }
 }
 class SomeOtherClass {
-  constructor(public n: number) {}
+  constructor(public n: number) { }
 }
 const SOMECLASS_TAG = 'I am a SomeClass instance (any version)';
 class SomeClassV1 {
-  constructor(public n: number) {}
+  constructor(public n: number) { }
   public _someClassTag = SOMECLASS_TAG;
   public static isSomeClass = (o: any): o is SomeClassV1 =>
     o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG;
 }
 class SomeClassV2 {
-  constructor(public n: number) {}
+  constructor(public n: number) { }
   public _someClassTag = SOMECLASS_TAG;
   public static isSomeClass = (o: any): o is SomeClassV2 =>
     o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG;
@@ -337,7 +337,7 @@ describe('check errors', () => {
     assertThrows(
       [false, '0', true],
       Tuple(Number, String, Boolean),
-      'Expected number, but was boolean',
+      'Expected number, but was boolean in [0]',
       '[0]',
     );
   });
@@ -354,7 +354,7 @@ describe('check errors', () => {
     assertThrows(
       [0, { name: 0 }],
       Tuple(Number, Record({ name: String })),
-      'Expected string, but was number',
+      'Expected string, but was number in [1].name',
       '[1].name',
     );
   });
@@ -364,14 +364,14 @@ describe('check errors', () => {
   });
 
   it('array', () => {
-    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string', '[2]');
+    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string in [2]', '[2]');
   });
 
   it('array nested', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in [1].name',
       '[1].name',
     );
   });
@@ -380,7 +380,7 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })),
-      'Expected { name: string; }, but was null',
+      'Expected { name: string; }, but was null in [1]',
       '[1]',
     );
   });
@@ -389,7 +389,7 @@ describe('check errors', () => {
     assertThrows(
       [0, 2, 'test'],
       Array(Number).asReadonly(),
-      'Expected number, but was string',
+      'Expected number, but was string in [2]',
       '[2]',
     );
   });
@@ -398,7 +398,7 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })).asReadonly(),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in [1].name',
       '[1].name',
     );
   });
@@ -407,7 +407,7 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })).asReadonly(),
-      'Expected { name: string; }, but was null',
+      'Expected { name: string; }, but was null in [1]',
       '[1]',
     );
   });
@@ -433,7 +433,7 @@ describe('check errors', () => {
     assertThrows(
       { foo: { name: false } },
       Dictionary(Record({ name: String })),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in foo.name',
       'foo.name',
     );
   });
@@ -442,7 +442,7 @@ describe('check errors', () => {
     assertThrows(
       { foo: 'bar', test: true },
       Dictionary(String),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in test',
       'test',
     );
   });
@@ -451,7 +451,7 @@ describe('check errors', () => {
     assertThrows(
       { 1: 'bar', 2: 20 },
       Dictionary(String, 'number'),
-      'Expected string, but was number',
+      'Expected string, but was number in 2',
       '2',
     );
   });
@@ -463,7 +463,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was string',
+      'Expected number, but was string in age',
       'age',
     );
   });
@@ -475,7 +475,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was undefined',
+      'Expected number, but was undefined in age',
       'age',
     );
   });
@@ -488,7 +488,7 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in likes.[0].title',
       'likes.[0].title',
     );
   });
@@ -500,7 +500,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was string',
+      'Expected number, but was string in age',
       'age',
     );
   });
@@ -512,7 +512,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was undefined',
+      'Expected number, but was undefined in age',
       'age',
     );
   });
@@ -525,7 +525,7 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String }).asReadonly()),
       }).asReadonly(),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in likes.[0].title',
       'likes.[0].title',
     );
   });
@@ -537,7 +537,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was null',
+      'Expected number, but was null in age',
       'age',
     );
   });
@@ -550,7 +550,7 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was number',
+      'Expected string, but was number in likes.[0].title',
       'likes.[0].title',
     );
   });
@@ -707,7 +707,7 @@ describe('reflection', () => {
   });
 
   it('instanceof', () => {
-    class Test {}
+    class Test { }
     expectLiteralField(InstanceOf(Test), 'tag', 'instanceof');
     expectLiteralField(Dictionary(Array(InstanceOf(Test))), 'tag', 'dictionary');
   });
