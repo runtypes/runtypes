@@ -84,20 +84,20 @@ const partialNarcissus: PartialPerson = { firstName: 'Narcissish' };
 partialNarcissus.likes = partialNarcissus;
 
 class SomeClass {
-  constructor(public n: number) { }
+  constructor(public n: number) {}
 }
 class SomeOtherClass {
-  constructor(public n: number) { }
+  constructor(public n: number) {}
 }
 const SOMECLASS_TAG = 'I am a SomeClass instance (any version)';
 class SomeClassV1 {
-  constructor(public n: number) { }
+  constructor(public n: number) {}
   public _someClassTag = SOMECLASS_TAG;
   public static isSomeClass = (o: any): o is SomeClassV1 =>
     o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG;
 }
 class SomeClassV2 {
-  constructor(public n: number) { }
+  constructor(public n: number) {}
   public _someClassTag = SOMECLASS_TAG;
   public static isSomeClass = (o: any): o is SomeClassV2 =>
     o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG;
@@ -707,7 +707,7 @@ describe('reflection', () => {
   });
 
   it('instanceof', () => {
-    class Test { }
+    class Test {}
     expectLiteralField(InstanceOf(Test), 'tag', 'instanceof');
     expectLiteralField(Dictionary(Array(InstanceOf(Test))), 'tag', 'dictionary');
   });
