@@ -58,11 +58,12 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
         return `InstanceOf<${name}>`;
       case 'brand':
         return show(needsParens, circular)(refl.entity);
+      default:
+        throw Error('impossible');
     }
   } finally {
     circular.delete(refl);
   }
-  throw Error('impossible');
 };
 
 export default show(false, new Set<Reflect>());
