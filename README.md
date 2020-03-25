@@ -119,7 +119,7 @@ In TypeScript, the inferred type of `Asteroid` in the above example is
 ```ts
 Runtype<{
   type: 'asteroid'
-  coordinates: [number, number, number]
+  location: [number, number, number]
   mass: number
 }>
 ```
@@ -140,7 +140,7 @@ which achieves the same result as
 ```ts
 type Asteroid = {
   type: 'asteroid';
-  coordinates: [number, number, number];
+  location: [number, number, number];
   mass: number;
 };
 ```
