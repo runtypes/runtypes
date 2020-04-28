@@ -3,6 +3,7 @@
   "version": "4.2.0",
   "description": "Runtime validation for static types",
   "main": "./lib/index.js",
+  "browser": "./dist/runtypes.js",
   "types": "./lib/index.d.ts",
   "scripts": {
     "prepare": "yarn build && yarn browser-build",
