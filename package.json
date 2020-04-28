@@ -5,7 +5,9 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
+    "prepare": "yarn build && yarn browser-build",
     "build": "tsc --pretty",
+    "browser-build": "yarn webpack",
     "format": "node scripts/format.js",
     "test": "jest $([ \"$CI\" = true ] && echo --coverage || echo --watch)",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
@@ -19,7 +21,10 @@
     "jest": "24.9.0",
     "prettier": "^1.19.1",
     "ts-jest": "^24.1.0",
-    "typescript": "3.7.5"
+    "ts-loader": "^7.0.1",
+    "typescript": "3.7.5",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
   },
   "keywords:": [
     "runtime",

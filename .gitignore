@@ -1,5 +1,6 @@
 # Compiled output
 lib/
+dist/
 
 # Code coverage output
 coverage/
