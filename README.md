@@ -295,7 +295,7 @@ divide(10, 0); // Throws error: division by zero
 ## Optional values
 
 Runtypes can be used to represent a variable that may be null or undefined
-as well as representing keys within records that may or moy not be present.
+as well as representing keys within records that may or may not be present.
 
 
 ```ts
