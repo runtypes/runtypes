@@ -1,5 +1,7 @@
 import { Runtype as Rt, Static, create, innerValidate } from '../runtype';
 import show from '../show';
+import { LiteralBase } from './literal';
+import { hasKey } from '../util';
 
 export interface Union1<A extends Rt> extends Rt<Static<A>> {
   tag: 'union';
@@ -966,6 +968,46 @@ export function Union(...alternatives: Rt[]): any {
 
   return create(
     (value, visited) => {
+      if (
+        alternatives.length > 1 &&
+        alternatives.every(alternative => alternative.reflect.tag === 'record')
+      ) {
+        const commonLiteralFields: { [key: string]: LiteralBase[] } = {};
+        for (const alternative of alternatives) {
+          if (alternative.reflect.tag === 'record') {
+            for (const fieldName in alternative.reflect.fields) {
+              const field = alternative.reflect.fields[fieldName];
+              if (field.tag === 'literal') {
+                if (commonLiteralFields[fieldName]) {
+                  if (commonLiteralFields[fieldName].every(value => value !== field.value)) {
+                    commonLiteralFields[fieldName].push(field.value);
+                  }
+                } else {
+                  commonLiteralFields[fieldName] = [field.value];
+                }
+              }
+            }
+          }
+        }
+
+        for (const fieldName in commonLiteralFields) {
+          if (commonLiteralFields[fieldName].length === alternatives.length) {
+            for (const alternative of alternatives) {
+              if (alternative.reflect.tag === 'record') {
+                const field = alternative.reflect.fields[fieldName];
+                if (
+                  field.tag === 'literal' &&
+                  hasKey(fieldName, value) &&
+                  value[fieldName] === field.value
+                ) {
+                  return innerValidate(alternative, value, visited);
+                }
+              }
+            }
+          }
+        }
+      }
+
       for (const targetType of alternatives) {
         if (innerValidate(targetType, value, visited).success) {
           return { success: true, value };
