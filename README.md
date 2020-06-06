@@ -147,7 +147,7 @@ type Asteroid = {
 
 ## Type guards
 
-In addition to providing a `check` method, runtypes can be used as [type guards](https://basarat.gitbooks.io/typescript/content/docs/types/typeGuard.html):
+In addition to providing a `check` method, runtypes can be used as [type guards](https://basarat.gitbook.io/typescript/type-system/typeguard):
 
 ```ts
 function disembark(obj: {}) {
