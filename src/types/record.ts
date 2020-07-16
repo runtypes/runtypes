@@ -14,7 +14,7 @@ type RecordStaticType<
   ? { readonly [K in keyof O]: Static<O[K]> }
   : { [K in keyof O]: Static<O[K]> };
 
-interface InternalRecord<
+export interface InternalRecord<
   O extends { [_: string]: Runtype },
   Part extends boolean,
   RO extends boolean
@@ -43,7 +43,7 @@ export type Partial<O extends { [_: string]: Runtype }, RO extends boolean> = In
 /**
  * Construct a record runtype from runtypes for its values.
  */
-function InternalRecord<
+export function InternalRecord<
   O extends { [_: string]: Runtype },
   Part extends boolean,
   RO extends boolean
