@@ -61,6 +61,7 @@ const cases: [Reflect, string][] = [
     '{ readonly x: string; readonly y: readonly boolean[]; }',
   ],
   [Partial({ x: String, y: Array(Boolean) }), '{ x?: string; y?: boolean[]; }'],
+  [Record({ x: String, y: Array(Boolean) }).asPartial(), '{ x?: string; y?: boolean[]; }'],
   [Tuple(Boolean, Number), '[boolean, number]'],
   [Union(Boolean, Number), 'boolean | number'],
   [Intersect(Boolean, Number), 'boolean & number'],

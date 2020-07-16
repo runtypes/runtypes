@@ -16,7 +16,6 @@ export * from './types/symbol';
 export * from './types/array';
 export * from './types/tuple';
 export * from './types/record';
-export * from './types/partial';
 export * from './types/dictionary';
 export * from './types/union';
 export * from './types/intersect';

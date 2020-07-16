@@ -35,14 +35,14 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
         const keys = Object.keys(refl.fields);
         return keys.length
           ? `{ ${keys
-              .map(k => `${readonlyTag(refl)}${k}: ${show(false, circular)(refl.fields[k])};`)
+              .map(
+                k =>
+                  `${readonlyTag(refl)}${k}${partialTag(refl)}: ${show(
+                    false,
+                    circular,
+                  )(refl.fields[k])};`,
+              )
               .join(' ')} }`
-          : '{}';
-      }
-      case 'partial': {
-        const keys = Object.keys(refl.fields);
-        return keys.length
-          ? `{ ${keys.map(k => `${k}?: ${show(false, circular)(refl.fields[k])};`).join(' ')} }`
           : '{}';
       }
       case 'tuple':
@@ -66,6 +66,10 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
 };
 
 export default show(false, new Set<Reflect>());
+
+function partialTag({ isPartial }: { isPartial: boolean }): string {
+  return isPartial ? '?' : '';
+}
 
 function readonlyTag({ isReadonly }: { isReadonly: boolean }): string {
   return isReadonly ? 'readonly ' : '';

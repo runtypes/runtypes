@@ -169,6 +169,9 @@ const runtypes = {
   Ambi,
   BarbellBall,
   PartialPerson,
+  ReadonlyPartial: Record({ foo: Number })
+    .asReadonly()
+    .And(RTPartial({ bar: String }).asReadonly()),
   EmptyTuple: Tuple(),
 };
 
@@ -198,7 +201,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey'] },
-  { value: { Boolean: true, foo: 5 }, passes: [] },
+  { value: { Boolean: true, foo: 5 }, passes: ['ReadonlyPartial'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: undefined, likes: [] }, passes: [] },
   { value: { name: 'Jimmy', likes: [{ name: undefined, likes: [] }] }, passes: [] },
@@ -243,7 +246,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass'] },
   { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
   { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
-  { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord'] },
+  { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord', 'ReadonlyPartial'] },
   { value: narcissist, passes: ['Person'] },
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
   { value: barbell, passes: ['Graph'] },
@@ -309,8 +312,6 @@ describe('contracts', () => {
     try {
       (Contract(String, Number).enforce(f) as any)(3);
       fail('contract was violated but no exception was thrown');
-      Contract(String, String).enforce(f as any)('hi');
-      fail('contract was violated but no exception was thrown');
     } catch (exception) {
       expect(exception).toBeInstanceOf(ValidationError);
       /* success */
@@ -322,8 +323,6 @@ describe('contracts', () => {
     expect(Contract(String, Boolean, Number).enforce(f)('hello', false)).toBe(4);
     try {
       (Contract(String, Boolean, Number).enforce(f) as any)('hello');
-      fail('contract was violated but no exception was thrown');
-      (Contract(String, Boolean, Number).enforce(f) as any)('hello', 3);
       fail('contract was violated but no exception was thrown');
     } catch (exception) {
       expect(exception).toBeInstanceOf(ValidationError);
@@ -669,7 +668,7 @@ describe('reflection', () => {
 
   it('partial', () => {
     const Opt = RTPartial({ x: Number, y: Literal(3) });
-    expectLiteralField(Opt, 'tag', 'partial');
+    expectLiteralField(Opt, 'tag', 'record');
     expectLiteralField(Opt.fields.x, 'tag', 'number');
     expectLiteralField(Opt.fields.y, 'tag', 'literal');
     expectLiteralField(Opt.fields.y, 'value', 3);
@@ -755,7 +754,8 @@ describe('change static type with Constraint', () => {
     | Array<Reflect, true>
     | Record<{ [_ in string]: Reflect }, false>
     | Record<{ [_ in string]: Reflect }, true>
-    | RTPartial<{ [_ in string]: Reflect }>
+    | RTPartial<{ [_ in string]: Reflect }, false>
+    | RTPartial<{ [_ in string]: Reflect }, true>
     | Tuple2<Reflect, Reflect>
     | Union2<Reflect, Reflect>
     | Intersect2<Reflect, Reflect>
@@ -792,9 +792,6 @@ describe('change static type with Constraint', () => {
       break;
     case 'record':
       check<{ readonly [K in keyof typeof X.fields]: Static<typeof X.fields[K]> }>(X);
-      break;
-    case 'partial':
-      check<{ [K in keyof typeof X.fields]?: Static<typeof X.fields['K']> }>(X);
       break;
     case 'tuple':
       check<[Static<typeof X.components[0]>, Static<typeof X.components[1]>]>(X);
