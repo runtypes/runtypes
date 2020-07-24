@@ -993,6 +993,7 @@ export function Union(...alternatives: Rt[]): any {
               const field = alternative.reflect.fields[fieldName];
               if (
                 field.tag === 'literal' &&
+                value !== null &&
                 hasKey(fieldName, value) &&
                 value[fieldName] === field.value
               ) {

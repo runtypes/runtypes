@@ -40,7 +40,7 @@ describe('union', () => {
       expect(Shape.validate({ kind: 'other', size: new Date() })).not.toHaveProperty('key');
     });
 
-    it('hould not pick alternative if the discriminant is not unique', () => {
+    it('should not pick alternative if the discriminant is not unique', () => {
       const Square = Record({ kind: Literal('square'), size: Number });
       const Rectangle = Record({ kind: Literal('rectangle'), width: Number, height: Number });
       const CircularSquare = Record({ kind: Literal('square'), radius: Number });
@@ -57,6 +57,34 @@ describe('union', () => {
       const Shape = Union(Square, Rectangle, InstanceOf(Date));
 
       expect(Shape.validate({ kind: 'square', size: new Date() })).not.toHaveProperty('key');
+    });
+
+    it('should not break when null is passed to (discriminated) Union.guard', () => {
+      const Square = Record({ kind: Literal('square'), size: Number });
+      const Rectangle = Record({ kind: Literal('rectangle'), width: Number, height: Number });
+      const CircularSquare = Record({ kind: Literal('square'), radius: Number });
+
+      const Shape = Union(Square, Rectangle, CircularSquare);
+
+      // Passes
+      expect(Shape.guard(null)).toBe(false);
+    });
+
+    it('should not break when null is passed to (discriminated) Union.guard 2', () => {
+      const DiscriminatedUnion = Union(
+        Record({ kind: Literal('foo'), size: Number }),
+        Record({ kind: Literal('bar'), foo: String }),
+      );
+
+      expect(DiscriminatedUnion.guard(null)).toBe(false);
+    });
+
+    it('should not break when null is passed to (discriminated) Union.guard 3', () => {
+      const A = Record({ kind: Literal('a') });
+      const B = Record({ kind: Literal('b') });
+      const DiscriminatedUnion = Union(A, B);
+
+      expect(DiscriminatedUnion.guard(null)).toBe(false);
     });
   });
 });
