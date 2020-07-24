@@ -20,24 +20,24 @@ export interface Runtype<A = unknown> {
    * Verifies that a value conforms to this runtype. When given a value that does
    * not conform to the runtype, throws an exception.
    */
-  assert(x: any): asserts x is A;
+  assert(x: A): asserts x is A;
 
   /**
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
    */
-  check(x: any): A;
+  check(x: A): A;
 
   /**
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: any): Result<A>;
+  validate(x: A): Result<A>;
 
   /**
    * A type guard for this runtype.
    */
-  guard(x: any): x is A;
+  guard(x: A): x is A;
 
   /**
    * Union this Runtype with another.
@@ -106,7 +106,7 @@ export interface Runtype<A = unknown> {
 export type Static<A extends Runtype> = A['_falseWitness'];
 
 export function create<A extends Runtype>(
-  validate: (x: any, visited: VisitedState) => Result<Static<A>>,
+  validate: (x: A, visited: VisitedState) => Result<Static<A>>,
   A: any,
 ): A {
   A.check = check;
@@ -115,7 +115,7 @@ export function create<A extends Runtype>(
     if (visited.has(value, A)) return { success: true, value };
     return validate(value, visited);
   };
-  A.validate = (value: any) => A._innerValidate(value, VisitedState());
+  A.validate = (value: A) => A._innerValidate(value, VisitedState());
   A.guard = guard;
   A.Or = Or;
   A.And = And;
@@ -127,7 +127,7 @@ export function create<A extends Runtype>(
 
   return A;
 
-  function check(x: any) {
+  function check(x: A) {
     const validated = A.validate(x);
     if (validated.success) {
       return validated.value;
@@ -135,7 +135,7 @@ export function create<A extends Runtype>(
     throw new ValidationError(validated.message, validated.key);
   }
 
-  function guard(x: any): x is A {
+  function guard(x: A): x is A {
     return A.validate(x).success;
   }
 

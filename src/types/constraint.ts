@@ -30,7 +30,7 @@ export function Constraint<A extends Runtype, T extends Static<A> = Static<A>, K
       }
 
       const result = constraint(validated.value);
-      if (String.guard(result)) return { success: false, message: result };
+      if (String.guard(result as string)) return { success: false, message: result.toString() };
       else if (!result) return { success: false, message: `Failed ${name || 'constraint'} check` };
       return { success: true, value: validated.value as T };
     },

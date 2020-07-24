@@ -764,7 +764,7 @@ describe('change static type with Constraint', () => {
     | InstanceOf<Constructor<never>>
     | Brand<string, Reflect>,
 ): Reflect => {
-  const check = <A>(X: Runtype<A>): A => X.check({});
+  const check = <A>(X: Runtype<A>): A => X.check({} as A);
   switch (X.tag) {
     case 'unknown':
       check<unknown>(X);
@@ -824,18 +824,18 @@ function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v:
 }
 
 function assertAccepts<A>(value: unknown, runtype: Runtype<A>) {
-  const result = runtype.validate(value);
+  const result = runtype.validate(value as any);
   if (result.success === false) fail(result.message);
 }
 
 function assertRejects<A>(value: unknown, runtype: Runtype<A>) {
-  const result = runtype.validate(value);
+  const result = runtype.validate(value as any);
   if (result.success === true) fail('value passed validation even though it was not expected to');
 }
 
 function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key?: string) {
   try {
-    runtype.check(value);
+    runtype.check(value as any);
     fail('value passed validation even though it was not expected to');
   } catch (exception) {
     const { message: errorMessage, key: errorKey } = exception;

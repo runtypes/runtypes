@@ -22,22 +22,22 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, Circle);
 
-      expect(Shape.validate({ kind: 'square', size: new Date() })).toMatchObject({
+      expect(Shape.validate({ kind: 'square', size: new Date() } as any)).toMatchObject({
         success: false,
         key: 'size',
       });
 
-      expect(Shape.validate({ kind: 'rectangle', size: new Date() })).toMatchObject({
+      expect(Shape.validate({ kind: 'rectangle', size: new Date() } as any)).toMatchObject({
         success: false,
         key: 'width',
       });
 
-      expect(Shape.validate({ kind: 'circle', size: new Date() })).toMatchObject({
+      expect(Shape.validate({ kind: 'circle', size: new Date() } as any)).toMatchObject({
         success: false,
         key: 'radius',
       });
 
-      expect(Shape.validate({ kind: 'other', size: new Date() })).not.toHaveProperty('key');
+      expect(Shape.validate({ kind: 'other', size: new Date() } as any)).not.toHaveProperty('key');
     });
 
     it('hould not pick alternative if the discriminant is not unique', () => {
@@ -47,7 +47,7 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, CircularSquare);
 
-      expect(Shape.validate({ kind: 'square', size: new Date() })).not.toHaveProperty('key');
+      expect(Shape.validate({ kind: 'square', size: new Date() } as any)).not.toHaveProperty('key');
     });
 
     it('should not pick alternative if not all types are records', () => {
@@ -56,7 +56,7 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, InstanceOf(Date));
 
-      expect(Shape.validate({ kind: 'square', size: new Date() })).not.toHaveProperty('key');
+      expect(Shape.validate({ kind: 'square', size: new Date() } as any)).not.toHaveProperty('key');
     });
   });
 });

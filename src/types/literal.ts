@@ -22,9 +22,9 @@ function literal(value: unknown) {
  */
 export function Literal<A extends LiteralBase>(valueBase: A): Literal<A> {
   return create<Literal<A>>(
-    value =>
+    (value: unknown) =>
       value === valueBase
-        ? { success: true, value }
+        ? { success: true, value: value as A }
         : {
             success: false,
             message: `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
