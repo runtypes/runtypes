@@ -221,7 +221,7 @@ Positive.check(-3); // Throws error: -3 is not positive
 
 You can set a custom name for your runtype, which will be used in default error
 messages and reflection, by using the `name` prop on the optional `options`
-parameter: 
+parameter:
 
 ```typescript
 const C = Number.withConstraint(n => n > 0, {name: 'PositiveNumber'});
@@ -230,7 +230,7 @@ const C = Number.withConstraint(n => n > 0, {name: 'PositiveNumber'});
 To change the type, there are two ways to do it: passing a type guard function
 to a new `Runtype.withGuard()` method, or using the familiar
 `Runtype.withConstraint()` method. (Both methods also accept an `options`
-parameter to optionally set the name.) 
+parameter to optionally set the name.)
 
 Using a type guard function is the easiest option to change the static type,
 because TS will infer the desired type from the return type of the guard
@@ -260,7 +260,7 @@ underlying type *before* running your constraint function. So it's important to
 use a lowest-common-denominator type that will pass validation for all expected
 inputs of your constraint function or type guard.  If there's no obvious
 lowest-common-denominator type, you can always use `Unknown` as the underlying
-type, as shown in the `Buffer` examples above.  
+type, as shown in the `Buffer` examples above.
 
 Speaking of base types, if you're using a type guard function and your base type
 is `Unknown`, then there's a convenience runtype `Guard` available, which is a
@@ -331,7 +331,7 @@ the `Record` runtype normally instead.
 ```ts
 const MilitaryShip = Ship.And(Record({
   shipClass: Literal('military'),
-  
+
   // Must NOT be undefined, but can be null
   lastDeployedTimestamp: Number.Or(Null),
 }));
@@ -355,6 +355,26 @@ Static<typeof Asteroid> // { readonly type: 'asteroid', readonly location: Vecto
 const AsteroidArray = Array(Asteroid).asReadonly()
 
 Static<typeof AsteroidArray> // ReadonlyArray<Asteroid>
+```
+
+## `.pick` and `.omit`
+
+Record runtype has the methods `.pick()` and `.omit()`, which will return a new record runtype with or without specified fields.
+
+E.g.
+
+```ts
+const CrewMember = Record({
+  name: String,
+  rank: Rank,
+  home: Planet,
+});
+
+const PetMember = CrewMember.pick(['name', 'home']);
+Static<typeof PetMember> // { name: string; home: Planet; }
+
+const Background = CrewMember.omit(['name']);
+Static<typeof Background> // { rank: Rank; home: Planet; }
 ```
 
 ## Related libraries
