@@ -1,4 +1,4 @@
-import { String, Record, Array } from '..';
+import { String, Record, ExactRecord, Array } from '..';
 
 const AnimalRecord = Record({
   cat: String,
@@ -8,10 +8,10 @@ const AnimalRecord = Record({
 const AnimalNestedRecord = Record({
   cat: String,
   dog: String,
-  zoo: Record({
+  zoo: ExactRecord({
     lion: String,
     penguin: String,
-  }).exact(),
+  }),
 }).exact();
 
 const AnimalsRecord = Array(AnimalRecord);
