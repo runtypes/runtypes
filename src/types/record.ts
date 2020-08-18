@@ -37,6 +37,12 @@ export type Record<
   EX extends boolean
 > = InternalRecord<O, false, RO, EX>;
 
+export type ExactRecord<
+  O extends { [_: string]: Runtype },
+  RO extends boolean,
+  EX extends boolean
+> = InternalRecord<O, false, RO, EX>;
+
 export type Partial<
   O extends { [_: string]: Runtype },
   RO extends boolean,
