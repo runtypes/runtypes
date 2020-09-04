@@ -1,8 +1,5 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
 
-// type UnionToIntersection<U> =
-//   (Types[number] extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
-// type IntersectTypes<Types extends [Runtype, ...Runtype[]]> = Types[number];
 export interface Intersect<A extends readonly [Runtype, ...Runtype[]]>
   extends Runtype<
     // We use the fact that a union of functions is effectively an intersection of parameters
