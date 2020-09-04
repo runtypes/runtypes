@@ -16,7 +16,6 @@ import {
   Record,
   Partial as RTPartial,
   Tuple,
-  Tuple2,
   Union,
   Union2,
   Intersect,
@@ -756,7 +755,7 @@ describe('change static type with Constraint', () => {
     | Record<{ [_ in string]: Reflect }, true>
     | RTPartial<{ [_ in string]: Reflect }, false>
     | RTPartial<{ [_ in string]: Reflect }, true>
-    | Tuple2<Reflect, Reflect>
+    | Tuple<[Reflect, Reflect]>
     | Union2<Reflect, Reflect>
     | Intersect2<Reflect, Reflect>
     | Function
