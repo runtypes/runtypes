@@ -19,7 +19,7 @@
     "jest": "24.9.0",
     "prettier": "^1.19.1",
     "ts-jest": "^24.1.0",
-    "typescript": "3.7.5"
+    "typescript": "4.0.2"
   },
   "keywords:": [
     "runtime",
