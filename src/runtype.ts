@@ -1,4 +1,4 @@
-import { Result, Union, Union2, Intersect, Constraint, ConstraintCheck, Brand } from './index';
+import { Result, Union, Intersect, Constraint, ConstraintCheck, Brand } from './index';
 import { Reflect } from './reflect';
 import show from './show';
 import { ValidationError } from './errors';
@@ -6,7 +6,7 @@ import { ValidationError } from './errors';
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export interface Runtype<A = unknown> {
+export interface RuntypeBase<A = unknown> {
   /**
    * Verifies that a value conforms to this runtype. When given a value that does
    * not conform to the runtype, throws an exception.
@@ -31,9 +31,21 @@ export interface Runtype<A = unknown> {
   guard(x: any): x is A;
 
   /**
+   * Convert this to a Reflect, capable of introspecting the structure of the type.
+   */
+  readonly reflect: Reflect;
+
+  /* @internal */ readonly _falseWitness: A;
+}
+
+/**
+ * A runtype determines at runtime whether a value conforms to a type specification.
+ */
+export interface Runtype<A = unknown> extends RuntypeBase<A> {
+  /**
    * Union this Runtype with another.
    */
-  Or<B extends Runtype>(B: B): Union2<this, B>;
+  Or<B extends Runtype>(B: B): Union<[this, B]>;
 
   /**
    * Intersect this Runtype with another.
@@ -82,19 +94,12 @@ export interface Runtype<A = unknown> {
    * Adds a brand to the type.
    */
   withBrand<B extends string>(brand: B): Brand<B, this>;
-
-  /**
-   * Convert this to a Reflect, capable of introspecting the structure of the type.
-   */
-  reflect: Reflect;
-
-  /* @internal */ _falseWitness: A;
 }
 
 /**
  * Obtains the static type associated with a Runtype.
  */
-export type Static<A extends Runtype> = A['_falseWitness'];
+export type Static<A extends RuntypeBase> = A['_falseWitness'];
 
 export function create<A extends Runtype>(
   validate: (x: any, visited: VisitedState) => Result<Static<A>>,
@@ -130,7 +135,7 @@ export function create<A extends Runtype>(
     return A.validate(x).success;
   }
 
-  function Or<B extends Runtype>(B: B): Union2<A, B> {
+  function Or<B extends Runtype>(B: B): Union<[A, B]> {
     return Union(A, B);
   }
 
@@ -157,7 +162,7 @@ export function create<A extends Runtype>(
   }
 }
 
-export function innerValidate<A extends Runtype>(
+export function innerValidate<A extends RuntypeBase>(
   targetType: A,
   value: any,
   visited: VisitedState,
