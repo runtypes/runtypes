@@ -37,3 +37,21 @@ jobs:
       - run: yarn add -D typescript@${{ matrix.typescript-version }}
       - run: yarn build
       - run: yarn test
+      - name: Coveralls Parallel
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          flag-name: node-${{ matrix.node-version }}-ts-${{ matrix.typescript-version }}
+          parallel: true
+
+  finish:
+    runs-on: ubuntu-latest
+
+    needs: test
+
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
