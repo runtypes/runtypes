@@ -1,24 +1,29 @@
-import { Runtype, Static, create, innerValidate } from '../runtype';
+import { create, innerValidate, RuntypeBase, Runtype } from '../runtype';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
 
-export interface Tuple<A extends readonly [Runtype, ...Runtype[]] | readonly []>
-  extends Runtype<
-    {
-      [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
-    }
-  > {
-  tag: 'tuple';
-  components: A;
+export type StaticTuple<TElements extends readonly RuntypeBase<unknown>[]> = {
+  [key in keyof TElements]: TElements[key] extends RuntypeBase<infer E> ? E : unknown;
+};
+
+export interface Tuple<
+  TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[]
+> extends Runtype<StaticTuple<TElements>> {
+  readonly tag: 'tuple';
+  readonly components: TElements;
+}
+
+export function isTupleRuntype(runtype: RuntypeBase): runtype is Tuple<readonly RuntypeBase[]> {
+  return 'tag' in runtype && (runtype as Tuple<readonly RuntypeBase[]>).tag === 'tuple';
 }
 
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
-export function Tuple<T extends readonly [Runtype, ...Runtype[]] | readonly []>(
-  ...components: T
-): Tuple<T> {
-  return create(
+export function Tuple<
+  T extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]] | readonly []
+>(...components: T): Tuple<T> {
+  return create<Tuple<T>>(
     (x, visited) => {
       const validated = innerValidate(Arr(Unknown), x, visited);
 
@@ -51,6 +56,14 @@ export function Tuple<T extends readonly [Runtype, ...Runtype[]] | readonly []>(
 
       return { success: true, value: x };
     },
-    { tag: 'tuple', components },
+    {
+      tag: 'tuple',
+      components,
+      show({ showChild }) {
+        return `[${(components as readonly RuntypeBase<unknown>[])
+          .map(e => showChild(e, false))
+          .join(', ')}]`;
+      },
+    },
   );
 }

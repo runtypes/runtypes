@@ -1,58 +1,95 @@
-import { Runtype, create, Static, innerValidate } from '../runtype';
+import { create, Static, innerValidate, RuntypeBase, Runtype } from '../runtype';
 import show from '../show';
+import { String } from './string';
+import { Number } from './number';
+import { Literal } from './literal';
+import { Constraint } from './constraint';
+import { lazyValue } from './lazy';
+import { Union } from './union';
 
-export interface StringDictionary<V extends Runtype> extends Runtype<{ [_: string]: Static<V> }> {
-  tag: 'dictionary';
-  key: 'string';
-  value: V;
+export type KeyRuntypeBaseWithoutUnion =
+  | Pick<String, keyof RuntypeBase>
+  | Pick<Number, keyof RuntypeBase>
+  | Pick<Literal<string | number>, 'value' | keyof RuntypeBase>
+  | Pick<Constraint<KeyRuntypeBase, string | number>, 'underlying' | keyof RuntypeBase>;
+
+export type KeyRuntypeBase =
+  | KeyRuntypeBaseWithoutUnion
+  | Pick<Union<KeyRuntypeBaseWithoutUnion[]>, 'alternatives' | keyof RuntypeBase>;
+
+function getExpectedBaseType(key: KeyRuntypeBase): 'string' | 'number' | 'mixed' {
+  switch (key.tag) {
+    case 'string':
+      return 'string';
+    case 'number':
+      return 'number';
+    case 'literal':
+      return typeof key.value as 'string' | 'number';
+    case 'union':
+      const baseTypes = key.alternatives.map(getExpectedBaseType);
+      return baseTypes.reduce((a, b) => (a === b ? a : 'mixed'), baseTypes[0]);
+    case 'constraint':
+      return getExpectedBaseType(key.underlying);
+  }
 }
 
-export interface NumberDictionary<V extends Runtype> extends Runtype<{ [_: number]: Static<V> }> {
-  tag: 'dictionary';
-  key: 'number';
-  value: V;
+export interface Dictionary<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>
+  extends Runtype<{ [_ in Static<K>]?: Static<V> }> {
+  readonly tag: 'dictionary';
+  readonly key: K;
+  readonly value: V;
 }
 
 /**
  * Construct a runtype for arbitrary dictionaries.
  */
-export function Dictionary<V extends Runtype>(value: V, key?: 'string'): StringDictionary<V>;
-export function Dictionary<V extends Runtype>(value: V, key?: 'number'): NumberDictionary<V>;
-export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
-  return create<Runtype>(
+export function Dictionary<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>(
+  key: K,
+  value: V,
+): Dictionary<K, V> {
+  const expectedBaseType = lazyValue(() => getExpectedBaseType(key));
+  const runtype: Dictionary<K, V> = create<Dictionary<K, V>>(
     (x, visited) => {
       if (x === null || x === undefined) {
-        const a = create<any>(x as never, { tag: 'dictionary', key, value });
-        return { success: false, message: `Expected ${show(a)}, but was ${x}` };
+        return { success: false, message: `Expected ${show(runtype)}, but was ${x}` };
       }
 
       if (typeof x !== 'object') {
-        const a = create<any>(x as never, { tag: 'dictionary', key, value });
-        return { success: false, message: `Expected ${show(a.reflect)}, but was ${typeof x}` };
+        return { success: false, message: `Expected ${show(runtype)}, but was ${typeof x}` };
       }
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
         if (!Array.isArray(x)) {
-          const a = create<any>(x as never, { tag: 'dictionary', key, value });
           return {
             success: false,
-            message: `Expected ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`,
+            message: `Expected ${show(runtype)}, but was ${Object.getPrototypeOf(x)}`,
           };
-        } else if (key === 'string')
-          return { success: false, message: 'Expected dictionary, but was array' };
+        }
+        return { success: false, message: 'Expected dictionary, but was array' };
       }
 
       for (const k in x) {
-        // Object keys are unknown strings
-        if (key === 'number') {
+        let success = false;
+        if (expectedBaseType() === 'number') {
           if (isNaN(+k))
             return {
               success: false,
-              message: 'Expected dictionary key to be a number, but was string',
+              message: `Expected dictionary key to be a number, but was '${k}'`,
             };
+          success = key.validate(+k).success;
+        } else if (expectedBaseType() === 'string') {
+          success = key.validate(k).success;
+        } else {
+          success = key.validate(k).success || (!isNaN(+k) && key.validate(+k).success);
+        }
+        if (!success) {
+          return {
+            success: false,
+            message: `Expected dictionary key to be ${show(key)}, but was '${k}'`,
+          };
         }
 
-        let validated = innerValidate(value, (x as any)[k], visited);
+        const validated = innerValidate(value, (x as any)[k], visited);
         if (!validated.success) {
           return {
             success: false,
@@ -64,6 +101,14 @@ export function Dictionary<V extends Runtype>(value: V, key = 'string'): any {
 
       return { success: true, value: x };
     },
-    { tag: 'dictionary', key, value },
+    {
+      tag: 'dictionary',
+      key,
+      value,
+      show({ showChild }) {
+        return `{ [_: ${showChild(key, false)}]: ${showChild(value, false)} }`;
+      },
+    },
   );
+  return runtype;
 }

@@ -1,13 +1,13 @@
-import { Runtype, create } from '../runtype';
+import { create, Runtype } from '../runtype';
 
 export interface Boolean extends Runtype<boolean> {
-  tag: 'boolean';
+  readonly tag: 'boolean';
 }
 
 /**
  * Validates that a value is a boolean.
  */
-export const Boolean = create<Boolean>(
+export const Boolean: Boolean = create<Boolean>(
   value =>
     typeof value === 'boolean'
       ? { success: true, value }

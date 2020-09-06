@@ -1,13 +1,13 @@
 import { Runtype, create } from '../runtype';
 
 export interface Number extends Runtype<number> {
-  tag: 'number';
+  readonly tag: 'number';
 }
 
 /**
  * Validates that a value is a number.
  */
-export const Number = create<Number>(
+export const Number: Number = create<Number>(
   value =>
     typeof value === 'number'
       ? { success: true, value }

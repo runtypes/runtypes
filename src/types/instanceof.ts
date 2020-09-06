@@ -1,15 +1,15 @@
-import { Runtype, create } from '../runtype';
+import { create, Runtype } from '../runtype';
 
 export interface Constructor<V> {
   new (...args: any[]): V;
 }
 
-export interface InstanceOf<V> extends Runtype<V> {
-  tag: 'instanceof';
-  ctor: Constructor<V>;
+export interface InstanceOf<V = unknown> extends Runtype<V> {
+  readonly tag: 'instanceof';
+  readonly ctor: Constructor<V>;
 }
 
-export function InstanceOf<V>(ctor: Constructor<V>) {
+export function InstanceOf<V>(ctor: Constructor<V>): InstanceOf<V> {
   return create<InstanceOf<V>>(
     value =>
       value instanceof ctor
@@ -20,6 +20,13 @@ export function InstanceOf<V>(ctor: Constructor<V>) {
               value === null ? value : typeof value
             }`,
           },
-    { tag: 'instanceof', ctor: ctor },
+    {
+      tag: 'instanceof',
+      ctor: ctor,
+      show() {
+        const name = (ctor as any).name;
+        return `InstanceOf<${name}>`;
+      },
+    },
   );
 }

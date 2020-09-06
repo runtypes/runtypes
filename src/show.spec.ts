@@ -19,13 +19,13 @@ import {
   Function,
   Lazy,
   InstanceOf,
-  Reflect,
 } from '.';
 import show from './show';
+import { RuntypeBase } from './runtype';
 
 class TestClass {}
 
-const cases: [Reflect, string][] = [
+const cases: [RuntypeBase, string][] = [
   [Unknown, 'unknown'],
   [Never, 'never'],
   [Undefined, 'undefined'],
@@ -40,9 +40,9 @@ const cases: [Reflect, string][] = [
   [Literal('foo'), '"foo"'],
   [Array(String), 'string[]'],
   [Array(String).asReadonly(), 'readonly string[]'],
-  [Dictionary(Array(Boolean)), '{ [_: string]: boolean[] }'],
-  [Dictionary(Array(Boolean), 'string'), '{ [_: string]: boolean[] }'],
-  [Dictionary(Array(Boolean), 'number'), '{ [_: number]: boolean[] }'],
+  [Dictionary(String, Array(Boolean)), '{ [_: string]: boolean[] }'],
+  [Dictionary(String, Array(Boolean)), '{ [_: string]: boolean[] }'],
+  [Dictionary(Number, Array(Boolean)), '{ [_: number]: boolean[] }'],
   [Record({}), '{}'],
   [Record({}).asReadonly(), '{}'],
   [Partial({}), '{}'],

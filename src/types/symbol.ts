@@ -1,13 +1,13 @@
 import { Runtype, create } from '../runtype';
 
 interface Sym extends Runtype<symbol> {
-  tag: 'symbol';
+  readonly tag: 'symbol';
 }
 
 /**
  * Validates that a value is a symbol.
  */
-const Sym = create<Sym>(
+const Sym: Sym = create<Sym>(
   value =>
     typeof value === 'symbol'
       ? { success: true, value }

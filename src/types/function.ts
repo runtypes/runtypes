@@ -1,13 +1,13 @@
-import { Runtype, create } from '../runtype';
+import { create, Runtype } from '../runtype';
 
 export interface Function extends Runtype<(...args: any[]) => any> {
-  tag: 'function';
+  readonly tag: 'function';
 }
 
 /**
  * Construct a runtype for functions.
  */
-export const Function = create<Function>(
+export const Function: Function = create<Function>(
   value =>
     typeof value === 'function'
       ? { success: true, value }

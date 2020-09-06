@@ -1,5 +1,5 @@
-import { Runtype } from './runtype';
 import { ValidationError } from './errors';
+import { RuntypeBase } from './runtype';
 
 type PropKey = string | symbol;
 const prototypes = new WeakMap<any, Map<PropKey, number[]>>();
@@ -57,7 +57,7 @@ function getValidParameterIndices(target: any, propertyKey: PropKey, runtypeCoun
  * }
  * ```
  */
-export function checked(...runtypes: Runtype[]) {
+export function checked(...runtypes: RuntypeBase<unknown>[]) {
   if (runtypes.length === 0) {
     throw new Error('No runtype provided to `@checked`. Please remove the decorator.');
   }

@@ -12,6 +12,7 @@ import {
   Symbol as Sym,
   Literal,
   Array,
+  ReadonlyArray,
   Dictionary,
   Record,
   Partial as RTPartial,
@@ -22,7 +23,6 @@ import {
   Lazy,
   Constraint,
   Contract,
-  Reflect,
   InstanceOf,
   Brand,
   Guard,
@@ -52,8 +52,8 @@ const barbell: Graph = [nodeA, nodeB];
 type BarbellBall = [BarbellBall];
 const BarbellBall: Runtype<BarbellBall> = Lazy(() => Tuple(BarbellBall));
 
-type SRDict = { [_: string]: SRDict };
-const SRDict: Runtype<SRDict> = Lazy(() => Dictionary(SRDict));
+type SRDict = { [_ in string]?: SRDict };
+const SRDict: Runtype<SRDict> = Lazy(() => Dictionary(String, SRDict));
 const srDict: SRDict = {};
 srDict['self'] = srDict;
 
@@ -100,7 +100,7 @@ class SomeClassV2 {
     o !== null && typeof o === 'object' && o._someClassTag === SOMECLASS_TAG;
 }
 
-const runtypes = {
+const runtypes: { [key: string]: Runtype<unknown> } = {
   Unknown,
   Never,
   Undefined,
@@ -135,9 +135,9 @@ const runtypes = {
     x => x.length > 3 || `Length array is not greater 3`,
     { args: { tag: 'length', min: 3 } },
   ),
-  Dictionary: Dictionary(String),
-  NumberDictionary: Dictionary(String, 'number'),
-  DictionaryOfArrays: Dictionary(Array(Boolean)),
+  Dictionary: Dictionary(String, String),
+  NumberDictionary: Dictionary(Number, String),
+  DictionaryOfArrays: Dictionary(String, Array(Boolean)),
   InstanceOfSomeClass: InstanceOf(SomeClass),
   InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
   CustomGuardConstraint: Unknown.withGuard(SomeClassV2.isSomeClass),
@@ -156,7 +156,7 @@ const runtypes = {
       name: 'SomeClass',
     },
   ),
-  DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
+  DictionaryOfArraysOfSomeClass: Dictionary(String, Array(InstanceOf(SomeClass))),
   OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
@@ -194,28 +194,28 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
   { value: Symbol.for('runtypes'), passes: ['Sym'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
-  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
-  { value: { Boolean: true }, passes: ['Partial'] },
-  { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
-  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey'] },
-  { value: { Boolean: true, foo: 5 }, passes: ['ReadonlyPartial'] },
+  { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial', 'Empty'] },
+  { value: { Boolean: true }, passes: ['Partial', 'Empty'] },
+  { value: { Boolean: true, foo: undefined }, passes: ['Partial', 'Empty'] },
+  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey', 'Empty'] },
+  { value: { Boolean: true, foo: 5 }, passes: ['ReadonlyPartial', 'Empty'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
-  { value: { name: undefined, likes: [] }, passes: [] },
-  { value: { name: 'Jimmy', likes: [{ name: undefined, likes: [] }] }, passes: [] },
+  { value: { name: undefined, likes: [] }, passes: ['Empty'] },
+  { value: { name: 'Jimmy', likes: [{ name: undefined, likes: [] }] }, passes: ['Empty'] },
   {
     value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] },
-    passes: ['Person'],
+    passes: ['Person', 'Empty'],
   },
-  { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
-  { value: ['1', '2'], passes: ['ArrayString', 'NumberDictionary'] },
+  { value: { a: '1', b: '2' }, passes: ['Dictionary', 'Empty'] },
+  { value: ['1', '2'], passes: ['ArrayString'] },
   { value: ['1', 2], passes: [] },
   { value: [{ name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }], passes: ['ArrayPerson'] },
   { value: [{ name: null, likes: [] }], passes: [] },
-  { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary'] },
-  { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays'] },
-  { value: new Foo(), passes: [] },
+  { value: { 1: '1', 2: '2' }, passes: ['Dictionary', 'NumberDictionary', 'Empty'] },
+  { value: { a: [], b: [true, false] }, passes: ['DictionaryOfArrays', 'Empty'] },
+  { value: new Foo(), passes: ['Empty'] },
   { value: [1, 2, 4], passes: ['ArrayNumber', 'ReadonlyNumberArray'] },
-  { value: { Boolean: true, Number: '5' }, passes: ['Partial'] },
+  { value: { Boolean: true, Number: '5' }, passes: ['Partial', 'Empty'] },
   {
     value: [1, 2, 3, 4],
     passes: ['ArrayNumber', 'ReadonlyNumberArray', 'CustomArray', 'CustomArrayWithMessage'],
@@ -228,6 +228,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
       'ChangeType',
       'ChangeTypeAndName',
       'GuardChangeTypeAndName',
+      'Empty',
     ],
   },
   {
@@ -238,20 +239,21 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
       'ChangeType',
       'ChangeTypeAndName',
       'GuardChangeTypeAndName',
+      'Empty',
     ],
   },
-  { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass'] },
-  { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
-  { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
-  { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord', 'ReadonlyPartial'] },
-  { value: narcissist, passes: ['Person'] },
+  { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass', 'Empty'] },
+  { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary', 'Empty'] },
+  { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey', 'Empty'] },
+  { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord', 'ReadonlyPartial', 'Empty'] },
+  { value: narcissist, passes: ['Person', 'Empty'] },
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
   { value: barbell, passes: ['Graph'] },
   { value: nodeA, passes: ['Graph', 'BarbellBall'] },
-  { value: srDict, passes: ['SRDict'] },
-  { value: leftHand, passes: ['Hand', 'SRDict'] },
-  { value: ambi, passes: ['Ambi', 'Hand', 'SRDict'] },
-  { value: partialNarcissus, passes: ['PartialPerson'] },
+  { value: srDict, passes: ['SRDict', 'Empty'] },
+  { value: leftHand, passes: ['Hand', 'SRDict', 'Empty'] },
+  { value: ambi, passes: ['Ambi', 'Hand', 'SRDict', 'Empty'] },
+  { value: partialNarcissus, passes: ['PartialPerson', 'Empty'] },
 ];
 
 const getCircularReplacer = () => {
@@ -270,21 +272,18 @@ const getCircularReplacer = () => {
 for (const { value, passes } of testValues) {
   const valueName =
     value === undefined ? 'undefined' : JSON.stringify(value, getCircularReplacer());
-  describe(`${valueName}`, () => {
-    const shouldPass: { [_ in RuntypeName]?: boolean } = {};
+  const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
-    shouldPass.Unknown = true;
-    shouldPass.Void = true;
+  shouldPass.Unknown = true;
+  shouldPass.Void = true;
 
-    if (value !== undefined && value !== null) shouldPass.Empty = true;
-
-    for (const name of passes) shouldPass[name] = true;
-
+  for (const name of passes) shouldPass[name] = true;
+  describe(`${valueName} - ${Object.keys(shouldPass).join(', ')}`, () => {
     for (const name of runtypeNames) {
       if (shouldPass[name]) {
-        it(` : ${name}`, () => assertAccepts(value, runtypes[name]));
+        it(`should be valid for ${name}`, () => assertAccepts(value, runtypes[name]));
       } else {
-        it(`~: ${name}`, () => assertRejects(value, runtypes[name]));
+        it(`should NOT be valid for ${name}`, () => assertRejects(value, runtypes[name]));
       }
     }
   });
@@ -293,9 +292,9 @@ for (const { value, passes } of testValues) {
 describe('contracts', () => {
   it('0 args', () => {
     const f = () => 3;
-    expect(Contract(Number).enforce(f)()).toBe(3);
+    expect(Contract([], Number).enforce(f)()).toBe(3);
     try {
-      Contract(String).enforce(f as any)();
+      Contract([], String).enforce(f as any)();
       fail('contract was violated but no exception was thrown');
     } catch (exception) {
       expect(exception).toBeInstanceOf(ValidationError);
@@ -305,9 +304,9 @@ describe('contracts', () => {
 
   it('1 arg', () => {
     const f = (x: string) => x.length;
-    expect(Contract(String, Number).enforce(f)('hel')).toBe(3);
+    expect(Contract([String], Number).enforce(f)('hel')).toBe(3);
     try {
-      (Contract(String, Number).enforce(f) as any)(3);
+      (Contract([String], Number).enforce(f) as any)(3);
       fail('contract was violated but no exception was thrown');
     } catch (exception) {
       expect(exception).toBeInstanceOf(ValidationError);
@@ -317,9 +316,9 @@ describe('contracts', () => {
 
   it('2 args', () => {
     const f = (x: string, y: boolean) => (y ? x.length : 4);
-    expect(Contract(String, Boolean, Number).enforce(f)('hello', false)).toBe(4);
+    expect(Contract([String, Boolean], Number).enforce(f)('hello', false)).toBe(4);
     try {
-      (Contract(String, Boolean, Number).enforce(f) as any)('hello');
+      (Contract([String, Boolean], Number).enforce(f) as any)('hello');
       fail('contract was violated but no exception was thrown');
     } catch (exception) {
       expect(exception).toBeInstanceOf(ValidationError);
@@ -409,18 +408,22 @@ describe('check errors', () => {
   });
 
   it('dictionary', () => {
-    assertThrows(null, Dictionary(String), 'Expected { [_: string]: string }, but was null');
+    assertThrows(
+      null,
+      Dictionary(String, String),
+      'Expected { [_: string]: string }, but was null',
+    );
   });
 
   it('dictionary invalid type', () => {
     assertThrows(
       undefined,
-      Dictionary(Record({ name: String })),
+      Dictionary(String, Record({ name: String })),
       'Expected { [_: string]: { name: string; } }, but was undefined',
     );
     assertThrows(
       1,
-      Dictionary(Record({ name: String })),
+      Dictionary(String, Record({ name: String })),
       'Expected { [_: string]: { name: string; } }, but was number',
     );
   });
@@ -428,7 +431,7 @@ describe('check errors', () => {
   it('dictionary complex', () => {
     assertThrows(
       { foo: { name: false } },
-      Dictionary(Record({ name: String })),
+      Dictionary(String, Record({ name: String })),
       'Expected string, but was boolean in foo.name',
       'foo.name',
     );
@@ -437,7 +440,7 @@ describe('check errors', () => {
   it('string dictionary', () => {
     assertThrows(
       { foo: 'bar', test: true },
-      Dictionary(String),
+      Dictionary(String, String),
       'Expected string, but was boolean in test',
       'test',
     );
@@ -446,7 +449,7 @@ describe('check errors', () => {
   it('number dictionary', () => {
     assertThrows(
       { 1: 'bar', 2: 20 },
-      Dictionary(String, 'number'),
+      Dictionary(Number, String),
       'Expected string, but was number in 2',
       '2',
     );
@@ -634,15 +637,15 @@ describe('reflection', () => {
   });
 
   it('string dictionary', () => {
-    const Rec = Dictionary(Unknown);
+    const Rec = Dictionary(String, Unknown);
     expectLiteralField(Rec, 'tag', 'dictionary');
-    expectLiteralField(Rec, 'key', 'string');
+    expectLiteralField(Rec.key, 'tag', 'string');
   });
 
   it('number dictionary', () => {
-    const Rec = Dictionary(Unknown, 'number');
+    const Rec = Dictionary(Number, Unknown);
     expectLiteralField(Rec, 'tag', 'dictionary');
-    expectLiteralField(Rec, 'key', 'number');
+    expectLiteralField(Rec.key, 'tag', 'number');
   });
 
   it('record', () => {
@@ -691,8 +694,9 @@ describe('reflection', () => {
 
   it('lazy', () => {
     const L = Lazy(() => X);
-    expectLiteralField(L, 'tag', 'literal');
-    expectLiteralField(L, 'value', 'x');
+    expectLiteralField(L, 'tag', 'lazy');
+    expectLiteralField(L.underlying(), 'tag', 'literal');
+    expectLiteralField(L.underlying(), 'value', 'x');
   });
 
   it('constraint', () => {
@@ -705,7 +709,7 @@ describe('reflection', () => {
   it('instanceof', () => {
     class Test {}
     expectLiteralField(InstanceOf(Test), 'tag', 'instanceof');
-    expectLiteralField(Dictionary(Array(InstanceOf(Test))), 'tag', 'dictionary');
+    expectLiteralField(Dictionary(String, Array(InstanceOf(Test))), 'tag', 'dictionary');
   });
 
   it('brand', () => {
@@ -747,21 +751,22 @@ describe('change static type with Constraint', () => {
     | String
     | Sym
     | Literal<boolean | number | string>
-    | Array<Reflect, false>
-    | Array<Reflect, true>
-    | Record<{ [_ in string]: Reflect }, false>
-    | Record<{ [_ in string]: Reflect }, true>
-    | RTPartial<{ [_ in string]: Reflect }, false>
-    | RTPartial<{ [_ in string]: Reflect }, true>
-    | Tuple<[Reflect, Reflect]>
-    | Union<[Reflect, Reflect]>
-    | Intersect<[Reflect, Reflect]>
+    | Array<String | Number>
+    | ReadonlyArray<String | Number>
+    | Record<{ [_ in string]: String | Number }, false>
+    | Record<{ [_ in string]: String | Number }, true>
+    | RTPartial<{ [_ in string]: String | Number }, false>
+    | RTPartial<{ [_ in string]: String | Number }, true>
+    | Tuple<[String, String | Number]>
+    | Union<[String, String | Number]>
+    | Intersect<[String | Number, String | Number]>
     | Function
-    | Constraint<Reflect, any, any>
+    | Constraint<String | Number, any, any>
     | InstanceOf<Constructor<never>>
-    | Brand<string, Reflect>,
-): Reflect => {
+    | Brand<string, String | Number>,
+) => {
   const check = <A>(X: Runtype<A>): A => X.check({});
+
   switch (X.tag) {
     case 'unknown':
       check<unknown>(X);
@@ -785,10 +790,14 @@ describe('change static type with Constraint', () => {
       check<typeof X.value>(X);
       break;
     case 'array':
-      check<ReadonlyArray<Static<typeof X.element>>>(X);
+      check<readonly Static<typeof X.element>[]>(X);
       break;
     case 'record':
-      check<{ readonly [K in keyof typeof X.fields]: Static<typeof X.fields[K]> }>(X);
+      if (X.isPartial) {
+        check<{ readonly [K in keyof typeof X.fields]?: Static<typeof X.fields[K]> }>(X);
+      } else {
+        check<{ readonly [K in keyof typeof X.fields]: Static<typeof X.fields[K]> }>(X);
+      }
       break;
     case 'tuple':
       check<[Static<typeof X.components[0]>, Static<typeof X.components[1]>]>(X);
@@ -812,8 +821,6 @@ describe('change static type with Constraint', () => {
       check<Static<typeof X.entity>>(X);
       break;
   }
-
-  return X;
 };
 
 function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v: V) {
