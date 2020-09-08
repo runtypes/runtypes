@@ -1,4 +1,4 @@
-import { create, innerValidate, RuntypeBase, Runtype } from '../runtype';
+import { create, RuntypeBase, Runtype, createValidationPlaceholder } from '../runtype';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
 
@@ -24,8 +24,8 @@ export function Tuple<
   T extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]] | readonly []
 >(...components: T): Tuple<T> {
   return create<Tuple<T>>(
-    (x, visited) => {
-      const validated = innerValidate(Arr(Unknown), x, visited);
+    (x, innerValidate) => {
+      const validated = innerValidate(Arr(Unknown), x);
 
       if (!validated.success) {
         return {
@@ -42,19 +42,21 @@ export function Tuple<
         };
       }
 
-      for (let i = 0; i < components.length; i++) {
-        let validatedComponent = innerValidate(components[i], validated.value[i], visited);
+      return createValidationPlaceholder(validated.value as any, placeholder => {
+        for (let i = 0; i < components.length; i++) {
+          let validatedComponent = innerValidate(components[i], validated.value[i]);
 
-        if (!validatedComponent.success) {
-          return {
-            success: false,
-            message: validatedComponent.message,
-            key: validatedComponent.key ? `[${i}].${validatedComponent.key}` : `[${i}]`,
-          };
+          if (!validatedComponent.success) {
+            return {
+              success: false,
+              message: validatedComponent.message,
+              key: validatedComponent.key ? `[${i}].${validatedComponent.key}` : `[${i}]`,
+            };
+          }
+
+          placeholder[i] = validatedComponent.value;
         }
-      }
-
-      return { success: true, value: x };
+      });
     },
     {
       tag: 'tuple',

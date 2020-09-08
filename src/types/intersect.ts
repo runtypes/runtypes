@@ -1,4 +1,5 @@
-import { Static, create, innerValidate, RuntypeBase, Runtype } from '../runtype';
+import { Static, create, RuntypeBase, Runtype, createValidationPlaceholder } from '../runtype';
+import show from '../show';
 
 // We use the fact that a union of functions is effectively an intersection of parameters
 // e.g. to safely call (({x: 1}) => void | ({y: 2}) => void) you must pass {x: 1, y: 2}
@@ -24,14 +25,54 @@ export function Intersect<
   TIntersectees extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
 >(...intersectees: TIntersectees): Intersect<TIntersectees> {
   return create<Intersect<TIntersectees>>(
-    (value, visited) => {
+    (value, innerValidate) => {
+      if (Array.isArray(value)) {
+        return createValidationPlaceholder<any>([...value], placeholder => {
+          for (const targetType of intersectees) {
+            let validated = innerValidate(targetType, placeholder);
+            if (!validated.success) {
+              return validated;
+            }
+            if (!Array.isArray(validated.value)) {
+              return {
+                success: false,
+                message: `The validator ${show(
+                  targetType,
+                )} attempted to convert the type of this value from an array to something else. That conversion is not valid as the child of an intersect`,
+              };
+            }
+            placeholder.splice(0, placeholder.length, validated.value);
+          }
+        });
+      } else if (value && typeof value === 'object') {
+        return createValidationPlaceholder<any>({}, placeholder => {
+          for (const targetType of intersectees) {
+            let validated = innerValidate(targetType, value);
+            if (!validated.success) {
+              return validated;
+            }
+            if (!(validated.value && typeof validated.value === 'object')) {
+              return {
+                success: false,
+                message: `The validator ${show(
+                  targetType,
+                )} attempted to convert the type of this value from an object to something else. That conversion is not valid as the child of an intersect`,
+              };
+            }
+            Object.assign(placeholder, validated.value);
+          }
+        });
+      }
+      let result = value;
       for (const targetType of intersectees) {
-        let validated = innerValidate(targetType, value, visited);
+        let validated = innerValidate(targetType, result);
         if (!validated.success) {
           return validated;
         }
+        result = validated.value;
       }
-      return { success: true, value };
+      // TODO: merge the maps
+      return { success: true, value: result };
     },
     {
       tag: 'intersect',

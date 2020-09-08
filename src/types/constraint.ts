@@ -1,4 +1,4 @@
-import { RuntypeBase, Static, create, innerValidate, Runtype } from '../runtype';
+import { RuntypeBase, Static, create, Runtype } from '../runtype';
 import { String } from './string';
 import { Unknown } from './unknown';
 
@@ -28,9 +28,9 @@ export function Constraint<
   options?: { name?: string; args?: TArgs },
 ): Constraint<TUnderlying, TConstrained, TArgs> {
   return create<Constraint<TUnderlying, TConstrained, TArgs>>(
-    (value, visited) => {
+    (value, innerValidate) => {
       const name = options && options.name;
-      const validated = innerValidate(underlying, value, visited);
+      const validated = innerValidate(underlying, value);
 
       if (!validated.success) {
         return validated;

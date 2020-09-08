@@ -1,4 +1,4 @@
-import { Runtype, Static, create, innerValidate, RuntypeBase, VisitedState } from '../runtype';
+import { Runtype, Static, create, RuntypeBase, InnerValidateHelper } from '../runtype';
 import show from '../show';
 import { LiteralValue, isLiteralRuntype } from './literal';
 import { lazyValue, resolveLazyRuntype } from './lazy';
@@ -33,12 +33,12 @@ export function Union<
   TAlternatives extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
 >(...alternatives: TAlternatives): Union<TAlternatives> {
   type TResult = StaticUnion<TAlternatives>;
-  type InnerValidate = (x: any, visited: VisitedState) => Result<TResult>;
+  type InnerValidate = (x: any, innerValidate: InnerValidateHelper) => Result<TResult>;
   function validateWithKey(
     tag: string | 0,
     types: Map<LiteralValue, RuntypeBase<TResult>>,
   ): InnerValidate {
-    return (value, visited) => {
+    return (value, innerValidate) => {
       if (!value || typeof value !== 'object') {
         return {
           success: false,
@@ -47,7 +47,7 @@ export function Union<
       }
       const validator = types.get(value[tag]);
       if (validator) {
-        const result = innerValidate(validator, value, visited);
+        const result = innerValidate(validator, value);
         if (!result.success) {
           return {
             success: false,
@@ -88,7 +88,8 @@ export function Union<
               if (!commonLiteralFields[fieldName].has(field.value)) {
                 commonLiteralFields[fieldName].set(
                   field.value,
-                  alternative as RuntypeBase<StaticUnion<TAlternatives>>,
+                  // @ts-expect-error
+                  alternative,
                 );
               }
             }
@@ -109,7 +110,8 @@ export function Union<
             if (!commonLiteralFields.has(field.value)) {
               commonLiteralFields.set(
                 field.value,
-                alternative as RuntypeBase<StaticUnion<TAlternatives>>,
+                // @ts-expect-error
+                alternative,
               );
             }
           }
@@ -118,10 +120,11 @@ export function Union<
           return validateWithKey(0, commonLiteralFields);
         }
       }
-      return (value, visited) => {
+      return (value, innerValidate) => {
         for (const targetType of alternatives) {
-          if (innerValidate(targetType, value, visited).success) {
-            return { success: true, value };
+          const result = innerValidate(targetType, value);
+          if (result.success) {
+            return result as Result<TResult>;
           }
         }
 

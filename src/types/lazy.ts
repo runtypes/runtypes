@@ -1,4 +1,4 @@
-import { create, RuntypeBase, Runtype, innerValidate, Static } from '../runtype';
+import { create, RuntypeBase, Runtype, Static } from '../runtype';
 
 export interface Lazy<TUnderlying extends RuntypeBase<unknown>>
   extends Runtype<Static<TUnderlying>> {
@@ -32,8 +32,8 @@ export function Lazy<TUnderlying extends RuntypeBase<unknown>>(
   const underlying = lazyValue(delayed);
 
   return create<Lazy<TUnderlying>>(
-    (...args) => {
-      return innerValidate(underlying(), ...args);
+    (value, innerValidate) => {
+      return innerValidate(underlying(), value) as any;
     },
     {
       tag: 'lazy',

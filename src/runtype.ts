@@ -1,22 +1,40 @@
-import { Result, Union, Intersect, Constraint, ConstraintCheck, Brand } from './index';
+import { Result, Union, Intersect, Constraint, ConstraintCheck, Brand, Failure } from './index';
 import show from './show';
 import { ValidationError } from './errors';
 
+export type InnerValidateHelper = <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>;
+declare const internalSymbol: unique symbol;
+const internal: typeof internalSymbol = ('__internal__' as unknown) as typeof internalSymbol;
+interface InternalValidation<A> {
+  validate(
+    x: any,
+    innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>,
+  ):
+    | (Result<A> & { cycle?: false })
+    | {
+        success: true;
+        cycle: true;
+        placeholder: Partial<A>;
+        populate: () => Result<A>;
+      };
+  guard?: (
+    x: any,
+    innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Failure | undefined,
+  ) => Failure | undefined;
+}
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
 export interface RuntypeBase<A = unknown> {
   readonly tag: string;
-  /**
-   * Validates that a value conforms to this type, and returns a result indicating
-   * success or failure (does not throw).
-   */
-  validate(x: any): Result<A>;
+
   show?: (ctx: {
     needsParens: boolean;
     parenthesize: (str: string) => string;
     showChild: (rt: RuntypeBase, needsParens: boolean) => string;
   }) => string;
+
+  [internal]: InternalValidation<A>;
 }
 
 /**
@@ -39,6 +57,12 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
    * A type guard for this runtype.
    */
   guard(x: any): x is A;
+
+  /**
+   * Validates that a value conforms to this type, and returns a result indicating
+   * success or failure (does not throw).
+   */
+  validate(x: any): Result<A>;
 
   /**
    * Union this Runtype with another.
@@ -100,7 +124,9 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
 export type Static<A extends RuntypeBase<any>> = A extends RuntypeBase<infer T> ? T : unknown;
 
 export function create<TConfig extends RuntypeBase<any>>(
-  validate: (x: any, visited: VisitedState) => Result<Static<TConfig>>,
+  internalImplementation:
+    | InternalValidation<Static<TConfig>>
+    | InternalValidation<Static<TConfig>>['validate'],
   config: Omit<
     TConfig,
     | 'assert'
@@ -112,97 +138,160 @@ export function create<TConfig extends RuntypeBase<any>>(
     | 'withConstraint'
     | 'withGuard'
     | 'withBrand'
+    | typeof internal
   >,
 ): TConfig {
-  const A: any = config;
-  A.check = check;
-  A.assert = (v: any) => {
-    check(v);
-  };
-  A._innerValidate = (value: any, visited: VisitedState) => {
-    if (visited.has(value, A)) return { success: true, value };
-    return validate(value, visited);
-  };
-  A.validate = (value: any) => A._innerValidate(value, VisitedState());
-  A.guard = guard;
-  A.Or = Or;
-  A.And = And;
-  A.withConstraint = withConstraint;
-  A.withGuard = withGuard;
-  A.withBrand = withBrand;
-  A.reflect = A;
-  A.toString = () => `Runtype<${show(A)}>`;
+  // A.check = check;
+  // A.assert = (v: any) => {
+  //   check(v);
+  // };
+  // A._innerValidate = (value: any, visited: VisitedState) => {
+  //   if (visited.has(value, A)) return { success: true, value };
+  //   return validate(value, visited);
+  // };
+  // A.validate = (value: any) => A._innerValidate(value, VisitedState());
+  // A.guard = guard;
+  // A.Or = Or;
+  // A.And = And;
+  // A.withConstraint = withConstraint;
+  // A.withGuard = withGuard;
+  // A.withBrand = withBrand;
+  // A.reflect = A;
+  // A.toString = () => `Runtype<${show(A)}>`;
 
-  return A;
+  const A: Runtype<Static<TConfig>> = {
+    ...config,
+    assert,
+    check,
+    validate: (value: any) => innerValidate(A, value, new Map()),
+    guard,
+    Or,
+    And,
+    withConstraint,
+    withGuard,
+    withBrand,
+    toString: () => `Runtype<${show(A)}>`,
+    [internal]:
+      typeof internalImplementation === 'function'
+        ? {
+            validate: internalImplementation,
+          }
+        : internalImplementation,
+  };
 
+  return (A as unknown) as TConfig;
+
+  function assert(x: any): asserts x is Static<TConfig> {
+    const validated = innerGuard(A, x, new Map());
+    if (validated) {
+      throw new ValidationError(validated.message, validated.key);
+    }
+  }
   function check(x: any) {
     const validated = A.validate(x);
-    if (validated.success) {
-      return validated.value;
+    if (!validated.success) {
+      throw new ValidationError(validated.message, validated.key);
     }
-    throw new ValidationError(validated.message, validated.key);
+    return validated.value;
   }
 
-  function guard(x: any): x is TConfig {
-    return A.validate(x).success;
+  function guard(x: any): x is Static<TConfig> {
+    const validated = innerGuard(A, x, new Map());
+    return validated === undefined;
   }
 
-  function Or<B extends RuntypeBase>(B: B): Union<[TConfig, B]> {
+  function Or<B extends RuntypeBase>(B: B): Union<[Runtype<Static<TConfig>>, B]> {
     return Union(A, B);
   }
 
-  function And<B extends RuntypeBase>(B: B): Intersect<[TConfig, B]> {
+  function And<B extends RuntypeBase>(B: B): Intersect<[Runtype<Static<TConfig>>, B]> {
     return Intersect(A, B);
   }
 
   function withConstraint<T extends Static<TConfig>, K = unknown>(
-    constraint: ConstraintCheck<TConfig>,
+    constraint: ConstraintCheck<Runtype<Static<TConfig>>>,
     options?: { name?: string; args?: K },
-  ): Constraint<TConfig, T, K> {
-    return Constraint<TConfig, T, K>(A, constraint, options);
+  ): Constraint<Runtype<Static<TConfig>>, T, K> {
+    return Constraint<Runtype<Static<TConfig>>, T, K>(A, constraint, options);
   }
 
   function withGuard<T extends Static<TConfig>, K = unknown>(
     guard: (x: Static<TConfig>) => x is T,
     options?: { name?: string; args?: K },
-  ): Constraint<TConfig, T, K> {
-    return Constraint<TConfig, T, K>(A, guard, options);
+  ): Constraint<Runtype<Static<TConfig>>, T, K> {
+    return Constraint<Runtype<Static<TConfig>>, T, K>(A, guard, options);
   }
 
-  function withBrand<B extends string>(B: B): Brand<B, TConfig> {
-    return Brand<B, TConfig>(B, A);
+  function withBrand<B extends string>(B: B): Brand<B, Runtype<Static<TConfig>>> {
+    return Brand<B, Runtype<Static<TConfig>>>(B, A);
   }
 }
 
-export function innerValidate<A extends RuntypeBase>(
-  targetType: A,
+export function createValidationPlaceholder<T>(
+  placeholder: T,
+  fn: (placehoder: T) => Failure | undefined,
+): {
+  success: true;
+  cycle: true;
+  placeholder: Partial<T>;
+  populate: () => Result<T>;
+} {
+  return {
+    success: true,
+    cycle: true,
+    placeholder,
+    populate: () => {
+      const result = fn(placeholder);
+      if (result) {
+        return result;
+      }
+      return { success: true, value: placeholder };
+    },
+  };
+}
+
+type VisitedState = Map<RuntypeBase<unknown>, Map<any, any>>;
+function innerValidate<T>(
+  targetType: RuntypeBase<T>,
   value: any,
   visited: VisitedState,
-): Result<Static<A>> {
-  return (targetType as any)._innerValidate(value, visited);
+): Result<T> {
+  const validator = targetType[internal];
+  const cached = visited.get(targetType)?.get(value);
+  if (cached !== undefined) {
+    return { success: true, value: cached };
+  }
+  let result = validator.validate(value, (t, v) => innerValidate(t, v, visited));
+  if (result.cycle) {
+    const { placeholder, populate } = result;
+    visited.set(targetType, (visited.get(targetType) || new Map()).set(value, placeholder));
+    result = populate();
+    if (result.success) {
+      visited.set(targetType, (visited.get(targetType) || new Map()).set(value, result.value));
+    }
+  }
+  return result;
 }
 
-export type VisitedState = {
-  readonly has: (candidate: object, type: Runtype) => boolean;
-};
-function VisitedState(): VisitedState {
-  const members: WeakMap<object, WeakMap<Runtype, true>> = new WeakMap();
-
-  const add = (candidate: object, type: Runtype) => {
-    if (candidate === null || !(typeof candidate === 'object')) return;
-    const typeSet = members.get(candidate);
-    members.set(
-      candidate,
-      typeSet ? typeSet.set(type, true) : (new WeakMap() as WeakMap<Runtype, true>).set(type, true),
-    );
-  };
-
-  const has = (candidate: object, type: Runtype) => {
-    const typeSet = members.get(candidate);
-    const value = (typeSet && typeSet.get(type)) || false;
-    add(candidate, type);
-    return value;
-  };
-
-  return { has };
+function innerGuard(
+  targetType: RuntypeBase,
+  value: any,
+  visited: Map<RuntypeBase, Set<any>>,
+): Failure | undefined {
+  const validator = targetType[internal];
+  if (value && (typeof value === 'object' || typeof value === 'function')) {
+    const cached = visited.get(targetType)?.has(value);
+    if (cached) return undefined;
+    visited.set(targetType, (visited.get(targetType) || new Set()).add(value));
+  }
+  if (validator.guard) {
+    return validator.guard(value, (t, v) => innerGuard(t, v, visited));
+  }
+  let result = validator.validate(
+    value,
+    (t, v) => innerGuard(t, v, visited) || { success: true, value: v as any },
+  );
+  if (result.cycle) result = result.populate();
+  if (result.success) return undefined;
+  else return result;
 }
