@@ -15,8 +15,8 @@ export interface Brand<B extends string, A extends RuntypeBase<unknown>>
 
 export function Brand<B extends string, A extends RuntypeBase<unknown>>(brand: B, entity: A) {
   return create<Brand<B, A>>(
-    value => {
-      const validated = entity.validate(value);
+    (value, innerValidate) => {
+      const validated = innerValidate(entity, value);
       return validated.success
         ? { success: true, value: validated.value as Static<Brand<B, A>> }
         : validated;

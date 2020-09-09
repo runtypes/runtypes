@@ -260,7 +260,7 @@ export function createValidationPlaceholder<T>(
 }
 
 type VisitedState = Map<RuntypeBase<unknown>, Map<any, any>>;
-function innerValidate<T>(
+export function innerValidate<T>(
   targetType: RuntypeBase<T>,
   value: any,
   visited: VisitedState,
@@ -282,7 +282,7 @@ function innerValidate<T>(
   return result;
 }
 
-function innerGuard(
+export function innerGuard(
   targetType: RuntypeBase,
   value: any,
   visited: Map<RuntypeBase, Set<any>>,

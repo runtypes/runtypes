@@ -1,5 +1,5 @@
 import { ValidationError } from './errors';
-import { RuntypeBase } from './runtype';
+import { innerValidate, RuntypeBase } from './runtype';
 
 type PropKey = string | symbol;
 const prototypes = new WeakMap<any, Map<PropKey, number[]>>();
@@ -75,16 +75,18 @@ export function checked(...runtypes: RuntypeBase<unknown>[]) {
       throw new Error('Number of `@checked` runtypes exceeds actual parameter length.');
     }
 
+    const visited = new Map<RuntypeBase, Map<any, any>>();
     descriptor.value = function(...args: any[]) {
       runtypes.forEach((type, typeIndex) => {
         const parameterIndex = validParameterIndices[typeIndex];
-        const validated = type.validate(args[parameterIndex]);
+        const validated = innerValidate(type, args[parameterIndex], visited);
         if (!validated.success) {
           throw new ValidationError(
             `${methodId}, argument #${parameterIndex}: ${validated.message}`,
             validated.key,
           );
         }
+        args[parameterIndex] = validated.value;
       });
       return method.apply(this, args);
     };

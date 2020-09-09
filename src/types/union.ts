@@ -1,4 +1,11 @@
-import { Runtype, Static, create, RuntypeBase, InnerValidateHelper } from '../runtype';
+import {
+  Runtype,
+  Static,
+  create,
+  RuntypeBase,
+  InnerValidateHelper,
+  innerValidate,
+} from '../runtype';
 import show from '../show';
 import { LiteralValue, isLiteralRuntype } from './literal';
 import { lazyValue, resolveLazyRuntype } from './lazy';
@@ -154,8 +161,9 @@ export function Union<
 
   function match(...cases: any[]) {
     return (x: any) => {
+      const visited = new Map<RuntypeBase, Map<any, any>>();
       for (let i = 0; i < alternatives.length; i++) {
-        const input = alternatives[i].validate(x);
+        const input = innerValidate(alternatives[i], x, visited);
         if (input.success) {
           return cases[i](input.value);
         }
