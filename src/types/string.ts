@@ -1,6 +1,6 @@
-import { create, Runtype } from '../runtype';
+import { create, Codec } from '../runtype';
 
-export interface String extends Runtype<string> {
+export interface String extends Codec<string> {
   readonly tag: 'string';
 }
 

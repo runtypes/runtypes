@@ -1,4 +1,4 @@
-import { create, RuntypeBase, Runtype, createValidationPlaceholder } from '../runtype';
+import { create, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
 
@@ -8,7 +8,7 @@ export type StaticTuple<TElements extends readonly RuntypeBase<unknown>[]> = {
 
 export interface Tuple<
   TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[]
-> extends Runtype<StaticTuple<TElements>> {
+> extends Codec<StaticTuple<TElements>> {
   readonly tag: 'tuple';
   readonly components: TElements;
 }

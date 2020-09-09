@@ -1,9 +1,9 @@
 import { Failure, Result } from '../result';
-import { RuntypeBase, Static, create, Runtype, innerGuard } from '../runtype';
+import { RuntypeBase, Static, create, Codec, innerGuard } from '../runtype';
 import show from '../show';
 
 export interface ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>
-  extends Runtype<TParsed> {
+  extends Codec<TParsed, Static<TUnderlying>> {
   readonly tag: 'parsed';
   readonly underlying: TUnderlying;
   readonly config: ParsedValueConfig<TUnderlying, TParsed>;
@@ -18,15 +18,12 @@ export function isParsedValueRuntype(
 export interface ParsedValueConfig<TUnderlying extends RuntypeBase<unknown>, TParsed> {
   name?: string;
   parse: (value: Static<TUnderlying>) => Result<TParsed>;
+  serialize?: (value: TParsed) => Result<Static<TUnderlying>>;
   test?: RuntypeBase<TParsed> | ((x: any) => Failure | undefined);
 }
 export function ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>(
   underlying: TUnderlying,
-  config: {
-    name?: string;
-    parse: (value: Static<TUnderlying>) => Result<TParsed>;
-    test?: RuntypeBase<TParsed> | ((x: any) => Failure | undefined);
-  },
+  config: ParsedValueConfig<TUnderlying, TParsed>,
 ): ParsedValue<TUnderlying, TParsed> {
   return create<ParsedValue<TUnderlying, TParsed>>(
     {
@@ -64,6 +61,33 @@ export function ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>(
               `ParsedValue<${show(underlying)}>`} does not support Runtype.test`,
           };
         }
+      },
+      serialize(value, internalSerialize) {
+        if (!config.serialize) {
+          return {
+            success: false,
+            message: `${config.name ||
+              `ParsedValue<${show(underlying)}>`} does not support Runtype.serialize`,
+          };
+        }
+        const testResult =
+          typeof config.test === 'function'
+            ? config.test(value)
+            : config.test
+            ? innerGuard(config.test, value, new Map())
+            : undefined;
+
+        if (testResult) {
+          return testResult;
+        }
+
+        const serialized = config.serialize(value);
+
+        if (!serialized.success) {
+          return serialized;
+        }
+
+        return internalSerialize(underlying, serialized.value);
       },
     },
     {

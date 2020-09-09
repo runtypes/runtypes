@@ -1,6 +1,6 @@
-import { create, Runtype } from '../runtype';
+import { create, Codec } from '../runtype';
 
-export interface Function extends Runtype<(...args: any[]) => any> {
+export interface Function extends Codec<(...args: any[]) => any> {
   readonly tag: 'function';
 }
 

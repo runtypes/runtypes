@@ -1,7 +1,6 @@
-import { create, RuntypeBase, Runtype, Static } from '../runtype';
+import { create, RuntypeBase, Codec, Static } from '../runtype';
 
-export interface Lazy<TUnderlying extends RuntypeBase<unknown>>
-  extends Runtype<Static<TUnderlying>> {
+export interface Lazy<TUnderlying extends RuntypeBase<unknown>> extends Codec<Static<TUnderlying>> {
   readonly tag: 'lazy';
   readonly underlying: () => TUnderlying;
 }

@@ -1,4 +1,4 @@
-import { Static, create, RuntypeBase, Runtype, createValidationPlaceholder } from '../runtype';
+import { Static, create, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
 
@@ -19,7 +19,7 @@ export interface InternalRecord<
   O extends RecordFields,
   IsPartial extends boolean,
   IsReadonly extends boolean
-> extends Runtype<RecordStaticType<O, IsPartial, IsReadonly>> {
+> extends Codec<RecordStaticType<O, IsPartial, IsReadonly>> {
   readonly tag: 'record';
   readonly fields: O;
   readonly isPartial: IsPartial;

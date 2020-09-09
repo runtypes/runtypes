@@ -1,4 +1,4 @@
-export { Runtype, Static } from './runtype';
+export { Runtype, Codec, Static } from './runtype';
 export * from './result';
 export * from './contract';
 export * from './asynccontract';

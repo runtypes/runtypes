@@ -1,14 +1,14 @@
-import { Static, create, RuntypeBase, Runtype, createValidationPlaceholder } from '../runtype';
+import { Static, create, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
 
 export interface ReadonlyArray<E extends RuntypeBase<unknown> = RuntypeBase<unknown>>
-  extends Runtype<readonly Static<E>[]> {
+  extends Codec<readonly Static<E>[]> {
   readonly tag: 'array';
   readonly element: E;
   readonly isReadonly: true;
 }
 
 export { Arr as Array };
-interface Arr<E extends RuntypeBase<unknown> = RuntypeBase<unknown>> extends Runtype<Static<E>[]> {
+interface Arr<E extends RuntypeBase<unknown> = RuntypeBase<unknown>> extends Codec<Static<E>[]> {
   readonly tag: 'array';
   readonly element: E;
   readonly isReadonly: false;

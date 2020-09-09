@@ -1,6 +1,6 @@
-import { Runtype, create } from '../runtype';
+import { Codec, create } from '../runtype';
 
-interface Sym extends Runtype<symbol> {
+interface Sym extends Codec<symbol> {
   readonly tag: 'symbol';
 }
 

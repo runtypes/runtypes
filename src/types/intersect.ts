@@ -1,4 +1,4 @@
-import { Static, create, RuntypeBase, Runtype, createValidationPlaceholder } from '../runtype';
+import { Static, create, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
 import show from '../show';
 
 // We use the fact that a union of functions is effectively an intersection of parameters
@@ -13,7 +13,7 @@ export type StaticIntersect<TIntersectees extends readonly RuntypeBase<unknown>[
 
 export interface Intersect<
   TIntersectees extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
-> extends Runtype<StaticIntersect<TIntersectees>> {
+> extends Codec<StaticIntersect<TIntersectees>> {
   readonly tag: 'intersect';
   readonly intersectees: TIntersectees;
 }

@@ -6,22 +6,62 @@ import { ParsedValue, ParsedValueConfig } from './types/ParsedValue';
 export type InnerValidateHelper = <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>;
 declare const internalSymbol: unique symbol;
 const internal: typeof internalSymbol = ('__internal__' as unknown) as typeof internalSymbol;
-export interface InternalValidation<A> {
+
+export interface InternalValidationStrict<TParsed, TSerialized = TParsed> {
   validate(
     x: any,
     innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>,
   ):
-    | (Result<A> & { cycle?: false })
+    | (Result<TParsed> & { cycle?: false })
     | {
         success: true;
         cycle: true;
-        placeholder: Partial<A>;
-        populate: () => Result<A>;
+        placeholder: Partial<TParsed>;
+        populate: () => Result<TParsed>;
       };
   test?: (
     x: any,
     innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Failure | undefined,
   ) => Failure | undefined;
+  serialize?: (
+    x: TParsed,
+    innerSerialize: (runtype: RuntypeBase, value: unknown) => Result<any>,
+  ) =>
+    | (Result<TSerialized> & { cycle?: false })
+    | {
+        success: true;
+        cycle: true;
+        placeholder: Partial<TSerialized>;
+        populate: () => Result<TSerialized>;
+      };
+}
+export interface InternalValidation<TParsed> {
+  validate(
+    x: any,
+    innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>,
+  ):
+    | (Result<TParsed> & { cycle?: false })
+    | {
+        success: true;
+        cycle: true;
+        placeholder: Partial<TParsed>;
+        populate: () => Result<TParsed>;
+      };
+  test?: (
+    x: any,
+    innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Failure | undefined,
+  ) => Failure | undefined;
+  serialize?: (
+    x: any,
+    innerSerialize: (runtype: RuntypeBase, value: unknown) => Result<any>,
+  ) =>
+    | (Result<any> & { cycle?: false })
+    | {
+        success: true;
+        cycle: true;
+        placeholder: Partial<any>;
+        populate: () => Result<any>;
+      };
 }
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
@@ -41,7 +81,7 @@ export interface RuntypeBase<A = unknown> {
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export interface Runtype<TParsed, TSerialized = TParsed> extends RuntypeBase<TParsed> {
+export interface Runtype<TParsed> extends RuntypeBase<TParsed> {
   /**
    * Verifies that a value conforms to this runtype. When given a value that does
    * not conform to the runtype, throws an exception.
@@ -131,12 +171,15 @@ export interface Runtype<TParsed, TSerialized = TParsed> extends RuntypeBase<TPa
   withParser<TParsed>(value: ParsedValueConfig<this, TParsed>): ParsedValue<this, TParsed>;
 }
 
+export interface Codec<TParsed, TSerialized = TParsed> extends Runtype<TParsed> {
+  serialize: (x: TParsed) => Result<TSerialized>;
+}
 /**
  * Obtains the static type associated with a Runtype.
  */
 export type Static<A extends RuntypeBase<any>> = A extends RuntypeBase<infer T> ? T : unknown;
 
-export function create<TConfig extends Runtype<any>>(
+export function create<TConfig extends Codec<any, any>>(
   internalImplementation:
     | InternalValidation<Static<TConfig>>
     | InternalValidation<Static<TConfig>>['validate'],
@@ -147,6 +190,7 @@ export function create<TConfig extends Runtype<any>>(
     | 'test'
     | 'guard'
     | 'validate'
+    | 'serialize'
     | 'Or'
     | 'And'
     | 'withConstraint'
@@ -156,13 +200,14 @@ export function create<TConfig extends Runtype<any>>(
     | typeof internal
   >,
 ): TConfig {
-  const A: Runtype<Static<TConfig>> = {
+  const A: Codec<Static<TConfig>> = {
     ...config,
     assert,
     check,
     validate: (value: any) => innerValidate(A, value, new Map()),
     test,
     guard: test,
+    serialize: (value: any) => innerSerialize(A, value, new Map()),
     Or,
     And,
     withConstraint,
@@ -199,35 +244,35 @@ export function create<TConfig extends Runtype<any>>(
     return validated === undefined;
   }
 
-  function Or<B extends RuntypeBase>(B: B): Union<[Runtype<Static<TConfig>>, B]> {
+  function Or<B extends RuntypeBase>(B: B): Union<[Codec<Static<TConfig>>, B]> {
     return Union(A, B);
   }
 
-  function And<B extends RuntypeBase>(B: B): Intersect<[Runtype<Static<TConfig>>, B]> {
+  function And<B extends RuntypeBase>(B: B): Intersect<[Codec<Static<TConfig>>, B]> {
     return Intersect(A, B);
   }
 
   function withConstraint<T extends Static<TConfig>, K = unknown>(
-    constraint: ConstraintCheck<Runtype<Static<TConfig>>>,
+    constraint: ConstraintCheck<Codec<Static<TConfig>>>,
     options?: { name?: string; args?: K },
-  ): Constraint<Runtype<Static<TConfig>>, T, K> {
-    return Constraint<Runtype<Static<TConfig>>, T, K>(A, constraint, options);
+  ): Constraint<Codec<Static<TConfig>>, T, K> {
+    return Constraint<Codec<Static<TConfig>>, T, K>(A, constraint, options);
   }
 
   function withGuard<T extends Static<TConfig>, K = unknown>(
     test: (x: Static<TConfig>) => x is T,
     options?: { name?: string; args?: K },
-  ): Constraint<Runtype<Static<TConfig>>, T, K> {
-    return Constraint<Runtype<Static<TConfig>>, T, K>(A, test, options);
+  ): Constraint<Codec<Static<TConfig>>, T, K> {
+    return Constraint<Codec<Static<TConfig>>, T, K>(A, test, options);
   }
 
-  function withBrand<B extends string>(B: B): Brand<B, Runtype<Static<TConfig>>> {
-    return Brand<B, Runtype<Static<TConfig>>>(B, A);
+  function withBrand<B extends string>(B: B): Brand<B, Codec<Static<TConfig>>> {
+    return Brand<B, Codec<Static<TConfig>>>(B, A);
   }
 
   function withParser<TParsed>(
-    config: ParsedValueConfig<Runtype<Static<TConfig>>, TParsed>,
-  ): ParsedValue<Runtype<Static<TConfig>>, TParsed> {
+    config: ParsedValueConfig<Codec<Static<TConfig>>, TParsed>,
+  ): ParsedValue<Codec<Static<TConfig>>, TParsed> {
     return ParsedValue(A as any, config);
   }
 }
@@ -299,4 +344,28 @@ export function innerGuard(
   if (result.cycle) result = result.populate();
   if (result.success) return undefined;
   else return result;
+}
+
+export function innerSerialize(
+  targetType: RuntypeBase,
+  value: any,
+  visited: VisitedState,
+): Result<any> {
+  const validator = targetType[internal];
+  const cached = visited.get(targetType)?.get(value);
+  if (cached !== undefined) {
+    return { success: true, value: cached };
+  }
+  let result = (validator.serialize || validator.validate)(value, (t, v) =>
+    innerSerialize(t, v, visited),
+  );
+  if (result.cycle) {
+    const { placeholder, populate } = result;
+    visited.set(targetType, (visited.get(targetType) || new Map()).set(value, placeholder));
+    result = populate();
+    if (result.success) {
+      visited.set(targetType, (visited.get(targetType) || new Map()).set(value, result.value));
+    }
+  }
+  return result;
 }

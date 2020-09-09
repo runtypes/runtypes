@@ -1,11 +1,4 @@
-import {
-  Runtype,
-  Static,
-  create,
-  RuntypeBase,
-  InnerValidateHelper,
-  innerValidate,
-} from '../runtype';
+import { Codec, Static, create, RuntypeBase, InnerValidateHelper, innerValidate } from '../runtype';
 import show from '../show';
 import { LiteralValue, isLiteralRuntype } from './literal';
 import { lazyValue, isLazyRuntype } from './lazy';
@@ -23,7 +16,7 @@ export type StaticUnion<TAlternatives extends readonly RuntypeBase<unknown>[]> =
 }[number];
 
 export interface Union<TAlternatives extends readonly RuntypeBase<unknown>[]>
-  extends Runtype<StaticUnion<TAlternatives>> {
+  extends Codec<StaticUnion<TAlternatives>> {
   readonly tag: 'union';
   readonly alternatives: TAlternatives;
   match: Match<TAlternatives>;
