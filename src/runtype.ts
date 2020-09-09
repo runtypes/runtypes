@@ -41,36 +41,36 @@ export interface RuntypeBase<A = unknown> {
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export interface Runtype<A = unknown> extends RuntypeBase<A> {
+export interface Runtype<TParsed, TSerialized = TParsed> extends RuntypeBase<TParsed> {
   /**
    * Verifies that a value conforms to this runtype. When given a value that does
    * not conform to the runtype, throws an exception.
    */
-  assert(x: any): asserts x is A;
+  assert(x: any): asserts x is TParsed;
 
   /**
    * A type guard for this runtype.
    */
-  test(x: any): x is A;
+  test(x: any): x is TParsed;
 
   /**
    * A type guard for this runtype.
    *
    * @deprecated use Runtype.test instead
    */
-  guard(x: any): x is A;
+  guard(x: any): x is TParsed;
 
   /**
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
    */
-  check(x: any): A;
+  check(x: any): TParsed;
 
   /**
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: any): Result<A>;
+  validate(x: any): Result<TParsed>;
 
   /**
    * Union this Runtype with another.
