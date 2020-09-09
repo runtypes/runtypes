@@ -6,10 +6,14 @@ export interface ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>
   extends Runtype<TParsed> {
   readonly tag: 'parsed';
   readonly underlying: TUnderlying;
-  readonly name?: string;
-  parse(value: Static<TUnderlying>): Result<TParsed>;
+  readonly config: ParsedValueConfig<TUnderlying, TParsed>;
 }
 
+export interface ParsedValueConfig<TUnderlying extends RuntypeBase<unknown>, TParsed> {
+  name?: string;
+  parse: (value: Static<TUnderlying>) => Result<TParsed>;
+  test?: RuntypeBase<TParsed> | ((x: any) => Failure | undefined);
+}
 export function ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>(
   underlying: TUnderlying,
   config: {
@@ -57,9 +61,9 @@ export function ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>(
       },
     },
     {
-      ...config,
       tag: 'parsed',
       underlying,
+      config,
 
       show({ showChild }) {
         return config.name || `ParsedValue<${showChild(underlying, false)}>`;

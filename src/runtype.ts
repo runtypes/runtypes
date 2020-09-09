@@ -1,6 +1,7 @@
 import { Result, Union, Intersect, Constraint, ConstraintCheck, Brand, Failure } from './index';
 import show from './show';
 import { ValidationError } from './errors';
+import { ParsedValue, ParsedValueConfig } from './types/ParsedValue';
 
 export type InnerValidateHelper = <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>;
 declare const internalSymbol: unique symbol;
@@ -123,6 +124,11 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
    * Adds a brand to the type.
    */
   withBrand<B extends string>(brand: B): Brand<B, this>;
+
+  /**
+   * Apply conversion functions when parsing/serializing this value
+   */
+  withParser<TParsed>(value: ParsedValueConfig<this, TParsed>): ParsedValue<this, TParsed>;
 }
 
 /**
@@ -146,6 +152,7 @@ export function create<TConfig extends Runtype<any>>(
     | 'withConstraint'
     | 'withGuard'
     | 'withBrand'
+    | 'withParser'
     | typeof internal
   >,
 ): TConfig {
@@ -161,6 +168,7 @@ export function create<TConfig extends Runtype<any>>(
     withConstraint,
     withGuard,
     withBrand,
+    withParser,
     toString: () => `Runtype<${show(A)}>`,
     [internal]:
       typeof internalImplementation === 'function'
@@ -215,6 +223,12 @@ export function create<TConfig extends Runtype<any>>(
 
   function withBrand<B extends string>(B: B): Brand<B, Runtype<Static<TConfig>>> {
     return Brand<B, Runtype<Static<TConfig>>>(B, A);
+  }
+
+  function withParser<TParsed>(
+    config: ParsedValueConfig<Runtype<Static<TConfig>>, TParsed>,
+  ): ParsedValue<Runtype<Static<TConfig>>, TParsed> {
+    return ParsedValue(A as any, config);
   }
 }
 
