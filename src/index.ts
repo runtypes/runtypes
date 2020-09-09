@@ -22,4 +22,5 @@ export { InstanceOf } from './types/instanceof';
 export * from './types/lazy';
 export * from './types/constraint';
 export { Brand } from './types/brand';
+export { ParsedValue } from './types/ParsedValue';
 export * from './decorator';

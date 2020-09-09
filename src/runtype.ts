@@ -5,7 +5,7 @@ import { ValidationError } from './errors';
 export type InnerValidateHelper = <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>;
 declare const internalSymbol: unique symbol;
 const internal: typeof internalSymbol = ('__internal__' as unknown) as typeof internalSymbol;
-interface InternalValidation<A> {
+export interface InternalValidation<A> {
   validate(
     x: any,
     innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>,
@@ -130,7 +130,7 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
  */
 export type Static<A extends RuntypeBase<any>> = A extends RuntypeBase<infer T> ? T : unknown;
 
-export function create<TConfig extends RuntypeBase<any>>(
+export function create<TConfig extends Runtype<any>>(
   internalImplementation:
     | InternalValidation<Static<TConfig>>
     | InternalValidation<Static<TConfig>>['validate'],
@@ -149,24 +149,6 @@ export function create<TConfig extends RuntypeBase<any>>(
     | typeof internal
   >,
 ): TConfig {
-  // A.check = check;
-  // A.assert = (v: any) => {
-  //   check(v);
-  // };
-  // A._innerValidate = (value: any, visited: VisitedState) => {
-  //   if (visited.has(value, A)) return { success: true, value };
-  //   return validate(value, visited);
-  // };
-  // A.validate = (value: any) => A._innerValidate(value, VisitedState());
-  // A.test = test;
-  // A.Or = Or;
-  // A.And = And;
-  // A.withConstraint = withConstraint;
-  // A.withGuard = withGuard;
-  // A.withBrand = withBrand;
-  // A.reflect = A;
-  // A.toString = () => `Runtype<${show(A)}>`;
-
   const A: Runtype<Static<TConfig>> = {
     ...config,
     assert,
