@@ -158,7 +158,7 @@ In addition to providing a `check` method, funtypes can be used as [type guards]
 
 ```ts
 function disembark(obj: {}) {
-  if (SpaceObject.guard(obj)) {
+  if (SpaceObject.test(obj)) {
     // obj: SpaceObject
     if (obj.type === 'ship') {
       // obj: Ship
@@ -265,7 +265,7 @@ One important choice when changing `Constraint` static types is choosing the
 correct underlying type. The implementation of `Constraint` will validate the
 underlying type *before* running your constraint function. So it's important to
 use a lowest-common-denominator type that will pass validation for all expected
-inputs of your constraint function or type guard.  If there's no obvious
+inputs of your constraint function or type test.  If there's no obvious
 lowest-common-denominator type, you can always use `Unknown` as the underlying
 type, as shown in the `Buffer` examples above.  
 

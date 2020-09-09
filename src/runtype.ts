@@ -17,7 +17,7 @@ interface InternalValidation<A> {
         placeholder: Partial<A>;
         populate: () => Result<A>;
       };
-  guard?: (
+  test?: (
     x: any,
     innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Failure | undefined,
   ) => Failure | undefined;
@@ -48,15 +48,22 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
   assert(x: any): asserts x is A;
 
   /**
+   * A type guard for this runtype.
+   */
+  test(x: any): x is A;
+
+  /**
+   * A type guard for this runtype.
+   *
+   * @deprecated use Runtype.test instead
+   */
+  guard(x: any): x is A;
+
+  /**
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
    */
   check(x: any): A;
-
-  /**
-   * A type guard for this runtype.
-   */
-  guard(x: any): x is A;
 
   /**
    * Validates that a value conforms to this type, and returns a result indicating
@@ -95,11 +102,11 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
   /**
    * Helper function to convert an underlying Runtype into another static type
    * via a type guard function.  The static type of the runtype is inferred from
-   * the type of the guard function.
+   * the type of the test function.
    *
    * @template T - Typically inferred from the return type of the type guard
    * function, so usually not needed to specify manually.
-   * @param {(x: Static<this>) => x is T} guard - Type guard function (see
+   * @param {(x: Static<this>) => x is T} test - Type test function (see
    * https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards)
    *
    * @param [options]
@@ -108,7 +115,7 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
    * use-cases.
    */
   withGuard<T extends Static<this>, K = unknown>(
-    guard: (x: Static<this>) => x is T,
+    test: (x: Static<this>) => x is T,
     options?: { name?: string; args?: K },
   ): Constraint<this, T, K>;
 
@@ -131,6 +138,7 @@ export function create<TConfig extends RuntypeBase<any>>(
     TConfig,
     | 'assert'
     | 'check'
+    | 'test'
     | 'guard'
     | 'validate'
     | 'Or'
@@ -150,7 +158,7 @@ export function create<TConfig extends RuntypeBase<any>>(
   //   return validate(value, visited);
   // };
   // A.validate = (value: any) => A._innerValidate(value, VisitedState());
-  // A.guard = guard;
+  // A.test = test;
   // A.Or = Or;
   // A.And = And;
   // A.withConstraint = withConstraint;
@@ -164,7 +172,8 @@ export function create<TConfig extends RuntypeBase<any>>(
     assert,
     check,
     validate: (value: any) => innerValidate(A, value, new Map()),
-    guard,
+    test,
+    guard: test,
     Or,
     And,
     withConstraint,
@@ -195,7 +204,7 @@ export function create<TConfig extends RuntypeBase<any>>(
     return validated.value;
   }
 
-  function guard(x: any): x is Static<TConfig> {
+  function test(x: any): x is Static<TConfig> {
     const validated = innerGuard(A, x, new Map());
     return validated === undefined;
   }
@@ -216,10 +225,10 @@ export function create<TConfig extends RuntypeBase<any>>(
   }
 
   function withGuard<T extends Static<TConfig>, K = unknown>(
-    guard: (x: Static<TConfig>) => x is T,
+    test: (x: Static<TConfig>) => x is T,
     options?: { name?: string; args?: K },
   ): Constraint<Runtype<Static<TConfig>>, T, K> {
-    return Constraint<Runtype<Static<TConfig>>, T, K>(A, guard, options);
+    return Constraint<Runtype<Static<TConfig>>, T, K>(A, test, options);
   }
 
   function withBrand<B extends string>(B: B): Brand<B, Runtype<Static<TConfig>>> {
@@ -284,8 +293,8 @@ function innerGuard(
     if (cached) return undefined;
     visited.set(targetType, (visited.get(targetType) || new Set()).add(value));
   }
-  if (validator.guard) {
-    return validator.guard(value, (t, v) => innerGuard(t, v, visited));
+  if (validator.test) {
+    return validator.test(value, (t, v) => innerGuard(t, v, visited));
   }
   let result = validator.validate(
     value,

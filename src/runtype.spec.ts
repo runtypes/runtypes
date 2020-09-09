@@ -36,31 +36,31 @@ test('Runtype.check', () => {
   );
 });
 
-test('Runtype.guard', () => {
-  expect(String.guard('hello')).toBe(true);
-  expect(String.guard(42)).toBe(false);
+test('Runtype.test', () => {
+  expect(String.test('hello')).toBe(true);
+  expect(String.test(42)).toBe(false);
 });
 
 test('Runtype.Or', () => {
-  expect(String.Or(Number).guard('hello')).toBe(true);
-  expect(String.Or(Number).guard(42)).toBe(true);
-  expect(String.Or(Number).guard(true)).toBe(false);
+  expect(String.Or(Number).test('hello')).toBe(true);
+  expect(String.Or(Number).test(42)).toBe(true);
+  expect(String.Or(Number).test(true)).toBe(false);
 });
 
 test('Runtype.And', () => {
   expect(
     Record({ a: String })
       .And(Record({ b: Number }))
-      .guard({ a: 'hello', b: 42 }),
+      .test({ a: 'hello', b: 42 }),
   ).toBe(true);
   expect(
     Record({ a: String })
       .And(Record({ b: Number }))
-      .guard({ a: 42, b: 42 }),
+      .test({ a: 42, b: 42 }),
   ).toBe(false);
   expect(
     Record({ a: String })
       .And(Record({ b: Number }))
-      .guard({ a: 'hello', b: 'hello' }),
+      .test({ a: 'hello', b: 'hello' }),
   ).toBe(false);
 });

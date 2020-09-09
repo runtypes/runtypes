@@ -37,7 +37,7 @@ export function Constraint<
       }
 
       const result = constraint(validated.value as any);
-      if (String.guard(result)) return { success: false, message: result };
+      if (String.test(result)) return { success: false, message: result };
       else if (!result) return { success: false, message: `Failed ${name || 'constraint'} check` };
       return { success: true, value: validated.value as TConstrained };
     },
@@ -56,6 +56,6 @@ export function Constraint<
 }
 
 export const Guard = <T, K = unknown>(
-  guard: (x: unknown) => x is T,
+  test: (x: unknown) => x is T,
   options?: { name?: string; args?: K },
-) => Unknown.withGuard(guard, options);
+) => Unknown.withGuard(test, options);

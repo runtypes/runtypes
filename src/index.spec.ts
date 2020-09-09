@@ -725,7 +725,7 @@ describe('change static type with Constraint', () => {
       name: 'SomeClass',
     });
 
-    if (C.guard(value)) {
+    if (C.test(value)) {
       return value;
     } else {
       return new SomeClassV2(3);
