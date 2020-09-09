@@ -13,7 +13,7 @@ test('TrimmedString', () => {
     ),
   });
 
-  expect(TrimmedString.validate(' foo bar ')).toMatchInlineSnapshot(`
+  expect(TrimmedString.safeParse(' foo bar ')).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": "foo bar",
@@ -35,7 +35,7 @@ test('DoubledNumber', () => {
     test: Number.withConstraint(value => value % 2 === 0 || `Expected an even number`),
   });
 
-  expect(DoubledNumber.validate(10)).toMatchInlineSnapshot(`
+  expect(DoubledNumber.safeParse(10)).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": 20,
@@ -47,7 +47,7 @@ test('DoubledNumber', () => {
   );
   expect(() => DoubledNumber.assert(12)).not.toThrow();
 
-  expect(DoubledNumber.serialize(10)).toMatchInlineSnapshot(`
+  expect(DoubledNumber.safeSerialize(10)).toMatchInlineSnapshot(`
     Object {
       "message": "DoubledNumber does not support Runtype.serialize",
       "success": false,
@@ -67,7 +67,7 @@ test('DoubledNumber - 2', () => {
     },
   });
 
-  expect(DoubledNumber.validate(10)).toMatchInlineSnapshot(`
+  expect(DoubledNumber.safeParse(10)).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": 20,
@@ -79,14 +79,14 @@ test('DoubledNumber - 2', () => {
   );
   expect(() => DoubledNumber.assert(12)).not.toThrow();
 
-  expect(DoubledNumber.serialize(10)).toMatchInlineSnapshot(`
+  expect(DoubledNumber.safeSerialize(10)).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": 5,
     }
   `);
 
-  expect(DoubledNumber.serialize(11)).toMatchInlineSnapshot(`
+  expect(DoubledNumber.safeSerialize(11)).toMatchInlineSnapshot(`
     Object {
       "message": "Expected an even number",
       "success": false,
@@ -108,13 +108,13 @@ test('Upgrade Example', () => {
   );
   type X = Static<typeof Shape>;
   ta.assert<ta.Equal<X, { version: 2; width: number; height: number }>>();
-  expect(Shape.check({ version: 1, size: 42 })).toEqual({ version: 2, width: 42, height: 42 });
-  expect(Shape.check({ version: 2, width: 10, height: 20 })).toEqual({
+  expect(Shape.parse({ version: 1, size: 42 })).toEqual({ version: 2, width: 42, height: 42 });
+  expect(Shape.parse({ version: 2, width: 10, height: 20 })).toEqual({
     version: 2,
     width: 10,
     height: 20,
   });
-  expect(Shape.serialize({ version: 2, width: 10, height: 20 })).toMatchInlineSnapshot(`
+  expect(Shape.safeSerialize({ version: 2, width: 10, height: 20 })).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Object {
@@ -124,7 +124,7 @@ test('Upgrade Example', () => {
       },
     }
   `);
-  expect(Shape.serialize({ version: 1, size: 20 } as any)).toMatchInlineSnapshot(`
+  expect(Shape.safeSerialize({ version: 1, size: 20 } as any)).toMatchInlineSnapshot(`
     Object {
       "key": "<version: 1>",
       "message": "ParsedValue<{ version: 1; size: number; }> does not support Runtype.serialize",

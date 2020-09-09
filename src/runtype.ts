@@ -94,9 +94,7 @@ export interface Runtype<TParsed> extends RuntypeBase<TParsed> {
   test(x: any): x is TParsed;
 
   /**
-   * A type guard for this runtype.
-   *
-   * @deprecated use Runtype.test instead
+   * @deprecated use Runtype.test
    */
   guard(x: any): x is TParsed;
 
@@ -104,11 +102,21 @@ export interface Runtype<TParsed> extends RuntypeBase<TParsed> {
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
    */
+  parse(x: any): TParsed;
+
+  /**
+   * @deprecated use Runtype.parse
+   */
   check(x: any): TParsed;
 
   /**
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
+   */
+  safeParse(x: any): Result<TParsed>;
+
+  /**
+   * @deprecated use Runtype.safeParse
    */
   validate(x: any): Result<TParsed>;
 
@@ -172,7 +180,8 @@ export interface Runtype<TParsed> extends RuntypeBase<TParsed> {
 }
 
 export interface Codec<TParsed, TSerialized = TParsed> extends Runtype<TParsed> {
-  serialize: (x: TParsed) => Result<TSerialized>;
+  serialize: (x: TParsed) => TSerialized;
+  safeSerialize: (x: TParsed) => Result<TSerialized>;
 }
 /**
  * Obtains the static type associated with a Runtype.
@@ -189,8 +198,12 @@ export function create<TConfig extends Codec<any, any>>(
     | 'check'
     | 'test'
     | 'guard'
+    | 'parse'
+    | 'check'
+    | 'safeParse'
     | 'validate'
     | 'serialize'
+    | 'safeSerialize'
     | 'Or'
     | 'And'
     | 'withConstraint'
@@ -203,11 +216,14 @@ export function create<TConfig extends Codec<any, any>>(
   const A: Codec<Static<TConfig>> = {
     ...config,
     assert,
-    check,
-    validate: (value: any) => innerValidate(A, value, new Map()),
+    parse,
+    check: parse,
+    safeParse,
+    validate: safeParse,
     test,
     guard: test,
-    serialize: (value: any) => innerSerialize(A, value, new Map()),
+    serialize,
+    safeSerialize,
     Or,
     And,
     withConstraint,
@@ -225,20 +241,33 @@ export function create<TConfig extends Codec<any, any>>(
 
   return (A as unknown) as TConfig;
 
-  function assert(x: any): asserts x is Static<TConfig> {
-    const validated = innerGuard(A, x, new Map());
-    if (validated) {
+  function safeParse(x: any) {
+    return innerValidate(A, x, new Map());
+  }
+  function safeSerialize(x: any) {
+    return innerSerialize(A, x, new Map());
+  }
+  function parse(x: any) {
+    const validated = safeParse(x);
+    if (!validated.success) {
       throw new ValidationError(validated.message, validated.key);
     }
+    return validated.value;
   }
-  function check(x: any) {
-    const validated = A.validate(x);
+  function serialize(x: any) {
+    const validated = safeSerialize(x);
     if (!validated.success) {
       throw new ValidationError(validated.message, validated.key);
     }
     return validated.value;
   }
 
+  function assert(x: any): asserts x is Static<TConfig> {
+    const validated = innerGuard(A, x, new Map());
+    if (validated) {
+      throw new ValidationError(validated.message, validated.key);
+    }
+  }
   function test(x: any): x is Static<TConfig> {
     const validated = innerGuard(A, x, new Map());
     return validated === undefined;

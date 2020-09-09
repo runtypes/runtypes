@@ -1,13 +1,13 @@
 import { String, Number, Record } from './';
 
 test('Runtype.validate', () => {
-  expect(String.validate('hello')).toMatchInlineSnapshot(`
+  expect(String.safeParse('hello')).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": "hello",
     }
   `);
-  expect(String.validate(42)).toMatchInlineSnapshot(`
+  expect(String.safeParse(42)).toMatchInlineSnapshot(`
     Object {
       "message": "Expected string, but was number",
       "success": false,
@@ -30,8 +30,8 @@ test('Runtype.assert', () => {
 });
 
 test('Runtype.check', () => {
-  expect(String.check('hello')).toBe('hello');
-  expect(() => String.check(42)).toThrowErrorMatchingInlineSnapshot(
+  expect(String.parse('hello')).toBe('hello');
+  expect(() => String.parse(42)).toThrowErrorMatchingInlineSnapshot(
     `"Expected string, but was number"`,
   );
 });

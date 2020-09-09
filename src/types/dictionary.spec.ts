@@ -9,7 +9,7 @@ test('StringDictionary', () => {
   ta.assert<
     ta.Equal<ReturnType<typeof dictionary['check']>, { [key in string]?: { value: 42 } }>
   >();
-  expect(dictionary.validate({ foo: record, bar: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Object {
@@ -22,7 +22,7 @@ test('StringDictionary', () => {
       },
     }
   `);
-  expect(dictionary.validate({ foo: record, bar: { value: 24 } })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ foo: record, bar: { value: 24 } })).toMatchInlineSnapshot(`
     Object {
       "key": "bar.value",
       "message": "Expected literal '42', but was '24'",
@@ -36,7 +36,7 @@ test('NumberDictionary', () => {
   ta.assert<
     ta.Equal<ReturnType<typeof dictionary['check']>, { [key in number]?: { value: 42 } }>
   >();
-  expect(dictionary.validate({ 4: record, 3.14: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ 4: record, 3.14: record })).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Object {
@@ -49,7 +49,7 @@ test('NumberDictionary', () => {
       },
     }
   `);
-  expect(dictionary.validate({ foo: record, bar: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
       "message": "Expected dictionary key to be a number, but was 'foo'",
       "success": false,
@@ -65,7 +65,7 @@ test('IntegerDictionary', () => {
   ta.assert<
     ta.Equal<ReturnType<typeof dictionary['check']>, { [key in number]?: { value: 42 } }>
   >();
-  expect(dictionary.validate({ 4: record, 2: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ 4: record, 2: record })).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Object {
@@ -78,7 +78,7 @@ test('IntegerDictionary', () => {
       },
     }
   `);
-  expect(dictionary.validate({ 4: record, 3.14: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ 4: record, 3.14: record })).toMatchInlineSnapshot(`
     Object {
       "message": "Expected dictionary key to be Integer, but was '3.14'",
       "success": false,
@@ -91,7 +91,7 @@ test('UnionDictionary - strings', () => {
   ta.assert<
     ta.Equal<ReturnType<typeof dictionary['check']>, { [key in 'foo' | 'bar']?: { value: 42 } }>
   >();
-  expect(dictionary.validate({ foo: record, bar: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Object {
@@ -104,7 +104,7 @@ test('UnionDictionary - strings', () => {
       },
     }
   `);
-  expect(dictionary.validate({ 10: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ 10: record })).toMatchInlineSnapshot(`
     Object {
       "message": "Expected dictionary key to be \\"foo\\" | \\"bar\\", but was '10'",
       "success": false,
@@ -116,7 +116,7 @@ test('UnionDictionary - numbers', () => {
   ta.assert<
     ta.Equal<ReturnType<typeof dictionary['check']>, { [key in 24 | 42]?: { value: 42 } }>
   >();
-  expect(dictionary.validate({ 24: record, 42: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ 24: record, 42: record })).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Object {
@@ -129,7 +129,7 @@ test('UnionDictionary - numbers', () => {
       },
     }
   `);
-  expect(dictionary.validate({ 10: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ 10: record })).toMatchInlineSnapshot(`
     Object {
       "message": "Expected dictionary key to be 24 | 42, but was '10'",
       "success": false,
@@ -141,7 +141,7 @@ test('UnionDictionary - mixed', () => {
   ta.assert<
     ta.Equal<ReturnType<typeof dictionary['check']>, { [key in 'foo' | 42]?: { value: 42 } }>
   >();
-  expect(dictionary.validate({ foo: record, 42: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ foo: record, 42: record })).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Object {
@@ -154,7 +154,7 @@ test('UnionDictionary - mixed', () => {
       },
     }
   `);
-  expect(dictionary.validate({ foo: record, bar: record })).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
       "message": "Expected dictionary key to be \\"foo\\" | 42, but was 'bar'",
       "success": false,
