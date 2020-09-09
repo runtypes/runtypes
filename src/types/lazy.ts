@@ -19,9 +19,6 @@ export function lazyValue<T>(fn: () => T) {
 export function isLazyRuntype(runtype: RuntypeBase): runtype is Lazy<RuntypeBase> {
   return 'tag' in runtype && (runtype as Lazy<RuntypeBase<unknown>>).tag === 'lazy';
 }
-export function resolveLazyRuntype(runtype: RuntypeBase): RuntypeBase {
-  return isLazyRuntype(runtype) ? runtype.underlying() : runtype;
-}
 
 /**
  * Construct a possibly-recursive Runtype.

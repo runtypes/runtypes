@@ -8,10 +8,13 @@ import {
 } from '../runtype';
 import show from '../show';
 import { LiteralValue, isLiteralRuntype } from './literal';
-import { lazyValue, resolveLazyRuntype } from './lazy';
+import { lazyValue, isLazyRuntype } from './lazy';
 import { isRecordRuntype } from './record';
 import { Result } from '../result';
 import { isTupleRuntype } from './tuple';
+import { isBrandRuntype } from './brand';
+import { isConstraintRuntype } from './constraint';
+import { isParsedValueRuntype } from './ParsedValue';
 
 export type StaticUnion<TAlternatives extends readonly RuntypeBase<unknown>[]> = {
   [key in keyof TAlternatives]: TAlternatives[key] extends RuntypeBase<unknown>
@@ -33,6 +36,16 @@ function valueToString(value: any) {
     ? `'${value}'`
     : typeof value;
 }
+
+function resolveUnderlyingType(runtype: RuntypeBase): RuntypeBase {
+  if (isLazyRuntype(runtype)) return resolveUnderlyingType(runtype.underlying());
+  if (isBrandRuntype(runtype)) return resolveUnderlyingType(runtype.entity);
+  if (isConstraintRuntype(runtype)) return resolveUnderlyingType(runtype.underlying);
+  if (isParsedValueRuntype(runtype)) return resolveUnderlyingType(runtype.underlying);
+
+  return runtype;
+}
+
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
@@ -79,15 +92,15 @@ export function Union<
   const innerValidator = lazyValue(
     // This must be lazy to avoid eagerly evaluating any circular references
     (): InnerValidate => {
-      const alts = alternatives.map(resolveLazyRuntype);
+      const alts = alternatives.map(resolveUnderlyingType);
       const recordAlternatives = alts.filter(isRecordRuntype);
       if (recordAlternatives.length === alternatives.length) {
         const commonLiteralFields: {
           [key: string]: Map<LiteralValue, RuntypeBase<TResult>>;
         } = {};
-        for (const alternative of recordAlternatives) {
-          for (const fieldName in alternative.fields) {
-            const field = resolveLazyRuntype(alternative.fields[fieldName]);
+        for (let i = 0; i < alternatives.length; i++) {
+          for (const fieldName in recordAlternatives[i].fields) {
+            const field = resolveUnderlyingType(recordAlternatives[i].fields[fieldName]);
             if (isLiteralRuntype(field)) {
               if (!commonLiteralFields[fieldName]) {
                 commonLiteralFields[fieldName] = new Map();
@@ -96,7 +109,7 @@ export function Union<
                 commonLiteralFields[fieldName].set(
                   field.value,
                   // @ts-expect-error
-                  alternative,
+                  alternatives[i],
                 );
               }
             }
@@ -111,14 +124,14 @@ export function Union<
       const tupleAlternatives = alts.filter(isTupleRuntype);
       if (tupleAlternatives.length === alternatives.length) {
         const commonLiteralFields = new Map<LiteralValue, RuntypeBase<TResult>>();
-        for (const alternative of tupleAlternatives) {
-          const field = resolveLazyRuntype(alternative.components[0]);
+        for (let i = 0; i < alternatives.length; i++) {
+          const field = resolveUnderlyingType(tupleAlternatives[i].components[0]);
           if (isLiteralRuntype(field)) {
             if (!commonLiteralFields.has(field.value)) {
               commonLiteralFields.set(
                 field.value,
                 // @ts-expect-error
-                alternative,
+                alternatives[i],
               );
             }
           }

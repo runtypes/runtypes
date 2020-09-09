@@ -9,6 +9,12 @@ export interface ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>
   readonly config: ParsedValueConfig<TUnderlying, TParsed>;
 }
 
+export function isParsedValueRuntype(
+  runtype: RuntypeBase,
+): runtype is ParsedValue<RuntypeBase, unknown> {
+  return 'tag' in runtype && (runtype as ParsedValue<RuntypeBase, unknown>).tag === 'parsed';
+}
+
 export interface ParsedValueConfig<TUnderlying extends RuntypeBase<unknown>, TParsed> {
   name?: string;
   parse: (value: Static<TUnderlying>) => Result<TParsed>;

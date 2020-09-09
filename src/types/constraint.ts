@@ -4,6 +4,14 @@ import { Unknown } from './unknown';
 
 export type ConstraintCheck<A extends RuntypeBase<unknown>> = (x: Static<A>) => boolean | string;
 
+export function isConstraintRuntype(
+  runtype: RuntypeBase,
+): runtype is Constraint<RuntypeBase, unknown, unknown> {
+  return (
+    'tag' in runtype && (runtype as Constraint<RuntypeBase, unknown, unknown>).tag === 'constraint'
+  );
+}
+
 export interface Constraint<
   TUnderlying extends RuntypeBase<unknown>,
   TConstrained extends Static<TUnderlying> = Static<TUnderlying>,
