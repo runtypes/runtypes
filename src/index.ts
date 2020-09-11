@@ -11,6 +11,7 @@ export { Boolean } from './types/boolean';
 export type { ConstraintCheck } from './types/constraint';
 export { Constraint, Guard } from './types/constraint';
 export { Dictionary } from './types/dictionary';
+export { Enum } from './types/Enum';
 export { Function } from './types/function';
 export { InstanceOf } from './types/instanceof';
 export { Intersect } from './types/intersect';
