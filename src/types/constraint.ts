@@ -63,7 +63,9 @@ export function Constraint<
   );
 }
 
+export interface Guard<TConstrained, TArgs = unknown>
+  extends Constraint<Unknown, TConstrained, TArgs> {}
 export const Guard = <T, K = unknown>(
   test: (x: unknown) => x is T,
   options?: { name?: string; args?: K },
-) => Unknown.withGuard(test, options);
+): Guard<T, K> => Unknown.withGuard(test, options);

@@ -1,26 +1,32 @@
-export { Runtype, Codec, Static } from './runtype';
-export * from './result';
-export * from './contract';
-export * from './asynccontract';
-export * from './errors';
-export * from './types/unknown';
-export * from './types/never';
-export * from './types/void';
-export * from './types/literal';
-export * from './types/boolean';
-export * from './types/number';
-export * from './types/string';
-export * from './types/symbol';
-export * from './types/array';
-export * from './types/tuple';
-export * from './types/record';
-export * from './types/dictionary';
-export * from './types/union';
-export * from './types/intersect';
-export * from './types/function';
+export { AsyncContract } from './asynccontract';
+export { Contract } from './contract';
+export type { Runtype, Codec, Static } from './runtype';
+export type { Success, Failure, Result } from './result';
+export { ValidationError } from './errors';
+
+// TODO: should we export StaticIntersect, StaticTuple, StaticUnion etc.
+export { Array, ReadonlyArray } from './types/array';
+export { Boolean } from './types/boolean';
+export type { ConstraintCheck } from './types/constraint';
+export { Constraint, Guard } from './types/constraint';
+export { Dictionary } from './types/dictionary';
+export { Function } from './types/function';
 export { InstanceOf } from './types/instanceof';
-export * from './types/lazy';
-export * from './types/constraint';
+export { Intersect } from './types/intersect';
+export { Lazy } from './types/lazy';
+export type { LiteralValue } from './types/literal';
+export { Literal, Null, Undefined } from './types/literal';
+export { Never } from './types/never';
+export { Number } from './types/number';
+export { Record, Partial } from './types/record';
+export { String } from './types/string';
+export { Symbol } from './types/symbol';
+export { Tuple } from './types/tuple';
+export { Union } from './types/union';
+export { Unknown } from './types/unknown';
+/**
+ * @deprecated use Unknown
+ */
+export { Void } from './types/void';
 export { Brand } from './types/brand';
 export { ParsedValue } from './types/ParsedValue';
-export * from './decorator';

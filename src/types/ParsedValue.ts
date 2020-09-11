@@ -50,8 +50,9 @@ export function ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>(
         } else {
           return {
             success: false,
-            message: `${config.name ||
-              `ParsedValue<${show(underlying)}>`} does not support Runtype.test`,
+            message: `${
+              config.name || `ParsedValue<${show(underlying)}>`
+            } does not support Runtype.test`,
           };
         }
       },
@@ -59,8 +60,9 @@ export function ParsedValue<TUnderlying extends RuntypeBase<unknown>, TParsed>(
         if (!config.serialize) {
           return {
             success: false,
-            message: `${config.name ||
-              `ParsedValue<${show(underlying)}>`} does not support Runtype.serialize`,
+            message: `${
+              config.name || `ParsedValue<${show(underlying)}>`
+            } does not support Runtype.serialize`,
           };
         }
         const testResult = config.test

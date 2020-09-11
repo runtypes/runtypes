@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "isolatedModules": true,
+    "module": "ES2015",
+    "moduleResolution": "node",
     "target": "es5",
     "lib": ["es2015", "dom"],
     "strict": true,
