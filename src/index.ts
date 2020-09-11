@@ -1,5 +1,6 @@
 export { AsyncContract } from './asynccontract';
 export { Contract } from './contract';
+export { assertType } from './assertType';
 export type { Runtype, Codec, Static } from './runtype';
 export type { Success, Failure, Result } from './result';
 export { ValidationError } from './errors';
