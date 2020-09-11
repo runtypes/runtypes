@@ -1,4 +1,4 @@
-import { RuntypeBase, create, Runtype } from '../runtype';
+import { RuntypeBase, create, Codec } from '../runtype';
 
 /**
  * The super type of all literal types.
@@ -6,7 +6,7 @@ import { RuntypeBase, create, Runtype } from '../runtype';
 export type LiteralValue = undefined | null | boolean | number | string;
 
 export interface Literal<TLiteralValue extends LiteralValue = LiteralValue>
-  extends Runtype<TLiteralValue> {
+  extends Codec<TLiteralValue> {
   readonly tag: 'literal';
   readonly value: TLiteralValue;
 }

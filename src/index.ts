@@ -1,4 +1,4 @@
-export { Runtype, Static } from './runtype';
+export { Runtype, Codec, Static } from './runtype';
 export * from './result';
 export * from './contract';
 export * from './asynccontract';
@@ -22,4 +22,5 @@ export { InstanceOf } from './types/instanceof';
 export * from './types/lazy';
 export * from './types/constraint';
 export { Brand } from './types/brand';
+export { ParsedValue } from './types/ParsedValue';
 export * from './decorator';

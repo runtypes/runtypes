@@ -1,4 +1,5 @@
 import { RuntypeBase } from './runtype';
+import { isLazyRuntype } from './types/lazy';
 
 const show = (needsParens: boolean, circular: Set<RuntypeBase<unknown>>) => (
   runtype: RuntypeBase<unknown>,
@@ -8,6 +9,12 @@ const show = (needsParens: boolean, circular: Set<RuntypeBase<unknown>>) => (
     show(needsParens, circular)(runtype);
 
   if (circular.has(runtype)) {
+    if (isLazyRuntype(runtype)) {
+      const underlying = runtype.underlying();
+      if (underlying !== runtype) {
+        return show(needsParens, circular)(underlying);
+      }
+    }
     return parenthesize(`CIRCULAR ${runtype.tag}`);
   }
 

@@ -7,7 +7,7 @@ const record = { value: 42 };
 test('Array', () => {
   const dictionary = Array(recordType);
   ta.assert<ta.Equal<ReturnType<typeof dictionary['check']>, { value: 42 }[]>>();
-  expect(dictionary.validate([record, record, record])).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse([record, record, record])).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Array [
@@ -23,7 +23,7 @@ test('Array', () => {
       ],
     }
   `);
-  expect(dictionary.validate([record, 10, record])).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse([record, 10, record])).toMatchInlineSnapshot(`
     Object {
       "key": "[1]",
       "message": "Expected { value: 42; }, but was number",
@@ -35,7 +35,7 @@ test('Array', () => {
 test('Array.asReadonly', () => {
   const dictionary = Array(recordType).asReadonly();
   ta.assert<ta.Equal<ReturnType<typeof dictionary['check']>, readonly { value: 42 }[]>>();
-  expect(dictionary.validate([record, record, record])).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse([record, record, record])).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Array [
@@ -51,7 +51,7 @@ test('Array.asReadonly', () => {
       ],
     }
   `);
-  expect(dictionary.validate([record, 10, record])).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse([record, 10, record])).toMatchInlineSnapshot(`
     Object {
       "key": "[1]",
       "message": "Expected { value: 42; }, but was number",
@@ -63,7 +63,7 @@ test('Array.asReadonly', () => {
 test('ReadonlyArray', () => {
   const dictionary = ReadonlyArray(recordType);
   ta.assert<ta.Equal<ReturnType<typeof dictionary['check']>, readonly { value: 42 }[]>>();
-  expect(dictionary.validate([record, record, record])).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse([record, record, record])).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Array [
@@ -79,7 +79,7 @@ test('ReadonlyArray', () => {
       ],
     }
   `);
-  expect(dictionary.validate([record, 10, record])).toMatchInlineSnapshot(`
+  expect(dictionary.safeParse([record, 10, record])).toMatchInlineSnapshot(`
     Object {
       "key": "[1]",
       "message": "Expected { value: 42; }, but was number",

@@ -1,5 +1,12 @@
 import { ValidationError } from './errors';
-import { RuntypeBase } from './runtype';
+import {
+  createGuardVisitedState,
+  createVisitedState,
+  innerGuard,
+  innerValidate,
+  OpaqueVisitedState,
+  RuntypeBase,
+} from './runtype';
 
 export interface AsyncContract<A extends any[], Z> {
   enforce(f: (...a: A) => Promise<Z>): (...a: A) => Promise<Z>;
@@ -21,10 +28,11 @@ export function AsyncContract<A extends [any, ...any[]] | [], Z>(
           ),
         );
       }
+      const visited: OpaqueVisitedState = createVisitedState();
       for (let i = 0; i < argTypes.length; i++) {
-        const result = argTypes[i].validate(args[i]);
+        const result = innerValidate(argTypes[i], args[i], visited);
         if (result.success) {
-          argTypes[i] = result.value;
+          args[i] = result.value;
         } else {
           return Promise.reject(new ValidationError(result.message, result.key));
         }
@@ -38,12 +46,11 @@ export function AsyncContract<A extends [any, ...any[]] | [], Z>(
         );
       }
       return returnedPromise.then(value => {
-        const result = returnType.validate(value);
-        if (result.success) {
-          return result.value;
-        } else {
+        const result = innerGuard(returnType, value, createGuardVisitedState());
+        if (result) {
           throw new ValidationError(result.message, result.key);
         }
+        return value;
       });
     },
   };

@@ -725,7 +725,7 @@ describe('change static type with Constraint', () => {
       name: 'SomeClass',
     });
 
-    if (C.guard(value)) {
+    if (C.test(value)) {
       return value;
     } else {
       return new SomeClassV2(3);
@@ -765,7 +765,7 @@ describe('change static type with Constraint', () => {
     | InstanceOf<Constructor<never>>
     | Brand<string, String | Number>,
 ) => {
-  const check = <A>(X: Runtype<A>): A => X.check({});
+  const check = <A>(X: Runtype<A>): A => X.parse({});
 
   switch (X.tag) {
     case 'unknown':
@@ -828,18 +828,18 @@ function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v:
 }
 
 function assertAccepts<A>(value: unknown, runtype: Runtype<A>) {
-  const result = runtype.validate(value);
+  const result = runtype.safeParse(value);
   if (result.success === false) fail(result.message);
 }
 
 function assertRejects<A>(value: unknown, runtype: Runtype<A>) {
-  const result = runtype.validate(value);
+  const result = runtype.safeParse(value);
   if (result.success === true) fail('value passed validation even though it was not expected to');
 }
 
 function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key?: string) {
   try {
-    runtype.check(value);
+    runtype.parse(value);
     fail('value passed validation even though it was not expected to');
   } catch (exception) {
     const { message: errorMessage, key: errorKey } = exception;

@@ -1,7 +1,6 @@
-import { create, RuntypeBase, Runtype, innerValidate, Static } from '../runtype';
+import { create, RuntypeBase, Codec, Static } from '../runtype';
 
-export interface Lazy<TUnderlying extends RuntypeBase<unknown>>
-  extends Runtype<Static<TUnderlying>> {
+export interface Lazy<TUnderlying extends RuntypeBase<unknown>> extends Codec<Static<TUnderlying>> {
   readonly tag: 'lazy';
   readonly underlying: () => TUnderlying;
 }
@@ -19,9 +18,6 @@ export function lazyValue<T>(fn: () => T) {
 export function isLazyRuntype(runtype: RuntypeBase): runtype is Lazy<RuntypeBase> {
   return 'tag' in runtype && (runtype as Lazy<RuntypeBase<unknown>>).tag === 'lazy';
 }
-export function resolveLazyRuntype(runtype: RuntypeBase): RuntypeBase {
-  return isLazyRuntype(runtype) ? runtype.underlying() : runtype;
-}
 
 /**
  * Construct a possibly-recursive Runtype.
@@ -32,8 +28,8 @@ export function Lazy<TUnderlying extends RuntypeBase<unknown>>(
   const underlying = lazyValue(delayed);
 
   return create<Lazy<TUnderlying>>(
-    (...args) => {
-      return innerValidate(underlying(), ...args);
+    (value, _innerValidate, innerValidateToPlaceholder) => {
+      return innerValidateToPlaceholder(underlying(), value) as any;
     },
     {
       tag: 'lazy',

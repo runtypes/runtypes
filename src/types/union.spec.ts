@@ -22,7 +22,7 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, Circle);
 
-      expect(Shape.validate({ kind: 'square', size: new Date() })).toMatchInlineSnapshot(`
+      expect(Shape.safeParse({ kind: 'square', size: new Date() })).toMatchInlineSnapshot(`
         Object {
           "key": "<kind: 'square'>.size",
           "message": "Expected number, but was object",
@@ -30,7 +30,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate({ kind: 'rectangle', size: new Date() })).toMatchInlineSnapshot(`
+      expect(Shape.safeParse({ kind: 'rectangle', size: new Date() })).toMatchInlineSnapshot(`
         Object {
           "key": "<kind: 'rectangle'>.width",
           "message": "Expected number, but was undefined",
@@ -38,7 +38,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate({ kind: 'circle', size: new Date() })).toMatchInlineSnapshot(`
+      expect(Shape.safeParse({ kind: 'circle', size: new Date() })).toMatchInlineSnapshot(`
         Object {
           "key": "<kind: 'circle'>.radius",
           "message": "Expected number, but was undefined",
@@ -46,7 +46,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate({ kind: 'other', size: new Date() })).toMatchInlineSnapshot(`
+      expect(Shape.safeParse({ kind: 'other', size: new Date() })).toMatchInlineSnapshot(`
         Object {
           "key": "kind",
           "message": "Expected 'square' | 'rectangle' | 'circle', but was 'other'",
@@ -54,9 +54,24 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate(42)).toMatchInlineSnapshot(`
+      expect(Shape.safeParse(42)).toMatchInlineSnapshot(`
         Object {
           "message": "Expected { kind: \\"square\\"; size: number; } | { kind: \\"rectangle\\"; width: number; height: number; } | { kind: \\"circle\\"; radius: number; }, but was number",
+          "success": false,
+        }
+      `);
+
+      expect(Shape.safeParse(null)).toMatchInlineSnapshot(`
+        Object {
+          "message": "Expected { kind: \\"square\\"; size: number; } | { kind: \\"rectangle\\"; width: number; height: number; } | { kind: \\"circle\\"; radius: number; }, but was null",
+          "success": false,
+        }
+      `);
+
+      expect(Shape.safeParse({ kind: { v: 'circle' }, size: new Date() })).toMatchInlineSnapshot(`
+        Object {
+          "key": "kind",
+          "message": "Expected 'square' | 'rectangle' | 'circle', but was object",
           "success": false,
         }
       `);
@@ -69,7 +84,7 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, CircularSquare);
 
-      expect(Shape.validate({ kind: 'square', size: new Date() })).not.toHaveProperty('key');
+      expect(Shape.safeParse({ kind: 'square', size: new Date() })).not.toHaveProperty('key');
     });
 
     it('should not pick alternative if not all types are records', () => {
@@ -78,7 +93,7 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, InstanceOf(Date));
 
-      expect(Shape.validate({ kind: 'square', size: new Date() })).not.toHaveProperty('key');
+      expect(Shape.safeParse({ kind: 'square', size: new Date() })).not.toHaveProperty('key');
     });
 
     it('should handle tuples where the first component is a literal tag', () => {
@@ -88,7 +103,7 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, Circle);
 
-      expect(Shape.validate(['square', { size: new Date() }])).toMatchInlineSnapshot(`
+      expect(Shape.safeParse(['square', { size: new Date() }])).toMatchInlineSnapshot(`
         Object {
           "key": "<[0]: 'square'>.[1].size",
           "message": "Expected number, but was object",
@@ -96,7 +111,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate(['rectangle', { size: new Date() }])).toMatchInlineSnapshot(`
+      expect(Shape.safeParse(['rectangle', { size: new Date() }])).toMatchInlineSnapshot(`
         Object {
           "key": "<[0]: 'rectangle'>.[1].width",
           "message": "Expected number, but was undefined",
@@ -104,7 +119,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate(['circle', { size: new Date() }])).toMatchInlineSnapshot(`
+      expect(Shape.safeParse(['circle', { size: new Date() }])).toMatchInlineSnapshot(`
         Object {
           "key": "<[0]: 'circle'>.[1].radius",
           "message": "Expected number, but was undefined",
@@ -112,7 +127,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate(['other', { size: new Date() }])).toMatchInlineSnapshot(`
+      expect(Shape.safeParse(['other', { size: new Date() }])).toMatchInlineSnapshot(`
         Object {
           "key": "[0]",
           "message": "Expected 'square' | 'rectangle' | 'circle', but was 'other'",
@@ -128,7 +143,7 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, Circle);
 
-      expect(Shape.validate(['rectangle', { size: new Date() }])).not.toHaveProperty('key');
+      expect(Shape.safeParse(['rectangle', { size: new Date() }])).not.toHaveProperty('key');
     });
 
     it('hould not pick alternative if the tuple has no discriminant', () => {
@@ -138,7 +153,7 @@ describe('union', () => {
 
       const Shape = Union(Square, Rectangle, Circle);
 
-      expect(Shape.validate(['rectangle', { size: new Date() }])).not.toHaveProperty('key');
+      expect(Shape.safeParse(['rectangle', { size: new Date() }])).not.toHaveProperty('key');
     });
 
     it('should handle numeric tags', () => {
@@ -147,7 +162,7 @@ describe('union', () => {
 
       const Shape = Union(Version1, Version2);
 
-      expect(Shape.validate([1, { size: 10 }])).toMatchInlineSnapshot(`
+      expect(Shape.safeParse([1, { size: 10 }])).toMatchInlineSnapshot(`
         Object {
           "success": true,
           "value": Array [
@@ -159,7 +174,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate([2, { size: 10 }])).toMatchInlineSnapshot(`
+      expect(Shape.safeParse([2, { size: 10 }])).toMatchInlineSnapshot(`
         Object {
           "key": "<[0]: 2>.[1].width",
           "message": "Expected number, but was undefined",
@@ -167,7 +182,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate([2, { width: 10, height: 20 }])).toMatchInlineSnapshot(`
+      expect(Shape.safeParse([2, { width: 10, height: 20 }])).toMatchInlineSnapshot(`
         Object {
           "success": true,
           "value": Array [
@@ -180,7 +195,7 @@ describe('union', () => {
         }
       `);
 
-      expect(Shape.validate([3, { size: 10 }])).toMatchInlineSnapshot(`
+      expect(Shape.safeParse([3, { size: 10 }])).toMatchInlineSnapshot(`
         Object {
           "key": "[0]",
           "message": "Expected 1 | 2, but was 3",
@@ -210,6 +225,116 @@ describe('union', () => {
       expect(() => extract([2, { size: 20 } as any])).toThrowErrorMatchingInlineSnapshot(
         `"Expected number, but was undefined in <[0]: 2>.[1].width"`,
       );
+    });
+    it('should handle branded tags', () => {
+      const Version1 = Tuple(Literal(1).withBrand('version'), Record({ size: Number }));
+      const Version2 = Tuple(
+        Literal(2).withBrand('version'),
+        Record({ width: Number, height: Number }),
+      );
+
+      const Shape = Union(Version1, Version2);
+
+      expect(Shape.safeParse([1, { size: 10 }])).toMatchInlineSnapshot(`
+        Object {
+          "success": true,
+          "value": Array [
+            1,
+            Object {
+              "size": 10,
+            },
+          ],
+        }
+      `);
+
+      expect(Shape.safeParse([2, { size: 10 }])).toMatchInlineSnapshot(`
+        Object {
+          "key": "<[0]: 2>.[1].width",
+          "message": "Expected number, but was undefined",
+          "success": false,
+        }
+      `);
+
+      expect(Shape.safeParse([2, { width: 10, height: 20 }])).toMatchInlineSnapshot(`
+        Object {
+          "success": true,
+          "value": Array [
+            2,
+            Object {
+              "height": 20,
+              "width": 10,
+            },
+          ],
+        }
+      `);
+
+      expect(Shape.safeParse([3, { size: 10 }])).toMatchInlineSnapshot(`
+        Object {
+          "key": "[0]",
+          "message": "Expected 1 | 2, but was 3",
+          "success": false,
+        }
+      `);
+    });
+    it('should handle constraints', () => {
+      const Version1 = Tuple(Literal(1).withBrand('version'), Record({ size: Number }));
+      const Version2 = Tuple(
+        Literal(2).withBrand('version'),
+        Record({ width: Number, height: Number }),
+      ).withConstraint(([_, { width, height }]) =>
+        width > 0 && height > 0 ? true : 'Cannot have both width and height be 0',
+      );
+
+      const Shape = Union(Version1, Version2);
+
+      expect(Shape.safeParse([1, { size: 10 }])).toMatchInlineSnapshot(`
+        Object {
+          "success": true,
+          "value": Array [
+            1,
+            Object {
+              "size": 10,
+            },
+          ],
+        }
+      `);
+
+      expect(Shape.safeParse([2, { size: 10 }])).toMatchInlineSnapshot(`
+        Object {
+          "key": "<[0]: 2>.[1].width",
+          "message": "Expected number, but was undefined",
+          "success": false,
+        }
+      `);
+
+      expect(Shape.safeParse([2, { width: 10, height: 20 }])).toMatchInlineSnapshot(`
+        Object {
+          "success": true,
+          "value": Array [
+            2,
+            Object {
+              "height": 20,
+              "width": 10,
+            },
+          ],
+        }
+      `);
+
+      expect(Shape.safeParse([3, { size: 10 }])).toMatchInlineSnapshot(`
+        Object {
+          "key": "[0]",
+          "message": "Expected 1 | 2, but was 3",
+          "success": false,
+        }
+      `);
+
+      expect(Shape.safeParse([2, { width: 0, height: 0 }])).toMatchInlineSnapshot(`
+        Object {
+          "key": "<[0]: 2>",
+          "message": "Cannot have both width and height be 0",
+          "success": false,
+        }
+      `);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { create, Static, innerValidate, RuntypeBase, Runtype } from '../runtype';
+import { create, Static, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
 import show from '../show';
 import { String } from './string';
 import { Number } from './number';
@@ -6,6 +6,7 @@ import { Literal } from './literal';
 import { Constraint } from './constraint';
 import { lazyValue } from './lazy';
 import { Union } from './union';
+import { Result } from '../result';
 
 export type KeyRuntypeBaseWithoutUnion =
   | Pick<String, keyof RuntypeBase>
@@ -34,7 +35,7 @@ function getExpectedBaseType(key: KeyRuntypeBase): 'string' | 'number' | 'mixed'
 }
 
 export interface Dictionary<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>
-  extends Runtype<{ [_ in Static<K>]?: Static<V> }> {
+  extends Codec<{ [_ in Static<K>]?: Static<V> }> {
   readonly tag: 'dictionary';
   readonly key: K;
   readonly value: V;
@@ -49,7 +50,7 @@ export function Dictionary<K extends KeyRuntypeBase, V extends RuntypeBase<unkno
 ): Dictionary<K, V> {
   const expectedBaseType = lazyValue(() => getExpectedBaseType(key));
   const runtype: Dictionary<K, V> = create<Dictionary<K, V>>(
-    (x, visited) => {
+    (x, innerValidate) => {
       if (x === null || x === undefined) {
         return { success: false, message: `Expected ${show(runtype)}, but was ${x}` };
       }
@@ -68,38 +69,42 @@ export function Dictionary<K extends KeyRuntypeBase, V extends RuntypeBase<unkno
         return { success: false, message: 'Expected dictionary, but was array' };
       }
 
-      for (const k in x) {
-        let success = false;
-        if (expectedBaseType() === 'number') {
-          if (isNaN(+k))
+      return createValidationPlaceholder<{ [_ in Static<K>]?: Static<V> }>({}, placeholder => {
+        for (const k in x) {
+          let keyValidation: Result<string | number> | null = null;
+          if (expectedBaseType() === 'number') {
+            if (isNaN(+k))
+              return {
+                success: false,
+                message: `Expected dictionary key to be a number, but was '${k}'`,
+              };
+            keyValidation = innerValidate(key, +k);
+          } else if (expectedBaseType() === 'string') {
+            keyValidation = innerValidate(key, k);
+          } else {
+            keyValidation = innerValidate(key, k);
+            if (!keyValidation.success && !isNaN(+k)) {
+              keyValidation = innerValidate(key, +k);
+            }
+          }
+          if (!keyValidation.success) {
             return {
               success: false,
-              message: `Expected dictionary key to be a number, but was '${k}'`,
+              message: `Expected dictionary key to be ${show(key)}, but was '${k}'`,
             };
-          success = key.validate(+k).success;
-        } else if (expectedBaseType() === 'string') {
-          success = key.validate(k).success;
-        } else {
-          success = key.validate(k).success || (!isNaN(+k) && key.validate(+k).success);
-        }
-        if (!success) {
-          return {
-            success: false,
-            message: `Expected dictionary key to be ${show(key)}, but was '${k}'`,
-          };
-        }
+          }
 
-        const validated = innerValidate(value, (x as any)[k], visited);
-        if (!validated.success) {
-          return {
-            success: false,
-            message: validated.message,
-            key: validated.key ? `${k}.${validated.key}` : k,
-          };
+          const validated = innerValidate(value, (x as any)[k]);
+          if (!validated.success) {
+            return {
+              success: false,
+              message: validated.message,
+              key: validated.key ? `${k}.${validated.key}` : k,
+            };
+          }
+          (placeholder as any)[keyValidation.value] = validated.value;
         }
-      }
-
-      return { success: true, value: x };
+      });
     },
     {
       tag: 'dictionary',

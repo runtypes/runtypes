@@ -1,6 +1,6 @@
-import { create, Runtype } from '../runtype';
+import { create, Codec } from '../runtype';
 
-export interface Boolean extends Runtype<boolean> {
+export interface Boolean extends Codec<boolean> {
   readonly tag: 'boolean';
 }
 

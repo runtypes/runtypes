@@ -1,4 +1,11 @@
-import { RuntypeBase } from './runtype';
+import {
+  createGuardVisitedState,
+  createVisitedState,
+  innerGuard,
+  innerValidate,
+  OpaqueVisitedState,
+  RuntypeBase,
+} from './runtype';
 import { ValidationError } from './errors';
 
 export interface Contract<A extends any[], Z> {
@@ -18,20 +25,21 @@ export function Contract<A extends [any, ...any[]] | [], Z>(
         throw new ValidationError(
           `Expected ${argTypes.length} arguments but only received ${args.length}`,
         );
+      const visited: OpaqueVisitedState = createVisitedState();
       for (let i = 0; i < argTypes.length; i++) {
-        const result = argTypes[i].validate(args[i]);
+        const result = innerValidate(argTypes[i], args[i], visited);
         if (result.success) {
-          argTypes[i] = result.value;
+          args[i] = result.value;
         } else {
           throw new ValidationError(result.message, result.key);
         }
       }
-      const result = returnType.validate(f(...args));
-      if (result.success) {
-        return result.value;
-      } else {
+      const rawResult = f(...args);
+      const result = innerGuard(returnType, rawResult, createGuardVisitedState());
+      if (result) {
         throw new ValidationError(result.message, result.key);
       }
+      return rawResult;
     },
   };
 }

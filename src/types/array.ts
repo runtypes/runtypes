@@ -1,14 +1,14 @@
-import { Static, create, innerValidate, RuntypeBase, Runtype } from '../runtype';
+import { Static, create, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
 
 export interface ReadonlyArray<E extends RuntypeBase<unknown> = RuntypeBase<unknown>>
-  extends Runtype<readonly Static<E>[]> {
+  extends Codec<readonly Static<E>[]> {
   readonly tag: 'array';
   readonly element: E;
   readonly isReadonly: true;
 }
 
 export { Arr as Array };
-interface Arr<E extends RuntypeBase<unknown> = RuntypeBase<unknown>> extends Runtype<Static<E>[]> {
+interface Arr<E extends RuntypeBase<unknown> = RuntypeBase<unknown>> extends Codec<Static<E>[]> {
   readonly tag: 'array';
   readonly element: E;
   readonly isReadonly: false;
@@ -23,7 +23,7 @@ function InternalArr<TElement extends RuntypeBase<unknown>, IsReadonly extends b
   isReadonly: IsReadonly,
 ): IsReadonly extends true ? ReadonlyArray<TElement> : Arr<TElement> {
   const result = create<ReadonlyArray<TElement> | Arr<TElement>>(
-    (xs, visited) => {
+    (xs, innerValidate) => {
       if (!Array.isArray(xs)) {
         return {
           success: false,
@@ -31,18 +31,20 @@ function InternalArr<TElement extends RuntypeBase<unknown>, IsReadonly extends b
         };
       }
 
-      for (const x of xs) {
-        let validated = innerValidate(element, x, visited);
-        if (!validated.success) {
-          return {
-            success: false,
-            message: validated.message,
-            key: validated.key ? `[${xs.indexOf(x)}].${validated.key}` : `[${xs.indexOf(x)}]`,
-          };
+      return createValidationPlaceholder([...xs], placeholder => {
+        for (let i = 0; i < xs.length; i++) {
+          const validated = innerValidate(element, xs[i]);
+          if (!validated.success) {
+            return {
+              success: false,
+              message: validated.message,
+              key: validated.key ? `[${i}].${validated.key}` : `[${i}]`,
+            };
+          } else {
+            placeholder[i] = validated.value;
+          }
         }
-      }
-
-      return { success: true, value: xs };
+      });
     },
     {
       tag: 'array',

@@ -1,4 +1,4 @@
-import { Static, create, innerValidate, RuntypeBase, Runtype } from '../runtype';
+import { Static, create, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
 
@@ -19,7 +19,7 @@ export interface InternalRecord<
   O extends RecordFields,
   IsPartial extends boolean,
   IsReadonly extends boolean
-> extends Runtype<RecordStaticType<O, IsPartial, IsReadonly>> {
+> extends Codec<RecordStaticType<O, IsPartial, IsReadonly>> {
   readonly tag: 'record';
   readonly fields: O;
   readonly isPartial: IsPartial;
@@ -57,7 +57,7 @@ export function InternalRecord<O extends RecordFields, Part extends boolean, RO 
   isReadonly: RO,
 ): InternalRecord<O, Part, RO> {
   const runtype: InternalRecord<O, Part, RO> = create<InternalRecord<O, Part, RO>>(
-    (x, visited) => {
+    (x, innerValidate) => {
       if (x === null || x === undefined) {
         return { success: false, message: `Expected ${show(runtype)}, but was ${x}` };
       }
@@ -68,21 +68,22 @@ export function InternalRecord<O extends RecordFields, Part extends boolean, RO 
         return { success: false, message: `Expected ${show(runtype)}, but was an Array` };
       }
 
-      for (const key in fields) {
-        if (!isPartial || (hasKey(key, x) && x[key] !== undefined)) {
-          const value = isPartial || hasKey(key, x) ? x[key] : undefined;
-          let validated = innerValidate(fields[key], value, visited);
-          if (!validated.success) {
-            return {
-              success: false,
-              message: validated.message,
-              key: validated.key ? `${key}.${validated.key}` : key,
-            };
+      return createValidationPlaceholder({} as any, (placeholder: any) => {
+        for (const key in fields) {
+          if (!isPartial || (hasKey(key, x) && x[key] !== undefined)) {
+            const value = isPartial || hasKey(key, x) ? x[key] : undefined;
+            let validated = innerValidate(fields[key], value);
+            if (!validated.success) {
+              return {
+                success: false,
+                message: validated.message,
+                key: validated.key ? `${key}.${validated.key}` : key,
+              };
+            }
+            placeholder[key] = validated.value;
           }
         }
-      }
-
-      return { success: true, value: x };
+      });
     },
     {
       tag: 'record',
