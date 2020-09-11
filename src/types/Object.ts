@@ -26,6 +26,12 @@ export interface InternalRecord<
   readonly isReadonly: IsReadonly;
   asPartial(): Partial<O, IsReadonly>;
   asReadonly(): IsPartial extends false ? Obj<O, true> : Partial<O, true>;
+  pick<TKeys extends [keyof O, ...(keyof O)[]]>(
+    ...keys: TKeys
+  ): InternalRecord<Pick<O, TKeys[number]>, IsPartial, IsReadonly>;
+  omit<TKeys extends [keyof O, ...(keyof O)[]]>(
+    ...keys: TKeys
+  ): InternalRecord<Omit<O, TKeys[number]>, IsPartial, IsReadonly>;
 }
 
 export { Obj as Object };
@@ -89,6 +95,8 @@ export function InternalObject<O extends RecordFields, Part extends boolean, RO 
       fields,
       asPartial,
       asReadonly,
+      pick,
+      omit,
       show({ showChild }) {
         const keys = Object.keys(fields);
         return keys.length
@@ -114,6 +122,26 @@ export function InternalObject<O extends RecordFields, Part extends boolean, RO 
 
   function asReadonly(): any {
     return InternalObject(runtype.fields, runtype.isPartial, true);
+  }
+
+  function pick<TKeys extends [keyof O, ...(keyof O)[]]>(
+    ...keys: TKeys
+  ): InternalRecord<Pick<O, TKeys[number]>, Part, RO> {
+    const newFields: Pick<O, TKeys[number]> = {} as any;
+    for (const key of keys) {
+      newFields[key] = fields[key];
+    }
+    return InternalObject(newFields, isPartial, isReadonly);
+  }
+
+  function omit<TKeys extends [keyof O, ...(keyof O)[]]>(
+    ...keys: TKeys
+  ): InternalRecord<Omit<O, TKeys[number]>, Part, RO> {
+    const newFields: Omit<O, TKeys[number]> = { ...fields } as any;
+    for (const key of keys) {
+      if (key in newFields) delete (newFields as any)[key];
+    }
+    return InternalObject(newFields, isPartial, isReadonly);
   }
 }
 
