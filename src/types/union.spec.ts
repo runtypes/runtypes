@@ -1,4 +1,4 @@
-import { Union, String, Literal, Record, Number, InstanceOf, Tuple } from '..';
+import { Union, String, Literal, Object, Number, InstanceOf, Tuple } from '..';
 
 const ThreeOrString = Union(Literal(3), String);
 
@@ -16,9 +16,9 @@ describe('union', () => {
 
   describe('discriminated union', () => {
     it('should pick correct alternative with typescript docs example', () => {
-      const Square = Record({ kind: Literal('square'), size: Number });
-      const Rectangle = Record({ kind: Literal('rectangle'), width: Number, height: Number });
-      const Circle = Record({ kind: Literal('circle'), radius: Number });
+      const Square = Object({ kind: Literal('square'), size: Number });
+      const Rectangle = Object({ kind: Literal('rectangle'), width: Number, height: Number });
+      const Circle = Object({ kind: Literal('circle'), radius: Number });
 
       const Shape = Union(Square, Rectangle, Circle);
 
@@ -78,9 +78,9 @@ describe('union', () => {
     });
 
     it('should not pick alternative if the discriminant is not unique', () => {
-      const Square = Record({ kind: Literal('square'), size: Number });
-      const Rectangle = Record({ kind: Literal('rectangle'), width: Number, height: Number });
-      const CircularSquare = Record({ kind: Literal('square'), radius: Number });
+      const Square = Object({ kind: Literal('square'), size: Number });
+      const Rectangle = Object({ kind: Literal('rectangle'), width: Number, height: Number });
+      const CircularSquare = Object({ kind: Literal('square'), radius: Number });
 
       const Shape = Union(Square, Rectangle, CircularSquare);
 
@@ -88,8 +88,8 @@ describe('union', () => {
     });
 
     it('should not pick alternative if not all types are records', () => {
-      const Square = Record({ kind: Literal('square'), size: Number });
-      const Rectangle = Record({ kind: Literal('rectangle'), width: Number, height: Number });
+      const Square = Object({ kind: Literal('square'), size: Number });
+      const Rectangle = Object({ kind: Literal('rectangle'), width: Number, height: Number });
 
       const Shape = Union(Square, Rectangle, InstanceOf(Date));
 
@@ -97,9 +97,9 @@ describe('union', () => {
     });
 
     it('should handle tuples where the first component is a literal tag', () => {
-      const Square = Tuple(Literal('square'), Record({ size: Number }));
-      const Rectangle = Tuple(Literal('rectangle'), Record({ width: Number, height: Number }));
-      const Circle = Tuple(Literal('circle'), Record({ radius: Number }));
+      const Square = Tuple(Literal('square'), Object({ size: Number }));
+      const Rectangle = Tuple(Literal('rectangle'), Object({ width: Number, height: Number }));
+      const Circle = Tuple(Literal('circle'), Object({ radius: Number }));
 
       const Shape = Union(Square, Rectangle, Circle);
 
@@ -137,9 +137,9 @@ describe('union', () => {
     });
 
     it('hould not pick alternative if the tuple discriminant is not unique', () => {
-      const Square = Tuple(Literal('rectangle'), Record({ size: Number }));
-      const Rectangle = Tuple(Literal('rectangle'), Record({ width: Number, height: Number }));
-      const Circle = Tuple(Literal('circle'), Record({ radius: Number }));
+      const Square = Tuple(Literal('rectangle'), Object({ size: Number }));
+      const Rectangle = Tuple(Literal('rectangle'), Object({ width: Number, height: Number }));
+      const Circle = Tuple(Literal('circle'), Object({ radius: Number }));
 
       const Shape = Union(Square, Rectangle, Circle);
 
@@ -147,9 +147,9 @@ describe('union', () => {
     });
 
     it('hould not pick alternative if the tuple has no discriminant', () => {
-      const Square = Tuple(String, Record({ size: Number }));
-      const Rectangle = Tuple(String, Record({ width: Number, height: Number }));
-      const Circle = Tuple(String, Record({ radius: Number }));
+      const Square = Tuple(String, Object({ size: Number }));
+      const Rectangle = Tuple(String, Object({ width: Number, height: Number }));
+      const Circle = Tuple(String, Object({ radius: Number }));
 
       const Shape = Union(Square, Rectangle, Circle);
 
@@ -157,8 +157,8 @@ describe('union', () => {
     });
 
     it('should handle numeric tags', () => {
-      const Version1 = Tuple(Literal(1), Record({ size: Number }));
-      const Version2 = Tuple(Literal(2), Record({ width: Number, height: Number }));
+      const Version1 = Tuple(Literal(1), Object({ size: Number }));
+      const Version2 = Tuple(Literal(2), Object({ width: Number, height: Number }));
 
       const Shape = Union(Version1, Version2);
 
@@ -227,10 +227,10 @@ describe('union', () => {
       );
     });
     it('should handle branded tags', () => {
-      const Version1 = Tuple(Literal(1).withBrand('version'), Record({ size: Number }));
+      const Version1 = Tuple(Literal(1).withBrand('version'), Object({ size: Number }));
       const Version2 = Tuple(
         Literal(2).withBrand('version'),
-        Record({ width: Number, height: Number }),
+        Object({ width: Number, height: Number }),
       );
 
       const Shape = Union(Version1, Version2);
@@ -277,10 +277,10 @@ describe('union', () => {
       `);
     });
     it('should handle constraints', () => {
-      const Version1 = Tuple(Literal(1).withBrand('version'), Record({ size: Number }));
+      const Version1 = Tuple(Literal(1).withBrand('version'), Object({ size: Number }));
       const Version2 = Tuple(
         Literal(2).withBrand('version'),
-        Record({ width: Number, height: Number }),
+        Object({ width: Number, height: Number }),
       ).withConstraint(([_, { width, height }]) =>
         width > 0 && height > 0 ? true : 'Cannot have both width and height be 0',
       );

@@ -6,7 +6,7 @@ import {
   ParsedValue,
   Static,
   Literal,
-  Record,
+  Object,
   Union,
   Tuple,
   Codec,
@@ -116,8 +116,8 @@ test('DoubledNumber - 2', () => {
 });
 
 test('Upgrade Example', () => {
-  const ShapeV1 = Record({ version: Literal(1), size: Number });
-  const ShapeV2 = Record({ version: Literal(2), width: Number, height: Number });
+  const ShapeV1 = Object({ version: Literal(1), size: Number });
+  const ShapeV2 = Object({ version: Literal(2), width: Number, height: Number });
   const Shape = Union(
     ShapeV1.withParser({
       parse: ({ size }) => ({
@@ -352,10 +352,10 @@ test('Handle Being Outside Cycles - objects', () => {
   type RecursiveTypePreParse = { value: string | null; child: RecursiveTypePreParse };
   type RecursiveType = { child: RecursiveType };
   const RecursiveTypeWithoutParse: Codec<RecursiveType> = Lazy(() =>
-    Record({ child: RecursiveTypeWithoutParse }),
+    Object({ child: RecursiveTypeWithoutParse }),
   );
   const RecursiveType: Codec<RecursiveType> = Lazy(() =>
-    Record({ value: Union(String, Null), child: RecursiveType }).withParser({
+    Object({ value: Union(String, Null), child: RecursiveType }).withParser({
       parse({ value, ...rest }) {
         return {
           success: true,
@@ -394,7 +394,7 @@ test('Fails when cycles modify types', () => {
   type RecursiveTypePreParse = RecursiveTypePreParse[];
   type RecursiveType = { values: RecursiveType[] };
   const RecursiveTypeWithoutParse: Codec<RecursiveType> = Lazy(() =>
-    Record({ values: Array(RecursiveTypeWithoutParse) }),
+    Object({ values: Array(RecursiveTypeWithoutParse) }),
   );
   const RecursiveType: Codec<RecursiveType> = Lazy(
     () =>

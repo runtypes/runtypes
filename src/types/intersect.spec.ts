@@ -1,4 +1,4 @@
-import { Intersect, ParsedValue, Record, String, Tuple, Unknown } from '..';
+import { Intersect, ParsedValue, Object, String, Tuple, Unknown } from '..';
 
 // This is a super odd/unhelpful type that just JSON.stringify's whatever you
 // attempt to parse
@@ -20,8 +20,8 @@ test('Intersect can handle object keys being converted', () => {
       }
     },
   });
-  const NameRecord = Record({ name: String });
-  const UrlRecord = Record({ url: URLString });
+  const NameRecord = Object({ name: String });
+  const UrlRecord = Object({ url: URLString });
   const NamedURL = Intersect(NameRecord, UrlRecord);
 
   expect(NamedURL.safeParse({ name: 'example', url: 'http://example.com/foo/../' }))

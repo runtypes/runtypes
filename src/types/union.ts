@@ -11,7 +11,7 @@ import {
 import show from '../show';
 import { LiteralValue, isLiteralRuntype } from './literal';
 import { lazyValue, isLazyRuntype } from './lazy';
-import { isRecordRuntype } from './record';
+import { isObjectRuntype } from './Object';
 import { Result } from '../result';
 import { isTupleRuntype } from './tuple';
 import { isBrandRuntype } from './brand';
@@ -95,7 +95,7 @@ export function Union<
     // This must be lazy to avoid eagerly evaluating any circular references
     (): InnerValidate => {
       const alts = alternatives.map(resolveUnderlyingType);
-      const recordAlternatives = alts.filter(isRecordRuntype);
+      const recordAlternatives = alts.filter(isObjectRuntype);
       if (recordAlternatives.length === alternatives.length) {
         const commonLiteralFields: {
           [key: string]: Map<LiteralValue, RuntypeBase<TResult>>;

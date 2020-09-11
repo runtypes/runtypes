@@ -2,7 +2,7 @@ import { Static, create, RuntypeBase, Codec, createValidationPlaceholder } from 
 import { hasKey } from '../util';
 import show from '../show';
 
-type RecordFields = { readonly [_: string]: RuntypeBase<unknown> };
+export type RecordFields = { readonly [_: string]: RuntypeBase<unknown> };
 type RecordStaticType<
   O extends RecordFields,
   IsPartial extends boolean,
@@ -20,19 +20,16 @@ export interface InternalRecord<
   IsPartial extends boolean,
   IsReadonly extends boolean
 > extends Codec<RecordStaticType<O, IsPartial, IsReadonly>> {
-  readonly tag: 'record';
+  readonly tag: 'object';
   readonly fields: O;
   readonly isPartial: IsPartial;
   readonly isReadonly: IsReadonly;
   asPartial(): Partial<O, IsReadonly>;
-  asReadonly(): IsPartial extends false ? Record<O, true> : Partial<O, true>;
+  asReadonly(): IsPartial extends false ? Obj<O, true> : Partial<O, true>;
 }
 
-export type Record<O extends RecordFields, IsReadonly extends boolean> = InternalRecord<
-  O,
-  false,
-  IsReadonly
->;
+export { Obj as Object };
+type Obj<O extends RecordFields, IsReadonly extends boolean> = InternalRecord<O, false, IsReadonly>;
 
 export type Partial<O extends RecordFields, IsReadonly extends boolean> = InternalRecord<
   O,
@@ -40,18 +37,18 @@ export type Partial<O extends RecordFields, IsReadonly extends boolean> = Intern
   IsReadonly
 >;
 
-export function isRecordRuntype(
+export function isObjectRuntype(
   runtype: RuntypeBase,
 ): runtype is InternalRecord<RecordFields, boolean, boolean> {
   return (
-    'tag' in runtype && (runtype as InternalRecord<RecordFields, boolean, boolean>).tag === 'record'
+    'tag' in runtype && (runtype as InternalRecord<RecordFields, boolean, boolean>).tag === 'object'
   );
 }
 
 /**
- * Construct a record runtype from runtypes for its values.
+ * Construct an object runtype from runtypes for its values.
  */
-export function InternalRecord<O extends RecordFields, Part extends boolean, RO extends boolean>(
+export function InternalObject<O extends RecordFields, Part extends boolean, RO extends boolean>(
   fields: O,
   isPartial: Part,
   isReadonly: RO,
@@ -86,7 +83,7 @@ export function InternalRecord<O extends RecordFields, Part extends boolean, RO 
       });
     },
     {
-      tag: 'record',
+      tag: 'object',
       isPartial,
       isReadonly,
       fields,
@@ -112,18 +109,18 @@ export function InternalRecord<O extends RecordFields, Part extends boolean, RO 
   return runtype;
 
   function asPartial() {
-    return InternalRecord(runtype.fields, true, runtype.isReadonly);
+    return InternalObject(runtype.fields, true, runtype.isReadonly);
   }
 
   function asReadonly(): any {
-    return InternalRecord(runtype.fields, runtype.isPartial, true);
+    return InternalObject(runtype.fields, runtype.isPartial, true);
   }
 }
 
-export function Record<O extends RecordFields>(fields: O): Record<O, false> {
-  return InternalRecord(fields, false, false);
+function Obj<O extends RecordFields>(fields: O): Obj<O, false> {
+  return InternalObject(fields, false, false);
 }
 
 export function Partial<O extends RecordFields>(fields: O): Partial<O, false> {
-  return InternalRecord(fields, true, false);
+  return InternalObject(fields, true, false);
 }

@@ -1,4 +1,4 @@
-import { String, Number, Record } from './';
+import { String, Number, Object } from './';
 
 test('Runtype.validate', () => {
   expect(String.safeParse('hello')).toMatchInlineSnapshot(`
@@ -20,7 +20,7 @@ test('Runtype.assert', () => {
   expect(() => String.assert(42)).toThrowErrorMatchingInlineSnapshot(
     `"Expected string, but was number"`,
   );
-  expect(() => Record({ value: String }).assert({ value: 42 })).toThrowErrorMatchingInlineSnapshot(
+  expect(() => Object({ value: String }).assert({ value: 42 })).toThrowErrorMatchingInlineSnapshot(
     `"Expected string, but was number in value"`,
   );
 });
@@ -52,18 +52,18 @@ test('Runtype.Or', () => {
 
 test('Runtype.And', () => {
   expect(
-    Record({ a: String })
-      .And(Record({ b: Number }))
+    Object({ a: String })
+      .And(Object({ b: Number }))
       .test({ a: 'hello', b: 42 }),
   ).toBe(true);
   expect(
-    Record({ a: String })
-      .And(Record({ b: Number }))
+    Object({ a: String })
+      .And(Object({ b: Number }))
       .test({ a: 42, b: 42 }),
   ).toBe(false);
   expect(
-    Record({ a: String })
-      .And(Record({ b: Number }))
+    Object({ a: String })
+      .And(Object({ b: Number }))
       .test({ a: 'hello', b: 'hello' }),
   ).toBe(false);
 });

@@ -1,7 +1,7 @@
 import * as ta from 'type-assertions';
-import { Array, ReadonlyArray, Literal, Record } from '..';
+import { Array, ReadonlyArray, Literal, Object } from '..';
 
-const recordType = Record({ value: Literal(42) });
+const recordType = Object({ value: Literal(42) });
 const record = { value: 42 };
 
 test('Array', () => {

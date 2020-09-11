@@ -65,17 +65,17 @@ validate that the objects conform to their specifications. We do so by building 
 manner:
 
 ```ts
-import { Boolean, Number, String, Literal, Array, Tuple, Record, Union } from 'funtypes';
+import { Boolean, Number, String, Literal, Array, Tuple, Object, Union } from 'funtypes';
 
 const Vector = Tuple(Number, Number, Number);
 
-const Asteroid = Record({
+const Asteroid = Object({
   type: Literal('asteroid'),
   location: Vector,
   mass: Number,
 });
 
-const Planet = Record({
+const Planet = Object({
   type: Literal('planet'),
   location: Vector,
   mass: Number,
@@ -90,14 +90,14 @@ const Rank = Union(
   Literal('ensign'),
 );
 
-const CrewMember = Record({
+const CrewMember = Object({
   name: String,
   age: Number,
   rank: Rank,
   home: Planet,
 });
 
-const Ship = Record({
+const Ship = Object({
   type: Literal('ship'),
   location: Vector,
   mass: Number,
@@ -312,14 +312,14 @@ const MyStringMaybe = String.Or(Undefined); // string | undefined (e.g. 'text', 
 const MyStringNullable = String.Or(Null);   // string | null      (e.g. 'text', null)
 ```
 
-If a `Record` may or may not have some keys, we can declare the optional
+If a `Object` may or may not have some keys, we can declare the optional
 keys using `myRecord.And(Partial({ ... }))`.  Partial keys validate successfully if
 they are absent or undefined (but not null) or the type specified
 (which can be null).
 
 ```ts
 // Using `Ship` from above
-const RegisteredShip = Ship.And(Record({
+const RegisteredShip = Ship.And(Object({
   // All registered ships must have this flag
   isRegistered: Literal(true),
 })).And(Partial({
@@ -333,10 +333,10 @@ const RegisteredShip = Ship.And(Record({
 ```
 
 If a record has keys which _must be present_ but can be null, then use
-the `Record` runtype normally instead.
+the `Object` runtype normally instead.
 
 ```ts
-const MilitaryShip = Ship.And(Record({
+const MilitaryShip = Ship.And(Object({
   shipClass: Literal('military'),
   
   // Must NOT be undefined, but can be null
@@ -346,12 +346,12 @@ const MilitaryShip = Ship.And(Record({
 
 ## Readonly records and arrays
 
-Array and Record funtypes have a special function `.asReadonly()`, that creates a new runtype where the values are readonly.
+Array and Object funtypes have a special function `.asReadonly()`, that creates a new runtype where the values are readonly.
 
 For example:
 
 ```typescript
-const Asteroid = Record({
+const Asteroid = Object({
   type: Literal('asteroid'),
   location: Vector,
   mass: Number,
