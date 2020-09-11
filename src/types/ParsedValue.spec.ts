@@ -147,8 +147,8 @@ test('Upgrade Example', () => {
   `);
   expect(Shape.safeSerialize({ version: 1, size: 20 } as any)).toMatchInlineSnapshot(`
     Object {
-      "key": "<version: 1>",
-      "message": "ParsedValue<{ version: 1; size: number; }> does not support Runtype.serialize",
+      "key": "version",
+      "message": "Expected 2, but was 1",
       "success": false,
     }
   `);
@@ -161,7 +161,7 @@ test('Upgrade Example', () => {
     }
   `);
   expect(() => Shape.serialize({ version: 1, size: 20 } as any)).toThrowErrorMatchingInlineSnapshot(
-    `"ParsedValue<{ version: 1; size: number; }> does not support Runtype.serialize in <version: 1>"`,
+    `"Expected 2, but was 1 in version"`,
   );
 });
 

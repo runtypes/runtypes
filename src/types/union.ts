@@ -17,6 +17,7 @@ import { isTupleRuntype } from './tuple';
 import { isBrandRuntype } from './brand';
 import { isConstraintRuntype } from './constraint';
 import { isParsedValueRuntype } from './ParsedValue';
+import { Never } from '..';
 
 export type StaticUnion<TAlternatives extends readonly RuntypeBase<unknown>[]> = {
   [key in keyof TAlternatives]: TAlternatives[key] extends RuntypeBase<unknown>
@@ -39,11 +40,22 @@ function valueToString(value: any) {
     : typeof value;
 }
 
-function resolveUnderlyingType(runtype: RuntypeBase): RuntypeBase {
-  if (isLazyRuntype(runtype)) return resolveUnderlyingType(runtype.underlying());
-  if (isBrandRuntype(runtype)) return resolveUnderlyingType(runtype.entity);
-  if (isConstraintRuntype(runtype)) return resolveUnderlyingType(runtype.underlying);
-  if (isParsedValueRuntype(runtype)) return resolveUnderlyingType(runtype.underlying);
+function resolveUnderlyingType(runtype: RuntypeBase, mode: 'p' | 's' | 't'): RuntypeBase {
+  if (isLazyRuntype(runtype)) return resolveUnderlyingType(runtype.underlying(), mode);
+  if (isBrandRuntype(runtype)) return resolveUnderlyingType(runtype.entity, mode);
+  if (isConstraintRuntype(runtype)) return resolveUnderlyingType(runtype.underlying, mode);
+  if (mode === 'p' && isParsedValueRuntype(runtype))
+    return resolveUnderlyingType(runtype.underlying, mode);
+  if (mode === 't' && isParsedValueRuntype(runtype)) {
+    return runtype.config.test ? resolveUnderlyingType(runtype.config.test, mode) : Never;
+  }
+  if (mode === 's' && isParsedValueRuntype(runtype)) {
+    if (!runtype.config.serialize) {
+      // this node can never match
+      return Never;
+    }
+    return runtype.config.test ? resolveUnderlyingType(runtype.config.test, mode) : runtype;
+  }
 
   return runtype;
 }
@@ -91,18 +103,20 @@ export function Union<
       }
     };
   }
-  const innerValidator = lazyValue(
-    // This must be lazy to avoid eagerly evaluating any circular references
-    (): InnerValidate => {
-      const alts = alternatives.map(resolveUnderlyingType);
+
+  // This must be lazy to avoid eagerly evaluating any circular references
+  const validatorOf = (mode: 'p' | 's' | 't'): InnerValidate => {
+    const excludingNever = alternatives.filter(t => resolveUnderlyingType(t, mode).tag !== 'never');
+    if (excludingNever.length) {
+      const alts = excludingNever.map(t => resolveUnderlyingType(t, mode));
       const recordAlternatives = alts.filter(isObjectRuntype);
-      if (recordAlternatives.length === alternatives.length) {
+      if (recordAlternatives.length === excludingNever.length) {
         const commonLiteralFields: {
           [key: string]: Map<LiteralValue, RuntypeBase<TResult>>;
         } = {};
-        for (let i = 0; i < alternatives.length; i++) {
+        for (let i = 0; i < excludingNever.length; i++) {
           for (const fieldName in recordAlternatives[i].fields) {
-            const field = resolveUnderlyingType(recordAlternatives[i].fields[fieldName]);
+            const field = resolveUnderlyingType(recordAlternatives[i].fields[fieldName], mode);
             if (isLiteralRuntype(field)) {
               if (!commonLiteralFields[fieldName]) {
                 commonLiteralFields[fieldName] = new Map();
@@ -111,71 +125,91 @@ export function Union<
                 commonLiteralFields[fieldName].set(
                   field.value,
                   // @ts-expect-error
-                  alternatives[i],
+                  excludingNever[i],
                 );
               }
             }
           }
         }
         for (const tag of ['type', 'kind', 'tag', ...Object.keys(commonLiteralFields)]) {
-          if (tag in commonLiteralFields && commonLiteralFields[tag].size === alternatives.length) {
+          if (
+            tag in commonLiteralFields &&
+            commonLiteralFields[tag].size === excludingNever.length
+          ) {
             return validateWithKey(tag, commonLiteralFields[tag]);
           }
         }
       }
       const tupleAlternatives = alts.filter(isTupleRuntype);
-      if (tupleAlternatives.length === alternatives.length) {
+      if (tupleAlternatives.length === excludingNever.length) {
         const commonLiteralFields = new Map<LiteralValue, RuntypeBase<TResult>>();
-        for (let i = 0; i < alternatives.length; i++) {
-          const field = resolveUnderlyingType(tupleAlternatives[i].components[0]);
+        for (let i = 0; i < excludingNever.length; i++) {
+          const field = resolveUnderlyingType(tupleAlternatives[i].components[0], mode);
           if (isLiteralRuntype(field)) {
             if (!commonLiteralFields.has(field.value)) {
               commonLiteralFields.set(
                 field.value,
                 // @ts-expect-error
-                alternatives[i],
+                excludingNever[i],
               );
             }
           }
         }
-        if (commonLiteralFields.size === alternatives.length) {
+        if (commonLiteralFields.size === excludingNever.length) {
           return validateWithKey(0, commonLiteralFields);
         }
       }
-      return (value, innerValidate) => {
-        let errorsWithKey = 0;
-        let lastError;
-        let lastErrorRuntype;
-        for (const targetType of alternatives) {
-          const result = innerValidate(targetType, value);
-          if (result.success) {
-            return result as Result<TResult>;
-          }
-          if (result.key) {
-            errorsWithKey++;
-            lastError = result;
-            lastErrorRuntype = targetType;
-          }
+    }
+    return (value, innerValidate) => {
+      let errorsWithKey = 0;
+      let lastError;
+      let lastErrorRuntype;
+      for (const targetType of alternatives) {
+        const result = innerValidate(targetType, value);
+        if (result.success) {
+          return result as Result<TResult>;
         }
+        if (result.key) {
+          errorsWithKey++;
+          lastError = result;
+          lastErrorRuntype = targetType;
+        }
+      }
 
-        if (lastError && lastErrorRuntype && errorsWithKey === 1) {
-          return {
-            success: false,
-            message: lastError.message,
-            key: `<${show(lastErrorRuntype)}>.${lastError.key}`,
-          };
-        }
+      if (lastError && lastErrorRuntype && errorsWithKey === 1) {
         return {
           success: false,
-          message: `Expected ${show(runtype)}, but was ${value === null ? value : typeof value}`,
+          message: lastError.message,
+          key: `<${show(lastErrorRuntype)}>.${lastError.key}`,
         };
+      }
+      return {
+        success: false,
+        message: `Expected ${show(runtype)}, but was ${value === null ? value : typeof value}`,
       };
-    },
-  );
+    };
+  };
+  const innerValidator = lazyValue(() => ({
+    p: validatorOf('p'),
+    s: validatorOf('s'),
+    t: validatorOf('t'),
+  }));
 
   const runtype: Union<TAlternatives> = create<Union<TAlternatives>>(
-    (value, visited) => {
-      return innerValidator()(value, visited);
+    {
+      validate: (value, visited) => {
+        return innerValidator().p(value, visited);
+      },
+      serialize: (value, visited) => {
+        return innerValidator().s(value, visited);
+      },
+      test: (value, visited) => {
+        const result = innerValidator().s(
+          value,
+          (t, v) => visited(t, v) || { success: true, value: v as any },
+        );
+        return result.success ? undefined : result;
+      },
     },
     {
       tag: 'union',
