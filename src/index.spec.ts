@@ -25,7 +25,6 @@ import {
   Undefined,
   Union,
   Unknown,
-  Void,
 } from './index';
 
 import { Constructor } from './types/instanceof';
@@ -110,7 +109,6 @@ const runtypes: { [key: string]: Runtype<unknown> } = {
   Undefined,
   Null,
   Empty: ObjectType({}),
-  Void,
   Boolean,
   true: Literal(true),
   false: Literal(false),
@@ -596,10 +594,6 @@ describe('reflection', () => {
     expectLiteralField(Never, 'tag', 'never');
   });
 
-  it('void', () => {
-    expectLiteralField(Void, 'tag', 'unknown');
-  });
-
   it('boolean', () => {
     expectLiteralField(Boolean, 'tag', 'boolean');
   });
@@ -750,7 +744,6 @@ describe('change static type with Constraint', () => {
   X:
     | Unknown
     | Never
-    | Void
     | Boolean
     | Number
     | String

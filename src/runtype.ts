@@ -59,11 +59,6 @@ export interface RuntypeBase<TParsed = unknown> {
   test(x: any): x is TParsed;
 
   /**
-   * @deprecated use Runtype.test
-   */
-  guard(x: any): x is TParsed;
-
-  /**
    * Validates the value conforms to this type, and performs
    * the `parse` action for any `ParsedValue` types.
    *
@@ -75,11 +70,6 @@ export interface RuntypeBase<TParsed = unknown> {
   parse(x: any): TParsed;
 
   /**
-   * @deprecated use Runtype.parse
-   */
-  check(x: any): TParsed;
-
-  /**
    * Validates the value conforms to this type, and performs
    * the `parse` action for any `ParsedValue` types.
    *
@@ -87,11 +77,6 @@ export interface RuntypeBase<TParsed = unknown> {
    * error message. Does not throw!
    */
   safeParse(x: any): Result<TParsed>;
-
-  /**
-   * @deprecated use Runtype.safeParse
-   */
-  validate(x: any): Result<TParsed>;
 
   show?: (needsParens: boolean) => string;
 
@@ -197,13 +182,9 @@ export function create<TConfig extends Codec<any>>(
     | typeof internal
     | 'tag'
     | 'assert'
-    | 'check'
     | 'test'
-    | 'guard'
     | 'parse'
-    | 'check'
     | 'safeParse'
-    | 'validate'
     | 'serialize'
     | 'safeSerialize'
     | 'Or'
@@ -224,11 +205,8 @@ export function create<TConfig extends Codec<any>>(
       }
     },
     parse,
-    check: parse,
     safeParse,
-    validate: safeParse,
     test,
-    guard: test,
     serialize(x: any) {
       const validated = safeSerialize(x);
       if (!validated.success) {

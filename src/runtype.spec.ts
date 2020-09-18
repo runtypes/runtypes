@@ -1,6 +1,6 @@
 import { String, Number, Object } from './';
 
-test('Runtype.validate', () => {
+test('Runtype.safeParse', () => {
   expect(String.safeParse('hello')).toMatchInlineSnapshot(`
     Object {
       "success": true,

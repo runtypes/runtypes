@@ -7,7 +7,7 @@ const record = { value: 42 };
 test('StringRecord', () => {
   const dictionary = Record(String, recordType);
   ta.assert<
-    ta.Equal<ReturnType<typeof dictionary['check']>, { [key in string]?: { value: 42 } }>
+    ta.Equal<ReturnType<typeof dictionary['parse']>, { [key in string]?: { value: 42 } }>
   >();
   expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
@@ -34,7 +34,7 @@ test('StringRecord', () => {
 test('NumberRecord', () => {
   const dictionary = Record(Number, recordType);
   ta.assert<
-    ta.Equal<ReturnType<typeof dictionary['check']>, { [key in number]?: { value: 42 } }>
+    ta.Equal<ReturnType<typeof dictionary['parse']>, { [key in number]?: { value: 42 } }>
   >();
   expect(dictionary.safeParse({ 4: record, 3.14: record })).toMatchInlineSnapshot(`
     Object {
@@ -63,7 +63,7 @@ test('IntegerRecord', () => {
     recordType,
   );
   ta.assert<
-    ta.Equal<ReturnType<typeof dictionary['check']>, { [key in number]?: { value: 42 } }>
+    ta.Equal<ReturnType<typeof dictionary['parse']>, { [key in number]?: { value: 42 } }>
   >();
   expect(dictionary.safeParse({ 4: record, 2: record })).toMatchInlineSnapshot(`
     Object {
@@ -89,7 +89,7 @@ test('IntegerRecord', () => {
 test('UnionRecord - strings', () => {
   const dictionary = Record(Union(Literal('foo'), Literal('bar')), recordType);
   ta.assert<
-    ta.Equal<ReturnType<typeof dictionary['check']>, { [key in 'foo' | 'bar']?: { value: 42 } }>
+    ta.Equal<ReturnType<typeof dictionary['parse']>, { [key in 'foo' | 'bar']?: { value: 42 } }>
   >();
   expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
@@ -114,7 +114,7 @@ test('UnionRecord - strings', () => {
 test('UnionRecord - numbers', () => {
   const dictionary = Record(Union(Literal(24), Literal(42)), recordType);
   ta.assert<
-    ta.Equal<ReturnType<typeof dictionary['check']>, { [key in 24 | 42]?: { value: 42 } }>
+    ta.Equal<ReturnType<typeof dictionary['parse']>, { [key in 24 | 42]?: { value: 42 } }>
   >();
   expect(dictionary.safeParse({ 24: record, 42: record })).toMatchInlineSnapshot(`
     Object {
@@ -139,7 +139,7 @@ test('UnionRecord - numbers', () => {
 test('UnionRecord - mixed', () => {
   const dictionary = Record(Union(Literal('foo'), Literal(42)), recordType);
   ta.assert<
-    ta.Equal<ReturnType<typeof dictionary['check']>, { [key in 'foo' | 42]?: { value: 42 } }>
+    ta.Equal<ReturnType<typeof dictionary['parse']>, { [key in 'foo' | 42]?: { value: 42 } }>
   >();
   expect(dictionary.safeParse({ foo: record, 42: record })).toMatchInlineSnapshot(`
     Object {
@@ -157,35 +157,6 @@ test('UnionRecord - mixed', () => {
   expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
       "message": "Expected record key to be \\"foo\\" | 42, but was \\"bar\\"",
-      "success": false,
-    }
-  `);
-});
-
-test('Deprecated usage as object', () => {
-  const obj = Record({ value: String });
-  ta.assert<ta.Equal<ReturnType<typeof obj['check']>, { value: string }>>();
-  expect(obj.safeParse({ value: 'foo' })).toMatchInlineSnapshot(`
-    Object {
-      "success": true,
-      "value": Object {
-        "value": "foo",
-      },
-    }
-  `);
-  expect(obj.safeParse({ value: 24 })).toMatchInlineSnapshot(`
-    Object {
-      "fullError": Array [
-        "Unable to assign {value: 24} to { value: string; }",
-        Array [
-          "The types of \\"value\\" are not compatible",
-          Array [
-            "Expected string, but was 24",
-          ],
-        ],
-      ],
-      "key": "value",
-      "message": "Expected string, but was 24",
       "success": false,
     }
   `);

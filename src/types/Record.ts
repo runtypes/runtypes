@@ -13,7 +13,6 @@ import { Constraint } from './constraint';
 import { lazyValue } from './lazy';
 import { Union } from './union';
 import { expected, failure, Result } from '../result';
-import { RecordFields, Object as ObjectType } from './Object';
 
 export type KeyRuntypeBaseWithoutUnion =
   | Pick<String, keyof RuntypeBase>
@@ -52,20 +51,6 @@ export interface Record<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>
  * Construct a runtype for arbitrary dictionaries.
  */
 export function Record<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>(
-  key: K,
-  value: V,
-): Record<K, V>;
-/**
- * @deprecated Use Object instead
- */
-export function Record<O extends RecordFields>(fields: O): ObjectType<O, false>;
-export function Record(...args: any[]): any {
-  if (args.length === 1 && args[0] && typeof args[0] === 'object') {
-    return ObjectType(args[0]);
-  }
-  return RecordInternal(args[0], args[1]);
-}
-function RecordInternal<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>(
   key: K,
   value: V,
 ): Record<K, V> {

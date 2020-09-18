@@ -6,7 +6,7 @@ const record = { value: 42 };
 
 test('Array', () => {
   const dictionary = Array(recordType);
-  ta.assert<ta.Equal<ReturnType<typeof dictionary['check']>, { value: 42 }[]>>();
+  ta.assert<ta.Equal<ReturnType<typeof dictionary['parse']>, { value: 42 }[]>>();
   expect(dictionary.safeParse([record, record, record])).toMatchInlineSnapshot(`
     Object {
       "success": true,
@@ -43,7 +43,7 @@ test('Array', () => {
 
 test('Array.asReadonly', () => {
   const dictionary = Array(recordType).asReadonly();
-  ta.assert<ta.Equal<ReturnType<typeof dictionary['check']>, readonly { value: 42 }[]>>();
+  ta.assert<ta.Equal<ReturnType<typeof dictionary['parse']>, readonly { value: 42 }[]>>();
   expect(dictionary.safeParse([record, record, record])).toMatchInlineSnapshot(`
     Object {
       "success": true,
@@ -80,7 +80,7 @@ test('Array.asReadonly', () => {
 
 test('ReadonlyArray', () => {
   const dictionary = ReadonlyArray(recordType);
-  ta.assert<ta.Equal<ReturnType<typeof dictionary['check']>, readonly { value: 42 }[]>>();
+  ta.assert<ta.Equal<ReturnType<typeof dictionary['parse']>, readonly { value: 42 }[]>>();
   expect(dictionary.safeParse([record, record, record])).toMatchInlineSnapshot(`
     Object {
       "success": true,
