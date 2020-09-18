@@ -1,11 +1,12 @@
 import { Intersect, ParsedValue, Object, String, Tuple, Unknown } from '..';
+import { success } from '../result';
 
 // This is a super odd/unhelpful type that just JSON.stringify's whatever you
 // attempt to parse
 const ConvertIntoJSON = Unknown.withParser({
   name: 'ConvertIntoJSON',
   parse(value) {
-    return { success: true, value: JSON.stringify(value) };
+    return success(JSON.stringify(value));
   },
 });
 
@@ -14,7 +15,7 @@ test('Intersect can handle object keys being converted', () => {
     name: 'URLString',
     parse(value) {
       try {
-        return { success: true, value: new URL(value) };
+        return success(new URL(value));
       } catch (ex) {
         return { success: false, message: `Expected a valid URL but got '${value}'` };
       }
@@ -37,6 +38,15 @@ test('Intersect can handle object keys being converted', () => {
 
   expect(NamedURL.safeParse({ name: 'example', url: 'not a url' })).toMatchInlineSnapshot(`
     Object {
+      "fullError": Array [
+        "Unable to assign {name: \\"example\\", url: \\"not a url\\"} to { url: URLString; }",
+        Array [
+          "The types of \\"url\\" are not compatible",
+          Array [
+            "Expected a valid URL but got 'not a url'",
+          ],
+        ],
+      ],
       "key": "url",
       "message": "Expected a valid URL but got 'not a url'",
       "success": false,
@@ -61,7 +71,7 @@ test('Intersect can handle tuple entries being converted', () => {
     name: 'URLString',
     parse(value) {
       try {
-        return { success: true, value: new URL(value) };
+        return success(new URL(value));
       } catch (ex) {
         return { success: false, message: `Expected a valid URL but got '${value}'` };
       }
@@ -81,6 +91,15 @@ test('Intersect can handle tuple entries being converted', () => {
   `);
   expect(NamedURL.safeParse(['example', 'not a url'])).toMatchInlineSnapshot(`
     Object {
+      "fullError": Array [
+        "Unable to assign [\\"example\\", \\"not a url\\"] to [unknown, URLString]",
+        Array [
+          "The types of [1] are not compatible",
+          Array [
+            "Expected a valid URL but got 'not a url'",
+          ],
+        ],
+      ],
       "key": "[1]",
       "message": "Expected a valid URL but got 'not a url'",
       "success": false,
@@ -106,8 +125,14 @@ test('Intersect can handle String + Brand', () => {
   `);
   expect(Intersect(String, Unknown.withBrand('my_brand')).safeParse(42)).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected string, but was number",
+      "message": "Expected string, but was 42",
       "success": false,
     }
   `);
+});
+
+test('Intersect validates its inputs', () => {
+  expect(() => Intersect([String, Unknown] as any)).toThrowErrorMatchingInlineSnapshot(
+    `"Expected Runtype but got [Runtype<string>, Runtype<unknown>]"`,
+  );
 });

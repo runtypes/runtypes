@@ -1,28 +1,17 @@
 import { RuntypeBase } from './runtype';
-import { isLazyRuntype } from './types/lazy';
 
-const show = (needsParens: boolean, circular: Set<RuntypeBase<unknown>>) => (
-  runtype: RuntypeBase<unknown>,
-): string => {
-  const parenthesize = (s: string) => (needsParens ? `(${s})` : s);
-  const showChild = (runtype: RuntypeBase<unknown>, needsParens: boolean) =>
-    show(needsParens, circular)(runtype);
-
-  if (circular.has(runtype)) {
-    if (isLazyRuntype(runtype)) {
-      const underlying = runtype.underlying();
-      if (underlying !== runtype) {
-        return show(needsParens, circular)(underlying);
-      }
-    }
-    return parenthesize(`CIRCULAR ${runtype.tag}`);
+export const parenthesize = (s: string, needsParens: boolean) => (needsParens ? `(${s})` : s);
+const circular = new Set<RuntypeBase<unknown>>();
+const show = (runtype: RuntypeBase<unknown>, needsParens: boolean = false): string => {
+  if (circular.has(runtype) && runtype.tag !== 'lazy') {
+    return parenthesize(`CIRCULAR ${runtype.tag}`, needsParens);
   }
 
   if (runtype.show) {
     circular.add(runtype);
 
     try {
-      return runtype.show({ parenthesize, showChild, needsParens });
+      return runtype.show(needsParens);
     } finally {
       circular.delete(runtype);
     }
@@ -31,4 +20,4 @@ const show = (needsParens: boolean, circular: Set<RuntypeBase<unknown>>) => (
   return runtype.tag;
 };
 
-export default show(false, new Set<RuntypeBase>());
+export default show;

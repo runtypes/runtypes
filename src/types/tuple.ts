@@ -1,6 +1,13 @@
-import { create, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
-import { Array as Arr } from './array';
-import { Unknown } from './unknown';
+import {
+  expected,
+  failure,
+  Failure,
+  FullError,
+  typesAreNotCompatible,
+  unableToAssign,
+} from '../result';
+import { create, RuntypeBase, Codec, createValidationPlaceholder, assertRuntype } from '../runtype';
+import show from '../show';
 
 export type StaticTuple<TElements extends readonly RuntypeBase<unknown>[]> = {
   [key in keyof TElements]: TElements[key] extends RuntypeBase<infer E> ? E : unknown;
@@ -23,49 +30,50 @@ export function isTupleRuntype(runtype: RuntypeBase): runtype is Tuple<readonly 
 export function Tuple<
   T extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]] | readonly []
 >(...components: T): Tuple<T> {
-  return create<Tuple<T>>(
+  assertRuntype(...components);
+  const result = create<Tuple<T>>(
+    'tuple',
     (x, innerValidate) => {
-      const validated = innerValidate(Arr(Unknown), x);
-
-      if (!validated.success) {
-        return {
-          success: false,
-          message: `Expected tuple to be an array: ${validated.message}`,
-          key: validated.key,
-        };
+      if (!Array.isArray(x)) {
+        return expected(`tuple to be an array`, x);
       }
 
-      if (validated.value.length !== components.length) {
-        return {
-          success: false,
-          message: `Expected an array of length ${components.length}, but was ${validated.value.length}`,
-        };
+      if (x.length !== components.length) {
+        return expected(`an array of length ${components.length}`, x.length);
       }
 
-      return createValidationPlaceholder(validated.value as any, placeholder => {
+      return createValidationPlaceholder([...x] as any, placeholder => {
+        let fullError: FullError | undefined = undefined;
+        let firstError: Failure | undefined;
         for (let i = 0; i < components.length; i++) {
-          let validatedComponent = innerValidate(components[i], validated.value[i]);
+          let validatedComponent = innerValidate(components[i], x[i]);
 
           if (!validatedComponent.success) {
-            return {
-              success: false,
-              message: validatedComponent.message,
-              key: validatedComponent.key ? `[${i}].${validatedComponent.key}` : `[${i}]`,
-            };
+            if (!fullError) {
+              fullError = unableToAssign(x, result);
+            }
+            fullError.push(typesAreNotCompatible(`[${i}]`, validatedComponent));
+            firstError =
+              firstError ||
+              failure(validatedComponent.message, {
+                key: validatedComponent.key ? `[${i}].${validatedComponent.key}` : `[${i}]`,
+                fullError: fullError,
+              });
+          } else {
+            placeholder[i] = validatedComponent.value;
           }
-
-          placeholder[i] = validatedComponent.value;
         }
+        return firstError;
       });
     },
     {
-      tag: 'tuple',
       components,
-      show({ showChild }) {
+      show() {
         return `[${(components as readonly RuntypeBase<unknown>[])
-          .map(e => showChild(e, false))
+          .map(e => show(e, false))
           .join(', ')}]`;
       },
     },
   );
+  return result;
 }

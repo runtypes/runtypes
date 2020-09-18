@@ -67,9 +67,9 @@ const cases: [RuntypeBase, string][] = [
   [Intersect(Boolean, Number), 'boolean & number'],
   [Function, 'function'],
   [Lazy(() => Boolean), 'boolean'],
-  [Number.withConstraint(x => x > 3), 'number'],
+  [Number.withConstraint(x => x > 3), 'WithConstraint<number>'],
   [Number.withBrand('someNumber'), 'number'],
-  [Number.withBrand('someNumber').withConstraint(x => x > 3), 'number'],
+  [Number.withBrand('someNumber').withConstraint(x => x > 3), 'WithConstraint<number>'],
 
   // Parenthesization
   [Boolean.And(Number.Or(String)), 'boolean & (number | string)'],

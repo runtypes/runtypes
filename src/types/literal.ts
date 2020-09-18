@@ -1,4 +1,6 @@
+import { failure, success } from '../result';
 import { RuntypeBase, create, Codec } from '../runtype';
+import showValue from '../showValue';
 
 /**
  * The super type of all literal types.
@@ -11,13 +13,6 @@ export interface Literal<TLiteralValue extends LiteralValue = LiteralValue>
   readonly value: TLiteralValue;
 }
 
-/**
- * Be aware of an Array of Symbols `[Symbol()]` which would throw "TypeError: Cannot convert a Symbol value to a string"
- */
-function literal(value: unknown) {
-  return Array.isArray(value) ? String(value.map(String)) : String(value);
-}
-
 export function isLiteralRuntype(runtype: RuntypeBase): runtype is Literal {
   return 'tag' in runtype && (runtype as Literal).tag === 'literal';
 }
@@ -27,18 +22,19 @@ export function isLiteralRuntype(runtype: RuntypeBase): runtype is Literal {
  */
 export function Literal<A extends LiteralValue>(valueBase: A): Literal<A> {
   return create<Literal<A>>(
+    'literal',
     value =>
       value === valueBase
-        ? { success: true, value }
-        : {
-            success: false,
-            message: `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
-          },
+        ? success(value)
+        : failure(
+            `Expected literal ${showValue(valueBase)}, but was ${showValue(value)}${
+              typeof value !== typeof valueBase ? ` (i.e. a ${typeof value})` : ``
+            }`,
+          ),
     {
-      tag: 'literal',
       value: valueBase,
       show() {
-        return typeof valueBase === 'string' ? `"${valueBase}"` : String(valueBase);
+        return showValue(valueBase);
       },
     },
   );

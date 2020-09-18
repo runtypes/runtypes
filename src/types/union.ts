@@ -7,17 +7,28 @@ import {
   innerValidate,
   createVisitedState,
   OpaqueVisitedState,
+  assertRuntype,
 } from '../runtype';
-import show from '../show';
+import show, { parenthesize } from '../show';
 import { LiteralValue, isLiteralRuntype } from './literal';
 import { lazyValue, isLazyRuntype } from './lazy';
 import { isObjectRuntype } from './Object';
-import { Result } from '../result';
+import {
+  andError,
+  expected,
+  failure,
+  FullError,
+  Result,
+  success,
+  typesAreNotCompatible,
+  unableToAssign,
+} from '../result';
 import { isTupleRuntype } from './tuple';
 import { isBrandRuntype } from './brand';
 import { isConstraintRuntype } from './constraint';
 import { isParsedValueRuntype } from './ParsedValue';
 import { Never } from '..';
+import showValue from '../showValue';
 
 export type StaticUnion<TAlternatives extends readonly RuntypeBase<unknown>[]> = {
   [key in keyof TAlternatives]: TAlternatives[key] extends RuntypeBase<unknown>
@@ -30,14 +41,6 @@ export interface Union<TAlternatives extends readonly RuntypeBase<unknown>[]>
   readonly tag: 'union';
   readonly alternatives: TAlternatives;
   match: Match<TAlternatives>;
-}
-
-function valueToString(value: any) {
-  return value === null || typeof value === 'number' || typeof value === 'boolean'
-    ? value
-    : typeof value === 'string'
-    ? `'${value}'`
-    : typeof value;
 }
 
 function resolveUnderlyingType(runtype: RuntypeBase, mode: 'p' | 's' | 't'): RuntypeBase {
@@ -66,6 +69,7 @@ function resolveUnderlyingType(runtype: RuntypeBase, mode: 'p' | 's' | 't'): Run
 export function Union<
   TAlternatives extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
 >(...alternatives: TAlternatives): Union<TAlternatives> {
+  assertRuntype(...alternatives);
   type TResult = StaticUnion<TAlternatives>;
   type InnerValidate = (x: any, innerValidate: InnerValidateHelper) => Result<TResult>;
   function validateWithKey(
@@ -74,32 +78,36 @@ export function Union<
   ): InnerValidate {
     return (value, innerValidate) => {
       if (!value || typeof value !== 'object') {
-        return {
-          success: false,
-          message: `Expected ${show(runtype)}, but was ${value === null ? value : typeof value}`,
-        };
+        return expected(runtype, value);
       }
       const validator = types.get(value[tag]);
       if (validator) {
         const result = innerValidate(validator, value);
         if (!result.success) {
-          return {
-            success: false,
-            message: result.message,
-            key: `<${tag === 0 ? `[0]` : tag}: ${valueToString(value[tag])}>${
+          return failure(result.message, {
+            key: `<${tag === 0 ? `[0]` : tag}: ${showValue(value[tag])}>${
               result.key ? `.${result.key}` : ``
             }`,
-          };
+            fullError: unableToAssign(value, runtype, result),
+          });
         }
         return result;
       } else {
-        return {
-          success: false,
-          message: `Expected ${Array.from(types.keys())
+        const err = expected(
+          Array.from(types.keys())
             .map(v => (typeof v === 'string' ? `'${v}'` : v))
-            .join(' | ')}, but was ${valueToString(value[tag])}`,
-          key: tag === 0 ? `[0]` : tag,
-        };
+            .join(' | '),
+          value[tag],
+          {
+            key: tag === 0 ? `[0]` : tag,
+          },
+        );
+        err.fullError = unableToAssign(
+          value,
+          runtype,
+          typesAreNotCompatible(tag === 0 ? `[0]` : `"${tag}"`, err.message),
+        );
+        return err;
       }
     };
   }
@@ -164,10 +172,20 @@ export function Union<
       let errorsWithKey = 0;
       let lastError;
       let lastErrorRuntype;
+      let fullError: FullError | undefined;
       for (const targetType of alternatives) {
         const result = innerValidate(targetType, value);
         if (result.success) {
           return result as Result<TResult>;
+        }
+        if (!fullError) {
+          fullError = unableToAssign(
+            value,
+            runtype,
+            result.fullError || unableToAssign(value, targetType, result),
+          );
+        } else {
+          fullError.push(andError(result.fullError || unableToAssign(value, targetType, result)));
         }
         if (result.key) {
           errorsWithKey++;
@@ -177,16 +195,14 @@ export function Union<
       }
 
       if (lastError && lastErrorRuntype && errorsWithKey === 1) {
-        return {
-          success: false,
-          message: lastError.message,
+        return failure(lastError.message, {
           key: `<${show(lastErrorRuntype)}>.${lastError.key}`,
-        };
+          fullError,
+        });
       }
-      return {
-        success: false,
-        message: `Expected ${show(runtype)}, but was ${value === null ? value : typeof value}`,
-      };
+      return expected(runtype, value, {
+        fullError,
+      });
     };
   };
   const innerValidator = lazyValue(() => ({
@@ -196,27 +212,24 @@ export function Union<
   }));
 
   const runtype: Union<TAlternatives> = create<Union<TAlternatives>>(
+    'union',
     {
-      validate: (value, visited) => {
+      p: (value, visited) => {
         return innerValidator().p(value, visited);
       },
-      serialize: (value, visited) => {
+      s: (value, visited) => {
         return innerValidator().s(value, visited);
       },
-      test: (value, visited) => {
-        const result = innerValidator().s(
-          value,
-          (t, v) => visited(t, v) || { success: true, value: v as any },
-        );
+      t: (value, visited) => {
+        const result = innerValidator().s(value, (t, v) => visited(t, v) || success(v as any));
         return result.success ? undefined : result;
       },
     },
     {
-      tag: 'union',
       alternatives,
       match: match as any,
-      show({ parenthesize, showChild }) {
-        return parenthesize(`${alternatives.map(v => showChild(v, true)).join(' | ')}`);
+      show(needsParens) {
+        return parenthesize(`${alternatives.map(v => show(v, true)).join(' | ')}`, needsParens);
       },
     },
   );

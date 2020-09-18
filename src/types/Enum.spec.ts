@@ -19,13 +19,13 @@ test('Numeric Enum', () => {
   `);
   expect(Enum('NumericEnum', NumericEnum).safeParse(16)).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected NumericEnum, but was '16'",
+      "message": "Expected NumericEnum, but was 16",
       "success": false,
     }
   `);
   expect(Enum('NumericEnum', NumericEnum).safeParse('bar')).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected NumericEnum, but was 'bar'",
+      "message": "Expected NumericEnum, but was \\"bar\\"",
       "success": false,
     }
   `);
@@ -44,7 +44,7 @@ test('String Enum', () => {
   `);
   expect(Enum('StringEnum', StringEnum).safeParse('Hello')).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected StringEnum, but was 'Hello'",
+      "message": "Expected StringEnum, but was \\"Hello\\"",
       "success": false,
     }
   `);

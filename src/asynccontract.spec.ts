@@ -15,7 +15,7 @@ describe('AsyncContract', () => {
         Promise.resolve('hi' as any),
       );
       await expect(contractedFunction()).rejects.toMatchInlineSnapshot(
-        `[ValidationError: Expected number, but was string]`,
+        `[ValidationError: Expected number, but was "hi" (i.e. a string literal)]`,
       );
     });
   });
@@ -41,7 +41,7 @@ describe('AsyncContract', () => {
         Promise.resolve(n + 1),
       );
       await expect(contractedFunction('whatever' as any)).rejects.toMatchInlineSnapshot(
-        `[ValidationError: Expected number, but was string]`,
+        `[ValidationError: Expected number, but was "whatever" (i.e. a string literal)]`,
       );
     });
   });

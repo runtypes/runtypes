@@ -23,9 +23,9 @@ export function AsyncContract<A extends [any, ...any[]] | [], Z>(
     enforce: (f: (...args: any[]) => any) => (...args: any[]) => {
       if (args.length < argTypes.length) {
         return Promise.reject(
-          new ValidationError(
-            `Expected ${argTypes.length} arguments but only received ${args.length}`,
-          ),
+          new ValidationError({
+            message: `Expected ${argTypes.length} arguments but only received ${args.length}`,
+          }),
         );
       }
       const visited: OpaqueVisitedState = createVisitedState();
@@ -34,21 +34,21 @@ export function AsyncContract<A extends [any, ...any[]] | [], Z>(
         if (result.success) {
           args[i] = result.value;
         } else {
-          return Promise.reject(new ValidationError(result.message, result.key));
+          return Promise.reject(new ValidationError(result));
         }
       }
       const returnedPromise = f(...args);
       if (!(returnedPromise instanceof Promise)) {
         return Promise.reject(
-          new ValidationError(
-            `Expected function to return a promise, but instead got ${returnedPromise}`,
-          ),
+          new ValidationError({
+            message: `Expected function to return a promise, but instead got ${returnedPromise}`,
+          }),
         );
       }
       return returnedPromise.then(value => {
         const result = innerGuard(returnType, value, createGuardVisitedState());
         if (result) {
-          throw new ValidationError(result.message, result.key);
+          throw new ValidationError(result);
         }
         return value;
       });

@@ -5,6 +5,7 @@
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "postbuild": "tsc --noEmit && rimraf lib/**/*.spec.*",
     "build": "rollup -c",
@@ -21,7 +22,9 @@
     "jest": "24.9.0",
     "prettier": "^2.1.1",
     "rollup": "^2.26.11",
+    "rollup-plugin-prettier": "^2.1.0",
     "rollup-plugin-size-snapshot": "^0.12.0",
+    "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.27.2",
     "ts-jest": "^24.1.0",
     "type-assertions": "^1.1.0",

@@ -1,6 +1,15 @@
-import { Static, create, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
+import {
+  Static,
+  create,
+  RuntypeBase,
+  Codec,
+  createValidationPlaceholder,
+  assertRuntype,
+} from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
+import { Failure } from '..';
+import { expected, failure, FullError, typesAreNotCompatible, unableToAssign } from '../result';
 
 export type RecordFields = { readonly [_: string]: RuntypeBase<unknown> };
 type RecordStaticType<
@@ -59,37 +68,44 @@ export function InternalObject<O extends RecordFields, Part extends boolean, RO 
   isPartial: Part,
   isReadonly: RO,
 ): InternalRecord<O, Part, RO> {
+  assertRuntype(...Object.values(fields));
   const runtype: InternalRecord<O, Part, RO> = create<InternalRecord<O, Part, RO>>(
+    'object',
     (x, innerValidate) => {
-      if (x === null || x === undefined) {
-        return { success: false, message: `Expected ${show(runtype)}, but was ${x}` };
-      }
-      if (typeof x !== 'object') {
-        return { success: false, message: `Expected ${show(runtype)}, but was ${typeof x}` };
+      if (x === null || x === undefined || typeof x !== 'object') {
+        return expected(runtype, x);
       }
       if (Array.isArray(x)) {
-        return { success: false, message: `Expected ${show(runtype)}, but was an Array` };
+        return failure(`Expected ${show(runtype)}, but was an Array`);
       }
 
       return createValidationPlaceholder({} as any, (placeholder: any) => {
+        let fullError: FullError | undefined = undefined;
+        let firstError: Failure | undefined;
         for (const key in fields) {
           if (!isPartial || (hasKey(key, x) && x[key] !== undefined)) {
             const value = isPartial || hasKey(key, x) ? x[key] : undefined;
             let validated = innerValidate(fields[key], value);
             if (!validated.success) {
-              return {
-                success: false,
-                message: validated.message,
-                key: validated.key ? `${key}.${validated.key}` : key,
-              };
+              if (!fullError) {
+                fullError = unableToAssign(x, runtype);
+              }
+              fullError.push(typesAreNotCompatible(`"${key}"`, validated));
+              firstError =
+                firstError ||
+                failure(validated.message, {
+                  key: validated.key ? `${key}.${validated.key}` : key,
+                  fullError: fullError,
+                });
+            } else {
+              placeholder[key] = validated.value;
             }
-            placeholder[key] = validated.value;
           }
         }
+        return firstError;
       });
     },
     {
-      tag: 'object',
       isPartial,
       isReadonly,
       fields,
@@ -97,13 +113,13 @@ export function InternalObject<O extends RecordFields, Part extends boolean, RO 
       asReadonly,
       pick,
       omit,
-      show({ showChild }) {
+      show() {
         const keys = Object.keys(fields);
         return keys.length
           ? `{ ${keys
               .map(
                 k =>
-                  `${isReadonly ? 'readonly ' : ''}${k}${isPartial ? '?' : ''}: ${showChild(
+                  `${isReadonly ? 'readonly ' : ''}${k}${isPartial ? '?' : ''}: ${show(
                     fields[k],
                     false,
                   )};`,

@@ -9,7 +9,7 @@ test('Runtype.validate', () => {
   `);
   expect(String.safeParse(42)).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected string, but was number",
+      "message": "Expected string, but was 42",
       "success": false,
     }
   `);
@@ -18,24 +18,26 @@ test('Runtype.validate', () => {
 test('Runtype.assert', () => {
   expect(() => String.assert('hello')).not.toThrow();
   expect(() => String.assert(42)).toThrowErrorMatchingInlineSnapshot(
-    `"Expected string, but was number"`,
+    `"Expected string, but was 42"`,
   );
-  expect(() => Object({ value: String }).assert({ value: 42 })).toThrowErrorMatchingInlineSnapshot(
-    `"Expected string, but was number in value"`,
-  );
+  expect(() => Object({ value: String }).assert({ value: 42 })).toThrowErrorMatchingInlineSnapshot(`
+"Unable to assign {value: 42} to { value: string; }
+  The types of \\"value\\" are not compatible
+    Expected string, but was 42"
+`);
 });
 
 test('Runtype.assert', () => {
   expect(String.assert('hello')).toBe(undefined);
   expect(() => String.assert(42)).toThrowErrorMatchingInlineSnapshot(
-    `"Expected string, but was number"`,
+    `"Expected string, but was 42"`,
   );
 });
 
 test('Runtype.check', () => {
   expect(String.parse('hello')).toBe('hello');
   expect(() => String.parse(42)).toThrowErrorMatchingInlineSnapshot(
-    `"Expected string, but was number"`,
+    `"Expected string, but was 42"`,
   );
 });
 

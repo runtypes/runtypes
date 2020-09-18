@@ -2,23 +2,36 @@ import { Result, Union, Intersect, Constraint, ConstraintCheck, Brand, Failure }
 import show from './show';
 import { ValidationError } from './errors';
 import { ParsedValue, ParsedValueConfig } from './types/ParsedValue';
+import showValue from './showValue';
+import { failure, success } from './result';
 
 export type InnerValidateHelper = <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>;
 declare const internalSymbol: unique symbol;
-const internal: typeof internalSymbol = ('__internal__' as unknown) as typeof internalSymbol;
+const internal: typeof internalSymbol = ('__internal_runtype_methods__' as unknown) as typeof internalSymbol;
+
+export function assertRuntype(...values: RuntypeBase[]) {
+  for (const value of values) {
+    if (!value || !value[internal]) {
+      throw new Error(`Expected Runtype but got ${showValue(value)}`);
+    }
+  }
+}
+export function isRuntype(value: unknown): value is RuntypeBase {
+  return typeof value === 'object' && value != null && internal in value;
+}
 
 export type ResultWithCycle<T> = (Result<T> & { cycle?: false }) | Cycle<T>;
 export interface InternalValidation<TParsed> {
-  validate(
+  p(
     x: any,
     innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Result<T>,
     innerValidateToPlaceholder: <T>(runtype: RuntypeBase<T>, value: unknown) => ResultWithCycle<T>,
   ): ResultWithCycle<TParsed>;
-  test?: (
+  t?: (
     x: any,
     innerValidate: <T>(runtype: RuntypeBase<T>, value: unknown) => Failure | undefined,
   ) => Failure | undefined;
-  serialize?: (
+  s?: (
     // any is used here to ensure TypeScript still treats RuntypeBase as
     // covariant.
     x: any,
@@ -80,11 +93,7 @@ export interface RuntypeBase<TParsed = unknown> {
    */
   validate(x: any): Result<TParsed>;
 
-  show?: (ctx: {
-    needsParens: boolean;
-    parenthesize: (str: string) => string;
-    showChild: (rt: RuntypeBase, needsParens: boolean) => string;
-  }) => string;
+  show?: (needsParens: boolean) => string;
 
   [internal]: InternalValidation<TParsed>;
 }
@@ -179,11 +188,14 @@ export interface Codec<TParsed> extends Runtype<TParsed> {
 export type Static<A extends RuntypeBase<any>> = A extends RuntypeBase<infer T> ? T : unknown;
 
 export function create<TConfig extends Codec<any>>(
+  tag: TConfig['tag'],
   internalImplementation:
     | InternalValidation<Static<TConfig>>
-    | InternalValidation<Static<TConfig>>['validate'],
+    | InternalValidation<Static<TConfig>>['p'],
   config: Omit<
     TConfig,
+    | typeof internal
+    | 'tag'
     | 'assert'
     | 'check'
     | 'test'
@@ -200,31 +212,53 @@ export function create<TConfig extends Codec<any>>(
     | 'withGuard'
     | 'withBrand'
     | 'withParser'
-    | typeof internal
   >,
 ): TConfig {
   const A: Codec<Static<TConfig>> = {
     ...config,
-    assert,
+    tag,
+    assert(x: any): asserts x is Static<TConfig> {
+      const validated = innerGuard(A, x, createGuardVisitedState());
+      if (validated) {
+        throw new ValidationError(validated);
+      }
+    },
     parse,
     check: parse,
     safeParse,
     validate: safeParse,
     test,
     guard: test,
-    serialize,
+    serialize(x: any) {
+      const validated = safeSerialize(x);
+      if (!validated.success) {
+        throw new ValidationError(validated);
+      }
+      return validated.value;
+    },
     safeSerialize,
-    Or,
-    And,
-    withConstraint,
-    withGuard,
-    withBrand,
-    withParser,
+    Or: <B extends RuntypeBase>(B: B): Union<[Codec<Static<TConfig>>, B]> => Union(A, B),
+    And: <B extends RuntypeBase>(B: B): Intersect<[Codec<Static<TConfig>>, B]> => Intersect(A, B),
+    withConstraint: <T extends Static<TConfig>, K = unknown>(
+      constraint: ConstraintCheck<Codec<Static<TConfig>>>,
+      options?: { name?: string; args?: K },
+    ): Constraint<Codec<Static<TConfig>>, T, K> =>
+      Constraint<Codec<Static<TConfig>>, T, K>(A, constraint, options),
+    withGuard: <T extends Static<TConfig>, K = unknown>(
+      test: (x: Static<TConfig>) => x is T,
+      options?: { name?: string; args?: K },
+    ): Constraint<Codec<Static<TConfig>>, T, K> =>
+      Constraint<Codec<Static<TConfig>>, T, K>(A, test, options),
+    withBrand: <B extends string>(B: B): Brand<B, Codec<Static<TConfig>>> =>
+      Brand<B, Codec<Static<TConfig>>>(B, A),
+    withParser: <TParsed>(
+      config: ParsedValueConfig<Codec<Static<TConfig>>, TParsed>,
+    ): ParsedValue<Codec<Static<TConfig>>, TParsed> => ParsedValue(A as any, config),
     toString: () => `Runtype<${show(A)}>`,
     [internal]:
       typeof internalImplementation === 'function'
         ? {
-            validate: internalImplementation,
+            p: internalImplementation,
           }
         : internalImplementation,
   };
@@ -240,59 +274,14 @@ export function create<TConfig extends Codec<any>>(
   function parse(x: any) {
     const validated = safeParse(x);
     if (!validated.success) {
-      throw new ValidationError(validated.message, validated.key);
-    }
-    return validated.value;
-  }
-  function serialize(x: any) {
-    const validated = safeSerialize(x);
-    if (!validated.success) {
-      throw new ValidationError(validated.message, validated.key);
+      throw new ValidationError(validated);
     }
     return validated.value;
   }
 
-  function assert(x: any): asserts x is Static<TConfig> {
-    const validated = innerGuard(A, x, createGuardVisitedState());
-    if (validated) {
-      throw new ValidationError(validated.message, validated.key);
-    }
-  }
   function test(x: any): x is Static<TConfig> {
     const validated = innerGuard(A, x, createGuardVisitedState());
     return validated === undefined;
-  }
-
-  function Or<B extends RuntypeBase>(B: B): Union<[Codec<Static<TConfig>>, B]> {
-    return Union(A, B);
-  }
-
-  function And<B extends RuntypeBase>(B: B): Intersect<[Codec<Static<TConfig>>, B]> {
-    return Intersect(A, B);
-  }
-
-  function withConstraint<T extends Static<TConfig>, K = unknown>(
-    constraint: ConstraintCheck<Codec<Static<TConfig>>>,
-    options?: { name?: string; args?: K },
-  ): Constraint<Codec<Static<TConfig>>, T, K> {
-    return Constraint<Codec<Static<TConfig>>, T, K>(A, constraint, options);
-  }
-
-  function withGuard<T extends Static<TConfig>, K = unknown>(
-    test: (x: Static<TConfig>) => x is T,
-    options?: { name?: string; args?: K },
-  ): Constraint<Codec<Static<TConfig>>, T, K> {
-    return Constraint<Codec<Static<TConfig>>, T, K>(A, test, options);
-  }
-
-  function withBrand<B extends string>(B: B): Brand<B, Codec<Static<TConfig>>> {
-    return Brand<B, Codec<Static<TConfig>>>(B, A);
-  }
-
-  function withParser<TParsed>(
-    config: ParsedValueConfig<Codec<Static<TConfig>>, TParsed>,
-  ): ParsedValue<Codec<Static<TConfig>>, TParsed> {
-    return ParsedValue(A as any, config);
   }
 }
 
@@ -305,11 +294,11 @@ export type Cycle<T> = {
 
 function attemptMixin<T>(placeholder: any, value: T): Result<T> {
   if (placeholder === value) {
-    return { success: true, value };
+    return success(value);
   }
   if (Array.isArray(placeholder) && Array.isArray(value)) {
     placeholder.splice(0, placeholder.length, ...value);
-    return { success: true, value: placeholder as any };
+    return success(placeholder as any);
   }
   if (
     placeholder &&
@@ -320,26 +309,22 @@ function attemptMixin<T>(placeholder: any, value: T): Result<T> {
     !Array.isArray(value)
   ) {
     Object.assign(placeholder, value);
-    return { success: true, value: placeholder };
+    return success(placeholder);
   }
-  return {
-    success: false,
-    message: `Cannot convert a value of type "${
+  return failure(
+    `Cannot convert a value of type "${
       Array.isArray(placeholder) ? 'Array' : typeof placeholder
     }" into a value of type "${
       value === null ? 'null' : Array.isArray(value) ? 'Array' : typeof value
     }" when it contains cycles.`,
-  };
+  );
 }
 
 export function createValidationPlaceholder<T>(
   placeholder: T,
   fn: (placeholder: T) => Failure | undefined,
 ): Cycle<T> {
-  return innerMapValidationPlaceholder(
-    placeholder,
-    () => fn(placeholder) || { success: true, value: placeholder },
-  );
+  return innerMapValidationPlaceholder(placeholder, () => fn(placeholder) || success(placeholder));
 }
 
 export function mapValidationPlaceholder<T, S>(
@@ -383,7 +368,7 @@ function innerMapValidationPlaceholder(
         hasCycle = true;
         return cache;
       }
-      cache = { success: true, value: placeholder };
+      cache = success(placeholder);
 
       const sourceResult = populate();
       const result = sourceResult.success && fn ? fn(sourceResult.value) : sourceResult;
@@ -464,7 +449,7 @@ function innerValidateToPlaceholder<T>(
   if (cached !== undefined) {
     return cached;
   }
-  const result = validator.validate(
+  const result = validator.p(
     value,
     (t, v) => innerValidate(t, v, $visited),
     (t, v) => innerValidateToPlaceholder(t, v, $visited),
@@ -498,7 +483,7 @@ function innerSerializeToPlaceholder(
   if (cached !== undefined) {
     return cached;
   }
-  let result = (validator.serialize || validator.validate)(
+  let result = (validator.s || validator.p)(
     value,
     (t, v) => innerSerialize(t, v, $visited),
     (t, v) => innerSerializeToPlaceholder(t, v, $visited),
@@ -522,13 +507,13 @@ export function innerGuard(
     if (cached) return undefined;
     visited.set(targetType, (visited.get(targetType) || new Set()).add(value));
   }
-  if (validator.test) {
-    return validator.test(value, (t, v) => innerGuard(t, v, $visited));
+  if (validator.t) {
+    return validator.t(value, (t, v) => innerGuard(t, v, $visited));
   }
-  let result = validator.validate(
+  let result = validator.p(
     value,
-    (t, v) => innerGuard(t, v, $visited) || { success: true, value: v as any },
-    (t, v) => innerGuard(t, v, $visited) || { success: true, value: v as any },
+    (t, v) => innerGuard(t, v, $visited) || success(v as any),
+    (t, v) => innerGuard(t, v, $visited) || success(v as any),
   );
   if (result.cycle) result = result.unwrap();
   if (result.success) return undefined;

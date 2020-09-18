@@ -25,7 +25,7 @@ test('StringRecord', () => {
   expect(dictionary.safeParse({ foo: record, bar: { value: 24 } })).toMatchInlineSnapshot(`
     Object {
       "key": "bar.value",
-      "message": "Expected literal '42', but was '24'",
+      "message": "Expected literal 42, but was 24",
       "success": false,
     }
   `);
@@ -51,7 +51,7 @@ test('NumberRecord', () => {
   `);
   expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected record key to be a number, but was 'foo'",
+      "message": "Expected record key to be a number, but was \\"foo\\"",
       "success": false,
     }
   `);
@@ -80,7 +80,7 @@ test('IntegerRecord', () => {
   `);
   expect(dictionary.safeParse({ 4: record, 3.14: record })).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected record key to be Integer, but was '3.14'",
+      "message": "Expected record key to be Integer, but was \\"3.14\\"",
       "success": false,
     }
   `);
@@ -106,7 +106,7 @@ test('UnionRecord - strings', () => {
   `);
   expect(dictionary.safeParse({ 10: record })).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected record key to be \\"foo\\" | \\"bar\\", but was '10'",
+      "message": "Expected record key to be \\"foo\\" | \\"bar\\", but was \\"10\\"",
       "success": false,
     }
   `);
@@ -131,7 +131,7 @@ test('UnionRecord - numbers', () => {
   `);
   expect(dictionary.safeParse({ 10: record })).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected record key to be 24 | 42, but was '10'",
+      "message": "Expected record key to be 24 | 42, but was \\"10\\"",
       "success": false,
     }
   `);
@@ -156,7 +156,7 @@ test('UnionRecord - mixed', () => {
   `);
   expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
-      "message": "Expected record key to be \\"foo\\" | 42, but was 'bar'",
+      "message": "Expected record key to be \\"foo\\" | 42, but was \\"bar\\"",
       "success": false,
     }
   `);
@@ -175,8 +175,17 @@ test('Deprecated usage as object', () => {
   `);
   expect(obj.safeParse({ value: 24 })).toMatchInlineSnapshot(`
     Object {
+      "fullError": Array [
+        "Unable to assign {value: 24} to { value: string; }",
+        Array [
+          "The types of \\"value\\" are not compatible",
+          Array [
+            "Expected string, but was 24",
+          ],
+        ],
+      ],
       "key": "value",
-      "message": "Expected string, but was number",
+      "message": "Expected string, but was 24",
       "success": false,
     }
   `);

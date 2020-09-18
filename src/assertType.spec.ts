@@ -8,7 +8,7 @@ test('assertType', async () => {
   expectString(x);
 
   expect(() => assertType(String, 42)).toThrowErrorMatchingInlineSnapshot(
-    `"Expected string, but was number"`,
+    `"Expected string, but was 42"`,
   );
 });
 

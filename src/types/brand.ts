@@ -1,4 +1,5 @@
-import { RuntypeBase, Static, create, Codec } from '../runtype';
+import { RuntypeBase, Static, create, Codec, assertRuntype } from '../runtype';
+import show from '../show';
 
 export const RuntypeName = Symbol('RuntypeName');
 
@@ -18,16 +19,16 @@ export function isBrandRuntype(runtype: RuntypeBase): runtype is Brand<string, R
 }
 
 export function Brand<B extends string, A extends RuntypeBase<unknown>>(brand: B, entity: A) {
+  assertRuntype(entity);
   return create<Brand<B, A>>(
-    (value, _innerValidate, innerValidateToPlaceholder) => {
-      return innerValidateToPlaceholder(entity, value) as any;
-    },
+    'brand',
+    (value, _innerValidate, innerValidateToPlaceholder) =>
+      innerValidateToPlaceholder(entity, value) as any,
     {
-      tag: 'brand',
       brand,
       entity,
-      show({ showChild, needsParens }) {
-        return showChild(entity, needsParens);
+      show(needsParens) {
+        return show(entity, needsParens);
       },
     },
   );

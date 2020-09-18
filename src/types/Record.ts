@@ -1,12 +1,18 @@
-import { create, Static, RuntypeBase, Codec, createValidationPlaceholder } from '../runtype';
+import {
+  create,
+  Static,
+  RuntypeBase,
+  Codec,
+  createValidationPlaceholder,
+  assertRuntype,
+} from '../runtype';
 import show from '../show';
-import { String } from './string';
-import { Number } from './number';
+import { String, Number } from './primative';
 import { Literal } from './literal';
 import { Constraint } from './constraint';
 import { lazyValue } from './lazy';
 import { Union } from './union';
-import { Result } from '../result';
+import { expected, failure, Result } from '../result';
 import { RecordFields, Object as ObjectType } from './Object';
 
 export type KeyRuntypeBaseWithoutUnion =
@@ -63,36 +69,27 @@ function RecordInternal<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>
   key: K,
   value: V,
 ): Record<K, V> {
+  assertRuntype(key, value);
   const expectedBaseType = lazyValue(() => getExpectedBaseType(key));
   const runtype: Record<K, V> = create<Record<K, V>>(
+    'record',
     (x, innerValidate) => {
-      if (x === null || x === undefined) {
-        return { success: false, message: `Expected ${show(runtype)}, but was ${x}` };
-      }
-
-      if (typeof x !== 'object') {
-        return { success: false, message: `Expected ${show(runtype)}, but was ${typeof x}` };
+      if (x === null || x === undefined || typeof x !== 'object') {
+        return expected(runtype, x);
       }
 
       if (Object.getPrototypeOf(x) !== Object.prototype) {
         if (!Array.isArray(x)) {
-          return {
-            success: false,
-            message: `Expected ${show(runtype)}, but was ${Object.getPrototypeOf(x)}`,
-          };
+          return failure(`Expected ${show(runtype)}, but was ${Object.getPrototypeOf(x)}`);
         }
-        return { success: false, message: 'Expected record, but was array' };
+        return failure('Expected Record, but was Array');
       }
 
       return createValidationPlaceholder<{ [_ in Static<K>]?: Static<V> }>({}, placeholder => {
         for (const k in x) {
           let keyValidation: Result<string | number> | null = null;
           if (expectedBaseType() === 'number') {
-            if (isNaN(+k))
-              return {
-                success: false,
-                message: `Expected record key to be a number, but was '${k}'`,
-              };
+            if (isNaN(+k)) return expected(`record key to be a number`, k);
             keyValidation = innerValidate(key, +k);
           } else if (expectedBaseType() === 'string') {
             keyValidation = innerValidate(key, k);
@@ -103,30 +100,24 @@ function RecordInternal<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>
             }
           }
           if (!keyValidation.success) {
-            return {
-              success: false,
-              message: `Expected record key to be ${show(key)}, but was '${k}'`,
-            };
+            return expected(`record key to be ${show(key)}`, k);
           }
 
           const validated = innerValidate(value, (x as any)[k]);
           if (!validated.success) {
-            return {
-              success: false,
-              message: validated.message,
+            return failure(validated.message, {
               key: validated.key ? `${k}.${validated.key}` : k,
-            };
+            });
           }
           (placeholder as any)[keyValidation.value] = validated.value;
         }
       });
     },
     {
-      tag: 'record',
       key,
       value,
-      show({ showChild }) {
-        return `{ [_: ${showChild(key, false)}]: ${showChild(value, false)} }`;
+      show() {
+        return `{ [_: ${show(key, false)}]: ${show(value, false)} }`;
       },
     },
   );

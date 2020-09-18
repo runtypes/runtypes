@@ -1,3 +1,4 @@
+import { expected, success } from '../result';
 import { create, Codec } from '../runtype';
 
 export interface Constructor<V> {
@@ -11,21 +12,12 @@ export interface InstanceOf<V = unknown> extends Codec<V> {
 
 export function InstanceOf<V>(ctor: Constructor<V>): InstanceOf<V> {
   return create<InstanceOf<V>>(
-    value =>
-      value instanceof ctor
-        ? { success: true, value }
-        : {
-            success: false,
-            message: `Expected ${(ctor as any).name}, but was ${
-              value === null ? value : typeof value
-            }`,
-          },
+    'instanceof',
+    value => (value instanceof ctor ? success(value) : expected(`${(ctor as any).name}`, value)),
     {
-      tag: 'instanceof',
       ctor: ctor,
       show() {
-        const name = (ctor as any).name;
-        return `InstanceOf<${name}>`;
+        return `InstanceOf<${(ctor as any).name}>`;
       },
     },
   );

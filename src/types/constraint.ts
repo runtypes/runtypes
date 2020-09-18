@@ -1,5 +1,7 @@
-import { RuntypeBase, Static, create, Codec } from '../runtype';
-import { String } from './string';
+import { failure, success, unableToAssign } from '../result';
+import { RuntypeBase, Static, create, Codec, assertRuntype } from '../runtype';
+import show from '../show';
+import showValue from '../showValue';
 import { Unknown } from './unknown';
 
 export type ConstraintCheck<A extends RuntypeBase<unknown>> = (x: Static<A>) => boolean | string;
@@ -35,7 +37,11 @@ export function Constraint<
   constraint: ConstraintCheck<TUnderlying>,
   options?: { name?: string; args?: TArgs },
 ): Constraint<TUnderlying, TConstrained, TArgs> {
-  return create<Constraint<TUnderlying, TConstrained, TArgs>>(
+  assertRuntype(underlying);
+  const runtype: Constraint<TUnderlying, TConstrained, TArgs> = create<
+    Constraint<TUnderlying, TConstrained, TArgs>
+  >(
+    'constraint',
     (value, innerValidate) => {
       const name = options && options.name;
       const validated = innerValidate(underlying, value);
@@ -45,22 +51,29 @@ export function Constraint<
       }
 
       const result = constraint(validated.value as any);
-      if (String.test(result)) return { success: false, message: result };
-      else if (!result) return { success: false, message: `Failed ${name || 'constraint'} check` };
-      return { success: true, value: validated.value as TConstrained };
+      if (!result || typeof result === 'string') {
+        const message =
+          typeof result === 'string'
+            ? result
+            : `${showValue(value)} failed ${name || 'constraint'} check`;
+        return failure(message, {
+          fullError: unableToAssign(value, runtype, message),
+        });
+      }
+      return success(validated.value as TConstrained);
     },
     {
-      tag: 'constraint',
       underlying,
       constraint,
       name: options && options.name,
       args: options && options.args,
 
-      show({ needsParens, showChild }) {
-        return (options && options.name) || showChild(underlying, needsParens);
+      show(needsParens) {
+        return (options && options.name) || `WithConstraint<${show(underlying, needsParens)}>`;
       },
     },
   );
+  return runtype;
 }
 
 export interface Guard<TConstrained, TArgs = unknown>
