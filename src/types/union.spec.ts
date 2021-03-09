@@ -1,4 +1,4 @@
-import { Union, String, Literal, Object, Number, InstanceOf, Tuple } from '..';
+import { Array, Union, String, Literal, Object, Number, InstanceOf, Tuple } from '..';
 
 const ThreeOrString = Union(Literal(3), String);
 
@@ -580,5 +580,140 @@ describe('union', () => {
         }
       `);
     });
+  });
+  it('does not break when reusing the same validator in multiple parts of the union', () => {
+    const InnerObject = Object({
+      myProp: String,
+    });
+    const OuterObjectA = Object({
+      key: Object({ value: String }),
+      body: InnerObject,
+    });
+    const OuterObjectB = Object({
+      key: Object({ value: Number }),
+      body: InnerObject,
+    });
+    expect(
+      Union(OuterObjectA, OuterObjectB).safeParse({
+        key: { value: 42 },
+        body: { noMyPropHere: true },
+      }),
+    ).toMatchInlineSnapshot(`
+      Object {
+        "fullError": Array [
+          "Unable to assign {key: {value: 42}, body: {noMyPropHere: true}} to { key: { value: string; }; body: { myProp: string; }; } | { key: { value: number; }; body: { myProp: string; }; }",
+          Array [
+            "Unable to assign {key: {value: 42}, body: {noMyPropHere: true}} to { key: { value: string; }; body: { myProp: string; }; }",
+            Array [
+              "The types of \\"key\\" are not compatible",
+              Array [
+                "Unable to assign {value: 42} to { value: string; }",
+                Array [
+                  "The types of \\"value\\" are not compatible",
+                  Array [
+                    "Expected string, but was 42",
+                  ],
+                ],
+              ],
+            ],
+            Array [
+              "The types of \\"body\\" are not compatible",
+              Array [
+                "Unable to assign {noMyPropHere: true} to { myProp: string; }",
+                Array [
+                  "The types of \\"myProp\\" are not compatible",
+                  Array [
+                    "Expected string, but was undefined",
+                  ],
+                ],
+              ],
+            ],
+          ],
+          Array [
+            "And unable to assign {key: {value: 42}, body: {noMyPropHere: true}} to { key: { value: number; }; body: { myProp: string; }; }",
+            Array [
+              "The types of \\"body\\" are not compatible",
+              Array [
+                "Unable to assign {noMyPropHere: true} to { myProp: string; }",
+                Array [
+                  "The types of \\"myProp\\" are not compatible",
+                  Array [
+                    "Expected string, but was undefined",
+                  ],
+                ],
+              ],
+            ],
+          ],
+        ],
+        "message": "Expected { key: { value: string; }; body: { myProp: string; }; } | { key: { value: number; }; body: { myProp: string; }; }, but was {key: {value: 42}, body: {noMyPropHere: true}}",
+        "success": false,
+      }
+    `);
+
+    const InnerArray = Array(String);
+    const OuterObjectWithArrayA = Object({
+      key: Object({ value: String }),
+      body: InnerArray,
+    });
+    const OuterObjectWithArrayB = Object({
+      key: Object({ value: Number }),
+      body: InnerArray,
+    });
+    expect(
+      Union(OuterObjectWithArrayA, OuterObjectWithArrayB).safeParse({
+        key: { value: 42 },
+        body: [42],
+      }),
+    ).toMatchInlineSnapshot(`
+      Object {
+        "fullError": Array [
+          "Unable to assign {key: {value: 42}, body: [42]} to { key: { value: string; }; body: string[]; } | { key: { value: number; }; body: string[]; }",
+          Array [
+            "Unable to assign {key: {value: 42}, body: [42]} to { key: { value: string; }; body: string[]; }",
+            Array [
+              "The types of \\"key\\" are not compatible",
+              Array [
+                "Unable to assign {value: 42} to { value: string; }",
+                Array [
+                  "The types of \\"value\\" are not compatible",
+                  Array [
+                    "Expected string, but was 42",
+                  ],
+                ],
+              ],
+            ],
+            Array [
+              "The types of \\"body\\" are not compatible",
+              Array [
+                "Unable to assign [42] to string[]",
+                Array [
+                  "The types of [0] are not compatible",
+                  Array [
+                    "Expected string, but was 42",
+                  ],
+                ],
+              ],
+            ],
+          ],
+          Array [
+            "And unable to assign {key: {value: 42}, body: [42]} to { key: { value: number; }; body: string[]; }",
+            Array [
+              "The types of \\"body\\" are not compatible",
+              Array [
+                "Unable to assign [42] to string[]",
+                Array [
+                  "The types of [0] are not compatible",
+                  Array [
+                    "Expected string, but was 42",
+                  ],
+                ],
+              ],
+            ],
+          ],
+        ],
+        "message": "Expected { key: { value: string; }; body: string[]; } | { key: { value: number; }; body: string[]; }, but was {key: {value: 42}, body: [42]}",
+        "success": false,
+      }
+    `);
   });
 });

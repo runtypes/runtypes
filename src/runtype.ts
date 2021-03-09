@@ -350,7 +350,7 @@ function innerMapValidationPlaceholder(
 
       const sourceResult = populate();
       const result = sourceResult.success && fn ? fn(sourceResult.value) : sourceResult;
-      if (!result.success) return result;
+      if (!result.success) return (cache = result);
       if (hasCycle) {
         const unwrapResult = attemptMixin(cache.value, result.value);
         const guardFailure =
