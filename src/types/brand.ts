@@ -4,7 +4,7 @@ declare const RuntypeName: unique symbol;
 
 export interface Brand<B extends string, A extends Runtype>
   extends Runtype<
-    // TODO: replace it by unique (nominal) type (when it will be released)
+    // TODO: replace it by nominal type when it has been released
     // https://github.com/microsoft/TypeScript/pull/33038
     Static<A> & { [RuntypeName]: B }
   > {
