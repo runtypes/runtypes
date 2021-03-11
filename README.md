@@ -294,40 +294,56 @@ divide(10, 0); // Throws error: division by zero
 
 ## Branded types
 
-Branded types is a way to emphasize the uniqueness of a type:
+Branded types is a way to emphasize the uniqueness of a type. This is useful [until we have nominal types](https://github.com/microsoft/TypeScript/pull/33038):
 
 ```ts
-const Login = String.withBrand('Login');
+const Username = String.withBrand('Username');
 const Password = String.withBrand('Password').withConstraint(
   str => str.length >= 8 || 'Too short password',
 );
 
-const fetchSignIn = Contract(
-  Login,
+const signIn = Contract(
+  Username,
   Password,
   Unknown,
-).enforce((login, pass) => {/*...*/});
+).enforce((username, password) => {/*...*/});
 
-const login = Login.check('myLogin');
+const username = Username.check('someone@example.com');
 const password = Password.check('12345678');
 
-// static type ok, runtime ok
-fetchSignIn(login, password);
+// Static type OK, runtime OK
+signIn(username, password);
 
-// static type error, runtime error
-fetchSignIn(password, login);
+// Static type ERROR, runtime OK
+signIn(password, username);
 
-// static type error, runtime ok
-fetchSignIn('a@b.c', '12345678');
+// Static type ERROR, runtime OK
+signIn('someone@example.com', '12345678');
 ```
 
-Branded types are like [opaque types](https://flow.org/en/docs/types/opaque-types) and work as expected, except it is impossible to use branded strings as a key [until we have nominal types](https://github.com/microsoft/TypeScript/pull/33038). Currently the workaround is to add a unique symbol to the main type:
+Branded types are like [opaque types](https://flow.org/en/docs/types/opaque-types) and work as expected, except it is impossible to use as a key of an object type:
 
 ```ts
 const StringBranded = String.withBrand('StringBranded');
 type StringBranded = Static<typeof StringBranded>;
 // Then the type `StringBranded` is computed as:
 // string & { [RuntypeName]: "StringBranded" }
+
+// TS1023: An index signature parameter type must be either `string` or `number`.
+type SomeObject1 = { [K: StringBranded]: number };
+
+// Both of these result in empty object type i.e. `{}`
+type SomeObject2 = { [K in StringBranded]: number };
+type SomeObject3 = Record<StringBranded, number>;
+
+// You can do like this, but...
+const key = StringBranded.check("key")
+const SomeRecord = Record({ [key]: Number })
+// This type results in { [x: string]: number }
+type SomeRecord = Static<typeof SomeRecord>
+
+// So you have to use `Map` to achieve strongly-typed branded keys
+type SomeMap = Map<StringBranded, number>;
 ```
 
 ## Optional values
