@@ -158,7 +158,7 @@ function disembark(obj: {}) {
       obj.crew = [];
     }
   }
-}
+};
 ```
 
 ## Pattern matching
@@ -337,10 +337,10 @@ type SomeObject2 = { [K in StringBranded]: number };
 type SomeObject3 = Record<StringBranded, number>;
 
 // You can do like this, but...
-const key = StringBranded.check("key")
-const SomeRecord = Record({ [key]: Number })
+const key = StringBranded.check("key");
+const SomeRecord = Record({ [key]: Number });
 // This type results in { [x: string]: number }
-type SomeRecord = Static<typeof SomeRecord>
+type SomeRecord = Static<typeof SomeRecord>;
 
 // So you have to use `Map` to achieve strongly-typed branded keys
 type SomeMap = Map<StringBranded, number>;
@@ -402,13 +402,13 @@ const Asteroid = Record({
   type: Literal('asteroid'),
   location: Vector,
   mass: Number,
-}).asReadonly()
+}).asReadonly();
+type Asteroid = Static<typeof Asteroid>;
+// { readonly type: 'asteroid', readonly location: Vector, readonly mass: number }
 
-Static<typeof Asteroid> // { readonly type: 'asteroid', readonly location: Vector, readonly mass: number }
-
-const AsteroidArray = Array(Asteroid).asReadonly()
-
-Static<typeof AsteroidArray> // ReadonlyArray<Asteroid>
+const AsteroidArray = Array(Asteroid).asReadonly();
+type AsteroidArray = Static<typeof AsteroidArray>;
+// ReadonlyArray<Asteroid>
 ```
 
 ## Related libraries
