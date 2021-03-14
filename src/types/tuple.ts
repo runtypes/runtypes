@@ -75,8 +75,7 @@ export interface Tuple8<
   F extends Runtype,
   G extends Runtype,
   H extends Runtype
->
-  extends Runtype<
+> extends Runtype<
     [Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>, Static<H>]
   > {
   tag: 'tuple';
@@ -93,8 +92,7 @@ export interface Tuple9<
   G extends Runtype,
   H extends Runtype,
   I extends Runtype
->
-  extends Runtype<
+> extends Runtype<
     [
       Static<A>,
       Static<B>,
@@ -122,8 +120,7 @@ export interface Tuple10<
   H extends Runtype,
   I extends Runtype,
   J extends Runtype
->
-  extends Runtype<
+> extends Runtype<
     [
       Static<A>,
       Static<B>,
