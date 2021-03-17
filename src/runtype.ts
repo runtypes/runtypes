@@ -105,7 +105,7 @@ export interface Runtype<A = unknown> {
    * helpful in reflection or diagnostic use-cases.
    */
   withTransform<T extends unknown, R extends Runtype = this>(
-    transformer: Transformer<R, T>,
+    transformer: Transformer<this, T>,
     options?: { name?: string },
   ): Transform<R, T>;
 
