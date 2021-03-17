@@ -12,6 +12,16 @@ import {
   Dictionary,
 } from '..';
 
+const ParsedInt = Transform(
+  String,
+  s => {
+    const parsed = parseInt(s);
+    if (isNaN(parsed)) throw new Error('Parse failed');
+    else return parsed;
+  },
+  { name: 'ParsedInt' },
+);
+
 const Value = Union(Number, String);
 type Value = Static<typeof Value>;
 const toString = (x: Value) => x.toString();
@@ -26,22 +36,15 @@ describe('transform', () => {
     expect(AppendedString.check(' spaces around ')).toBe('spaces around removed');
   });
   it('should convert type', () => {
-    const ParsedInt = Transform(String, s => {
-      const parsed = parseInt(s);
-      if (isNaN(parsed)) throw new Error('Parse failed');
-      else return parsed;
-    });
     type ParsedInt = Static<typeof ParsedInt>;
     // Note that above type is inferred as: `number`
-    expect(ParsedInt.check('42')).toBe(42);
+    const expected: ParsedInt = 42;
+    expect(ParsedInt.check('42')).toBe(expected);
   });
   it('should throw error', () => {
-    const ParsedInt = Transform(String, s => {
-      const parsed = parseInt(s);
-      if (isNaN(parsed)) throw new Error('Parse failed');
-      else return parsed;
-    });
-    expect(() => ParsedInt.check('crap')).toThrowError('Parse failed');
+    expect(() => ParsedInt.check('crap')).toThrowError(
+      'Failed transform of ParsedInt: Error: Parse failed',
+    );
   });
   it('should work with Dictionary', () => {
     const Dict = Dictionary(Value.withTransform(toString));
