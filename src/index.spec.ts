@@ -8,6 +8,7 @@ import {
   Void,
   Boolean,
   Number,
+  BigInt,
   String,
   Symbol as Sym,
   Literal,
@@ -116,6 +117,8 @@ const runtypes = {
   Number,
   3: Literal(3),
   42: Literal(42),
+  bigint: BigInt,
+  '42n': Literal(global.BigInt(42)),
   brandedNumber: Number.withBrand('number'),
   String,
   'hello world': Literal('hello world'),
@@ -193,6 +196,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
     value: 42,
     passes: ['Number', 'brandedNumber', 42, 'MoreThanThree', 'MoreThanThreeWithMessage'],
   },
+  { value: global.BigInt(42), passes: ['bigint', '42n'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
   { value: Symbol.for('runtypes'), passes: ['Sym'] },
@@ -266,7 +270,7 @@ const getCircularReplacer = () => {
       }
       seen.add(value);
     } else if (typeof value === 'symbol' || typeof value === 'function') return value.toString();
-    return value;
+    return typeof value === 'bigint' ? value.toString() + 'n' : value;
   };
 };
 
@@ -603,6 +607,10 @@ describe('reflection', () => {
     expectLiteralField(Number, 'tag', 'number');
   });
 
+  it('bigint', () => {
+    expectLiteralField(BigInt, 'tag', 'bigint');
+  });
+
   it('string', () => {
     expectLiteralField(String, 'tag', 'string');
   });
@@ -747,6 +755,7 @@ describe('change static type with Constraint', () => {
     | Void
     | Boolean
     | Number
+    | BigInt
     | String
     | Sym
     | Literal<boolean | number | string>
@@ -777,6 +786,9 @@ describe('change static type with Constraint', () => {
       break;
     case 'number':
       check<number>(X);
+      break;
+    case 'bigint':
+      check<bigint>(X);
       break;
     case 'string':
       check<string>(X);
