@@ -9,6 +9,7 @@ export type Reflect =
   | ({ tag: 'void' } & Runtype<void>)
   | ({ tag: 'boolean' } & Runtype<boolean>)
   | ({ tag: 'number' } & Runtype<number>)
+  | ({ tag: 'bigint' } & Runtype<bigint>)
   | ({ tag: 'string' } & Runtype<string>)
   | ({ tag: 'symbol' } & Runtype<symbol>)
   | ({ tag: 'literal'; value: LiteralBase } & Runtype<LiteralBase>)
