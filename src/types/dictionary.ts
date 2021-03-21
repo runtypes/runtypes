@@ -18,7 +18,7 @@ export type TypeFor<K extends StringLiteralFor<DictionaryKeyType>> = K extends '
   : K extends 'symbol'
   ? symbol
   : never;
-export type DictionaryKeyRuntype = Runtype<string> | Runtype<number> | Runtype<symbol>;
+export type DictionaryKeyRuntype = Runtype<string | number | symbol>;
 
 const NumberKey = Constraint(String, s => !isNaN(+s), { name: 'number' });
 
@@ -109,11 +109,19 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
           return { success: false, message: 'Expected dictionary, but was array' };
       }
 
+      const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/u;
+
       for (const k of [...Object.getOwnPropertyNames(x), ...Object.getOwnPropertySymbols(x)]) {
-        if (!keyRuntype.guard(k)) {
+        // We should provide interoperability with `number` and `string` here,
+        // as a user would expect JavaScript engines to convert numeric keys to
+        // string keys automatically. So, if the key can be interpreted as a
+        // decimal number, then test it against a `Number` OR `String` runtype.
+        const isNumberLikeKey = typeof k === 'string' && numberString.test(k);
+        const l = isNumberLikeKey ? global.Number(k) : k;
+        if (isNumberLikeKey ? !keyRuntype.guard(l) && !keyRuntype.guard(k) : !keyRuntype.guard(l)) {
           return {
             success: false,
-            message: `Expected dictionary key to be a ${keyString}, but was ${typeof k}`,
+            message: `Expected dictionary key to be a ${keyString}, but was ${typeof l}`,
           };
         }
 
