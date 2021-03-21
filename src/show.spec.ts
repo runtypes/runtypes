@@ -43,6 +43,7 @@ const cases: [Reflect, string][] = [
   [Array(String), 'string[]'],
   [Array(String).asReadonly(), 'readonly string[]'],
   [Dictionary(Array(Boolean)), '{ [_: string]: boolean[] }'],
+  [Dictionary(Array(Boolean), Symbol), '{ [_: symbol]: boolean[] }'],
   [Dictionary(Array(Boolean), 'string'), '{ [_: string]: boolean[] }'],
   [Dictionary(Array(Boolean), 'number'), '{ [_: number]: boolean[] }'],
   [Record({}), '{}'],
