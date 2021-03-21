@@ -143,6 +143,7 @@ const runtypes = {
   ),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
+  UnionDictionary: Dictionary(String, Union(Literal('a'), Literal('b'), Literal(3))),
   DictionaryOfArrays: Dictionary(Array(Boolean)),
   InstanceOfSomeClass: InstanceOf(SomeClass),
   InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
@@ -176,6 +177,7 @@ const runtypes = {
     .asReadonly()
     .And(RTPartial({ bar: String }).asReadonly()),
   EmptyTuple: Tuple(),
+  Union: Union(Literal('a'), Literal('b'), Literal(3)),
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -191,7 +193,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: null, passes: ['Null', 'Void'] },
   { value: true, passes: ['Boolean', 'true'] },
   { value: false, passes: ['Boolean', 'false'] },
-  { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1'] },
+  { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1', 'Union'] },
   {
     value: 42,
     passes: ['Number', 'brandedNumber', 42, 'MoreThanThree', 'MoreThanThreeWithMessage'],
@@ -213,8 +215,8 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
     value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] },
     passes: ['Person'],
   },
-  { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
-  { value: ['1', '2'], passes: ['ArrayString', 'NumberDictionary'] },
+  { value: { a: '1', b: '2', 3: '4' }, passes: ['Dictionary', 'UnionDictionary'] },
+  { value: ['1', '2'], passes: ['ArrayString'] },
   { value: ['1', 2], passes: [] },
   { value: [{ name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }], passes: ['ArrayPerson'] },
   { value: [{ name: null, likes: [] }], passes: [] },
