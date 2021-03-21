@@ -3,22 +3,15 @@ import { String } from './string';
 import { Constraint } from './constraint';
 import show from '../show';
 
-export type DictionaryKeyType = string | number | symbol;
-export type StringLiteralFor<K extends DictionaryKeyType> = K extends string
+type DictionaryKeyType = string | number | symbol;
+type StringLiteralFor<K extends DictionaryKeyType> = K extends string
   ? 'string'
   : K extends number
   ? 'number'
   : K extends symbol
   ? 'symbol'
   : never;
-export type TypeFor<K extends StringLiteralFor<DictionaryKeyType>> = K extends 'string'
-  ? string
-  : K extends 'number'
-  ? number
-  : K extends 'symbol'
-  ? symbol
-  : never;
-export type DictionaryKeyRuntype = Runtype<string | number | symbol>;
+type DictionaryKeyRuntype = Runtype<string | number | symbol>;
 
 const NumberKey = Constraint(String, s => !isNaN(+s), { name: 'number' });
 
