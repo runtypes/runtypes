@@ -20,7 +20,7 @@ export type Reflect =
       isPartial: boolean;
       isReadonly: boolean;
     } & Runtype<{ readonly [_ in string]: unknown }>)
-  | ({ tag: 'dictionary'; key: 'string' | 'number'; value: Reflect } & Runtype<{
+  | ({ tag: 'dictionary'; key: 'string' | 'number' | 'symbol'; value: Reflect } & Runtype<{
       [_: string]: unknown;
     }>)
   | ({ tag: 'tuple'; components: Reflect[] } & Runtype<unknown[]>)
