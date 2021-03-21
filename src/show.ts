@@ -17,6 +17,7 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
       case 'void':
       case 'boolean':
       case 'number':
+      case 'bigint':
       case 'string':
       case 'symbol':
       case 'function':

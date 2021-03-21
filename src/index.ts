@@ -11,6 +11,7 @@ export * from './types/void';
 export { Literal, Undefined, Null } from './types/literal';
 export * from './types/boolean';
 export * from './types/number';
+export * from './types/bigint';
 export * from './types/string';
 export * from './types/symbol';
 export * from './types/array';
