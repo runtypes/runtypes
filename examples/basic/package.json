@@ -1,7 +1,6 @@
 {
-  "name": "runtypes-examples",
-  "description": "Runtypes examples",
-  "license": "MIT",
+  "private": true,
+  "name": "@runtypes/example-basic",
   "devDependencies": {
     "typescript": "^2.6.2"
   },
