@@ -4,6 +4,11 @@
   "description": "Runtime validation for static types",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "files": [
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "!lib/**/*.spec.*"
+  ],
   "scripts": {
     "build": "tsc --pretty",
     "format": "node scripts/format.js",
