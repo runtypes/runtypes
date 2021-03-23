@@ -14,7 +14,8 @@
     "format": "node scripts/format.js",
     "test": "jest $([ \"$CI\" = true ] && echo --coverage || echo --watch)",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
-    "typecheck": "tsc --noEmit --watch"
+    "typecheck": "tsc --noEmit --watch",
+    "prepack": "yarn build"
   },
   "author": "Thomas Crockett",
   "license": "MIT",
