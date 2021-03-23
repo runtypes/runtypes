@@ -7,10 +7,13 @@ process.on('unhandledRejection', err => {
   throw err;
 });
 
-const { exec } = require('child_process');
+const { exec, execSync } = require('child_process');
+const { join } = require('path');
+
+const npmBinPath = execSync('npm bin').toString().trim();
 
 const command = [
-  '$(npm bin)/prettier',
+  join(npmBinPath, 'prettier'),
   process.env.CI ? '--list-different' : '--write',
   '"./**/*.{ts,tsx,js,json,css}"',
 ];

@@ -3,7 +3,7 @@ import { Runtype, create } from '../runtype';
 /**
  * The super type of all literal types.
  */
-export type LiteralBase = undefined | null | boolean | number | string;
+export type LiteralBase = undefined | null | boolean | number | bigint | string;
 
 export interface Literal<A extends LiteralBase> extends Runtype<A> {
   tag: 'literal';
@@ -14,7 +14,11 @@ export interface Literal<A extends LiteralBase> extends Runtype<A> {
  * Be aware of an Array of Symbols `[Symbol()]` which would throw "TypeError: Cannot convert a Symbol value to a string"
  */
 function literal(value: unknown) {
-  return Array.isArray(value) ? String(value.map(String)) : String(value);
+  return Array.isArray(value)
+    ? String(value.map(String))
+    : typeof value === 'bigint'
+    ? String(value) + 'n'
+    : String(value);
 }
 
 /**

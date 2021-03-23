@@ -1,6 +1,11 @@
-import { Runtype, Static, create } from '../runtype';
+import { Runtype, Static, create, innerValidate } from '../runtype';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
+
+export interface Tuple0 extends Runtype {
+  tag: 'tuple';
+  components: [];
+}
 
 export interface Tuple1<A extends Runtype> extends Runtype<[Static<A>]> {
   tag: 'tuple';
@@ -70,8 +75,7 @@ export interface Tuple8<
   F extends Runtype,
   G extends Runtype,
   H extends Runtype
->
-  extends Runtype<
+> extends Runtype<
     [Static<A>, Static<B>, Static<C>, Static<D>, Static<E>, Static<F>, Static<G>, Static<H>]
   > {
   tag: 'tuple';
@@ -88,8 +92,7 @@ export interface Tuple9<
   G extends Runtype,
   H extends Runtype,
   I extends Runtype
->
-  extends Runtype<
+> extends Runtype<
     [
       Static<A>,
       Static<B>,
@@ -117,8 +120,7 @@ export interface Tuple10<
   H extends Runtype,
   I extends Runtype,
   J extends Runtype
->
-  extends Runtype<
+> extends Runtype<
     [
       Static<A>,
       Static<B>,
@@ -139,6 +141,7 @@ export interface Tuple10<
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
+export function Tuple(): Tuple0;
 export function Tuple<A extends Runtype>(A: A): Tuple1<A>;
 export function Tuple<A extends Runtype, B extends Runtype>(A: A, B: B): Tuple2<A, B>;
 export function Tuple<A extends Runtype, B extends Runtype, C extends Runtype>(
@@ -222,8 +225,8 @@ export function Tuple<
 ): Tuple10<A, B, C, D, E, F, G, H, I, J>;
 export function Tuple(...components: Runtype[]): any {
   return create(
-    x => {
-      const validated = Arr(Unknown).validate(x);
+    (x, visited) => {
+      const validated = innerValidate(Arr(Unknown), x, visited);
 
       if (!validated.success) {
         return {
@@ -233,7 +236,7 @@ export function Tuple(...components: Runtype[]): any {
         };
       }
 
-      if (validated.value.length < components.length) {
+      if (validated.value.length !== components.length) {
         return {
           success: false,
           message: `Expected an array of length ${components.length}, but was ${validated.value.length}`,
@@ -241,7 +244,7 @@ export function Tuple(...components: Runtype[]): any {
       }
 
       for (let i = 0; i < components.length; i++) {
-        let validatedComponent = components[i].validate(validated.value[i]);
+        let validatedComponent = innerValidate(components[i], validated.value[i], visited);
 
         if (!validatedComponent.success) {
           return {

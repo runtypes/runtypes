@@ -8,13 +8,14 @@ import {
   Void,
   Boolean,
   Number,
+  BigInt,
   String,
   Symbol as Sym,
   Literal,
   Array,
   Dictionary,
   Record,
-  Partial,
+  Partial as RTPartial,
   Tuple,
   Tuple2,
   Union,
@@ -41,6 +42,48 @@ const union1 = Union(Literal(3), String, boolTuple, record1);
 
 type Person = { name: string; likes: Person[] };
 const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }));
+const narcissist: Person = { name: 'Narcissus', likes: [] };
+narcissist.likes = [narcissist];
+
+type GraphNode = GraphNode[]; // graph nodes are just arrays of their neighbors
+const GraphNode: Runtype<GraphNode> = Lazy(() => Array(GraphNode));
+type Graph = GraphNode[];
+const Graph: Runtype<Graph> = Array(GraphNode);
+const nodeA: GraphNode = [];
+const nodeB: GraphNode = [nodeA];
+nodeA.push(nodeB);
+const barbell: Graph = [nodeA, nodeB];
+
+type BarbellBall = [BarbellBall];
+const BarbellBall: Runtype<BarbellBall> = Lazy(() => Tuple(BarbellBall));
+
+type SRDict = { [_: string]: SRDict };
+const SRDict: Runtype<SRDict> = Lazy(() => Dictionary(SRDict));
+const srDict: SRDict = {};
+srDict['self'] = srDict;
+
+type Hand = { left: Hand } | { right: Hand };
+const Hand: Runtype<Hand> = Lazy(() => Union(Record({ left: Hand }), Record({ right: Hand })));
+const leftHand: Hand = { left: (null as any) as Hand };
+const rightHand: Hand = { right: leftHand };
+leftHand.left = rightHand;
+
+type Ambi = { left: Ambi } & { right: Ambi };
+const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Record({ left: Ambi }), Record({ right: Ambi })));
+const ambi: Ambi = { left: (null as any) as Ambi, right: (null as any) as Ambi };
+ambi.left = ambi;
+ambi.right = ambi;
+
+type PartialPerson = { likes?: PartialPerson } & { firstName: string };
+const PartialPerson: Runtype<PartialPerson> = Lazy(() =>
+  RTPartial({ firstName: String, likes: PartialPerson }).And(
+    Guard<{ firstName: string }>(
+      (p: any): p is { firstName: string } => p.firstName && typeof p.firstName === 'string',
+    ),
+  ),
+);
+const partialNarcissus: PartialPerson = { firstName: 'Narcissish' };
+partialNarcissus.likes = partialNarcissus;
 
 class SomeClass {
   constructor(public n: number) {}
@@ -75,6 +118,8 @@ const runtypes = {
   Number,
   3: Literal(3),
   42: Literal(42),
+  bigint: BigInt,
+  '42n': Literal(global.BigInt(42)),
   brandedNumber: Number.withBrand('number'),
   String,
   'hello world': Literal('hello world'),
@@ -84,7 +129,7 @@ const runtypes = {
   boolTuple,
   record1,
   union1,
-  Partial: Partial({ foo: String }).And(Record({ Boolean })),
+  Partial: RTPartial({ foo: String }).And(Record({ Boolean })),
   Function,
   Person,
   MoreThanThree: Number.withConstraint(n => n > 3),
@@ -99,6 +144,7 @@ const runtypes = {
   ),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
+  UnionDictionary: Dictionary(String, Union(Literal('a'), Literal('b'), Literal(3))),
   DictionaryOfArrays: Dictionary(Array(Boolean)),
   InstanceOfSomeClass: InstanceOf(SomeClass),
   InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
@@ -122,6 +168,17 @@ const runtypes = {
   OptionalKey: Record({ foo: String, bar: Optional(Number) }),
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
+  Graph,
+  SRDict,
+  Hand,
+  Ambi,
+  BarbellBall,
+  PartialPerson,
+  ReadonlyPartial: Record({ foo: Number })
+    .asReadonly()
+    .And(RTPartial({ bar: String }).asReadonly()),
+  EmptyTuple: Tuple(),
+  Union: Union(Literal('a'), Literal('b'), Literal(3)),
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -137,11 +194,12 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: null, passes: ['Null', 'Void'] },
   { value: true, passes: ['Boolean', 'true'] },
   { value: false, passes: ['Boolean', 'false'] },
-  { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1'] },
+  { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1', 'Union'] },
   {
     value: 42,
     passes: ['Number', 'brandedNumber', 42, 'MoreThanThree', 'MoreThanThreeWithMessage'],
   },
+  { value: global.BigInt(42), passes: ['bigint', '42n'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
   { value: Symbol.for('runtypes'), passes: ['Sym'] },
@@ -150,13 +208,16 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
   { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey'] },
-  { value: { Boolean: true, foo: 5 }, passes: [] },
+  { value: { Boolean: true, foo: 5 }, passes: ['ReadonlyPartial'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: undefined, likes: [] }, passes: [] },
   { value: { name: 'Jimmy', likes: [{ name: undefined, likes: [] }] }, passes: [] },
-  { value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }, passes: ['Person'] },
-  { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
-  { value: ['1', '2'], passes: ['ArrayString', 'NumberDictionary'] },
+  {
+    value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] },
+    passes: ['Person'],
+  },
+  { value: { a: '1', b: '2', 3: '4' }, passes: ['Dictionary', 'UnionDictionary'] },
+  { value: ['1', '2'], passes: ['ArrayString'] },
   { value: ['1', 2], passes: [] },
   { value: [{ name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }], passes: ['ArrayPerson'] },
   { value: [{ name: null, likes: [] }], passes: [] },
@@ -192,12 +253,34 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass'] },
   { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
   { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
-  { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord'] },
+  { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord', 'ReadonlyPartial'] },
+  { value: narcissist, passes: ['Person'] },
+  { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
+  { value: barbell, passes: ['Graph'] },
+  { value: nodeA, passes: ['Graph', 'BarbellBall'] },
+  { value: srDict, passes: ['SRDict'] },
+  { value: leftHand, passes: ['Hand', 'SRDict'] },
+  { value: ambi, passes: ['Ambi', 'Hand', 'SRDict'] },
+  { value: partialNarcissus, passes: ['PartialPerson'] },
 ];
 
+const getCircularReplacer = () => {
+  const seen = new WeakSet();
+  return (_key: string, value: unknown) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return '<Circular Reference>';
+      }
+      seen.add(value);
+    } else if (typeof value === 'symbol' || typeof value === 'function') return value.toString();
+    return typeof value === 'bigint' ? value.toString() + 'n' : value;
+  };
+};
+
 for (const { value, passes } of testValues) {
-  const valueName = value === undefined ? 'undefined' : JSON.stringify(value);
-  describe(valueName, () => {
+  const valueName =
+    value === undefined ? 'undefined' : JSON.stringify(value, getCircularReplacer());
+  describe(`${valueName}`, () => {
     const shouldPass: { [_ in RuntypeName]?: boolean } = {};
 
     shouldPass.Unknown = true;
@@ -236,8 +319,6 @@ describe('contracts', () => {
     try {
       (Contract(String, Number).enforce(f) as any)(3);
       fail('contract was violated but no exception was thrown');
-      Contract(String, String).enforce(f as any)('hi');
-      fail('contract was violated but no exception was thrown');
     } catch (exception) {
       expect(exception).toBeInstanceOf(ValidationError);
       /* success */
@@ -249,8 +330,6 @@ describe('contracts', () => {
     expect(Contract(String, Boolean, Number).enforce(f)('hello', false)).toBe(4);
     try {
       (Contract(String, Boolean, Number).enforce(f) as any)('hello');
-      fail('contract was violated but no exception was thrown');
-      (Contract(String, Boolean, Number).enforce(f) as any)('hello', 3);
       fail('contract was violated but no exception was thrown');
     } catch (exception) {
       expect(exception).toBeInstanceOf(ValidationError);
@@ -264,7 +343,7 @@ describe('check errors', () => {
     assertThrows(
       [false, '0', true],
       Tuple(Number, String, Boolean),
-      'Expected number, but was boolean',
+      'Expected number, but was boolean in [0]',
       '[0]',
     );
   });
@@ -281,20 +360,24 @@ describe('check errors', () => {
     assertThrows(
       [0, { name: 0 }],
       Tuple(Number, Record({ name: String })),
-      'Expected string, but was number',
+      'Expected string, but was number in [1].name',
       '[1].name',
     );
   });
 
+  it('tuple 0', () => {
+    assertAccepts([], Tuple());
+  });
+
   it('array', () => {
-    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string', '[2]');
+    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string in [2]', '[2]');
   });
 
   it('array nested', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in [1].name',
       '[1].name',
     );
   });
@@ -303,7 +386,7 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })),
-      'Expected { name: string; }, but was null',
+      'Expected { name: string; }, but was null in [1]',
       '[1]',
     );
   });
@@ -312,7 +395,7 @@ describe('check errors', () => {
     assertThrows(
       [0, 2, 'test'],
       Array(Number).asReadonly(),
-      'Expected number, but was string',
+      'Expected number, but was string in [2]',
       '[2]',
     );
   });
@@ -321,7 +404,7 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })).asReadonly(),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in [1].name',
       '[1].name',
     );
   });
@@ -330,7 +413,7 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })).asReadonly(),
-      'Expected { name: string; }, but was null',
+      'Expected { name: string; }, but was null in [1]',
       '[1]',
     );
   });
@@ -356,7 +439,7 @@ describe('check errors', () => {
     assertThrows(
       { foo: { name: false } },
       Dictionary(Record({ name: String })),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in foo.name',
       'foo.name',
     );
   });
@@ -365,7 +448,7 @@ describe('check errors', () => {
     assertThrows(
       { foo: 'bar', test: true },
       Dictionary(String),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in test',
       'test',
     );
   });
@@ -374,7 +457,7 @@ describe('check errors', () => {
     assertThrows(
       { 1: 'bar', 2: 20 },
       Dictionary(String, 'number'),
-      'Expected string, but was number',
+      'Expected string, but was number in 2',
       '2',
     );
   });
@@ -386,7 +469,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was string',
+      'Expected number, but was string in age',
       'age',
     );
   });
@@ -398,7 +481,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was undefined',
+      'Expected number, but was undefined in age',
       'age',
     );
   });
@@ -411,7 +494,7 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in likes.[0].title',
       'likes.[0].title',
     );
   });
@@ -423,7 +506,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was string',
+      'Expected number, but was string in age',
       'age',
     );
   });
@@ -435,7 +518,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was undefined',
+      'Expected number, but was undefined in age',
       'age',
     );
   });
@@ -448,7 +531,7 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String }).asReadonly()),
       }).asReadonly(),
-      'Expected string, but was boolean',
+      'Expected string, but was boolean in likes.[0].title',
       'likes.[0].title',
     );
   });
@@ -456,11 +539,11 @@ describe('check errors', () => {
   it('partial', () => {
     assertThrows(
       { name: 'Jack', age: null },
-      Partial({
+      RTPartial({
         name: String,
         age: Number,
       }),
-      'Expected number, but was null',
+      'Expected number, but was null in age',
       'age',
     );
   });
@@ -468,12 +551,12 @@ describe('check errors', () => {
   it('partial complex', () => {
     assertThrows(
       { name: 'Jack', likes: [{ title: 2 }] },
-      Partial({
+      RTPartial({
         name: String,
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was number',
+      'Expected string, but was number in likes.[0].title',
       'likes.[0].title',
     );
   });
@@ -525,6 +608,10 @@ describe('reflection', () => {
 
   it('number', () => {
     expectLiteralField(Number, 'tag', 'number');
+  });
+
+  it('bigint', () => {
+    expectLiteralField(BigInt, 'tag', 'bigint');
   });
 
   it('string', () => {
@@ -591,8 +678,8 @@ describe('reflection', () => {
   });
 
   it('partial', () => {
-    const Opt = Partial({ x: Number, y: Literal(3) });
-    expectLiteralField(Opt, 'tag', 'partial');
+    const Opt = RTPartial({ x: Number, y: Literal(3) });
+    expectLiteralField(Opt, 'tag', 'record');
     expectLiteralField(Opt.fields.x, 'tag', 'number');
     expectLiteralField(Opt.fields.y, 'tag', 'literal');
     expectLiteralField(Opt.fields.y, 'value', 3);
@@ -671,6 +758,7 @@ describe('change static type with Constraint', () => {
     | Void
     | Boolean
     | Number
+    | BigInt
     | String
     | Sym
     | Literal<boolean | number | string>
@@ -678,7 +766,8 @@ describe('change static type with Constraint', () => {
     | Array<Reflect, true>
     | Record<{ [_ in string]: Reflect }, false>
     | Record<{ [_ in string]: Reflect }, true>
-    | Partial<{ [_ in string]: Reflect }>
+    | RTPartial<{ [_ in string]: Reflect }, false>
+    | RTPartial<{ [_ in string]: Reflect }, true>
     | Tuple2<Reflect, Reflect>
     | Union2<Reflect, Reflect>
     | Intersect2<Reflect, Reflect>
@@ -701,6 +790,9 @@ describe('change static type with Constraint', () => {
     case 'number':
       check<number>(X);
       break;
+    case 'bigint':
+      check<bigint>(X);
+      break;
     case 'string':
       check<string>(X);
       break;
@@ -715,9 +807,6 @@ describe('change static type with Constraint', () => {
       break;
     case 'record':
       check<{ readonly [K in keyof typeof X.fields]: Static<typeof X.fields[K]> }>(X);
-      break;
-    case 'partial':
-      check<{ [K in keyof typeof X.fields]?: Static<typeof X.fields['K']> }>(X);
       break;
     case 'tuple':
       check<[Static<typeof X.components[0]>, Static<typeof X.components[1]>]>(X);
