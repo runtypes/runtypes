@@ -1,4 +1,5 @@
 import { Reflect } from './index';
+import { Optional } from './types/optional';
 
 const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): string => {
   const parenthesize = (s: string) => (needsParens ? `(${s})` : s);
@@ -38,10 +39,11 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
           ? `{ ${keys
               .map(
                 k =>
-                  `${readonlyTag(refl)}${k}${partialTag(refl)}: ${show(
-                    false,
-                    circular,
-                  )(refl.fields[k])};`,
+                  `${readonlyTag(refl)}${k}${partialTag(refl, k)}: ${
+                    refl.fields[k].tag === 'optional'
+                      ? show(false, circular)((refl.fields[k] as Optional<any>).underlying)
+                      : show(false, circular)(refl.fields[k])
+                  };`,
               )
               .join(' ')} }`
           : '{}';
@@ -52,6 +54,8 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
         return parenthesize(`${refl.alternatives.map(show(true, circular)).join(' | ')}`);
       case 'intersect':
         return parenthesize(`${refl.intersectees.map(show(true, circular)).join(' & ')}`);
+      case 'optional':
+        return show(needsParens, circular)(refl.underlying) + ' | undefined';
       case 'constraint':
         return refl.name || show(needsParens, circular)(refl.underlying);
       case 'instanceof':
@@ -68,8 +72,19 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
 
 export default show(false, new Set<Reflect>());
 
-function partialTag({ isPartial }: { isPartial: boolean }): string {
-  return isPartial ? '?' : '';
+function partialTag(
+  {
+    isPartial,
+    fields,
+  }: {
+    isPartial: boolean;
+    fields: {
+      [_: string]: Reflect;
+    };
+  },
+  key?: string,
+): string {
+  return isPartial || (key !== undefined && fields[key].tag === 'optional') ? '?' : '';
 }
 
 function readonlyTag({ isReadonly }: { isReadonly: boolean }): string {
