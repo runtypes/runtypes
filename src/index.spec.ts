@@ -711,6 +711,15 @@ describe('reflection', () => {
     expect(Intersect(X, Y).intersectees.map(A => A.value)).toEqual(['x', 'y']);
   });
 
+  it('optional', () => {
+    const OptionalNumber = Optional(Number);
+    expectLiteralField(OptionalNumber, 'tag', 'optional');
+    expectLiteralField(OptionalNumber.underlying, 'tag', 'number');
+    const OptionalNumberShorthand = Number.optional();
+    expectLiteralField(OptionalNumberShorthand, 'tag', 'optional');
+    expectLiteralField(OptionalNumberShorthand.underlying, 'tag', 'number');
+  });
+
   it('function', () => {
     expectLiteralField(Function, 'tag', 'function');
   });
