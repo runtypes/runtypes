@@ -54,7 +54,13 @@ const cases: [Reflect, string][] = [
   [Array(InstanceOf(TestClass)), 'InstanceOf<TestClass>[]'],
   [Record({ x: String, y: Array(Boolean) }), '{ x: string; y: boolean[]; }'],
   [Record({ x: String, y: Array(Boolean) }), '{ x: string; y: boolean[]; }'],
-  [Record({ x: Number, y: Optional(Number) }), '{ x: number; } & { y?: number; }'],
+  [
+    Record({ x: Number, y: Optional(Number) }).asReadonly(),
+    '{ readonly x: number; readonly y?: number; }',
+  ],
+  [Record({ x: Number, y: Optional(Number) }), '{ x: number; y?: number; }'],
+  [Record({ x: Number, y: Union(Number, Undefined) }), '{ x: number; y: number | undefined; }'],
+  [Record({ x: Number }).And(Partial({ y: Number })), '{ x: number; } & { y?: number; }'],
   [
     Record({ x: String, y: Array(Boolean) }).asReadonly(),
     '{ readonly x: string; readonly y: boolean[]; }',
@@ -69,6 +75,7 @@ const cases: [Reflect, string][] = [
   [Tuple(Boolean, Number), '[boolean, number]'],
   [Union(Boolean, Number), 'boolean | number'],
   [Intersect(Boolean, Number), 'boolean & number'],
+  [Optional(Number), 'number | undefined'],
   [Function, 'function'],
   [Lazy(() => Boolean), 'boolean'],
   [Number.withConstraint(x => x > 3), 'number'],
