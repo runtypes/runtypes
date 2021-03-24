@@ -346,20 +346,19 @@ type SomeMap = Map<StringBranded, number>;
 
 ## Optional values
 
-Runtypes can be used to represent a variable that may be null or undefined
-as well as representing keys within records that may or may not be present.
+Runtypes can be used to represent a variable that may be undefined.
 
 ```ts
-// For variables that might be undefined or null
-const MyString = String; // string             (e.g. 'text')
-const MyStringMaybe = String.Or(Undefined); // string | undefined (e.g. 'text', undefined)
-const MyStringNullable = String.Or(Null); // string | null      (e.g. 'text', null)
+// For variables that might be `string | undefined`
+Union(String, Undefined);
+String.Or(Undefined); // shorthand syntax for the above
+Optional(String); // identical as the above two basically
+String.optional(); // shorthand syntax for the above
 ```
 
-If a `Record` may or may not have some keys, we can declare the optional
-keys using `myRecord.And(Partial({ ... }))`. Partial keys validate successfully if
-they are absent or undefined (but not null) or the type specified
-(which can be null).
+The last syntax is not any shorter than writing `Optional(String)` when you import `Optional` directly from `runtypes`, but if you use scoped import i.e. `import * as rt from 'runtypes'`, it would look better to write `rt.String.optional()` rather than `rt.Optional(rt.String)`.
+
+If a `Record` may or may not have some properties, we can declare the optional properties using `Record({ x: Optional(String) })` (or formerly `Partial({ x: String })`). Optional properties validate successfully if they are absent or undefined or the type specified.
 
 ```ts
 // Using `Ship` from above
@@ -367,21 +366,20 @@ const RegisteredShip = Ship.And(
   Record({
     // All registered ships must have this flag
     isRegistered: Literal(true),
-  }),
-).And(
-  Partial({
-    // We may or may not know the ship's classification
-    shipClass: Union(Literal('military'), Literal('civilian')),
 
-    // We may not know the ship's rank (so we allow it to be undefined via `Partial`),
+    // We may or may not know the ship's classification
+    shipClass: Optional(Union(Literal('military'), Literal('civilian'))),
+
+    // We may not know the ship's rank (so we allow it to be undefined via `Optional`),
     // we may also know that a civilian ship doesn't have a rank (e.g. null)
-    rank: Rank.Or(Null),
+    rank: Optional(Rank.Or(Null)),
   }),
 );
 ```
 
-If a record has keys which _must be present_ but can be null, then use
-the `Record` runtype normally instead.
+There's a difference between `Union(String, Undefined)` and `Optional(String)` iff they are used within a `Record`; the former means "_**it must be present**, and must be `string` or `undefined`_", while the latter means "_**it can be present or missing**, but must be `string` or `undefined` if present_".
+
+Note that `null` is a quite different thing than `undefined` in JS and TS. If your `Record` has properties which can be null, then use the `Null` runtype explicitly.
 
 ```ts
 const MilitaryShip = Ship.And(
