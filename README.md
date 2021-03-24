@@ -182,7 +182,7 @@ There's also a top-level `match` function which allows testing an ad-hoc sequenc
 ```ts
 const makeANumber = match(
   [Number, n => n * 3],
-  [Boolean, b => b ? 1 : 0],
+  [Boolean, b => (b ? 1 : 0)],
   [String, s => s.length],
 );
 
@@ -194,9 +194,9 @@ To allow the function to be applied to anything and then handle match failures, 
 ```ts
 const makeANumber = match(
   [Number, n => n * 3],
-  [Boolean, b => b ? 1 : 0],
+  [Boolean, b => (b ? 1 : 0)],
   [String, s => s.length],
-  [Unknown, () => 42]
+  [Unknown, () => 42],
 );
 ```
 
@@ -224,7 +224,7 @@ messages and reflection, by using the `name` prop on the optional `options`
 parameter:
 
 ```typescript
-const C = Number.withConstraint(n => n > 0, {name: 'PositiveNumber'});
+const C = Number.withConstraint(n => n > 0, { name: 'PositiveNumber' });
 ```
 
 To change the type, there are two ways to do it: passing a type guard function
@@ -244,7 +244,7 @@ type T = Static<typeof B>; // T is Buffer
 
 However, if you want to return a custom error message from your constraint
 function, you can't do this with a type guard because these functions can only
-return boolean values.  Instead, you can roll your own constraint function and
+return boolean values. Instead, you can roll your own constraint function and
 use the `withConstraint<T>()` method. Remember to specify the type parameter for
 the `Constraint` because it can't be inferred from your check function!
 
@@ -256,9 +256,9 @@ type T = Static<typeof B>; // T will have type of `Buffer`
 
 One important choice when changing `Constraint` static types is choosing the
 correct underlying type. The implementation of `Constraint` will validate the
-underlying type *before* running your constraint function. So it's important to
+underlying type _before_ running your constraint function. So it's important to
 use a lowest-common-denominator type that will pass validation for all expected
-inputs of your constraint function or type guard.  If there's no obvious
+inputs of your constraint function or type guard. If there's no obvious
 lowest-common-denominator type, you can always use `Unknown` as the underlying
 type, as shown in the `Buffer` examples above.
 
@@ -292,49 +292,104 @@ divide(10, 2); // 5
 divide(10, 0); // Throws error: division by zero
 ```
 
-## Optional values
+## Branded types
 
-Runtypes can be used to represent a variable that may be null or undefined
-as well as representing keys within records that may or may not be present.
-
+Branded types is a way to emphasize the uniqueness of a type. This is useful [until we have nominal types](https://github.com/microsoft/TypeScript/pull/33038):
 
 ```ts
-// For variables that might be undefined or null
-const MyString = String;                    // string             (e.g. 'text')
-const MyStringMaybe = String.Or(Undefined); // string | undefined (e.g. 'text', undefined)
-const MyStringNullable = String.Or(Null);   // string | null      (e.g. 'text', null)
+const Username = String.withBrand('Username');
+const Password = String.withBrand('Password').withConstraint(
+  str => str.length >= 8 || 'Too short password',
+);
+
+const signIn = Contract(Username, Password, Unknown).enforce((username, password) => {
+  /*...*/
+});
+
+const username = Username.check('someone@example.com');
+const password = Password.check('12345678');
+
+// Static type OK, runtime OK
+signIn(username, password);
+
+// Static type ERROR, runtime OK
+signIn(password, username);
+
+// Static type ERROR, runtime OK
+signIn('someone@example.com', '12345678');
 ```
 
-If a `Record` may or may not have some keys, we can declare the optional
-keys using `myRecord.And(Partial({ ... }))`.  Partial keys validate successfully if
-they are absent or undefined (but not null) or the type specified
-(which can be null).
+Branded types are like [opaque types](https://flow.org/en/docs/types/opaque-types) and work as expected, except it is impossible to use as a key of an object type:
+
+```ts
+const StringBranded = String.withBrand('StringBranded');
+type StringBranded = Static<typeof StringBranded>;
+// Then the type `StringBranded` is computed as:
+// string & { [RuntypeName]: "StringBranded" }
+
+// TS1023: An index signature parameter type must be either `string` or `number`.
+type SomeObject1 = { [K: StringBranded]: number };
+
+// Both of these result in empty object type i.e. `{}`
+type SomeObject2 = { [K in StringBranded]: number };
+type SomeObject3 = Record<StringBranded, number>;
+
+// You can do like this, but...
+const key = StringBranded.check('key');
+const SomeRecord = Record({ [key]: Number });
+// This type results in { [x: string]: number }
+type SomeRecord = Static<typeof SomeRecord>;
+
+// So you have to use `Map` to achieve strongly-typed branded keys
+type SomeMap = Map<StringBranded, number>;
+```
+
+## Optional values
+
+Runtypes can be used to represent a variable that may be undefined.
+
+```ts
+// For variables that might be `string | undefined`
+Union(String, Undefined);
+String.Or(Undefined); // shorthand syntax for the above
+Optional(String); // identical as the above two basically
+String.optional(); // shorthand syntax for the above
+```
+
+The last syntax is not any shorter than writing `Optional(String)` when you import `Optional` directly from `runtypes`, but if you use scoped import i.e. `import * as rt from 'runtypes'`, it would look better to write `rt.String.optional()` rather than `rt.Optional(rt.String)`.
+
+If a `Record` may or may not have some properties, we can declare the optional properties using `Record({ x: Optional(String) })` (or formerly `Partial({ x: String })`). Optional properties validate successfully if they are absent or undefined or the type specified.
 
 ```ts
 // Using `Ship` from above
-const RegisteredShip = Ship.And(Record({
-  // All registered ships must have this flag
-  isRegistered: Literal(true),
-})).And(Partial({
-  // We may or may not know the ship's classification
-  shipClass: Union(Literal('military'), Literal('civilian')),
+const RegisteredShip = Ship.And(
+  Record({
+    // All registered ships must have this flag
+    isRegistered: Literal(true),
 
-  // We may not know the ship's rank (so we allow it to be undefined via `Partial`),
-  // we may also know that a civilian ship doesn't have a rank (e.g. null)
-  rank: Rank.Or(Null),
-}));
+    // We may or may not know the ship's classification
+    shipClass: Optional(Union(Literal('military'), Literal('civilian'))),
+
+    // We may not know the ship's rank (so we allow it to be undefined via `Optional`),
+    // we may also know that a civilian ship doesn't have a rank (e.g. null)
+    rank: Optional(Rank.Or(Null)),
+  }),
+);
 ```
 
-If a record has keys which _must be present_ but can be null, then use
-the `Record` runtype normally instead.
+There's a difference between `Union(String, Undefined)` and `Optional(String)` iff they are used within a `Record`; the former means "_**it must be present**, and must be `string` or `undefined`_", while the latter means "_**it can be present or missing**, but must be `string` or `undefined` if present_".
+
+Note that `null` is a quite different thing than `undefined` in JS and TS. If your `Record` has properties which can be null, then use the `Null` runtype explicitly.
 
 ```ts
-const MilitaryShip = Ship.And(Record({
-  shipClass: Literal('military'),
+const MilitaryShip = Ship.And(
+  Record({
+    shipClass: Literal('military'),
 
-  // Must NOT be undefined, but can be null
-  lastDeployedTimestamp: Number.Or(Null),
-}));
+    // Must NOT be undefined, but can be null
+    lastDeployedTimestamp: Number.Or(Null),
+  }),
+);
 ```
 
 ## Readonly records and arrays
@@ -348,13 +403,13 @@ const Asteroid = Record({
   type: Literal('asteroid'),
   location: Vector,
   mass: Number,
-}).asReadonly()
+}).asReadonly();
+type Asteroid = Static<typeof Asteroid>;
+// { readonly type: 'asteroid', readonly location: Vector, readonly mass: number }
 
-Static<typeof Asteroid> // { readonly type: 'asteroid', readonly location: Vector, readonly mass: number }
-
-const AsteroidArray = Array(Asteroid).asReadonly()
-
-Static<typeof AsteroidArray> // ReadonlyArray<Asteroid>
+const AsteroidArray = Array(Asteroid).asReadonly();
+type AsteroidArray = Static<typeof AsteroidArray>;
+// ReadonlyArray<Asteroid>
 ```
 
 ## `.pick` and `.omit`
@@ -379,5 +434,5 @@ Static<typeof Background> // { rank: Rank; home: Planet; }
 
 ## Related libraries
 
-* [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
-* [rest.ts](https://github.com/hmil/rest.ts) Allows building type safe and runtime-checked APIs
+- [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
+- [rest.ts](https://github.com/hmil/rest.ts) Allows building type safe and runtime-checked APIs
