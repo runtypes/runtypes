@@ -20,6 +20,7 @@ export * from './types/record';
 export * from './types/dictionary';
 export * from './types/union';
 export * from './types/intersect';
+export * from './types/optional';
 export * from './types/function';
 export { InstanceOf } from './types/instanceof';
 export * from './types/lazy';

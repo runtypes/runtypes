@@ -26,6 +26,7 @@ export type Reflect =
   | ({ tag: 'tuple'; components: Reflect[] } & Runtype<unknown[]>)
   | ({ tag: 'union'; alternatives: Reflect[] } & Runtype)
   | ({ tag: 'intersect'; intersectees: Reflect[] } & Runtype)
+  | ({ tag: 'optional'; underlying: Reflect } & Runtype)
   | ({ tag: 'function' } & Runtype<(...args: any[]) => any>)
   | ({
       tag: 'constraint';
