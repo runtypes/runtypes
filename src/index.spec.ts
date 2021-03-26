@@ -202,6 +202,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: global.BigInt(42), passes: ['bigint', '42n'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
+  { value: Symbol(), passes: ['Sym'] },
   { value: Symbol.for('runtypes'), passes: ['Sym', 'SymForRuntypes'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
