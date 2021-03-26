@@ -629,6 +629,17 @@ describe('reflection', () => {
       Sym('runtypes?'),
       'Expected symbol key to be "runtypes?", but was "runtypes!"',
     );
+    assertAccepts(Symbol(), Sym(undefined));
+    assertThrows(
+      Symbol.for('undefined'),
+      Sym(undefined),
+      'Expected symbol key to be undefined, but was "undefined"',
+    );
+    assertThrows(
+      Symbol(),
+      Sym('undefined'),
+      'Expected symbol key to be "undefined", but was undefined',
+    );
   });
 
   it('literal', () => {
