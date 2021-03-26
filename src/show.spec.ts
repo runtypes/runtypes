@@ -37,6 +37,7 @@ const cases: [Reflect, string][] = [
   [BigInt, 'bigint'],
   [String, 'string'],
   [Symbol, 'symbol'],
+  [Symbol('runtypes'), 'symbol'],
   [Literal(true), 'true'],
   [Literal(3), '3'],
   [Literal('foo'), '"foo"'],
