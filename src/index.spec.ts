@@ -124,6 +124,7 @@ const runtypes = {
   String,
   'hello world': Literal('hello world'),
   Sym,
+  SymForRuntypes: Sym('runtypes'),
   symbolArray: Array(Sym),
   boolArray: Array(Boolean),
   boolTuple,
@@ -205,7 +206,8 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: global.BigInt(42), passes: ['bigint', '42n'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
-  { value: Symbol.for('runtypes'), passes: ['Sym'] },
+  { value: Symbol(), passes: ['Sym'] },
+  { value: Symbol.for('runtypes'), passes: ['Sym', 'SymForRuntypes'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
   { value: { Boolean: true }, passes: ['Partial'] },
@@ -632,6 +634,25 @@ describe('reflection', () => {
 
   it('symbol', () => {
     expectLiteralField(Sym, 'tag', 'symbol');
+    const SymForRuntypes = Sym('runtypes');
+    expectLiteralField(SymForRuntypes, 'tag', 'symbol');
+    expectLiteralField(SymForRuntypes, 'key', 'runtypes');
+    assertThrows(
+      Symbol.for('runtypes!'),
+      Sym('runtypes?'),
+      'Expected symbol key to be "runtypes?", but was "runtypes!"',
+    );
+    assertAccepts(Symbol(), Sym(undefined));
+    assertThrows(
+      Symbol.for('undefined'),
+      Sym(undefined),
+      'Expected symbol key to be undefined, but was "undefined"',
+    );
+    assertThrows(
+      Symbol(),
+      Sym('undefined'),
+      'Expected symbol key to be "undefined", but was undefined',
+    );
   });
 
   it('literal', () => {
