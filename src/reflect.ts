@@ -11,8 +11,8 @@ export type Reflect =
   | ({ tag: 'number' } & Runtype<number>)
   | ({ tag: 'bigint' } & Runtype<bigint>)
   | ({ tag: 'string' } & Runtype<string>)
-  | ({ tag: 'symbol'; key: string } & Runtype<symbol>)
-  | ({ tag: 'symbol'; (key: string): Runtype<symbol> } & Runtype<symbol>)
+  | ({ tag: 'symbol'; key: string | undefined } & Runtype<symbol>)
+  | ({ tag: 'symbol'; (key: string | undefined): Runtype<symbol> } & Runtype<symbol>)
   | ({ tag: 'literal'; value: LiteralBase } & Runtype<LiteralBase>)
   | ({ tag: 'array'; element: Reflect; isReadonly: boolean } & Runtype<ReadonlyArray<unknown>>)
   | ({
