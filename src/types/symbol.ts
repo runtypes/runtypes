@@ -3,8 +3,8 @@ import { Runtype, create } from '../runtype';
 export interface Symbol extends Runtype<symbol> {
   tag: 'symbol';
   /**
-    Validates that a value is a symbol.
-    @param {string} key - Specify what key the symbol is for.
+    Validates that a value is a symbol with a specific key or without any key.
+    @param {string | undefined} key - Specify what key the symbol is for. If you want to ensure the validated symbol is *not* keyed, pass `undefined`.
    */
   <K extends string | undefined>(key: K): SymbolFor<K>;
 }
@@ -40,7 +40,7 @@ const f = (key: string | undefined) =>
   );
 
 /**
- * Validates that a value is a symbol.
+ * Validates that a value is a symbol, regardless of whether it is keyed or not.
  */
 export const Symbol = create<Symbol>(value => {
   if (typeof value !== 'symbol') {
