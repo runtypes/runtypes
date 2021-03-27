@@ -94,7 +94,11 @@ type Fleet = Static<typeof Fleet>; // = { [_: number]: Ship }
 const SpaceObject = Union(Asteroid, Planet, Ship);
 type SpaceObject = Static<typeof SpaceObject>; // = Asteroid | Planet | Ship
 
-const isHabitable = SpaceObject.match(asteroid => false, planet => planet.habitable, ship => true);
+const isHabitable = SpaceObject.match(
+  asteroid => false,
+  planet => planet.habitable,
+  ship => true,
+);
 
 // Pattern matching from a union
 function foo(spaceObject: SpaceObject) {
