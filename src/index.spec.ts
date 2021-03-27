@@ -21,7 +21,6 @@ import {
   Union,
   Union2,
   Intersect,
-  Intersect2,
   Optional,
   Function,
   Lazy,
@@ -726,10 +725,13 @@ describe('reflection', () => {
   });
 
   it('intersect', () => {
-    expectLiteralField(Intersect(X, Y), 'tag', 'intersect');
-    expectLiteralField(Intersect(X, Y), 'tag', 'intersect');
-    expect(Intersect(X, Y).intersectees.map(A => A.tag)).toEqual(['literal', 'literal']);
-    expect(Intersect(X, Y).intersectees.map(A => A.value)).toEqual(['x', 'y']);
+    const intersectees = [Record({ x: Number }), Record({ y: Number })] as const;
+    const I = Intersect(...intersectees);
+    type I = Static<typeof I>;
+    const i: I = { x: 1, y: 2 };
+    expectLiteralField(I, 'tag', 'intersect');
+    expect(I.intersectees.map(A => A.tag)).toEqual(['record', 'record']);
+    expect(() => I.check(i)).not.toThrow();
   });
 
   it('optional', () => {
@@ -812,7 +814,7 @@ describe('change static type with Constraint', () => {
     | RTPartial<{ [_ in string]: Reflect }, true>
     | Tuple2<Reflect, Reflect>
     | Union2<Reflect, Reflect>
-    | Intersect2<Reflect, Reflect>
+    | Intersect<[Reflect, Reflect]>
     | Optional<Reflect>
     | Function
     | Constraint<Reflect, any, any>

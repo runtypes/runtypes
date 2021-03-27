@@ -3,7 +3,6 @@ import {
   Union,
   Union2,
   Intersect,
-  Intersect2,
   Optional,
   Constraint,
   ConstraintCheck,
@@ -48,7 +47,7 @@ export interface Runtype<A = unknown> {
   /**
    * Intersect this Runtype with another.
    */
-  And<B extends Runtype>(B: B): Intersect2<this, B>;
+  And<B extends Runtype>(B: B): Intersect<[this, B]>;
 
   /**
    * Optionalize this Runtype.
@@ -150,7 +149,7 @@ export function create<A extends Runtype>(
     return Union(A, B);
   }
 
-  function And<B extends Runtype>(B: B): Intersect2<A, B> {
+  function And<B extends Runtype>(B: B): Intersect<[A, B]> {
     return Intersect(A, B);
   }
 
