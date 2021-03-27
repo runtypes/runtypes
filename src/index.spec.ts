@@ -730,7 +730,6 @@ describe('reflection', () => {
     type I = Static<typeof I>;
     const i: I = { x: 1, y: 2 };
     expectLiteralField(I, 'tag', 'intersect');
-    expectLiteralField(I, 'tag', 'intersect');
     expect(I.intersectees.map(A => A.tag)).toEqual(['record', 'record']);
     expect(() => I.check(i)).not.toThrow();
   });
