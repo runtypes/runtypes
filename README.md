@@ -1,21 +1,15 @@
-# Funtypes
+# Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes) [![Coverage Status](https://coveralls.io/repos/github/pelotom/runtypes/badge.svg?branch=master)](https://coveralls.io/github/pelotom/runtypes?branch=master)
 
 ### Safely bring untyped data into the fold
 
-Funtypes allow you to take values about which you have no assurances and check that they conform to some type `A`.
+Runtypes allow you to take values about which you have no assurances and check that they conform to some type `A`.
 This is done by means of composable type validators of primitives, literals, arrays, tuples, records, unions,
 intersections and more.
-
-[![Build Status](https://img.shields.io/github/workflow/status/ForbesLindesay/funtypes/Test/master?style=for-the-badge)](https://github.com/ForbesLindesay/funtypes/actions?query=workflow%3ATest+branch%3Amaster)
-[![Rolling Versions](https://img.shields.io/badge/Rolling%20Versions-Enabled-brightgreen?style=for-the-badge)](https://rollingversions.com/ForbesLindesay/funtypes)
-[![NPM version](https://img.shields.io/npm/v/funtypes?style=for-the-badge)](https://www.npmjs.com/package/funtypes)
-
-> This library is a fork of the excellent [runtypes](https://github.com/pelotom/runtypes) by Tom Crockett
 
 ## Installation
 
 ```
-npm install --save funtypes
+npm install --save runtypes
 ```
 
 ## Example
@@ -64,7 +58,7 @@ validate that the objects conform to their specifications. We do so by building 
 manner:
 
 ```ts
-import { Boolean, Number, String, Literal, Array, Tuple, Record, Union } from 'funtypes';
+import { Boolean, Number, String, Literal, Array, Tuple, Record, Union } from 'runtypes';
 
 const Vector = Tuple(Number, Number, Number);
 
@@ -136,7 +130,7 @@ twice, once at the type level and then again at the value level, is a pain and n
 Fortunately you can define a static `Asteroid` type which is an alias to the `Runtype`-derived type like so:
 
 ```ts
-import { Static } from 'funtypes';
+import { Static } from 'runtypes';
 
 type Asteroid = Static<typeof Asteroid>;
 ```
@@ -153,7 +147,7 @@ type Asteroid = {
 
 ## Type guards
 
-In addition to providing a `check` method, funtypes can be used as [type guards](https://basarat.gitbook.io/typescript/type-system/typeguard):
+In addition to providing a `check` method, runtypes can be used as [type guards](https://basarat.gitbook.io/typescript/type-system/typeguard):
 
 ```ts
 function disembark(obj: {}) {
@@ -183,7 +177,7 @@ if (isHabitable(spaceObject)) {
 }
 ```
 
-There's also a top-level `match` function which allows testing an ad-hoc sequence of funtypes:
+There's also a top-level `match` function which allows testing an ad-hoc sequence of runtypes:
 
 ```ts
 const makeANumber = match(
@@ -280,7 +274,7 @@ type T = Static<typeof B>; // T will have type of `Buffer`
 
 ## Function contracts
 
-Funtypes along with constraint checking are a natural fit for enforcing function
+Runtypes along with constraint checking are a natural fit for enforcing function
 contracts. You can construct a contract from `Runtype`s for the parameters and
 return type of the function:
 
@@ -300,7 +294,7 @@ divide(10, 0); // Throws error: division by zero
 
 ## Optional values
 
-Funtypes can be used to represent a variable that may be null or undefined
+Runtypes can be used to represent a variable that may be null or undefined
 as well as representing keys within records that may or may not be present.
 
 
@@ -345,7 +339,7 @@ const MilitaryShip = Ship.And(Record({
 
 ## Readonly records and arrays
 
-Array and Record funtypes have a special function `.asReadonly()`, that creates a new runtype where the values are readonly.
+Array and Record runtypes have a special function `.asReadonly()`, that creates a new runtype where the values are readonly.
 
 For example:
 
@@ -362,3 +356,8 @@ const AsteroidArray = Array(Asteroid).asReadonly()
 
 Static<typeof AsteroidArray> // ReadonlyArray<Asteroid>
 ```
+
+## Related libraries
+
+* [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
+* [rest.ts](https://github.com/hmil/rest.ts) Allows building type safe and runtime-checked APIs

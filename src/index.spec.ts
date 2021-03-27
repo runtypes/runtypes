@@ -19,6 +19,7 @@ import {
   Tuple2,
   Union,
   Intersect,
+  Intersect2,
   Function,
   Lazy,
   Constraint,
@@ -756,7 +757,7 @@ describe('change static type with Constraint', () => {
     | RTPartial<{ [_ in string]: Reflect }, true>
     | Tuple2<Reflect, Reflect>
     | Union<[Reflect, Reflect]>
-    | Intersect<[Reflect, Reflect]>
+    | Intersect2<Reflect, Reflect>
     | Function
     | Constraint<Reflect, any, any>
     | InstanceOf<Constructor<never>>

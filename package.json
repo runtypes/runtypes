@@ -1,5 +1,5 @@
 {
-  "name": "funtypes",
+  "name": "runtypes",
   "version": "5.0.1",
   "description": "Runtime validation for static types",
   "main": "./lib/index.js",
@@ -19,7 +19,7 @@
     "jest": "24.9.0",
     "prettier": "^1.19.1",
     "ts-jest": "^24.1.0",
-    "typescript": "4.0.2"
+    "typescript": "3.7.5"
   },
   "keywords:": [
     "runtime",
@@ -29,7 +29,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ForbesLindesay/funtypes"
+    "url": "https://github.com/pelotom/runtypes"
   },
   "jest": {
     "verbose": false,

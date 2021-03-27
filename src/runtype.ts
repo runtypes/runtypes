@@ -1,4 +1,4 @@
-import { Result, Union, Intersect, Constraint, ConstraintCheck, Brand } from './index';
+import { Result, Union, Intersect, Intersect2, Constraint, ConstraintCheck, Brand } from './index';
 import { Reflect } from './reflect';
 import show from './show';
 import { ValidationError } from './errors';
@@ -50,7 +50,7 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
   /**
    * Intersect this Runtype with another.
    */
-  And<B extends Runtype>(B: B): Intersect<[this, B]>;
+  And<B extends Runtype>(B: B): Intersect2<this, B>;
 
   /**
    * Use an arbitrary constraint function to validate a runtype, and optionally
@@ -139,7 +139,7 @@ export function create<A extends Runtype>(
     return Union(A, B);
   }
 
-  function And<B extends Runtype>(B: B): Intersect<[A, B]> {
+  function And<B extends Runtype>(B: B): Intersect2<A, B> {
     return Intersect(A, B);
   }
 
