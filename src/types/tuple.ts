@@ -2,7 +2,7 @@ import { Runtype, Static, create, innerValidate } from '../runtype';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
 
-export interface Tuple<A extends readonly [Runtype, ...Runtype[]] | readonly []>
+export interface Tuple<A extends readonly Runtype[]>
   extends Runtype<
     {
       [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
@@ -15,9 +15,7 @@ export interface Tuple<A extends readonly [Runtype, ...Runtype[]] | readonly []>
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
-export function Tuple<T extends readonly [Runtype, ...Runtype[]] | readonly []>(
-  ...components: T
-): Tuple<T> {
+export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> {
   return create(
     (x, visited) => {
       const validated = innerValidate(Arr(Unknown), x, visited);
