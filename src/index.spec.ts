@@ -8,6 +8,7 @@ import {
   Void,
   Boolean,
   Number,
+  BigInt,
   String,
   Symbol as Sym,
   Literal,
@@ -16,10 +17,9 @@ import {
   Record,
   Partial as RTPartial,
   Tuple,
-  Tuple2,
   Union,
   Intersect,
-  Intersect2,
+  Optional,
   Function,
   Lazy,
   Constraint,
@@ -115,10 +115,13 @@ const runtypes = {
   Number,
   3: Literal(3),
   42: Literal(42),
+  bigint: BigInt,
+  '42n': Literal(global.BigInt(42)),
   brandedNumber: Number.withBrand('number'),
   String,
   'hello world': Literal('hello world'),
   Sym,
+  SymForRuntypes: Sym('runtypes'),
   symbolArray: Array(Sym),
   boolArray: Array(Boolean),
   boolTuple,
@@ -139,6 +142,7 @@ const runtypes = {
   ),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
+  UnionDictionary: Dictionary(String, Union(Literal('a'), Literal('b'), Literal(3))),
   DictionaryOfArrays: Dictionary(Array(Boolean)),
   InstanceOfSomeClass: InstanceOf(SomeClass),
   InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
@@ -159,7 +163,10 @@ const runtypes = {
     },
   ),
   DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
-  OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
+  OptionalBoolean: Optional(Boolean),
+  OptionalProperty: Record({ foo: String, bar: Optional(Number) }),
+  UnionProperty: Record({ foo: String, bar: Union(Number, Undefined) }),
+  PartialProperty: Record({ foo: String }).And(RTPartial({ bar: Number })),
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
   Graph,
@@ -172,6 +179,7 @@ const runtypes = {
     .asReadonly()
     .And(RTPartial({ bar: String }).asReadonly()),
   EmptyTuple: Tuple(),
+  Union: Union(Literal('a'), Literal('b'), Literal(3)),
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -183,23 +191,28 @@ class Foo {
 } // Should not be recognized as a Dictionary
 
 const testValues: { value: unknown; passes: RuntypeName[] }[] = [
-  { value: undefined, passes: ['Undefined', 'Void'] },
+  { value: undefined, passes: ['Undefined', 'Void', 'OptionalBoolean'] },
   { value: null, passes: ['Null', 'Void'] },
-  { value: true, passes: ['Boolean', 'true'] },
-  { value: false, passes: ['Boolean', 'false'] },
-  { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1'] },
+  { value: true, passes: ['Boolean', 'true', 'OptionalBoolean'] },
+  { value: false, passes: ['Boolean', 'false', 'OptionalBoolean'] },
+  { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1', 'Union'] },
   {
     value: 42,
     passes: ['Number', 'brandedNumber', 42, 'MoreThanThree', 'MoreThanThreeWithMessage'],
   },
+  { value: global.BigInt(42), passes: ['bigint', '42n'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
-  { value: Symbol.for('runtypes'), passes: ['Sym'] },
+  { value: Symbol(), passes: ['Sym'] },
+  { value: Symbol.for('runtypes'), passes: ['Sym', 'SymForRuntypes'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
-  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey'] },
+  {
+    value: { Boolean: true, foo: 'hello' },
+    passes: ['Partial', 'OptionalProperty', 'PartialProperty'],
+  },
   { value: { Boolean: true, foo: 5 }, passes: ['ReadonlyPartial'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: undefined, likes: [] }, passes: [] },
@@ -208,8 +221,8 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
     value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] },
     passes: ['Person'],
   },
-  { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
-  { value: ['1', '2'], passes: ['ArrayString', 'NumberDictionary'] },
+  { value: { a: '1', b: '2', 3: '4' }, passes: ['Dictionary', 'UnionDictionary'] },
+  { value: ['1', '2'], passes: ['ArrayString'] },
   { value: ['1', 2], passes: [] },
   { value: [{ name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }], passes: ['ArrayPerson'] },
   { value: [{ name: null, likes: [] }], passes: [] },
@@ -243,8 +256,14 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
     ],
   },
   { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass'] },
-  { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
-  { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
+  {
+    value: { foo: 'hello' },
+    passes: ['OptionalProperty', 'PartialProperty', 'Dictionary'],
+  },
+  {
+    value: { foo: 'hello', bar: undefined },
+    passes: ['OptionalProperty', 'UnionProperty', 'PartialProperty'],
+  },
   { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord', 'ReadonlyPartial'] },
   { value: narcissist, passes: ['Person'] },
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
@@ -265,7 +284,7 @@ const getCircularReplacer = () => {
       }
       seen.add(value);
     } else if (typeof value === 'symbol' || typeof value === 'function') return value.toString();
-    return value;
+    return typeof value === 'bigint' ? value.toString() + 'n' : value;
   };
 };
 
@@ -473,7 +492,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was undefined in age',
+      'Expected "age" property to be present, but was missing in age',
       'age',
     );
   });
@@ -510,7 +529,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was undefined in age',
+      'Expected "age" property to be present, but was missing in age',
       'age',
     );
   });
@@ -602,12 +621,35 @@ describe('reflection', () => {
     expectLiteralField(Number, 'tag', 'number');
   });
 
+  it('bigint', () => {
+    expectLiteralField(BigInt, 'tag', 'bigint');
+  });
+
   it('string', () => {
     expectLiteralField(String, 'tag', 'string');
   });
 
   it('symbol', () => {
     expectLiteralField(Sym, 'tag', 'symbol');
+    const SymForRuntypes = Sym('runtypes');
+    expectLiteralField(SymForRuntypes, 'tag', 'symbol');
+    expectLiteralField(SymForRuntypes, 'key', 'runtypes');
+    assertThrows(
+      Symbol.for('runtypes!'),
+      Sym('runtypes?'),
+      'Expected symbol key to be "runtypes?", but was "runtypes!"',
+    );
+    assertAccepts(Symbol(), Sym(undefined));
+    assertThrows(
+      Symbol.for('undefined'),
+      Sym(undefined),
+      'Expected symbol key to be undefined, but was "undefined"',
+    );
+    assertThrows(
+      Symbol(),
+      Sym('undefined'),
+      'Expected symbol key to be "undefined", but was undefined',
+    );
   });
 
   it('literal', () => {
@@ -681,10 +723,22 @@ describe('reflection', () => {
   });
 
   it('intersect', () => {
-    expectLiteralField(Intersect(X, Y), 'tag', 'intersect');
-    expectLiteralField(Intersect(X, Y), 'tag', 'intersect');
-    expect(Intersect(X, Y).intersectees.map(A => A.tag)).toEqual(['literal', 'literal']);
-    expect(Intersect(X, Y).intersectees.map(A => A.value)).toEqual(['x', 'y']);
+    const intersectees = [Record({ x: Number }), Record({ y: Number })] as const;
+    const I = Intersect(...intersectees);
+    type I = Static<typeof I>;
+    const i: I = { x: 1, y: 2 };
+    expectLiteralField(I, 'tag', 'intersect');
+    expect(I.intersectees.map(A => A.tag)).toEqual(['record', 'record']);
+    expect(() => I.check(i)).not.toThrow();
+  });
+
+  it('optional', () => {
+    const OptionalNumber = Optional(Number);
+    expectLiteralField(OptionalNumber, 'tag', 'optional');
+    expectLiteralField(OptionalNumber.underlying, 'tag', 'number');
+    const OptionalNumberShorthand = Number.optional();
+    expectLiteralField(OptionalNumberShorthand, 'tag', 'optional');
+    expectLiteralField(OptionalNumberShorthand.underlying, 'tag', 'number');
   });
 
   it('function', () => {
@@ -746,6 +800,7 @@ describe('change static type with Constraint', () => {
     | Void
     | Boolean
     | Number
+    | BigInt
     | String
     | Sym
     | Literal<boolean | number | string>
@@ -755,9 +810,10 @@ describe('change static type with Constraint', () => {
     | Record<{ [_ in string]: Reflect }, true>
     | RTPartial<{ [_ in string]: Reflect }, false>
     | RTPartial<{ [_ in string]: Reflect }, true>
-    | Tuple2<Reflect, Reflect>
+    | Tuple<[Reflect, Reflect]>
     | Union<[Reflect, Reflect]>
-    | Intersect2<Reflect, Reflect>
+    | Intersect<[Reflect, Reflect]>
+    | Optional<Reflect>
     | Function
     | Constraint<Reflect, any, any>
     | InstanceOf<Constructor<never>>
@@ -776,6 +832,9 @@ describe('change static type with Constraint', () => {
       break;
     case 'number':
       check<number>(X);
+      break;
+    case 'bigint':
+      check<bigint>(X);
       break;
     case 'string':
       check<string>(X);

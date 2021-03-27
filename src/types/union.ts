@@ -13,6 +13,7 @@ export interface Union<A extends readonly [Rt, ...Rt[]]>
   alternatives: A;
   match: Match<A>;
 }
+
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */

@@ -1,4 +1,4 @@
-import { Result, Union, Intersect, Intersect2, Constraint, ConstraintCheck, Brand } from './index';
+import { Result, Union, Intersect, Optional, Constraint, ConstraintCheck, Brand } from './index';
 import { Reflect } from './reflect';
 import show from './show';
 import { ValidationError } from './errors';
@@ -50,7 +50,12 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
   /**
    * Intersect this Runtype with another.
    */
-  And<B extends Runtype>(B: B): Intersect2<this, B>;
+  And<B extends Runtype>(B: B): Intersect<[this, B]>;
+
+  /**
+   * Optionalize this Runtype.
+   */
+  optional(): Optional<this>;
 
   /**
    * Use an arbitrary constraint function to validate a runtype, and optionally
@@ -115,6 +120,7 @@ export function create<A extends Runtype>(
   A.guard = guard;
   A.Or = Or;
   A.And = And;
+  A.optional = optional;
   A.withConstraint = withConstraint;
   A.withGuard = withGuard;
   A.withBrand = withBrand;
@@ -139,8 +145,12 @@ export function create<A extends Runtype>(
     return Union(A, B);
   }
 
-  function And<B extends Runtype>(B: B): Intersect2<A, B> {
+  function And<B extends Runtype>(B: B): Intersect<[A, B]> {
     return Intersect(A, B);
+  }
+
+  function optional(): Optional<A> {
+    return Optional(A);
   }
 
   function withConstraint<T extends Static<A>, K = unknown>(
