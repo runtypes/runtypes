@@ -10,9 +10,7 @@ process.on('unhandledRejection', err => {
 const { exec, execSync } = require('child_process');
 const { join } = require('path');
 
-const npmBinPath = execSync('npm bin')
-  .toString()
-  .trim();
+const npmBinPath = execSync('npm bin').toString().trim();
 
 const command = [
   join(npmBinPath, 'prettier'),

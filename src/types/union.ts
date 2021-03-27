@@ -72,8 +72,7 @@ export interface Union8<
   F extends Rt,
   G extends Rt,
   H extends Rt
->
-  extends Rt<
+> extends Rt<
     Static<A> | Static<B> | Static<C> | Static<D> | Static<E> | Static<F> | Static<G> | Static<H>
   > {
   tag: 'union';
@@ -91,8 +90,7 @@ export interface Union9<
   G extends Rt,
   H extends Rt,
   I extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -119,8 +117,7 @@ export interface Union10<
   H extends Rt,
   I extends Rt,
   J extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -149,8 +146,7 @@ export interface Union11<
   I extends Rt,
   J extends Rt,
   K extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -181,8 +177,7 @@ export interface Union12<
   J extends Rt,
   K extends Rt,
   L extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -215,8 +210,7 @@ export interface Union13<
   K extends Rt,
   L extends Rt,
   M extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -251,8 +245,7 @@ export interface Union14<
   L extends Rt,
   M extends Rt,
   N extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -289,8 +282,7 @@ export interface Union15<
   M extends Rt,
   N extends Rt,
   O extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -329,8 +321,7 @@ export interface Union16<
   N extends Rt,
   O extends Rt,
   P extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -371,8 +362,7 @@ export interface Union17<
   O extends Rt,
   P extends Rt,
   Q extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -415,8 +405,7 @@ export interface Union18<
   P extends Rt,
   Q extends Rt,
   R extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -461,8 +450,7 @@ export interface Union19<
   Q extends Rt,
   R extends Rt,
   S extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>
@@ -509,8 +497,7 @@ export interface Union20<
   R extends Rt,
   S extends Rt,
   T extends Rt
->
-  extends Rt<
+> extends Rt<
     | Static<A>
     | Static<B>
     | Static<C>

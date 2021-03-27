@@ -1,6 +1,38 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
 import { hasKey } from '../util';
 import show from '../show';
+import { Optional } from './optional';
+
+type FilterOptionalKeys<T> = Exclude<
+  {
+    [K in keyof T]: T[K] extends Optional<any> ? K : never;
+  }[keyof T],
+  undefined
+>;
+type FilterRequiredKeys<T> = Exclude<
+  {
+    [K in keyof T]: T[K] extends Optional<any> ? never : K;
+  }[keyof T],
+  undefined
+>;
+
+type MergedRecord<O extends { [_: string]: Runtype }> = {
+  [K in FilterRequiredKeys<O>]: Static<O[K]>;
+} &
+  {
+    [K in FilterOptionalKeys<O>]?: Static<O[K]>;
+  } extends infer P
+  ? { [K in keyof P]: P[K] }
+  : never;
+
+type MergedRecordReadonly<O extends { [_: string]: Runtype }> = {
+  [K in FilterRequiredKeys<O>]: Static<O[K]>;
+} &
+  {
+    [K in FilterOptionalKeys<O>]?: Static<O[K]>;
+  } extends infer P
+  ? { readonly [K in keyof P]: P[K] }
+  : never;
 
 type RecordStaticType<
   O extends { [_: string]: Runtype },
@@ -11,8 +43,8 @@ type RecordStaticType<
     ? { readonly [K in keyof O]?: Static<O[K]> }
     : { [K in keyof O]?: Static<O[K]> }
   : RO extends true
-  ? { readonly [K in keyof O]: Static<O[K]> }
-  : { [K in keyof O]: Static<O[K]> };
+  ? MergedRecordReadonly<O>
+  : MergedRecord<O>;
 
 export interface InternalRecord<
   O extends { [_: string]: Runtype },
@@ -57,9 +89,10 @@ export function InternalRecord<
         }
 
         for (const key in fields) {
-          if (!isPartial || (hasKey(key, x) && x[key] !== undefined)) {
-            const value = isPartial || hasKey(key, x) ? x[key] : undefined;
-            let validated = innerValidate(fields[key], value, visited);
+          const isOptional = isPartial || fields[key].reflect.tag === 'optional';
+          if (hasKey(key, x)) {
+            if (isOptional && x[key] === undefined) continue;
+            const validated = innerValidate(fields[key], x[key], visited);
             if (!validated.success) {
               return {
                 success: false,
@@ -67,6 +100,12 @@ export function InternalRecord<
                 key: validated.key ? `${key}.${validated.key}` : key,
               };
             }
+          } else if (!isOptional) {
+            return {
+              success: false,
+              message: `Expected "${key}" property to be present, but was missing`,
+              key,
+            };
           }
         }
 
