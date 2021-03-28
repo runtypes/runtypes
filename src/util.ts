@@ -3,3 +3,14 @@
 export function hasKey<K extends string>(k: K, o: {}): o is { [_ in K]: {} } {
   return typeof o === 'object' && k in o;
 }
+
+export const typeOf = (value: unknown) =>
+  typeof value === 'object'
+    ? value === null
+      ? 'null'
+      : Array.isArray(value)
+      ? 'array'
+      : value.constructor.name === 'Object'
+      ? 'object'
+      : value.constructor.name
+    : typeof value;

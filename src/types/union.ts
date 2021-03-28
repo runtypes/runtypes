@@ -1,7 +1,7 @@
 import { Runtype, RuntypeBase as Rt, Static, create, innerValidate } from '../runtype';
 import show from '../show';
 import { LiteralBase } from './literal';
-import { hasKey } from '../util';
+import { hasKey, typeOf } from '../util';
 
 export interface Union<A extends readonly [Rt, ...Rt[]]>
   extends Runtype<
@@ -70,7 +70,7 @@ export function Union<T extends [Rt, ...Rt[]]>(...alternatives: T): Union<T> {
 
     return {
       success: false,
-      message: `Expected ${show(self)}, but was ${value === null ? value : typeof value}`,
+      message: `Expected ${show(self)}, but was ${typeOf(value)}`,
     };
   }, self);
 }

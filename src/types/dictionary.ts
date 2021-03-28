@@ -2,6 +2,7 @@ import { Runtype, create, Static, innerValidate } from '../runtype';
 import { String } from './string';
 import { Constraint } from './constraint';
 import show from '../show';
+import { typeOf } from '../util';
 
 type DictionaryKeyType = string | number | symbol;
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string
@@ -82,18 +83,18 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
   const self = { tag: 'dictionary', key: keyString, value } as any;
   return create<any>((x, visited) => {
     if (x === null || x === undefined) {
-      return { success: false, message: `Expected ${show(self)}, but was ${x}` };
+      return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
     }
 
     if (typeof x !== 'object') {
-      return { success: false, message: `Expected ${show(self)}, but was ${typeof x}` };
+      return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
     }
 
     if (Object.getPrototypeOf(x) !== Object.prototype) {
       if (!Array.isArray(x)) {
         return {
           success: false,
-          message: `Expected ${show(self)}, but was ${Object.getPrototypeOf(x)}`,
+          message: `Expected ${show(self)}, but was ${typeOf(x)}`,
         };
       } else if (keyString === 'string')
         return { success: false, message: 'Expected dictionary, but was array' };
@@ -111,7 +112,7 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
       if (isNumberLikeKey ? !keyRuntype.guard(l) && !keyRuntype.guard(k) : !keyRuntype.guard(l)) {
         return {
           success: false,
-          message: `Expected dictionary key to be a ${keyString}, but was ${typeof l}`,
+          message: `Expected dictionary key to be a ${keyString}, but was ${typeOf(l)}`,
         };
       }
 

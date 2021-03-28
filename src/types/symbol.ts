@@ -1,4 +1,5 @@
 import { Runtype, create } from '../runtype';
+import { typeOf } from '../util';
 
 export interface Symbol extends Runtype<symbol> {
   tag: 'symbol';
@@ -20,7 +21,7 @@ const f = (key: string | undefined) =>
       if (typeof value !== 'symbol') {
         return {
           success: false,
-          message: `Expected symbol, but was ${typeStringOf(value)}`,
+          message: `Expected symbol, but was ${typeOf(value)}`,
         };
       } else {
         const keyForValue = global.Symbol.keyFor(value);
@@ -46,7 +47,7 @@ export const Symbol = create<Symbol>(value => {
   if (typeof value !== 'symbol') {
     return {
       success: false,
-      message: `Expected symbol, but was ${typeStringOf(value)}`,
+      message: `Expected symbol, but was ${typeOf(value)}`,
     };
   } else {
     return { success: true, value };
@@ -54,6 +55,3 @@ export const Symbol = create<Symbol>(value => {
 }, Object.assign(f, { tag: 'symbol' }));
 
 const quoteIfPresent = (key: string | undefined) => (key === undefined ? 'undefined' : `"${key}"`);
-
-const typeStringOf = (value: unknown) =>
-  value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;

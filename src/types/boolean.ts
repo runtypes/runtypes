@@ -1,4 +1,5 @@
 import { Runtype, create } from '../runtype';
+import { typeOf } from '../util';
 
 export interface Boolean extends Runtype<boolean> {
   tag: 'boolean';
@@ -13,7 +14,7 @@ export const Boolean = create<Boolean>(
       ? { success: true, value }
       : {
           success: false,
-          message: `Expected boolean, but was ${value === null ? value : typeof value}`,
+          message: `Expected boolean, but was ${typeOf(value)}`,
         },
   { tag: 'boolean' },
 );

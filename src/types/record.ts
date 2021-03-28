@@ -1,5 +1,5 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { hasKey } from '../util';
+import { hasKey, typeOf } from '../util';
 import show from '../show';
 import { Optional } from './optional';
 
@@ -84,7 +84,7 @@ export function InternalRecord<
   return withExtraModifierFuncs(
     create((x, visited) => {
       if (x === null || x === undefined) {
-        return { success: false, message: `Expected ${show(self)}, but was ${x}` };
+        return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
       }
 
       for (const key in fields) {

@@ -1,4 +1,5 @@
 import { Runtype, create } from '../runtype';
+import { typeOf } from '../util';
 
 export interface BigInt extends Runtype<bigint> {
   tag: 'bigint';
@@ -13,7 +14,7 @@ export const BigInt = create<BigInt>(
       ? { success: true, value }
       : {
           success: false,
-          message: `Expected bigint, but was ${value === null ? value : typeof value}`,
+          message: `Expected bigint, but was ${typeOf(value)}`,
         },
   { tag: 'bigint' },
 );

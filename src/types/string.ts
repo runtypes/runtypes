@@ -1,4 +1,5 @@
 import { Runtype, create } from '../runtype';
+import { typeOf } from '../util';
 
 export interface String extends Runtype<string> {
   tag: 'string';
@@ -13,7 +14,7 @@ export const String = create<String>(
       ? { success: true, value }
       : {
           success: false,
-          message: `Expected string, but was ${value === null ? value : typeof value}`,
+          message: `Expected string, but was ${typeOf(value)}`,
         },
   { tag: 'string' },
 );

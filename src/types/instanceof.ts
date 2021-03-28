@@ -1,4 +1,5 @@
 import { Runtype, create } from '../runtype';
+import { typeOf } from '../util';
 
 export interface Constructor<V> {
   new (...args: any[]): V;
@@ -16,9 +17,7 @@ export function InstanceOf<V>(ctor: Constructor<V>) {
         ? { success: true, value }
         : {
             success: false,
-            message: `Expected ${(ctor as any).name}, but was ${
-              value === null ? value : typeof value
-            }`,
+            message: `Expected ${(ctor as any).name}, but was ${typeOf(value)}`,
           },
     { tag: 'instanceof', ctor: ctor },
   );

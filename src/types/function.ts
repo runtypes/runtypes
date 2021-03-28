@@ -1,4 +1,5 @@
 import { Runtype, create } from '../runtype';
+import { typeOf } from '../util';
 
 export interface Function extends Runtype<(...args: any[]) => any> {
   tag: 'function';
@@ -13,7 +14,7 @@ export const Function = create<Function>(
       ? { success: true, value }
       : {
           success: false,
-          message: `Expected function, but was ${value === null ? value : typeof value}`,
+          message: `Expected function, but was ${typeOf(value)}`,
         },
   { tag: 'function' },
 );

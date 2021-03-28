@@ -1,4 +1,5 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
+import { typeOf } from '../util';
 
 type ArrayStaticType<E extends Runtype, RO extends boolean> = RO extends true
   ? ReadonlyArray<Static<E>>
@@ -25,7 +26,7 @@ function InternalArr<E extends Runtype, RO extends boolean>(
         if (!Array.isArray(xs)) {
           return {
             success: false,
-            message: `Expected array, but was ${xs === null ? xs : typeof xs}`,
+            message: `Expected array, but was ${typeOf(xs)}`,
           };
         }
 
