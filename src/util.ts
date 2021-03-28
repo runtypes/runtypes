@@ -1,7 +1,10 @@
 // Type guard to determine if an object has a given key
 // If this feature gets implemented, we can use `in` instead: https://github.com/Microsoft/TypeScript/issues/10485
-export function hasKey<K extends string | number | symbol>(k: K, o: {}): o is { [_ in K]: {} } {
-  return typeof o === 'object' && k in o;
+export function hasKey<K extends string | number | symbol>(
+  k: K,
+  o: unknown,
+): o is { [_ in K]: {} } {
+  return typeof o === 'object' && o !== null && k in o;
 }
 
 export const typeOf = (value: unknown) =>
