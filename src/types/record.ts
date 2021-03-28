@@ -1,5 +1,5 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { hasKey, typeOf } from '../util';
+import { enumerableKeysOf, hasKey, typeOf } from '../util';
 import show from '../show';
 import { Optional } from './optional';
 
@@ -87,23 +87,25 @@ export function InternalRecord<
         return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
       }
 
-      for (const key in fields) {
-        const isOptional = isPartial || fields[key].reflect.tag === 'optional';
+      const keys = enumerableKeysOf(fields);
+
+      for (const key of keys) {
+        const isOptional = isPartial || fields[key as any].reflect.tag === 'optional';
         if (hasKey(key, x)) {
-          if (isOptional && x[key] === undefined) continue;
-          const validated = innerValidate(fields[key], x[key], visited);
+          if (isOptional && x[key as any] === undefined) continue;
+          const validated = innerValidate(fields[key as any], x[key as any], visited);
           if (!validated.success) {
             return {
               success: false,
               message: validated.message,
-              key: validated.key ? `${key}.${validated.key}` : key,
+              key: validated.key ? `${String(key)}.${validated.key}` : String(key),
             };
           }
         } else if (!isOptional) {
           return {
             success: false,
-            message: `Expected "${key}" property to be present, but was missing`,
-            key,
+            message: `Expected "${String(key)}" property to be present, but was missing`,
+            key: String(key),
           };
         }
       }

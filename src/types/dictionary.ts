@@ -2,7 +2,7 @@ import { Runtype, create, Static, innerValidate } from '../runtype';
 import { String } from './string';
 import { Constraint } from './constraint';
 import show from '../show';
-import { typeOf } from '../util';
+import { enumerableKeysOf, typeOf } from '../util';
 
 type DictionaryKeyType = string | number | symbol;
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string
@@ -101,27 +101,32 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
     }
 
     const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/u;
+    const keys = enumerableKeysOf(x);
 
-    for (const k of [...Object.getOwnPropertyNames(x), ...Object.getOwnPropertySymbols(x)]) {
+    for (const key of keys) {
       // We should provide interoperability with `number` and `string` here,
       // as a user would expect JavaScript engines to convert numeric keys to
       // string keys automatically. So, if the key can be interpreted as a
       // decimal number, then test it against a `Number` OR `String` runtype.
-      const isNumberLikeKey = typeof k === 'string' && numberString.test(k);
-      const l = isNumberLikeKey ? global.Number(k) : k;
-      if (isNumberLikeKey ? !keyRuntype.guard(l) && !keyRuntype.guard(k) : !keyRuntype.guard(l)) {
+      const isNumberLikeKey = typeof key === 'string' && numberString.test(key);
+      const keyInterop = isNumberLikeKey ? global.Number(key) : key;
+      if (
+        isNumberLikeKey
+          ? !keyRuntype.guard(keyInterop) && !keyRuntype.guard(key)
+          : !keyRuntype.guard(keyInterop)
+      ) {
         return {
           success: false,
-          message: `Expected dictionary key to be a ${keyString}, but was ${typeOf(l)}`,
+          message: `Expected dictionary key to be a ${keyString}, but was ${typeOf(keyInterop)}`,
         };
       }
 
-      const validated = innerValidate(value, x[k], visited);
+      const validated = innerValidate(value, x[key], visited);
       if (!validated.success) {
         return {
           success: false,
           message: validated.message,
-          key: validated.key ? `${global.String(k)}.${validated.key}` : global.String(k),
+          key: validated.key ? `${global.String(key)}.${validated.key}` : global.String(key),
         };
       }
     }
