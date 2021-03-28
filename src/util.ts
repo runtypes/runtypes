@@ -3,7 +3,7 @@
 export function hasKey<K extends string | number | symbol>(
   k: K,
   o: unknown,
-): o is { [_ in K]: {} } {
+): o is { [_ in K]: unknown } {
   return typeof o === 'object' && o !== null && k in o;
 }
 
