@@ -80,39 +80,36 @@ export function InternalRecord<
   Part extends boolean,
   RO extends boolean
 >(fields: O, isPartial: Part, isReadonly: RO): InternalRecord<O, Part, RO> {
+  const self = { tag: 'record', isPartial, isReadonly, fields } as any;
   return withExtraModifierFuncs(
-    create(
-      (x, visited) => {
-        if (x === null || x === undefined) {
-          const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'record', fields });
-          return { success: false, message: `Expected ${show(a)}, but was ${x}` };
-        }
+    create((x, visited) => {
+      if (x === null || x === undefined) {
+        return { success: false, message: `Expected ${show(self)}, but was ${x}` };
+      }
 
-        for (const key in fields) {
-          const isOptional = isPartial || fields[key].reflect.tag === 'optional';
-          if (hasKey(key, x)) {
-            if (isOptional && x[key] === undefined) continue;
-            const validated = innerValidate(fields[key], x[key], visited);
-            if (!validated.success) {
-              return {
-                success: false,
-                message: validated.message,
-                key: validated.key ? `${key}.${validated.key}` : key,
-              };
-            }
-          } else if (!isOptional) {
+      for (const key in fields) {
+        const isOptional = isPartial || fields[key].reflect.tag === 'optional';
+        if (hasKey(key, x)) {
+          if (isOptional && x[key] === undefined) continue;
+          const validated = innerValidate(fields[key], x[key], visited);
+          if (!validated.success) {
             return {
               success: false,
-              message: `Expected "${key}" property to be present, but was missing`,
-              key,
+              message: validated.message,
+              key: validated.key ? `${key}.${validated.key}` : key,
             };
           }
+        } else if (!isOptional) {
+          return {
+            success: false,
+            message: `Expected "${key}" property to be present, but was missing`,
+            key,
+          };
         }
+      }
 
-        return { success: true, value: x };
-      },
-      { tag: 'record', isPartial, isReadonly, fields },
-    ),
+      return { success: true, value: x };
+    }, self),
   );
 }
 

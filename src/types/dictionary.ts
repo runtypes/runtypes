@@ -79,57 +79,52 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
       ? NumberKey
       : (key as Exclude<K, string>);
   const keyString = show(keyRuntype as any);
-  return create<any>(
-    (x, visited) => {
-      if (x === null || x === undefined) {
-        const a = create<any>(x as never, { tag: 'dictionary', key: keyString, value });
-        return { success: false, message: `Expected ${show(a)}, but was ${x}` };
+  const self = { tag: 'dictionary', key: keyString, value } as any;
+  return create<any>((x, visited) => {
+    if (x === null || x === undefined) {
+      return { success: false, message: `Expected ${show(self)}, but was ${x}` };
+    }
+
+    if (typeof x !== 'object') {
+      return { success: false, message: `Expected ${show(self)}, but was ${typeof x}` };
+    }
+
+    if (Object.getPrototypeOf(x) !== Object.prototype) {
+      if (!Array.isArray(x)) {
+        return {
+          success: false,
+          message: `Expected ${show(self)}, but was ${Object.getPrototypeOf(x)}`,
+        };
+      } else if (keyString === 'string')
+        return { success: false, message: 'Expected dictionary, but was array' };
+    }
+
+    const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/u;
+
+    for (const k of [...Object.getOwnPropertyNames(x), ...Object.getOwnPropertySymbols(x)]) {
+      // We should provide interoperability with `number` and `string` here,
+      // as a user would expect JavaScript engines to convert numeric keys to
+      // string keys automatically. So, if the key can be interpreted as a
+      // decimal number, then test it against a `Number` OR `String` runtype.
+      const isNumberLikeKey = typeof k === 'string' && numberString.test(k);
+      const l = isNumberLikeKey ? global.Number(k) : k;
+      if (isNumberLikeKey ? !keyRuntype.guard(l) && !keyRuntype.guard(k) : !keyRuntype.guard(l)) {
+        return {
+          success: false,
+          message: `Expected dictionary key to be a ${keyString}, but was ${typeof l}`,
+        };
       }
 
-      if (typeof x !== 'object') {
-        const a = create<any>(x as never, { tag: 'dictionary', key: keyString, value });
-        return { success: false, message: `Expected ${show(a.reflect)}, but was ${typeof x}` };
+      const validated = innerValidate(value, x[k], visited);
+      if (!validated.success) {
+        return {
+          success: false,
+          message: validated.message,
+          key: validated.key ? `${global.String(k)}.${validated.key}` : global.String(k),
+        };
       }
+    }
 
-      if (Object.getPrototypeOf(x) !== Object.prototype) {
-        if (!Array.isArray(x)) {
-          const a = create<any>(x as never, { tag: 'dictionary', key: keyString, value });
-          return {
-            success: false,
-            message: `Expected ${show(a.reflect)}, but was ${Object.getPrototypeOf(x)}`,
-          };
-        } else if (keyString === 'string')
-          return { success: false, message: 'Expected dictionary, but was array' };
-      }
-
-      const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/u;
-
-      for (const k of [...Object.getOwnPropertyNames(x), ...Object.getOwnPropertySymbols(x)]) {
-        // We should provide interoperability with `number` and `string` here,
-        // as a user would expect JavaScript engines to convert numeric keys to
-        // string keys automatically. So, if the key can be interpreted as a
-        // decimal number, then test it against a `Number` OR `String` runtype.
-        const isNumberLikeKey = typeof k === 'string' && numberString.test(k);
-        const l = isNumberLikeKey ? global.Number(k) : k;
-        if (isNumberLikeKey ? !keyRuntype.guard(l) && !keyRuntype.guard(k) : !keyRuntype.guard(l)) {
-          return {
-            success: false,
-            message: `Expected dictionary key to be a ${keyString}, but was ${typeof l}`,
-          };
-        }
-
-        const validated = innerValidate(value, x[k], visited);
-        if (!validated.success) {
-          return {
-            success: false,
-            message: validated.message,
-            key: validated.key ? `${global.String(k)}.${validated.key}` : global.String(k),
-          };
-        }
-      }
-
-      return { success: true, value: x };
-    },
-    { tag: 'dictionary', key: keyString, value },
-  );
+    return { success: true, value: x };
+  }, self);
 }
