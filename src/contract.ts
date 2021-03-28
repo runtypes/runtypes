@@ -27,7 +27,7 @@ export function Contract<A extends readonly Runtype[], R extends Runtype>(
   ...runtypes: [...A, R]
 ): Contract<A, R> {
   const lastIndex = runtypes.length - 1;
-  const argTypes = runtypes.slice(0, lastIndex);
+  const argRuntypes = (runtypes.slice(0, lastIndex) as unknown) as A;
   const returnRuntype = runtypes[lastIndex] as R;
   return {
     enforce: (
@@ -41,11 +41,11 @@ export function Contract<A extends readonly Runtype[], R extends Runtype>(
         [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
       }
     ): Static<R> => {
-      if (args.length < argTypes.length)
+      if (args.length < argRuntypes.length)
         throw new ValidationError(
-          `Expected ${argTypes.length} arguments but only received ${args.length}`,
+          `Expected ${argRuntypes.length} arguments but only received ${args.length}`,
         );
-      for (let i = 0; i < argTypes.length; i++) argTypes[i].check(args[i]);
+      for (let i = 0; i < argRuntypes.length; i++) argRuntypes[i].check(args[i]);
       return returnRuntype.check(f(...args));
     },
   };
