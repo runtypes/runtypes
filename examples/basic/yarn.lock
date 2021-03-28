@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-runtypes@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/runtypes/-/runtypes-2.0.0.tgz#14677df2e82903ffd08e1f57dd1eb686e6c32ab3"
+"runtypes@file:../..":
+  version "5.2.0"
 
-typescript@^2.6.2:
-  version "2.6.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.6.2.tgz#3c5b6fd7f6de0914269027f03c0946758f7673a4"
+typescript@^4.2.3:
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.2.3.tgz#39062d8019912d43726298f09493d598048c1ce3"
+  integrity sha512-qOcYwxaByStAWrBf4x0fibwZvMRG+r4cQoTjbPtUlrWjBHbmCAww1i448U0GJ+3cNNEtebDteo/cHOR3xJ4wEw==
