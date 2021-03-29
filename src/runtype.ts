@@ -130,11 +130,13 @@ export function create<A extends Runtype>(
   return A;
 
   function check(x: any) {
-    const validated = A.validate(x);
-    if (validated.success) {
-      return validated.value;
-    }
-    throw new ValidationError(validated.message, validated.key);
+    const result: Result<unknown> = A.validate(x);
+    if (result.success) return result.value;
+    const summary =
+      typeof result.message === 'string'
+        ? result.message
+        : `Expected ${show(A.reflect)}, but was incompatible`;
+    throw new ValidationError(summary, result.message);
   }
 
   function guard(x: any): x is A {

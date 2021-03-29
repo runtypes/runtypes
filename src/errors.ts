@@ -4,9 +4,9 @@ export class ValidationError extends Error {
   public name: string = 'ValidationError';
   public info: Message;
 
-  constructor(message: Message, public key?: string) {
-    super(key ? `${String(message)} in ${key}` : String(message));
-    this.info = message;
+  constructor(summary: string, message?: Message) {
+    super(summary);
+    this.info = message || summary;
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }
