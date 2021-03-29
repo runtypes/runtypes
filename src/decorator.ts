@@ -1,6 +1,7 @@
 import { Runtype } from './runtype';
 import { ValidationError } from './errors';
-import { Failcode, Failure } from './result';
+import { Failcode } from './result';
+import { FAILURE } from './util';
 
 type PropKey = string | symbol;
 const prototypes = new WeakMap<any, Map<PropKey, number[]>>();
@@ -82,7 +83,7 @@ export function checked(...runtypes: Runtype[]) {
         const validated = type.validate(args[parameterIndex]);
         if (!validated.success) {
           const message = `${methodId}, argument #${parameterIndex}: ${validated.message}`;
-          const failure: Failure = { success: false, message, code: Failcode.ARGUMENT_INCORRECT };
+          const failure = FAILURE(Failcode.ARGUMENT_INCORRECT, message);
           throw new ValidationError(message, failure);
         }
       });

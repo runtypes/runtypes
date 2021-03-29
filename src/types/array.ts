@@ -1,6 +1,6 @@
 import { Failcode, Message, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { enumerableKeysOf, typeOf } from '../util';
+import { enumerableKeysOf, FAILURE, SUCCESS, typeOf } from '../util';
 
 type ArrayStaticType<E extends Runtype, RO extends boolean> = RO extends true
   ? ReadonlyArray<Static<E>>
@@ -25,11 +25,7 @@ function InternalArr<E extends Runtype, RO extends boolean>(
     create(
       (xs, visited) => {
         if (!Array.isArray(xs)) {
-          return {
-            success: false,
-            message: `Expected array, but was ${typeOf(xs)}`,
-            code: Failcode.TYPE_INCORRECT,
-          };
+          return FAILURE(Failcode.TYPE_INCORRECT, `Expected array, but was ${typeOf(xs)}`);
         }
 
         const keys = enumerableKeysOf(xs);
@@ -43,8 +39,8 @@ function InternalArr<E extends Runtype, RO extends boolean>(
         }, []);
 
         if (enumerableKeysOf(message).length !== 0)
-          return { success: false, message, code: Failcode.CONTENT_INCORRECT };
-        else return { success: true, value: xs };
+          return FAILURE(Failcode.CONTENT_INCORRECT, message);
+        else return SUCCESS(xs);
       },
       { tag: 'array', isReadonly, element },
     ),

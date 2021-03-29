@@ -1,6 +1,6 @@
 import { Failcode, Message, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { enumerableKeysOf } from '../util';
+import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
 
@@ -22,21 +22,17 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
     (xs, visited) => {
       const validated = innerValidate(Arr(Unknown), xs, visited);
 
-      if (!validated.success) {
-        return {
-          success: false,
-          message: `Expected tuple to be an array: ${validated.message}`,
-          code: Failcode.TYPE_INCORRECT,
-        };
-      }
+      if (!validated.success)
+        return FAILURE(
+          Failcode.TYPE_INCORRECT,
+          `Expected tuple to be an array: ${validated.message}`,
+        );
 
-      if (validated.value.length !== components.length) {
-        return {
-          success: false,
-          message: `Expected tuple of length ${components.length}, but was ${validated.value.length}`,
-          code: Failcode.VALUE_INCORRECT,
-        };
-      }
+      if (validated.value.length !== components.length)
+        return FAILURE(
+          Failcode.VALUE_INCORRECT,
+          `Expected tuple of length ${components.length}, but was ${validated.value.length}`,
+        );
 
       const keys = enumerableKeysOf(xs);
       const results: Result<unknown>[] = keys.map(key =>
@@ -49,8 +45,8 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
       }, []);
 
       if (enumerableKeysOf(message).length !== 0)
-        return { success: false, message, code: Failcode.CONTENT_INCORRECT };
-      else return { success: true, value: xs };
+        return FAILURE(Failcode.CONTENT_INCORRECT, message);
+      else return SUCCESS(xs);
     },
     { tag: 'tuple', components },
   );

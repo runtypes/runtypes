@@ -1,5 +1,5 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { enumerableKeysOf, hasKey, typeOf } from '../util';
+import { enumerableKeysOf, FAILURE, hasKey, SUCCESS, typeOf } from '../util';
 import show from '../show';
 import { Optional } from './optional';
 import { Failcode, Message, Result } from '../result';
@@ -85,22 +85,12 @@ export function InternalRecord<
   return withExtraModifierFuncs(
     create((x, visited) => {
       if (x === null || x === undefined) {
-        return {
-          success: false,
-          message: `Expected ${show(self)}, but was ${typeOf(x)}`,
-          code: Failcode.TYPE_INCORRECT,
-        };
+        return FAILURE(Failcode.TYPE_INCORRECT, `Expected ${show(self)}, but was ${typeOf(x)}`);
       }
 
       const keysOfFields = enumerableKeysOf(fields);
-      if (keysOfFields.length !== 0) {
-        if (typeof x !== 'object')
-          return {
-            success: false,
-            message: `Expected ${show(self)}, but was ${typeOf(x)}`,
-            code: Failcode.TYPE_INCORRECT,
-          };
-      }
+      if (keysOfFields.length !== 0 && typeof x !== 'object')
+        return FAILURE(Failcode.TYPE_INCORRECT, `Expected ${show(self)}, but was ${typeOf(x)}`);
 
       const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])];
       const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
@@ -112,23 +102,20 @@ export function InternalRecord<
             const isOptional = isPartial || runtype.reflect.tag === 'optional';
             if (xHasKey) {
               const value = x[key as any];
-              if (isOptional && value === undefined) results[key as any] = { success: true, value };
+              if (isOptional && value === undefined) results[key as any] = SUCCESS(value);
               else results[key as any] = innerValidate(runtype, value, visited);
             } else {
               if (!isOptional)
-                results[key as any] = {
-                  success: false,
-                  message: `Expected property to be present and ${show(
-                    runtype.reflect,
-                  )}, but was missing`,
-                  code: Failcode.PROPERTY_MISSING,
-                };
-              else results[key as any] = { success: true, value: undefined };
+                results[key as any] = FAILURE(
+                  Failcode.PROPERTY_MISSING,
+                  `Expected property to be present and ${show(runtype.reflect)}, but was missing`,
+                );
+              else results[key as any] = SUCCESS(undefined);
             }
           } else if (xHasKey) {
             // TODO: exact record validation
             const value = x[key as any];
-            results[key as any] = { success: true, value };
+            results[key as any] = SUCCESS(value);
           } else throw 'impossible';
           return results;
         },
@@ -145,8 +132,8 @@ export function InternalRecord<
       );
 
       if (enumerableKeysOf(message).length !== 0)
-        return { success: false, message, code: Failcode.CONTENT_INCORRECT };
-      else return { success: true, value: x };
+        return FAILURE(Failcode.CONTENT_INCORRECT, message);
+      else return SUCCESS(x);
     }, self),
   );
 }

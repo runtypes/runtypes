@@ -1,4 +1,5 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
+import { SUCCESS } from '../util';
 
 export interface Intersect<A extends readonly [Runtype, ...Runtype[]]>
   extends Runtype<
@@ -28,7 +29,7 @@ export function Intersect<A extends readonly [Runtype, ...Runtype[]]>(
           return validated;
         }
       }
-      return { success: true, value };
+      return SUCCESS(value);
     },
     { tag: 'intersect', intersectees },
   );

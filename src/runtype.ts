@@ -2,6 +2,7 @@ import { Result, Union, Intersect, Optional, Constraint, ConstraintCheck, Brand 
 import { Reflect } from './reflect';
 import show from './show';
 import { ValidationError } from './errors';
+import { SUCCESS } from './util';
 
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
@@ -113,7 +114,7 @@ export function create<A extends Runtype>(
   A.check = check;
   A.assert = check;
   A._innerValidate = (value: any, visited: VisitedState) => {
-    if (visited.has(value, A)) return { success: true, value };
+    if (visited.has(value, A)) return SUCCESS(value);
     return validate(value, visited);
   };
   A.validate = (value: any) => A._innerValidate(value, VisitedState());

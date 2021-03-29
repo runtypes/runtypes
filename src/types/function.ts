@@ -1,6 +1,6 @@
 import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
-import { typeOf } from '../util';
+import { FAILURE, SUCCESS, typeOf } from '../util';
 
 export interface Function extends Runtype<(...args: any[]) => any> {
   tag: 'function';
@@ -12,11 +12,7 @@ export interface Function extends Runtype<(...args: any[]) => any> {
 export const Function = create<Function>(
   value =>
     typeof value === 'function'
-      ? { success: true, value }
-      : {
-          success: false,
-          message: `Expected function, but was ${typeOf(value)}`,
-          code: Failcode.TYPE_INCORRECT,
-        },
+      ? SUCCESS(value)
+      : FAILURE(Failcode.TYPE_INCORRECT, `Expected function, but was ${typeOf(value)}`),
   { tag: 'function' },
 );

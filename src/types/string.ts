@@ -1,6 +1,6 @@
 import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
-import { typeOf } from '../util';
+import { FAILURE, SUCCESS, typeOf } from '../util';
 
 export interface String extends Runtype<string> {
   tag: 'string';
@@ -12,11 +12,7 @@ export interface String extends Runtype<string> {
 export const String = create<String>(
   value =>
     typeof value === 'string'
-      ? { success: true, value }
-      : {
-          success: false,
-          message: `Expected string, but was ${typeOf(value)}`,
-          code: Failcode.TYPE_INCORRECT,
-        },
+      ? SUCCESS(value)
+      : FAILURE(Failcode.TYPE_INCORRECT, `Expected string, but was ${typeOf(value)}`),
   { tag: 'string' },
 );

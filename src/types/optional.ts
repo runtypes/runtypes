@@ -1,4 +1,5 @@
 import { Runtype, create, Static } from '../runtype';
+import { SUCCESS } from '../util';
 
 export interface Optional<R extends Runtype> extends Runtype<Static<R> | undefined> {
   tag: 'optional';
@@ -10,7 +11,7 @@ export interface Optional<R extends Runtype> extends Runtype<Static<R> | undefin
  */
 export function Optional<R extends Runtype>(runtype: R) {
   return create<Optional<R>>(
-    value => (value === undefined ? { success: true, value } : runtype.validate(value)),
+    value => (value === undefined ? SUCCESS(value) : runtype.validate(value)),
     { tag: 'optional', underlying: runtype },
   );
 }

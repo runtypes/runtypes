@@ -2,7 +2,7 @@ import { Runtype, create, Static, innerValidate } from '../runtype';
 import { String } from './string';
 import { Constraint } from './constraint';
 import show from '../show';
-import { enumerableKeysOf, typeOf } from '../util';
+import { enumerableKeysOf, FAILURE, SUCCESS, typeOf } from '../util';
 import { Failcode, Message, Result } from '../result';
 
 type DictionaryKeyType = string | number | symbol;
@@ -83,27 +83,14 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
   const keyString = show(keyRuntype as any);
   const self = { tag: 'dictionary', key: keyString, value } as any;
   return create<any>((x, visited) => {
-    if (x === null || x === undefined || typeof x !== 'object') {
-      return {
-        success: false,
-        message: `Expected ${show(self)}, but was ${typeOf(x)}`,
-        code: Failcode.TYPE_INCORRECT,
-      };
-    }
+    if (x === null || x === undefined || typeof x !== 'object')
+      return FAILURE(Failcode.TYPE_INCORRECT, `Expected ${show(self)}, but was ${typeOf(x)}`);
 
     if (Object.getPrototypeOf(x) !== Object.prototype) {
-      if (!Array.isArray(x)) {
-        return {
-          success: false,
-          message: `Expected ${show(self)}, but was ${typeOf(x)}`,
-          code: Failcode.TYPE_INCORRECT,
-        };
-      } else if (keyString === 'string')
-        return {
-          success: false,
-          message: 'Expected dictionary, but was array',
-          code: Failcode.TYPE_INCORRECT,
-        };
+      if (!Array.isArray(x))
+        return FAILURE(Failcode.TYPE_INCORRECT, `Expected ${show(self)}, but was ${typeOf(x)}`);
+      else if (keyString === 'string')
+        return FAILURE(Failcode.TYPE_INCORRECT, `Expected dictionary, but was array`);
     }
 
     const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/u;
@@ -121,11 +108,10 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
             ? !keyRuntype.guard(keyInterop) && !keyRuntype.guard(key)
             : !keyRuntype.guard(keyInterop)
         ) {
-          results[key as any] = {
-            success: false,
-            message: `Expected dictionary key to be a ${keyString}, but was ${typeOf(keyInterop)}`,
-            code: Failcode.KEY_INCORRECT,
-          };
+          results[key as any] = FAILURE(
+            Failcode.KEY_INCORRECT,
+            `Expected dictionary key to be a ${keyString}, but was ${typeOf(keyInterop)}`,
+          );
         } else results[key as any] = innerValidate(value, x[key], visited);
         return results;
       },
@@ -138,8 +124,7 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
       return message;
     }, {});
 
-    if (enumerableKeysOf(message).length !== 0)
-      return { success: false, message, code: Failcode.CONTENT_INCORRECT };
-    else return { success: true, value: x };
+    if (enumerableKeysOf(message).length !== 0) return FAILURE(Failcode.CONTENT_INCORRECT, message);
+    else return SUCCESS(x);
   }, self);
 }

@@ -1,5 +1,6 @@
 import { Failcode } from '../result';
 import { Runtype, Static, create } from '../runtype';
+import { FAILURE, SUCCESS } from '../util';
 import { String } from './string';
 import { Unknown } from './unknown';
 
@@ -31,15 +32,10 @@ export function Constraint<A extends Runtype, T extends Static<A> = Static<A>, K
       }
 
       const result = constraint(validated.value);
-      if (String.guard(result))
-        return { success: false, message: result, code: Failcode.VALUE_INCORRECT };
+      if (String.guard(result)) return FAILURE(Failcode.VALUE_INCORRECT, result);
       else if (!result)
-        return {
-          success: false,
-          message: `Failed ${name || 'constraint'} check`,
-          code: Failcode.VALUE_INCORRECT,
-        };
-      return { success: true, value: validated.value as T };
+        return FAILURE(Failcode.VALUE_INCORRECT, `Failed ${name || 'constraint'} check`);
+      return SUCCESS(validated.value as T);
     },
     {
       tag: 'constraint',

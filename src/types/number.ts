@@ -1,6 +1,6 @@
 import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
-import { typeOf } from '../util';
+import { FAILURE, SUCCESS, typeOf } from '../util';
 
 export interface Number extends Runtype<number> {
   tag: 'number';
@@ -12,11 +12,7 @@ export interface Number extends Runtype<number> {
 export const Number = create<Number>(
   value =>
     typeof value === 'number'
-      ? { success: true, value }
-      : {
-          success: false,
-          message: `Expected number, but was ${typeOf(value)}`,
-          code: Failcode.TYPE_INCORRECT,
-        },
+      ? SUCCESS(value)
+      : FAILURE(Failcode.TYPE_INCORRECT, `Expected number, but was ${typeOf(value)}`),
   { tag: 'number' },
 );

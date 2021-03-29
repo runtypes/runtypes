@@ -1,5 +1,6 @@
 import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
+import { FAILURE, SUCCESS } from '../util';
 
 /**
  * The super type of all literal types.
@@ -29,12 +30,11 @@ export function Literal<A extends LiteralBase>(valueBase: A): Literal<A> {
   return create<Literal<A>>(
     value =>
       value === valueBase
-        ? { success: true, value }
-        : {
-            success: false,
-            message: `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
-            code: Failcode.VALUE_INCORRECT,
-          },
+        ? SUCCESS(value)
+        : FAILURE(
+            Failcode.VALUE_INCORRECT,
+            `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
+          ),
     { tag: 'literal', value: valueBase },
   );
 }

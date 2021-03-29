@@ -1,6 +1,6 @@
 import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
-import { typeOf } from '../util';
+import { FAILURE, SUCCESS, typeOf } from '../util';
 
 export interface BigInt extends Runtype<bigint> {
   tag: 'bigint';
@@ -12,11 +12,7 @@ export interface BigInt extends Runtype<bigint> {
 export const BigInt = create<BigInt>(
   value =>
     typeof value === 'bigint'
-      ? { success: true, value }
-      : {
-          success: false,
-          message: `Expected bigint, but was ${typeOf(value)}`,
-          code: Failcode.TYPE_INCORRECT,
-        },
+      ? SUCCESS(value)
+      : FAILURE(Failcode.TYPE_INCORRECT, `Expected bigint, but was ${typeOf(value)}`),
   { tag: 'bigint' },
 );
