@@ -895,8 +895,7 @@ function assertThrows<A>(
   } catch (exception) {
     expect(exception).toBeInstanceOf(ValidationError);
     const validationError = exception as ValidationError;
-    const { info, message: msg } = validationError;
-    console.log(msg);
+    const { info } = validationError;
     const message =
       key !== undefined
         ? global.Array.isArray(key)
