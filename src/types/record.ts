@@ -113,7 +113,6 @@ export function InternalRecord<
                   message: `Expected property to be present and ${show(
                     runtype.reflect,
                   )}, but was missing`,
-                  key: String(key),
                 };
               else results[key as any] = { success: true, value: undefined };
             }

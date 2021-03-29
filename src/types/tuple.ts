@@ -26,7 +26,6 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
         return {
           success: false,
           message: `Expected tuple to be an array: ${validated.message}`,
-          key: validated.key,
         };
       }
 

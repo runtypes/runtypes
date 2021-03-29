@@ -1,3 +1,6 @@
+/**
+ * A message indicating the reason why validation failed, or a complex object enumerating where the validation failed exactly.
+ */
 export type Message = string | Message[] | { [key in string | number | symbol]: Message };
 
 /**
@@ -25,14 +28,9 @@ export type Failure = {
   success: false;
 
   /**
-   * A message indicating the reason validation failed.
+   * A message indicating the reason why validation failed, or a complex object enumerating where the validation failed exactly.
    */
   message: Message;
-
-  /**
-   * A key indicating the location at which validation failed.
-   */
-  key?: string;
 };
 
 /**
