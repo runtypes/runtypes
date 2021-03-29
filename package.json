@@ -6,8 +6,7 @@
   "types": "./lib/index.d.ts",
   "files": [
     "lib/**/*.js",
-    "lib/**/*.d.ts",
-    "!lib/**/*.spec.*"
+    "lib/**/*.d.ts"
   ],
   "scripts": {
     "build": "tsc --pretty",

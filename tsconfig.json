@@ -12,5 +12,5 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true
   },
-  "exclude": ["./lib/**/*", "./examples/**/*"]
+  "exclude": ["./lib/**/*", "./examples/**/*", "./src/**/*.spec.ts"]
 }
