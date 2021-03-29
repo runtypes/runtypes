@@ -1,8 +1,30 @@
 import { Union, String, Literal, Record, Number, InstanceOf } from '..';
+import { Static } from '../runtype';
+import { LiteralBase } from './literal';
 
 const ThreeOrString = Union(Literal(3), String);
 
 describe('union', () => {
+  describe('mapped literals', () => {
+    it('works with its static types', () => {
+      const values = ['Unknown', 'Online', 'Offline'] as const;
+      type ElementOf<T extends readonly unknown[]> = T extends readonly (infer E)[] ? E : never;
+      type LiteralOf<T extends readonly unknown[]> = {
+        [K in keyof T]: T[K] extends ElementOf<T>
+          ? T[K] extends LiteralBase
+            ? Literal<T[K]>
+            : never
+          : never;
+      };
+      type L = LiteralOf<typeof values>;
+      const literals = (values.map(Literal) as unknown) as L;
+      const Values = Union<L>(...literals);
+      type Values = Static<typeof Values>;
+      const v: Values = 'Online';
+      expect(() => Values.check(v)).not.toThrow();
+    });
+  });
+
   describe('match', () => {
     it('works with exhaustive cases', () => {
       const match = ThreeOrString.match(

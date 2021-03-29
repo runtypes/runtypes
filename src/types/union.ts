@@ -17,7 +17,7 @@ export interface Union<A extends readonly [Rt, ...Rt[]]>
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-export function Union<T extends [Rt, ...Rt[]]>(...alternatives: T): Union<T> {
+export function Union<T extends readonly [Rt, ...Rt[]]>(...alternatives: T): Union<T> {
   const match = (...cases: any[]) => (x: any) => {
     for (let i = 0; i < alternatives.length; i++) {
       if (alternatives[i].guard(x)) {
