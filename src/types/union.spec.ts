@@ -46,17 +46,20 @@ describe('union', () => {
 
       expect(Shape.validate({ kind: 'square', size: new Date() })).toMatchObject({
         success: false,
-        key: 'size',
+        message: { size: 'Expected number, but was Date' },
       });
 
       expect(Shape.validate({ kind: 'rectangle', size: new Date() })).toMatchObject({
         success: false,
-        key: 'width',
+        message: {
+          width: 'Expected property to be present and number, but was missing',
+          height: 'Expected property to be present and number, but was missing',
+        },
       });
 
       expect(Shape.validate({ kind: 'circle', size: new Date() })).toMatchObject({
         success: false,
-        key: 'radius',
+        message: { radius: 'Expected property to be present and number, but was missing' },
       });
 
       expect(Shape.validate({ kind: 'other', size: new Date() })).not.toHaveProperty('key');

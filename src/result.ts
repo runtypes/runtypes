@@ -1,3 +1,5 @@
+export type Message = string | Message[] | { [key in string | number | symbol]: Message };
+
 /**
  * A successful validation result.
  */
@@ -25,7 +27,7 @@ export type Failure = {
   /**
    * A message indicating the reason validation failed.
    */
-  message: string;
+  message: Message;
 
   /**
    * A key indicating the location at which validation failed.

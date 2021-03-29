@@ -1,5 +1,6 @@
+import { Message, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { typeOf } from '../util';
+import { enumerableKeysOf, typeOf } from '../util';
 
 type ArrayStaticType<E extends Runtype, RO extends boolean> = RO extends true
   ? ReadonlyArray<Static<E>>
@@ -30,18 +31,18 @@ function InternalArr<E extends Runtype, RO extends boolean>(
           };
         }
 
-        for (const x of xs) {
-          let validated = innerValidate(element, x, visited);
-          if (!validated.success) {
-            return {
-              success: false,
-              message: validated.message,
-              key: validated.key ? `[${xs.indexOf(x)}].${validated.key}` : `[${xs.indexOf(x)}]`,
-            };
-          }
-        }
+        const keys = enumerableKeysOf(xs);
+        const results: Result<unknown>[] = keys.map(key =>
+          innerValidate(element, xs[key as any], visited),
+        );
+        const message = keys.reduce<{ [key: number]: Message } & Message[]>((message, key) => {
+          const result = results[key as any];
+          if (!result.success) message[key as any] = result.message;
+          return message;
+        }, []);
 
-        return { success: true, value: xs };
+        if (enumerableKeysOf(message).length !== 0) return { success: false, message };
+        else return { success: true, value: xs };
       },
       { tag: 'array', isReadonly, element },
     ),

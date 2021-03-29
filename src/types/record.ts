@@ -2,6 +2,7 @@ import { Runtype, Static, create, innerValidate } from '../runtype';
 import { enumerableKeysOf, hasKey, typeOf } from '../util';
 import show from '../show';
 import { Optional } from './optional';
+import { Message, Result } from '../result';
 
 type FilterOptionalKeys<T> = Exclude<
   {
@@ -87,30 +88,56 @@ export function InternalRecord<
         return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
       }
 
-      const keys = enumerableKeysOf(fields);
-
-      for (const key of keys) {
-        const isOptional = isPartial || fields[key as any].reflect.tag === 'optional';
-        if (hasKey(key, x)) {
-          if (isOptional && x[key as any] === undefined) continue;
-          const validated = innerValidate(fields[key as any], x[key as any], visited);
-          if (!validated.success) {
-            return {
-              success: false,
-              message: validated.message,
-              key: validated.key ? `${String(key)}.${validated.key}` : String(key),
-            };
-          }
-        } else if (!isOptional) {
-          return {
-            success: false,
-            message: `Expected "${String(key)}" property to be present, but was missing`,
-            key: String(key),
-          };
-        }
+      const keysOfFields = enumerableKeysOf(fields);
+      if (keysOfFields.length !== 0) {
+        if (typeof x !== 'object')
+          return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
       }
 
-      return { success: true, value: x };
+      const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])];
+      const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
+        (results, key) => {
+          const fieldsHasKey = hasKey(key, fields);
+          const xHasKey = hasKey(key, x);
+          if (fieldsHasKey) {
+            const runtype = fields[key as any];
+            const isOptional = isPartial || runtype.reflect.tag === 'optional';
+            if (xHasKey) {
+              const value = x[key as any];
+              if (isOptional && value === undefined) results[key as any] = { success: true, value };
+              else results[key as any] = innerValidate(runtype, value, visited);
+            } else {
+              if (!isOptional)
+                results[key as any] = {
+                  success: false,
+                  message: `Expected property to be present and ${show(
+                    runtype.reflect,
+                  )}, but was missing`,
+                  key: String(key),
+                };
+              else results[key as any] = { success: true, value: undefined };
+            }
+          } else if (xHasKey) {
+            // TODO: exact record validation
+            const value = x[key as any];
+            results[key as any] = { success: true, value };
+          } else throw 'impossible';
+          return results;
+        },
+        {},
+      );
+
+      const message = keys.reduce<{ [key in string | number | symbol]: Message }>(
+        (message, key) => {
+          const result = results[key as any];
+          if (!result.success) message[key as any] = result.message;
+          return message;
+        },
+        {},
+      );
+
+      if (enumerableKeysOf(message).length !== 0) return { success: false, message };
+      else return { success: true, value: x };
     }, self),
   );
 }

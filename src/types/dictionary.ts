@@ -3,6 +3,7 @@ import { String } from './string';
 import { Constraint } from './constraint';
 import show from '../show';
 import { enumerableKeysOf, typeOf } from '../util';
+import { Message, Result } from '../result';
 
 type DictionaryKeyType = string | number | symbol;
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string
@@ -102,35 +103,36 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
 
     const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/u;
     const keys = enumerableKeysOf(x);
+    const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
+      (results, key) => {
+        // We should provide interoperability with `number` and `string` here,
+        // as a user would expect JavaScript engines to convert numeric keys to
+        // string keys automatically. So, if the key can be interpreted as a
+        // decimal number, then test it against a `Number` OR `String` runtype.
+        const isNumberLikeKey = typeof key === 'string' && numberString.test(key);
+        const keyInterop = isNumberLikeKey ? global.Number(key) : key;
+        if (
+          isNumberLikeKey
+            ? !keyRuntype.guard(keyInterop) && !keyRuntype.guard(key)
+            : !keyRuntype.guard(keyInterop)
+        ) {
+          results[key as any] = {
+            success: false,
+            message: `Expected dictionary key to be a ${keyString}, but was ${typeOf(keyInterop)}`,
+          };
+        } else results[key as any] = innerValidate(value, x[key], visited);
+        return results;
+      },
+      {},
+    );
 
-    for (const key of keys) {
-      // We should provide interoperability with `number` and `string` here,
-      // as a user would expect JavaScript engines to convert numeric keys to
-      // string keys automatically. So, if the key can be interpreted as a
-      // decimal number, then test it against a `Number` OR `String` runtype.
-      const isNumberLikeKey = typeof key === 'string' && numberString.test(key);
-      const keyInterop = isNumberLikeKey ? global.Number(key) : key;
-      if (
-        isNumberLikeKey
-          ? !keyRuntype.guard(keyInterop) && !keyRuntype.guard(key)
-          : !keyRuntype.guard(keyInterop)
-      ) {
-        return {
-          success: false,
-          message: `Expected dictionary key to be a ${keyString}, but was ${typeOf(keyInterop)}`,
-        };
-      }
+    const message = keys.reduce<{ [key in string | number | symbol]: Message }>((message, key) => {
+      const result = results[key as any];
+      if (!result.success) message[key as any] = result.message;
+      return message;
+    }, {});
 
-      const validated = innerValidate(value, x[key], visited);
-      if (!validated.success) {
-        return {
-          success: false,
-          message: validated.message,
-          key: validated.key ? `${global.String(key)}.${validated.key}` : global.String(key),
-        };
-      }
-    }
-
-    return { success: true, value: x };
+    if (enumerableKeysOf(message).length !== 0) return { success: false, message };
+    else return { success: true, value: x };
   }, self);
 }

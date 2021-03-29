@@ -1,4 +1,6 @@
+import { Message, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
+import { enumerableKeysOf } from '../util';
 import { Array as Arr } from './array';
 import { Unknown } from './unknown';
 
@@ -17,8 +19,8 @@ export interface Tuple<A extends readonly Runtype[]>
  */
 export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> {
   return create(
-    (x, visited) => {
-      const validated = innerValidate(Arr(Unknown), x, visited);
+    (xs, visited) => {
+      const validated = innerValidate(Arr(Unknown), xs, visited);
 
       if (!validated.success) {
         return {
@@ -31,23 +33,22 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
       if (validated.value.length !== components.length) {
         return {
           success: false,
-          message: `Expected an array of length ${components.length}, but was ${validated.value.length}`,
+          message: `Expected tuple of length ${components.length}, but was ${validated.value.length}`,
         };
       }
 
-      for (let i = 0; i < components.length; i++) {
-        let validatedComponent = innerValidate(components[i], validated.value[i], visited);
+      const keys = enumerableKeysOf(xs);
+      const results: Result<unknown>[] = keys.map(key =>
+        innerValidate(components[key as any], xs[key as any], visited),
+      );
+      const message = keys.reduce<{ [key: number]: Message } & Message[]>((message, key) => {
+        const result = results[key as any];
+        if (!result.success) message[key as any] = result.message;
+        return message;
+      }, []);
 
-        if (!validatedComponent.success) {
-          return {
-            success: false,
-            message: validatedComponent.message,
-            key: validatedComponent.key ? `[${i}].${validatedComponent.key}` : `[${i}]`,
-          };
-        }
-      }
-
-      return { success: true, value: x };
+      if (enumerableKeysOf(message).length !== 0) return { success: false, message };
+      else return { success: true, value: xs };
     },
     { tag: 'tuple', components },
   );

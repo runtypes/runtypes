@@ -18,5 +18,7 @@ export const typeOf = (value: unknown) =>
       : value.constructor.name
     : typeof value;
 
-export const enumerableKeysOf = (object: object) =>
-  Reflect.ownKeys(object).filter(key => object.propertyIsEnumerable(key));
+export const enumerableKeysOf = (object: unknown) =>
+  typeof object === 'object' && object !== null
+    ? Reflect.ownKeys(object).filter(key => object.propertyIsEnumerable(key))
+    : [];

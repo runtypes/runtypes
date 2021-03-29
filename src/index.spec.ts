@@ -355,25 +355,21 @@ describe('check errors', () => {
     assertThrows(
       [false, '0', true],
       Tuple(Number, String, Boolean),
-      'Expected number, but was boolean in [0]',
-      '[0]',
+      'Expected number, but was boolean',
+      0,
     );
   });
 
   it('tuple length', () => {
-    assertThrows(
-      [0, '0'],
-      Tuple(Number, String, Boolean),
-      'Expected an array of length 3, but was 2',
-    );
+    assertThrows([0, '0'], Tuple(Number, String, Boolean), 'Expected tuple of length 3, but was 2');
   });
 
   it('tuple nested', () => {
     assertThrows(
       [0, { name: 0 }],
       Tuple(Number, Record({ name: String })),
-      'Expected string, but was number in [1].name',
-      '[1].name',
+      'Expected string, but was number',
+      [1, 'name'],
     );
   });
 
@@ -382,15 +378,15 @@ describe('check errors', () => {
   });
 
   it('array', () => {
-    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string in [2]', '[2]');
+    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string', 2);
   });
 
   it('array nested', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })),
-      'Expected string, but was boolean in [1].name',
-      '[1].name',
+      'Expected string, but was boolean',
+      [1, 'name'],
     );
   });
 
@@ -398,26 +394,21 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })),
-      'Expected { name: string; }, but was null in [1]',
-      '[1]',
+      'Expected { name: string; }, but was null',
+      1,
     );
   });
 
   it('readonly array', () => {
-    assertThrows(
-      [0, 2, 'test'],
-      Array(Number).asReadonly(),
-      'Expected number, but was string in [2]',
-      '[2]',
-    );
+    assertThrows([0, 2, 'test'], Array(Number).asReadonly(), 'Expected number, but was string', 2);
   });
 
   it('readonly array nested', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })).asReadonly(),
-      'Expected string, but was boolean in [1].name',
-      '[1].name',
+      'Expected string, but was boolean',
+      [1, 'name'],
     );
   });
 
@@ -425,8 +416,8 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })).asReadonly(),
-      'Expected { name: string; }, but was null in [1]',
-      '[1]',
+      'Expected { name: string; }, but was null',
+      1,
     );
   });
 
@@ -451,8 +442,8 @@ describe('check errors', () => {
     assertThrows(
       { foo: { name: false } },
       Dictionary(Record({ name: String })),
-      'Expected string, but was boolean in foo.name',
-      'foo.name',
+      'Expected string, but was boolean',
+      ['foo', 'name'],
     );
   });
 
@@ -460,7 +451,7 @@ describe('check errors', () => {
     assertThrows(
       { foo: 'bar', test: true },
       Dictionary(String),
-      'Expected string, but was boolean in test',
+      'Expected string, but was boolean',
       'test',
     );
   });
@@ -469,8 +460,8 @@ describe('check errors', () => {
     assertThrows(
       { 1: 'bar', 2: 20 },
       Dictionary(String, 'number'),
-      'Expected string, but was number in 2',
-      '2',
+      'Expected string, but was number',
+      2,
     );
   });
 
@@ -481,7 +472,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was string in age',
+      'Expected number, but was string',
       'age',
     );
   });
@@ -493,7 +484,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected "age" property to be present, but was missing in age',
+      'Expected property to be present and number, but was missing',
       'age',
     );
   });
@@ -506,8 +497,8 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was boolean in likes.[0].title',
-      'likes.[0].title',
+      'Expected string, but was boolean',
+      ['likes', 0, 'title'],
     );
   });
 
@@ -518,7 +509,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was string in age',
+      'Expected number, but was string',
       'age',
     );
   });
@@ -530,7 +521,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected "age" property to be present, but was missing in age',
+      'Expected property to be present and number, but was missing',
       'age',
     );
   });
@@ -543,8 +534,8 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String }).asReadonly()),
       }).asReadonly(),
-      'Expected string, but was boolean in likes.[0].title',
-      'likes.[0].title',
+      'Expected string, but was boolean',
+      ['likes', 0, 'title'],
     );
   });
 
@@ -555,7 +546,7 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was null in age',
+      'Expected number, but was null',
       'age',
     );
   });
@@ -568,8 +559,8 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was number in likes.[0].title',
-      'likes.[0].title',
+      'Expected string, but was number',
+      ['likes', 0, 'title'],
     );
   });
 
@@ -892,15 +883,26 @@ function assertRejects<A>(value: unknown, runtype: Runtype<A>) {
   if (result.success === true) fail('value passed validation even though it was not expected to');
 }
 
-function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key?: string) {
+function assertThrows<A>(
+  value: unknown,
+  runtype: Runtype<A>,
+  errorMessage: string | object,
+  key?: string | number | symbol | (string | number | symbol)[],
+) {
   try {
     runtype.check(value);
     fail('value passed validation even though it was not expected to');
   } catch (exception) {
-    const { message: errorMessage, key: errorKey } = exception;
-
     expect(exception).toBeInstanceOf(ValidationError);
-    expect(errorMessage).toBe(error);
-    expect(errorKey).toBe(key);
+    const validationError = exception as ValidationError;
+    const { info } = validationError;
+    const message =
+      key !== undefined
+        ? global.Array.isArray(key)
+          ? key.reduce((info, key) => info[key as any], info)
+          : info[key as any]
+        : info;
+    if (typeof errorMessage === 'string') expect(message).toBe(errorMessage);
+    else expect(message).toMatchObject(errorMessage);
   }
 }
