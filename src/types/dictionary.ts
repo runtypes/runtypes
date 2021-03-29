@@ -3,7 +3,7 @@ import { String } from './string';
 import { Constraint } from './constraint';
 import show from '../show';
 import { enumerableKeysOf, typeOf } from '../util';
-import { Message, Result } from '../result';
+import { Failcode, Message, Result } from '../result';
 
 type DictionaryKeyType = string | number | symbol;
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string
@@ -83,12 +83,12 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
   const keyString = show(keyRuntype as any);
   const self = { tag: 'dictionary', key: keyString, value } as any;
   return create<any>((x, visited) => {
-    if (x === null || x === undefined) {
-      return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
-    }
-
-    if (typeof x !== 'object') {
-      return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
+    if (x === null || x === undefined || typeof x !== 'object') {
+      return {
+        success: false,
+        message: `Expected ${show(self)}, but was ${typeOf(x)}`,
+        code: Failcode.TYPE_INCORRECT,
+      };
     }
 
     if (Object.getPrototypeOf(x) !== Object.prototype) {
@@ -96,9 +96,14 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
         return {
           success: false,
           message: `Expected ${show(self)}, but was ${typeOf(x)}`,
+          code: Failcode.TYPE_INCORRECT,
         };
       } else if (keyString === 'string')
-        return { success: false, message: 'Expected dictionary, but was array' };
+        return {
+          success: false,
+          message: 'Expected dictionary, but was array',
+          code: Failcode.TYPE_INCORRECT,
+        };
     }
 
     const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/u;
@@ -119,6 +124,7 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
           results[key as any] = {
             success: false,
             message: `Expected dictionary key to be a ${keyString}, but was ${typeOf(keyInterop)}`,
+            code: Failcode.KEY_INCORRECT,
           };
         } else results[key as any] = innerValidate(value, x[key], visited);
         return results;
@@ -132,7 +138,8 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
       return message;
     }, {});
 
-    if (enumerableKeysOf(message).length !== 0) return { success: false, message };
+    if (enumerableKeysOf(message).length !== 0)
+      return { success: false, message, code: Failcode.CONTENT_INCORRECT };
     else return { success: true, value: x };
   }, self);
 }

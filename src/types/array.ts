@@ -1,4 +1,4 @@
-import { Message, Result } from '../result';
+import { Failcode, Message, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
 import { enumerableKeysOf, typeOf } from '../util';
 
@@ -28,6 +28,7 @@ function InternalArr<E extends Runtype, RO extends boolean>(
           return {
             success: false,
             message: `Expected array, but was ${typeOf(xs)}`,
+            code: Failcode.TYPE_INCORRECT,
           };
         }
 
@@ -41,7 +42,8 @@ function InternalArr<E extends Runtype, RO extends boolean>(
           return message;
         }, []);
 
-        if (enumerableKeysOf(message).length !== 0) return { success: false, message };
+        if (enumerableKeysOf(message).length !== 0)
+          return { success: false, message, code: Failcode.CONTENT_INCORRECT };
         else return { success: true, value: xs };
       },
       { tag: 'array', isReadonly, element },

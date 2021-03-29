@@ -1,3 +1,4 @@
+import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
 import { typeOf } from '../util';
 
@@ -22,6 +23,7 @@ const f = (key: string | undefined) =>
         return {
           success: false,
           message: `Expected symbol, but was ${typeOf(value)}`,
+          code: Failcode.TYPE_INCORRECT,
         };
       } else {
         const keyForValue = global.Symbol.keyFor(value);
@@ -31,6 +33,7 @@ const f = (key: string | undefined) =>
             message: `Expected symbol key to be ${quoteIfPresent(key)}, but was ${quoteIfPresent(
               keyForValue,
             )}`,
+            code: Failcode.VALUE_INCORRECT,
           };
         } else {
           return { success: true, value };
@@ -48,6 +51,7 @@ export const Symbol = create<Symbol>(value => {
     return {
       success: false,
       message: `Expected symbol, but was ${typeOf(value)}`,
+      code: Failcode.TYPE_INCORRECT,
     };
   } else {
     return { success: true, value };

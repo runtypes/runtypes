@@ -1,3 +1,4 @@
+import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
 import { typeOf } from '../util';
 
@@ -15,6 +16,7 @@ export const BigInt = create<BigInt>(
       : {
           success: false,
           message: `Expected bigint, but was ${typeOf(value)}`,
+          code: Failcode.TYPE_INCORRECT,
         },
   { tag: 'bigint' },
 );

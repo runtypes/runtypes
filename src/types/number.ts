@@ -1,3 +1,4 @@
+import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
 import { typeOf } from '../util';
 
@@ -15,6 +16,7 @@ export const Number = create<Number>(
       : {
           success: false,
           message: `Expected number, but was ${typeOf(value)}`,
+          code: Failcode.TYPE_INCORRECT,
         },
   { tag: 'number' },
 );

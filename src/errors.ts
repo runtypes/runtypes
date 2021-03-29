@@ -1,12 +1,14 @@
-import { Message } from './result';
+import { Failcode, Failure, Message } from './result';
 
 export class ValidationError extends Error {
   public name: string = 'ValidationError';
-  public info: Message;
+  public code: Failcode;
+  public details: Message;
 
-  constructor(summary: string, message?: Message) {
+  constructor(summary: string, failure: Failure) {
     super(summary);
-    this.info = message || summary;
+    this.code = failure.code;
+    this.details = failure.message;
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }

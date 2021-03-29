@@ -2,7 +2,7 @@ import { Runtype, Static, create, innerValidate } from '../runtype';
 import { enumerableKeysOf, hasKey, typeOf } from '../util';
 import show from '../show';
 import { Optional } from './optional';
-import { Message, Result } from '../result';
+import { Failcode, Message, Result } from '../result';
 
 type FilterOptionalKeys<T> = Exclude<
   {
@@ -85,13 +85,21 @@ export function InternalRecord<
   return withExtraModifierFuncs(
     create((x, visited) => {
       if (x === null || x === undefined) {
-        return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
+        return {
+          success: false,
+          message: `Expected ${show(self)}, but was ${typeOf(x)}`,
+          code: Failcode.TYPE_INCORRECT,
+        };
       }
 
       const keysOfFields = enumerableKeysOf(fields);
       if (keysOfFields.length !== 0) {
         if (typeof x !== 'object')
-          return { success: false, message: `Expected ${show(self)}, but was ${typeOf(x)}` };
+          return {
+            success: false,
+            message: `Expected ${show(self)}, but was ${typeOf(x)}`,
+            code: Failcode.TYPE_INCORRECT,
+          };
       }
 
       const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])];
@@ -113,6 +121,7 @@ export function InternalRecord<
                   message: `Expected property to be present and ${show(
                     runtype.reflect,
                   )}, but was missing`,
+                  code: Failcode.PROPERTY_MISSING,
                 };
               else results[key as any] = { success: true, value: undefined };
             }
@@ -135,7 +144,8 @@ export function InternalRecord<
         {},
       );
 
-      if (enumerableKeysOf(message).length !== 0) return { success: false, message };
+      if (enumerableKeysOf(message).length !== 0)
+        return { success: false, message, code: Failcode.CONTENT_INCORRECT };
       else return { success: true, value: x };
     }, self),
   );

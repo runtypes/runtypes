@@ -1,6 +1,7 @@
 import { Runtype } from './index';
 import { ValidationError } from './errors';
 import { Static } from './runtype';
+import { Failcode, Failure } from './result';
 
 export interface Contract<A extends readonly Runtype[], R extends Runtype> {
   enforce(
@@ -41,10 +42,11 @@ export function Contract<A extends readonly Runtype[], R extends Runtype>(
         [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
       }
     ): Static<R> => {
-      if (args.length < argRuntypes.length)
-        throw new ValidationError(
-          `Expected ${argRuntypes.length} arguments but only received ${args.length}`,
-        );
+      if (args.length < argRuntypes.length) {
+        const message = `Expected ${argRuntypes.length} arguments but only received ${args.length}`;
+        const failure: Failure = { success: false, message, code: Failcode.ARGUMENT_INCORRECT };
+        throw new ValidationError(message, failure);
+      }
       for (let i = 0; i < argRuntypes.length; i++) argRuntypes[i].check(args[i]);
       return returnRuntype.check(f(...args));
     },

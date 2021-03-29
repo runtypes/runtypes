@@ -1,3 +1,4 @@
+import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
 import { typeOf } from '../util';
 
@@ -12,6 +13,7 @@ export const Never = create<Never>(
   value => ({
     success: false,
     message: `Expected nothing, but was ${typeOf(value)}`,
+    code: Failcode.NOTHING_EXPECTED,
   }),
   { tag: 'never' },
 );

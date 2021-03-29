@@ -1,3 +1,4 @@
+import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
 
 /**
@@ -32,6 +33,7 @@ export function Literal<A extends LiteralBase>(valueBase: A): Literal<A> {
         : {
             success: false,
             message: `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
+            code: Failcode.VALUE_INCORRECT,
           },
     { tag: 'literal', value: valueBase },
   );

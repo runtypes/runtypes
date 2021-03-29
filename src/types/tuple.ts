@@ -1,4 +1,4 @@
-import { Message, Result } from '../result';
+import { Failcode, Message, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
 import { enumerableKeysOf } from '../util';
 import { Array as Arr } from './array';
@@ -26,6 +26,7 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
         return {
           success: false,
           message: `Expected tuple to be an array: ${validated.message}`,
+          code: Failcode.TYPE_INCORRECT,
         };
       }
 
@@ -33,6 +34,7 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
         return {
           success: false,
           message: `Expected tuple of length ${components.length}, but was ${validated.value.length}`,
+          code: Failcode.VALUE_INCORRECT,
         };
       }
 
@@ -46,7 +48,8 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
         return message;
       }, []);
 
-      if (enumerableKeysOf(message).length !== 0) return { success: false, message };
+      if (enumerableKeysOf(message).length !== 0)
+        return { success: false, message, code: Failcode.CONTENT_INCORRECT };
       else return { success: true, value: xs };
     },
     { tag: 'tuple', components },

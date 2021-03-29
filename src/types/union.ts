@@ -2,6 +2,7 @@ import { Runtype, RuntypeBase as Rt, Static, create, innerValidate } from '../ru
 import show from '../show';
 import { LiteralBase } from './literal';
 import { hasKey, typeOf } from '../util';
+import { Failcode } from '../result';
 
 export interface Union<A extends readonly [Rt, ...Rt[]]>
   extends Runtype<
@@ -71,6 +72,7 @@ export function Union<T extends readonly [Rt, ...Rt[]]>(...alternatives: T): Uni
     return {
       success: false,
       message: `Expected ${show(self)}, but was ${typeOf(value)}`,
+      code: Failcode.TYPE_INCORRECT,
     };
   }, self);
 }

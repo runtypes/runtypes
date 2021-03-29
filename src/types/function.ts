@@ -1,3 +1,4 @@
+import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
 import { typeOf } from '../util';
 
@@ -15,6 +16,7 @@ export const Function = create<Function>(
       : {
           success: false,
           message: `Expected function, but was ${typeOf(value)}`,
+          code: Failcode.TYPE_INCORRECT,
         },
   { tag: 'function' },
 );

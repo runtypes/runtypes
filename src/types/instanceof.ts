@@ -1,3 +1,4 @@
+import { Failcode } from '../result';
 import { Runtype, create } from '../runtype';
 import { typeOf } from '../util';
 
@@ -18,6 +19,7 @@ export function InstanceOf<V>(ctor: Constructor<V>) {
         : {
             success: false,
             message: `Expected ${(ctor as any).name}, but was ${typeOf(value)}`,
+            code: Failcode.TYPE_INCORRECT,
           },
     { tag: 'instanceof', ctor: ctor },
   );
