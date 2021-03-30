@@ -45,14 +45,14 @@ export function AsyncContract<A extends readonly Runtype[], R extends Runtype>(
       if (args.length < argRuntypes.length) {
         const message = `Expected ${argRuntypes.length} arguments but only received ${args.length}`;
         const failure = FAILURE.ARGUMENT_INCORRECT(message);
-        throw new ValidationError(message, failure);
+        throw new ValidationError(failure);
       }
       for (let i = 0; i < argRuntypes.length; i++) argRuntypes[i].check(args[i]);
       const returnedPromise = f(...args);
       if (!(returnedPromise instanceof Promise)) {
         const message = `Expected function to return a promise, but instead got ${returnedPromise}`;
         const failure = FAILURE.RETURN_INCORRECT(message);
-        throw new ValidationError(message, failure);
+        throw new ValidationError(failure);
       }
       return returnedPromise.then(returnRuntype.check);
     },

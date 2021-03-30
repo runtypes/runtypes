@@ -1,7 +1,9 @@
 /**
- * A message indicating the reason why validation failed, or a complex object enumerating where the validation failed exactly.
+ * A detailed object enumerating where the validation failed exactly.
  */
-export type Message = string | Message[] | { [key in string | number | symbol]: Message };
+export type Details =
+  | (string | Details)[]
+  | { [key in string | number | symbol]: string | Details };
 
 /**
  * A predefined error code indicating what type of failure is occured.
@@ -45,14 +47,19 @@ export type Failure = {
   success: false;
 
   /**
-   * A message indicating the reason why the validation failed, or a complex object enumerating where the validation failed exactly.
-   */
-  message: Message;
-
-  /**
    * An error code assigned to this type of error.
    */
   code: Failcode;
+
+  /**
+   * A message indicating the reason why the validation failed.
+   */
+  message: string;
+
+  /**
+   * A detailed object enumerating where the validation failed exactly.
+   */
+  details?: Details;
 };
 
 /**

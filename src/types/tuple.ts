@@ -1,5 +1,5 @@
 import { Reflect } from '../reflect';
-import { Message, Result } from '../result';
+import { Details, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
 import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
 
@@ -28,13 +28,16 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
     const results: Result<unknown>[] = keys.map(key =>
       innerValidate(components[key as any], xs[key as any], visited),
     );
-    const message = keys.reduce<{ [key: number]: Message } & Message[]>((message, key) => {
-      const result = results[key as any];
-      if (!result.success) message[key as any] = result.message;
-      return message;
-    }, []);
+    const details = keys.reduce<{ [key: number]: string | Details } & (string | Details)[]>(
+      (details, key) => {
+        const result = results[key as any];
+        if (!result.success) details[key as any] = result.details || result.message;
+        return details;
+      },
+      [],
+    );
 
-    if (enumerableKeysOf(message).length !== 0) return FAILURE.CONTENT_INCORRECT(message);
+    if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
     else return SUCCESS(xs);
   }, self);
 }

@@ -45,7 +45,7 @@ export function Contract<A extends readonly Runtype[], R extends Runtype>(
       if (args.length < argRuntypes.length) {
         const message = `Expected ${argRuntypes.length} arguments but only received ${args.length}`;
         const failure = FAILURE.ARGUMENT_INCORRECT(message);
-        throw new ValidationError(message, failure);
+        throw new ValidationError(failure);
       }
       for (let i = 0; i < argRuntypes.length; i++) argRuntypes[i].check(args[i]);
       return returnRuntype.check(f(...args));

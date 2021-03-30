@@ -3,7 +3,7 @@ import { String } from './string';
 import { Constraint } from './constraint';
 import show from '../show';
 import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
-import { Message, Result } from '../result';
+import { Details, Result } from '../result';
 
 type DictionaryKeyType = string | number | symbol;
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string
@@ -111,13 +111,16 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | '
       {},
     );
 
-    const message = keys.reduce<{ [key in string | number | symbol]: Message }>((message, key) => {
-      const result = results[key as any];
-      if (!result.success) message[key as any] = result.message;
-      return message;
-    }, {});
+    const details = keys.reduce<{ [key in string | number | symbol]: string | Details }>(
+      (details, key) => {
+        const result = results[key as any];
+        if (!result.success) details[key as any] = result.details || result.message;
+        return details;
+      },
+      {},
+    );
 
-    if (enumerableKeysOf(message).length !== 0) return FAILURE.CONTENT_INCORRECT(message);
+    if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
     else return SUCCESS(x);
   }, self);
 }

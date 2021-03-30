@@ -1,7 +1,7 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
 import { enumerableKeysOf, FAILURE, hasKey, SUCCESS } from '../util';
 import { Optional } from './optional';
-import { Message, Result } from '../result';
+import { Details, Result } from '../result';
 
 type FilterOptionalKeys<T> = Exclude<
   {
@@ -117,16 +117,16 @@ export function InternalRecord<
         {},
       );
 
-      const message = keys.reduce<{ [key in string | number | symbol]: Message }>(
-        (message, key) => {
+      const details = keys.reduce<{ [key in string | number | symbol]: string | Details }>(
+        (details, key) => {
           const result = results[key as any];
-          if (!result.success) message[key as any] = result.message;
-          return message;
+          if (!result.success) details[key as any] = result.details || result.message;
+          return details;
         },
         {},
       );
 
-      if (enumerableKeysOf(message).length !== 0) return FAILURE.CONTENT_INCORRECT(message);
+      if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
       else return SUCCESS(x);
     }, self),
   );

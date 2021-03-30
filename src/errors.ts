@@ -1,14 +1,14 @@
-import { Failcode, Failure, Message } from './result';
+import { Failcode, Failure, Details } from './result';
 
 export class ValidationError extends Error {
   public name: string = 'ValidationError';
   public code: Failcode;
-  public details: Message;
+  public details?: Details;
 
-  constructor(summary: string, failure: Failure) {
-    super(summary);
+  constructor(failure: Failure) {
+    super(failure.message);
     this.code = failure.code;
-    this.details = failure.message;
+    if (failure.details !== undefined) this.details = failure.details;
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }

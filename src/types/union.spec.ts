@@ -1,4 +1,5 @@
 import { Union, String, Literal, Record, Number, InstanceOf } from '..';
+import { Failcode } from '../result';
 import { Static } from '../runtype';
 import { LiteralBase } from './literal';
 
@@ -46,12 +47,17 @@ describe('union', () => {
 
       expect(Shape.validate({ kind: 'square', size: new Date() })).toMatchObject({
         success: false,
-        message: { size: 'Expected number, but was Date' },
+        code: Failcode.CONTENT_INCORRECT,
+        message: 'Expected { kind: "square"; size: number; }, but was incompatible',
+        details: { size: 'Expected number, but was Date' },
       });
 
       expect(Shape.validate({ kind: 'rectangle', size: new Date() })).toMatchObject({
         success: false,
-        message: {
+        code: Failcode.CONTENT_INCORRECT,
+        message:
+          'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+        details: {
           width: 'Expected number, but was missing',
           height: 'Expected number, but was missing',
         },
@@ -59,7 +65,9 @@ describe('union', () => {
 
       expect(Shape.validate({ kind: 'circle', size: new Date() })).toMatchObject({
         success: false,
-        message: { radius: 'Expected number, but was missing' },
+        code: Failcode.CONTENT_INCORRECT,
+        message: 'Expected { kind: "circle"; radius: number; }, but was incompatible',
+        details: { radius: 'Expected number, but was missing' },
       });
 
       expect(Shape.validate({ kind: 'other', size: new Date() })).not.toHaveProperty('key');

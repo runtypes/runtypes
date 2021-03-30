@@ -32,7 +32,7 @@ import {
 
 import { Constructor } from './types/instanceof';
 import { ValidationError } from './errors';
-import { Failcode, Message } from './result';
+import { Details, Failcode } from './result';
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean);
 const record1 = Record({ Boolean, Number });
@@ -940,7 +940,7 @@ function assertThrows<A>(
   runtype: Runtype<A>,
   failcode: Failcode,
   errorMessage: string,
-  errorDetails?: Message,
+  errorDetails?: Details,
 ) {
   try {
     runtype.check(value);
@@ -951,7 +951,9 @@ function assertThrows<A>(
     const { code, message, details } = validationError;
     expect(code).toBe(failcode);
     expect(message).toBe(errorMessage);
-    if (errorDetails !== undefined) expect(details).toMatchObject(errorDetails);
-    else expect(details).toBe(errorMessage);
+    if (details !== undefined) {
+      if (errorDetails !== undefined) expect(details).toMatchObject(errorDetails);
+      else expect(details).toBe(errorMessage);
+    }
   }
 }
