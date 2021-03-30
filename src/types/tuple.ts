@@ -12,12 +12,24 @@ import show from '../show';
 export type StaticTuple<TElements extends readonly RuntypeBase<unknown>[]> = {
   [key in keyof TElements]: TElements[key] extends RuntypeBase<infer E> ? E : unknown;
 };
+export type ReadonlyStaticTuple<TElements extends readonly RuntypeBase<unknown>[]> = {
+  readonly [key in keyof TElements]: TElements[key] extends RuntypeBase<infer E> ? E : unknown;
+};
 
 export interface Tuple<
   TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[]
 > extends Codec<StaticTuple<TElements>> {
   readonly tag: 'tuple';
   readonly components: TElements;
+  readonly isReadonly: false;
+}
+
+export interface ReadonlyTuple<
+  TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[]
+> extends Codec<ReadonlyStaticTuple<TElements>> {
+  readonly tag: 'tuple';
+  readonly components: TElements;
+  readonly isReadonly: true;
 }
 
 export function isTupleRuntype(runtype: RuntypeBase): runtype is Tuple<readonly RuntypeBase[]> {
@@ -68,6 +80,7 @@ export function Tuple<
     },
     {
       components,
+      isReadonly: false,
       show() {
         return `[${(components as readonly RuntypeBase<unknown>[])
           .map(e => show(e, false))

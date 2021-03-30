@@ -45,6 +45,15 @@ export interface Record<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>
   readonly tag: 'record';
   readonly key: K;
   readonly value: V;
+  readonly isReadonly: false;
+}
+
+export interface ReadonlyRecord<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>
+  extends Codec<{ readonly [_ in Static<K>]?: Static<V> }> {
+  readonly tag: 'record';
+  readonly key: K;
+  readonly value: V;
+  readonly isReadonly: true;
 }
 
 /**
@@ -104,6 +113,7 @@ export function Record<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>
     {
       key,
       value,
+      isReadonly: false,
       show() {
         return `{ [_: ${show(key, false)}]: ${show(value, false)} }`;
       },

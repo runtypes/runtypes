@@ -22,6 +22,7 @@ export { Named } from './types/Named';
 export { Never } from './types/never';
 export { Object, Partial } from './types/Object';
 export { Boolean, Function, Number, String, Symbol } from './types/primative';
+export { Readonly } from './types/Readonly';
 export { Record } from './types/Record';
 export { Tuple } from './types/tuple';
 export { Union } from './types/union';
