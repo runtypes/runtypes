@@ -130,8 +130,8 @@ export function create<A extends Runtype>(
 
   return A;
 
-  function check(x: any) {
-    const result: Result<Static<A>> = A.validate(x);
+  function check(x: A) {
+    const result: Result<A> = A.validate(x);
     if (result.success) return result.value;
     else throw new ValidationError(result);
   }
