@@ -14,7 +14,4 @@ const area = Shape.match(
   ({ radius }) => Math.PI * Math.pow(radius, 2),
 );
 
-const hasCorners = match(
-  [Circle, () => false],
-  [Union(Square, Rectangle), () => true]
-);
+const hasCorners = match([Circle, () => false], [Union(Square, Rectangle), () => true]);

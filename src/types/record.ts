@@ -1,6 +1,38 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { hasKey } from '../util';
-import show from '../show';
+import { enumerableKeysOf, FAILURE, hasKey, SUCCESS } from '../util';
+import { Optional } from './optional';
+import { Details, Result } from '../result';
+
+type FilterOptionalKeys<T> = Exclude<
+  {
+    [K in keyof T]: T[K] extends Optional<any> ? K : never;
+  }[keyof T],
+  undefined
+>;
+type FilterRequiredKeys<T> = Exclude<
+  {
+    [K in keyof T]: T[K] extends Optional<any> ? never : K;
+  }[keyof T],
+  undefined
+>;
+
+type MergedRecord<O extends { [_: string]: Runtype }> = {
+  [K in FilterRequiredKeys<O>]: Static<O[K]>;
+} &
+  {
+    [K in FilterOptionalKeys<O>]?: Static<O[K]>;
+  } extends infer P
+  ? { [K in keyof P]: P[K] }
+  : never;
+
+type MergedRecordReadonly<O extends { [_: string]: Runtype }> = {
+  [K in FilterRequiredKeys<O>]: Static<O[K]>;
+} &
+  {
+    [K in FilterOptionalKeys<O>]?: Static<O[K]>;
+  } extends infer P
+  ? { readonly [K in keyof P]: P[K] }
+  : never;
 
 type RecordStaticType<
   O extends { [_: string]: Runtype },
@@ -11,8 +43,8 @@ type RecordStaticType<
     ? { readonly [K in keyof O]?: Static<O[K]> }
     : { [K in keyof O]?: Static<O[K]> }
   : RO extends true
-  ? { readonly [K in keyof O]: Static<O[K]> }
-  : { [K in keyof O]: Static<O[K]> };
+  ? MergedRecordReadonly<O>
+  : MergedRecord<O>;
 
 export interface InternalRecord<
   O extends { [_: string]: Runtype },
@@ -48,32 +80,58 @@ export function InternalRecord<
   Part extends boolean,
   RO extends boolean
 >(fields: O, isPartial: Part, isReadonly: RO): InternalRecord<O, Part, RO> {
+  const self = { tag: 'record', isPartial, isReadonly, fields } as any;
   return withExtraModifierFuncs(
-    create(
-      (x, visited) => {
-        if (x === null || x === undefined) {
-          const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'record', fields });
-          return { success: false, message: `Expected ${show(a)}, but was ${x}` };
-        }
+    create((x, visited) => {
+      if (x === null || x === undefined) {
+        return FAILURE.TYPE_INCORRECT(self, x);
+      }
 
-        for (const key in fields) {
-          if (!isPartial || (hasKey(key, x) && x[key] !== undefined)) {
-            const value = isPartial || hasKey(key, x) ? x[key] : undefined;
-            let validated = innerValidate(fields[key], value, visited);
-            if (!validated.success) {
-              return {
-                success: false,
-                message: validated.message,
-                key: validated.key ? `${key}.${validated.key}` : key,
-              };
+      const keysOfFields = enumerableKeysOf(fields);
+      if (keysOfFields.length !== 0 && typeof x !== 'object')
+        return FAILURE.TYPE_INCORRECT(self, x);
+
+      const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])];
+      const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
+        (results, key) => {
+          const fieldsHasKey = hasKey(key, fields);
+          const xHasKey = hasKey(key, x);
+          if (fieldsHasKey) {
+            const runtype = fields[key as any];
+            const isOptional = isPartial || runtype.reflect.tag === 'optional';
+            if (xHasKey) {
+              const value = x[key as any];
+              if (isOptional && value === undefined) results[key as any] = SUCCESS(value);
+              else results[key as any] = innerValidate(runtype, value, visited);
+            } else {
+              if (!isOptional) results[key as any] = FAILURE.PROPERTY_MISSING(runtype.reflect);
+              else results[key as any] = SUCCESS(undefined);
             }
+          } else if (xHasKey) {
+            // TODO: exact record validation
+            const value = x[key as any];
+            results[key as any] = SUCCESS(value);
+          } else {
+            /* istanbul ignore next */
+            throw new Error('impossible');
           }
-        }
+          return results;
+        },
+        {},
+      );
 
-        return { success: true, value: x };
-      },
-      { tag: 'record', isPartial, isReadonly, fields },
-    ),
+      const details = keys.reduce<{ [key in string | number | symbol]: string | Details }>(
+        (details, key) => {
+          const result = results[key as any];
+          if (!result.success) details[key as any] = result.details || result.message;
+          return details;
+        },
+        {},
+      );
+
+      if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
+      else return SUCCESS(x);
+    }, self),
   );
 }
 

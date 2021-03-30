@@ -1,9 +1,11 @@
+import { Reflect } from '../reflect';
 import { Runtype, create } from '../runtype';
+import { FAILURE, SUCCESS } from '../util';
 
 /**
  * The super type of all literal types.
  */
-export type LiteralBase = undefined | null | boolean | number | string;
+export type LiteralBase = undefined | null | boolean | number | bigint | string;
 
 export interface Literal<A extends LiteralBase> extends Runtype<A> {
   tag: 'literal';
@@ -14,22 +16,24 @@ export interface Literal<A extends LiteralBase> extends Runtype<A> {
  * Be aware of an Array of Symbols `[Symbol()]` which would throw "TypeError: Cannot convert a Symbol value to a string"
  */
 function literal(value: unknown) {
-  return Array.isArray(value) ? String(value.map(String)) : String(value);
+  return Array.isArray(value)
+    ? String(value.map(String))
+    : typeof value === 'bigint'
+    ? String(value) + 'n'
+    : String(value);
 }
 
 /**
  * Construct a runtype for a type literal.
  */
 export function Literal<A extends LiteralBase>(valueBase: A): Literal<A> {
+  const self = ({ tag: 'literal', value: valueBase } as unknown) as Reflect;
   return create<Literal<A>>(
     (value: unknown) =>
       value === valueBase
-        ? { success: true, value: value as A }
-        : {
-            success: false,
-            message: `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
-          },
-    { tag: 'literal', value: valueBase },
+        ? SUCCESS(value as A)
+        : FAILURE.VALUE_INCORRECT('literal', `\`${literal(valueBase)}\``, `\`${literal(value)}\``),
+    self,
   );
 }
 

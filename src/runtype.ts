@@ -1,21 +1,13 @@
-import {
-  Result,
-  Union,
-  Union2,
-  Intersect,
-  Intersect2,
-  Constraint,
-  ConstraintCheck,
-  Brand,
-} from './index';
+import { Result, Union, Intersect, Optional, Constraint, ConstraintCheck, Brand } from './index';
 import { Reflect } from './reflect';
 import show from './show';
 import { ValidationError } from './errors';
+import { SUCCESS } from './util';
 
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export interface Runtype<A = unknown> {
+export interface RuntypeBase<A = unknown> {
   /**
    * Verifies that a value conforms to this runtype. When given a value that does
    * not conform to the runtype, throws an exception.
@@ -40,14 +32,31 @@ export interface Runtype<A = unknown> {
   guard(x: A): x is A;
 
   /**
+   * Convert this to a Reflect, capable of introspecting the structure of the type.
+   */
+  readonly reflect: Reflect;
+
+  /* @internal */ readonly _falseWitness: A;
+}
+
+/**
+ * A runtype determines at runtime whether a value conforms to a type specification.
+ */
+export interface Runtype<A = unknown> extends RuntypeBase<A> {
+  /**
    * Union this Runtype with another.
    */
-  Or<B extends Runtype>(B: B): Union2<this, B>;
+  Or<B extends Runtype>(B: B): Union<[this, B]>;
 
   /**
    * Intersect this Runtype with another.
    */
-  And<B extends Runtype>(B: B): Intersect2<this, B>;
+  And<B extends Runtype>(B: B): Intersect<[this, B]>;
+
+  /**
+   * Optionalize this Runtype.
+   */
+  optional(): Optional<this>;
 
   /**
    * Use an arbitrary constraint function to validate a runtype, and optionally
@@ -91,19 +100,12 @@ export interface Runtype<A = unknown> {
    * Adds a brand to the type.
    */
   withBrand<B extends string>(brand: B): Brand<B, this>;
-
-  /**
-   * Convert this to a Reflect, capable of introspecting the structure of the type.
-   */
-  reflect: Reflect;
-
-  /* @internal */ _falseWitness: A;
 }
 
 /**
  * Obtains the static type associated with a Runtype.
  */
-export type Static<A extends Runtype> = A['_falseWitness'];
+export type Static<A extends RuntypeBase> = A['_falseWitness'];
 
 export function create<A extends Runtype>(
   validate: (x: A, visited: VisitedState) => Result<Static<A>>,
@@ -112,13 +114,14 @@ export function create<A extends Runtype>(
   A.check = check;
   A.assert = check;
   A._innerValidate = (value: any, visited: VisitedState) => {
-    if (visited.has(value, A)) return { success: true, value };
+    if (visited.has(value, A)) return SUCCESS(value);
     return validate(value, visited);
   };
   A.validate = (value: A) => A._innerValidate(value, VisitedState());
   A.guard = guard;
   A.Or = Or;
   A.And = And;
+  A.optional = optional;
   A.withConstraint = withConstraint;
   A.withGuard = withGuard;
   A.withBrand = withBrand;
@@ -127,24 +130,26 @@ export function create<A extends Runtype>(
 
   return A;
 
-  function check(x: A) {
-    const validated = A.validate(x);
-    if (validated.success) {
-      return validated.value;
-    }
-    throw new ValidationError(validated.message, validated.key);
+  function check(x: any) {
+    const result: Result<Static<A>> = A.validate(x);
+    if (result.success) return result.value;
+    else throw new ValidationError(result);
   }
 
   function guard(x: A): x is A {
     return A.validate(x).success;
   }
 
-  function Or<B extends Runtype>(B: B): Union2<A, B> {
+  function Or<B extends Runtype>(B: B): Union<[A, B]> {
     return Union(A, B);
   }
 
-  function And<B extends Runtype>(B: B): Intersect2<A, B> {
+  function And<B extends Runtype>(B: B): Intersect<[A, B]> {
     return Intersect(A, B);
+  }
+
+  function optional(): Optional<A> {
+    return Optional(A);
   }
 
   function withConstraint<T extends Static<A>, K = unknown>(
@@ -166,7 +171,7 @@ export function create<A extends Runtype>(
   }
 }
 
-export function innerValidate<A extends Runtype>(
+export function innerValidate<A extends RuntypeBase>(
   targetType: A,
   value: any,
   visited: VisitedState,

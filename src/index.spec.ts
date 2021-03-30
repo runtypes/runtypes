@@ -8,6 +8,7 @@ import {
   Void,
   Boolean,
   Number,
+  BigInt,
   String,
   Symbol as Sym,
   Literal,
@@ -16,11 +17,9 @@ import {
   Record,
   Partial as RTPartial,
   Tuple,
-  Tuple2,
   Union,
-  Union2,
   Intersect,
-  Intersect2,
+  Optional,
   Function,
   Lazy,
   Constraint,
@@ -33,6 +32,7 @@ import {
 
 import { Constructor } from './types/instanceof';
 import { ValidationError } from './errors';
+import { Details, Failcode } from './result';
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean);
 const record1 = Record({ Boolean, Number });
@@ -116,10 +116,13 @@ const runtypes = {
   Number,
   3: Literal(3),
   42: Literal(42),
+  bigint: BigInt,
+  '42n': Literal(global.BigInt(42)),
   brandedNumber: Number.withBrand('number'),
   String,
   'hello world': Literal('hello world'),
   Sym,
+  SymForRuntypes: Sym('runtypes'),
   symbolArray: Array(Sym),
   boolArray: Array(Boolean),
   boolTuple,
@@ -140,6 +143,7 @@ const runtypes = {
   ),
   Dictionary: Dictionary(String),
   NumberDictionary: Dictionary(String, 'number'),
+  UnionDictionary: Dictionary(String, Union(Literal('a'), Literal('b'), Literal(3))),
   DictionaryOfArrays: Dictionary(Array(Boolean)),
   InstanceOfSomeClass: InstanceOf(SomeClass),
   InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
@@ -160,7 +164,10 @@ const runtypes = {
     },
   ),
   DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
-  OptionalKey: Record({ foo: String, bar: Union(Number, Undefined) }),
+  OptionalBoolean: Optional(Boolean),
+  OptionalProperty: Record({ foo: String, bar: Optional(Number) }),
+  UnionProperty: Record({ foo: String, bar: Union(Number, Undefined) }),
+  PartialProperty: Record({ foo: String }).And(RTPartial({ bar: Number })),
   ReadonlyNumberArray: Array(Number).asReadonly(),
   ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
   Graph,
@@ -173,6 +180,7 @@ const runtypes = {
     .asReadonly()
     .And(RTPartial({ bar: String }).asReadonly()),
   EmptyTuple: Tuple(),
+  Union: Union(Literal('a'), Literal('b'), Literal(3)),
 };
 
 type RuntypeName = keyof typeof runtypes;
@@ -184,23 +192,28 @@ class Foo {
 } // Should not be recognized as a Dictionary
 
 const testValues: { value: unknown; passes: RuntypeName[] }[] = [
-  { value: undefined, passes: ['Undefined', 'Void'] },
+  { value: undefined, passes: ['Undefined', 'Void', 'OptionalBoolean'] },
   { value: null, passes: ['Null', 'Void'] },
-  { value: true, passes: ['Boolean', 'true'] },
-  { value: false, passes: ['Boolean', 'false'] },
-  { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1'] },
+  { value: true, passes: ['Boolean', 'true', 'OptionalBoolean'] },
+  { value: false, passes: ['Boolean', 'false', 'OptionalBoolean'] },
+  { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1', 'Union'] },
   {
     value: 42,
     passes: ['Number', 'brandedNumber', 42, 'MoreThanThree', 'MoreThanThreeWithMessage'],
   },
+  { value: global.BigInt(42), passes: ['bigint', '42n'] },
   { value: 'hello world', passes: ['String', 'hello world', 'union1'] },
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
-  { value: Symbol.for('runtypes'), passes: ['Sym'] },
+  { value: Symbol(), passes: ['Sym'] },
+  { value: Symbol.for('runtypes'), passes: ['Sym', 'SymForRuntypes'] },
   { value: [true, false, true], passes: ['boolArray', 'boolTuple', 'union1'] },
   { value: { Boolean: true, Number: 3 }, passes: ['record1', 'union1', 'Partial'] },
   { value: { Boolean: true }, passes: ['Partial'] },
   { value: { Boolean: true, foo: undefined }, passes: ['Partial'] },
-  { value: { Boolean: true, foo: 'hello' }, passes: ['Partial', 'OptionalKey'] },
+  {
+    value: { Boolean: true, foo: 'hello' },
+    passes: ['Partial', 'OptionalProperty', 'PartialProperty'],
+  },
   { value: { Boolean: true, foo: 5 }, passes: ['ReadonlyPartial'] },
   { value: (x: number, y: string) => x + y.length, passes: ['Function'] },
   { value: { name: undefined, likes: [] }, passes: [] },
@@ -209,7 +222,8 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
     value: { name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] },
     passes: ['Person'],
   },
-  { value: { a: '1', b: '2' }, passes: ['Dictionary'] },
+  { value: { a: '1', b: '2', 3: '4' }, passes: ['Dictionary', 'UnionDictionary'] },
+  { value: { '1': 'foo', '2': 'bar', 3: 'baz' }, passes: ['Dictionary', 'NumberDictionary'] },
   { value: ['1', '2'], passes: ['ArrayString', 'NumberDictionary'] },
   { value: ['1', 2], passes: [] },
   { value: [{ name: 'Jimmy', likes: [{ name: 'Peter', likes: [] }] }], passes: ['ArrayPerson'] },
@@ -244,8 +258,14 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
     ],
   },
   { value: { xxx: [new SomeClass(55)] }, passes: ['DictionaryOfArraysOfSomeClass'] },
-  { value: { foo: 'hello' }, passes: ['OptionalKey', 'Dictionary'] },
-  { value: { foo: 'hello', bar: undefined }, passes: ['OptionalKey'] },
+  {
+    value: { foo: 'hello' },
+    passes: ['OptionalProperty', 'PartialProperty', 'Dictionary'],
+  },
+  {
+    value: { foo: 'hello', bar: undefined },
+    passes: ['OptionalProperty', 'UnionProperty', 'PartialProperty'],
+  },
   { value: { foo: 4, bar: 'baz' }, passes: ['ReadonlyRecord', 'ReadonlyPartial'] },
   { value: narcissist, passes: ['Person'] },
   { value: [narcissist, narcissist], passes: ['ArrayPerson'] },
@@ -266,7 +286,7 @@ const getCircularReplacer = () => {
       }
       seen.add(value);
     } else if (typeof value === 'symbol' || typeof value === 'function') return value.toString();
-    return value;
+    return typeof value === 'bigint' ? value.toString() + 'n' : value;
   };
 };
 
@@ -336,8 +356,9 @@ describe('check errors', () => {
     assertThrows(
       [false, '0', true],
       Tuple(Number, String, Boolean),
-      'Expected number, but was boolean in [0]',
-      '[0]',
+      Failcode.CONTENT_INCORRECT,
+      'Expected [number, string, boolean], but was incompatible',
+      { 0: 'Expected number, but was boolean' },
     );
   });
 
@@ -345,7 +366,8 @@ describe('check errors', () => {
     assertThrows(
       [0, '0'],
       Tuple(Number, String, Boolean),
-      'Expected an array of length 3, but was 2',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for [number, string, boolean]: Expected length 3, but was 2',
     );
   });
 
@@ -353,8 +375,9 @@ describe('check errors', () => {
     assertThrows(
       [0, { name: 0 }],
       Tuple(Number, Record({ name: String })),
-      'Expected string, but was number in [1].name',
-      '[1].name',
+      Failcode.CONTENT_INCORRECT,
+      'Expected [number, { name: string; }], but was incompatible',
+      { 1: { name: 'Expected string, but was number' } },
     );
   });
 
@@ -363,15 +386,22 @@ describe('check errors', () => {
   });
 
   it('array', () => {
-    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string in [2]', '[2]');
+    assertThrows(
+      [0, 2, 'test'],
+      Array(Number),
+      Failcode.CONTENT_INCORRECT,
+      'Expected number[], but was incompatible',
+      { 2: 'Expected number, but was string' },
+    );
   });
 
   it('array nested', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })),
-      'Expected string, but was boolean in [1].name',
-      '[1].name',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; }[], but was incompatible',
+      { 1: { name: 'Expected string, but was boolean' } },
     );
   });
 
@@ -379,8 +409,9 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })),
-      'Expected { name: string; }, but was null in [1]',
-      '[1]',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; }[], but was incompatible',
+      { 1: 'Expected { name: string; }, but was null' },
     );
   });
 
@@ -388,8 +419,9 @@ describe('check errors', () => {
     assertThrows(
       [0, 2, 'test'],
       Array(Number).asReadonly(),
-      'Expected number, but was string in [2]',
-      '[2]',
+      Failcode.CONTENT_INCORRECT,
+      'Expected readonly number[], but was incompatible',
+      { 2: 'Expected number, but was string' },
     );
   });
 
@@ -397,8 +429,9 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })).asReadonly(),
-      'Expected string, but was boolean in [1].name',
-      '[1].name',
+      Failcode.CONTENT_INCORRECT,
+      'Expected readonly { name: string; }[], but was incompatible',
+      { 1: { name: 'Expected string, but was boolean' } },
     );
   });
 
@@ -406,24 +439,32 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })).asReadonly(),
-      'Expected { name: string; }, but was null in [1]',
-      '[1]',
+      Failcode.CONTENT_INCORRECT,
+      'Expected readonly { name: string; }[], but was incompatible',
+      { 1: 'Expected { name: string; }, but was null' },
     );
   });
 
   it('dictionary', () => {
-    assertThrows(null, Dictionary(String), 'Expected { [_: string]: string }, but was null');
+    assertThrows(
+      null,
+      Dictionary(String),
+      Failcode.TYPE_INCORRECT,
+      'Expected { [_: string]: string }, but was null',
+    );
   });
 
   it('dictionary invalid type', () => {
     assertThrows(
       undefined,
       Dictionary(Record({ name: String })),
+      Failcode.TYPE_INCORRECT,
       'Expected { [_: string]: { name: string; } }, but was undefined',
     );
     assertThrows(
       1,
       Dictionary(Record({ name: String })),
+      Failcode.TYPE_INCORRECT,
       'Expected { [_: string]: { name: string; } }, but was number',
     );
   });
@@ -432,8 +473,9 @@ describe('check errors', () => {
     assertThrows(
       { foo: { name: false } },
       Dictionary(Record({ name: String })),
-      'Expected string, but was boolean in foo.name',
-      'foo.name',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { [_: string]: { name: string; } }, but was incompatible',
+      { foo: { name: 'Expected string, but was boolean' } },
     );
   });
 
@@ -441,8 +483,9 @@ describe('check errors', () => {
     assertThrows(
       { foo: 'bar', test: true },
       Dictionary(String),
-      'Expected string, but was boolean in test',
-      'test',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { [_: string]: string }, but was incompatible',
+      { test: 'Expected string, but was boolean' },
     );
   });
 
@@ -450,8 +493,9 @@ describe('check errors', () => {
     assertThrows(
       { 1: 'bar', 2: 20 },
       Dictionary(String, 'number'),
-      'Expected string, but was number in 2',
-      '2',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { [_: number]: string }, but was incompatible',
+      { 2: 'Expected string, but was number' },
     );
   });
 
@@ -462,8 +506,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was string in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; age: number; }, but was incompatible',
+      { age: 'Expected number, but was string' },
     );
   });
 
@@ -474,8 +519,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was undefined in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; age: number; }, but was incompatible',
+      { age: 'Expected number, but was missing' },
     );
   });
 
@@ -487,8 +533,9 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was boolean in likes.[0].title',
-      'likes.[0].title',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; age: number; likes: { title: string; }[]; }, but was incompatible',
+      { likes: { 0: { title: 'Expected string, but was boolean' } } },
     );
   });
 
@@ -499,8 +546,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was string in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { readonly name: string; readonly age: number; }, but was incompatible',
+      { age: 'Expected number, but was string' },
     );
   });
 
@@ -511,8 +559,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was undefined in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { readonly name: string; readonly age: number; }, but was incompatible',
+      { age: 'Expected number, but was missing' },
     );
   });
 
@@ -524,8 +573,9 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String }).asReadonly()),
       }).asReadonly(),
-      'Expected string, but was boolean in likes.[0].title',
-      'likes.[0].title',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { readonly name: string; readonly age: number; readonly likes: { readonly title: string; }[]; }, but was incompatible',
+      { likes: { 0: { title: 'Expected string, but was boolean' } } },
     );
   });
 
@@ -536,8 +586,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was null in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name?: string; age?: number; }, but was incompatible',
+      { age: 'Expected number, but was null' },
     );
   });
 
@@ -549,8 +600,9 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was number in likes.[0].title',
-      'likes.[0].title',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name?: string; age?: number; likes?: { title: string; }[]; }, but was incompatible',
+      { likes: { 0: { title: 'Expected string, but was number' } } },
     );
   });
 
@@ -560,7 +612,8 @@ describe('check errors', () => {
       Unknown.withConstraint<SomeClass>((o: any) => o.n > 3, {
         name: 'SomeClass',
       }),
-      'Failed SomeClass check',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for SomeClass',
     );
   });
 
@@ -570,12 +623,18 @@ describe('check errors', () => {
       Unknown.withConstraint<SomeClass>((o: any) => (o.n > 3 ? true : 'n must be 3+'), {
         name: 'SomeClass',
       }),
-      'n must be 3+',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for SomeClass: n must be 3+',
     );
   });
 
   it('union', () => {
-    assertThrows(false, Union(Number, String), 'Expected number | string, but was boolean');
+    assertThrows(
+      false,
+      Union(Number, String),
+      Failcode.TYPE_INCORRECT,
+      'Expected number | string, but was boolean',
+    );
   });
 });
 
@@ -603,12 +662,38 @@ describe('reflection', () => {
     expectLiteralField(Number, 'tag', 'number');
   });
 
+  it('bigint', () => {
+    expectLiteralField(BigInt, 'tag', 'bigint');
+  });
+
   it('string', () => {
     expectLiteralField(String, 'tag', 'string');
   });
 
   it('symbol', () => {
     expectLiteralField(Sym, 'tag', 'symbol');
+    const SymForRuntypes = Sym('runtypes');
+    expectLiteralField(SymForRuntypes, 'tag', 'symbol');
+    expectLiteralField(SymForRuntypes, 'key', 'runtypes');
+    assertThrows(
+      Symbol.for('runtypes!'),
+      Sym('runtypes?'),
+      Failcode.VALUE_INCORRECT,
+      'Expected symbol key "runtypes?", but was "runtypes!"',
+    );
+    assertAccepts(Symbol(), Sym(undefined));
+    assertThrows(
+      Symbol.for('undefined'),
+      Sym(undefined),
+      Failcode.VALUE_INCORRECT,
+      'Expected symbol key undefined, but was "undefined"',
+    );
+    assertThrows(
+      Symbol(),
+      Sym('undefined'),
+      Failcode.VALUE_INCORRECT,
+      'Expected symbol key "undefined", but was undefined',
+    );
   });
 
   it('literal', () => {
@@ -682,10 +767,22 @@ describe('reflection', () => {
   });
 
   it('intersect', () => {
-    expectLiteralField(Intersect(X, Y), 'tag', 'intersect');
-    expectLiteralField(Intersect(X, Y), 'tag', 'intersect');
-    expect(Intersect(X, Y).intersectees.map(A => A.tag)).toEqual(['literal', 'literal']);
-    expect(Intersect(X, Y).intersectees.map(A => A.value)).toEqual(['x', 'y']);
+    const intersectees = [Record({ x: Number }), Record({ y: Number })] as const;
+    const I = Intersect(...intersectees);
+    type I = Static<typeof I>;
+    const i: I = { x: 1, y: 2 };
+    expectLiteralField(I, 'tag', 'intersect');
+    expect(I.intersectees.map(A => A.tag)).toEqual(['record', 'record']);
+    expect(() => I.check(i)).not.toThrow();
+  });
+
+  it('optional', () => {
+    const OptionalNumber = Optional(Number);
+    expectLiteralField(OptionalNumber, 'tag', 'optional');
+    expectLiteralField(OptionalNumber.underlying, 'tag', 'number');
+    const OptionalNumberShorthand = Number.optional();
+    expectLiteralField(OptionalNumberShorthand, 'tag', 'optional');
+    expectLiteralField(OptionalNumberShorthand.underlying, 'tag', 'number');
   });
 
   it('function', () => {
@@ -747,6 +844,7 @@ describe('change static type with Constraint', () => {
     | Void
     | Boolean
     | Number
+    | BigInt
     | String
     | Sym
     | Literal<boolean | number | string>
@@ -756,9 +854,10 @@ describe('change static type with Constraint', () => {
     | Record<{ [_ in string]: Reflect }, true>
     | RTPartial<{ [_ in string]: Reflect }, false>
     | RTPartial<{ [_ in string]: Reflect }, true>
-    | Tuple2<Reflect, Reflect>
-    | Union2<Reflect, Reflect>
-    | Intersect2<Reflect, Reflect>
+    | Tuple<[Reflect, Reflect]>
+    | Union<[Reflect, Reflect]>
+    | Intersect<[Reflect, Reflect]>
+    | Optional<Reflect>
     | Function
     | Constraint<Reflect, any, any>
     | InstanceOf<Constructor<never>>
@@ -777,6 +876,9 @@ describe('change static type with Constraint', () => {
       break;
     case 'number':
       check<number>(X);
+      break;
+    case 'bigint':
+      check<bigint>(X);
       break;
     case 'string':
       check<string>(X);
@@ -833,15 +935,25 @@ function assertRejects<A>(value: unknown, runtype: Runtype<A>) {
   if (result.success === true) fail('value passed validation even though it was not expected to');
 }
 
-function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key?: string) {
+function assertThrows<A>(
+  value: unknown,
+  runtype: Runtype<A>,
+  failcode: Failcode,
+  errorMessage: string,
+  errorDetails?: Details,
+) {
   try {
     runtype.check(value as any);
     fail('value passed validation even though it was not expected to');
   } catch (exception) {
-    const { message: errorMessage, key: errorKey } = exception;
-
     expect(exception).toBeInstanceOf(ValidationError);
-    expect(errorMessage).toBe(error);
-    expect(errorKey).toBe(key);
+    const validationError = exception as ValidationError;
+    const { code, message, details } = validationError;
+    expect(code).toBe(failcode);
+    expect(message).toBe(errorMessage);
+    if (details !== undefined) {
+      if (errorDetails !== undefined) expect(details).toMatchObject(errorDetails);
+      else expect(details).toBe(errorMessage);
+    }
   }
 }

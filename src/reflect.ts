@@ -9,8 +9,10 @@ export type Reflect =
   | ({ tag: 'void' } & Runtype<void>)
   | ({ tag: 'boolean' } & Runtype<boolean>)
   | ({ tag: 'number' } & Runtype<number>)
+  | ({ tag: 'bigint' } & Runtype<bigint>)
   | ({ tag: 'string' } & Runtype<string>)
-  | ({ tag: 'symbol' } & Runtype<symbol>)
+  | ({ tag: 'symbol'; key: string | undefined } & Runtype<symbol>)
+  | ({ tag: 'symbol'; (key: string | undefined): Runtype<symbol> } & Runtype<symbol>)
   | ({ tag: 'literal'; value: LiteralBase } & Runtype<LiteralBase>)
   | ({ tag: 'array'; element: Reflect; isReadonly: boolean } & Runtype<ReadonlyArray<unknown>>)
   | ({
@@ -19,12 +21,13 @@ export type Reflect =
       isPartial: boolean;
       isReadonly: boolean;
     } & Runtype<{ readonly [_ in string]: unknown }>)
-  | ({ tag: 'dictionary'; key: 'string' | 'number'; value: Reflect } & Runtype<{
+  | ({ tag: 'dictionary'; key: 'string' | 'number' | 'symbol'; value: Reflect } & Runtype<{
       [_: string]: unknown;
     }>)
   | ({ tag: 'tuple'; components: Reflect[] } & Runtype<unknown[]>)
   | ({ tag: 'union'; alternatives: Reflect[] } & Runtype)
   | ({ tag: 'intersect'; intersectees: Reflect[] } & Runtype)
+  | ({ tag: 'optional'; underlying: Reflect } & Runtype)
   | ({ tag: 'function' } & Runtype<(...args: any[]) => any>)
   | ({
       tag: 'constraint';

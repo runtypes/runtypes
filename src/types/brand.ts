@@ -1,12 +1,17 @@
+import { Reflect } from '../reflect';
 import { Runtype, Static, create } from '../runtype';
 
-export const RuntypeName = Symbol('RuntypeName');
+export declare const RuntypeName: unique symbol;
+
+export interface RuntypeBrand<B extends string> {
+  [RuntypeName]: B;
+}
 
 export interface Brand<B extends string, A extends Runtype>
   extends Runtype<
-    Static<A> & {
-      [RuntypeName]: B;
-    }
+    // TODO: replace it by nominal type when it has been released
+    // https://github.com/microsoft/TypeScript/pull/33038
+    Static<A> & RuntypeBrand<B>
   > {
   tag: 'brand';
   brand: B;
@@ -14,17 +19,6 @@ export interface Brand<B extends string, A extends Runtype>
 }
 
 export function Brand<B extends string, A extends Runtype>(brand: B, entity: A) {
-  return create<Brand<B, A>>(
-    value => {
-      const validated = entity.validate(value);
-      return validated.success
-        ? { success: true, value: validated.value as Static<Brand<B, A>> }
-        : validated;
-    },
-    {
-      tag: 'brand',
-      brand,
-      entity,
-    },
-  );
+  const self = ({ tag: 'brand', brand, entity } as unknown) as Reflect;
+  return create<any>(value => entity.validate(value), self);
 }

@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "name": "@runtypes/example-basic",
+  "devDependencies": {
+    "typescript": "^4.2.3"
+  },
+  "dependencies": {
+    "runtypes": "file:../.."
+  }
+}
