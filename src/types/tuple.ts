@@ -22,9 +22,7 @@ export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> 
     if (!Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs);
 
     if (xs.length !== components.length)
-      return FAILURE.VALUE_INCORRECT(
-        `Expected tuple of length ${components.length}, but was ${xs.length}`,
-      );
+      return FAILURE.VALUE_INCORRECT('tuple of length', components.length, xs.length);
 
     const keys = enumerableKeysOf(xs);
     const results: Result<unknown>[] = keys.map(key =>

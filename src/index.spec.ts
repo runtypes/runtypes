@@ -612,8 +612,8 @@ describe('check errors', () => {
       Unknown.withConstraint<SomeClass>((o: any) => o.n > 3, {
         name: 'SomeClass',
       }),
-      Failcode.VALUE_INCORRECT,
-      'Failed SomeClass check',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for SomeClass',
     );
   });
 
@@ -623,8 +623,8 @@ describe('check errors', () => {
       Unknown.withConstraint<SomeClass>((o: any) => (o.n > 3 ? true : 'n must be 3+'), {
         name: 'SomeClass',
       }),
-      Failcode.VALUE_INCORRECT,
-      'n must be 3+',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for SomeClass: n must be 3+',
     );
   });
 
@@ -679,20 +679,20 @@ describe('reflection', () => {
       Symbol.for('runtypes!'),
       Sym('runtypes?'),
       Failcode.VALUE_INCORRECT,
-      'Expected symbol key to be "runtypes?", but was "runtypes!"',
+      'Expected symbol key "runtypes?", but was "runtypes!"',
     );
     assertAccepts(Symbol(), Sym(undefined));
     assertThrows(
       Symbol.for('undefined'),
       Sym(undefined),
       Failcode.VALUE_INCORRECT,
-      'Expected symbol key to be undefined, but was "undefined"',
+      'Expected symbol key undefined, but was "undefined"',
     );
     assertThrows(
       Symbol(),
       Sym('undefined'),
       Failcode.VALUE_INCORRECT,
-      'Expected symbol key to be "undefined", but was undefined',
+      'Expected symbol key "undefined", but was undefined',
     );
   });
 

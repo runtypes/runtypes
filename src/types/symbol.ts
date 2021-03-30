@@ -24,9 +24,9 @@ const f = (key: string | undefined) => {
       const keyForValue = global.Symbol.keyFor(value);
       if (keyForValue !== key)
         return FAILURE.VALUE_INCORRECT(
-          `Expected symbol key to be ${quoteIfPresent(key)}, but was ${quoteIfPresent(
-            keyForValue,
-          )}`,
+          'symbol key',
+          quoteIfPresent(key),
+          quoteIfPresent(keyForValue),
         );
       else return SUCCESS(value);
     }

@@ -32,9 +32,7 @@ export function Literal<A extends LiteralBase>(valueBase: A): Literal<A> {
     value =>
       value === valueBase
         ? SUCCESS(value)
-        : FAILURE.VALUE_INCORRECT(
-            `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
-          ),
+        : FAILURE.VALUE_INCORRECT('literal', `\`${literal(valueBase)}\``, `\`${literal(value)}\``),
     self,
   );
 }

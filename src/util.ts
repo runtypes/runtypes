@@ -43,8 +43,11 @@ export const FAILURE = Object.assign(
       const message = `Expected ${show(self)}, but was ${typeOf(value)}`;
       return FAILURE(Failcode.TYPE_INCORRECT, message);
     },
-    VALUE_INCORRECT: (message: Message) => {
-      return FAILURE(Failcode.VALUE_INCORRECT, message);
+    VALUE_INCORRECT: (name: string, expected: unknown, received: unknown) => {
+      return FAILURE(
+        Failcode.VALUE_INCORRECT,
+        `Expected ${name} ${String(expected)}, but was ${String(received)}`,
+      );
     },
     KEY_INCORRECT: (self: Reflect, expected: Reflect, value: unknown) => {
       return FAILURE(
@@ -60,6 +63,12 @@ export const FAILURE = Object.assign(
     },
     RETURN_INCORRECT: (message: Message) => {
       return FAILURE(Failcode.RETURN_INCORRECT, message);
+    },
+    CONSTRAINT_FAILED: (name?: string, message?: string) => {
+      return FAILURE(
+        Failcode.CONSTRAINT_FAILED,
+        `Failed constraint check${name ? ` for ${name}` : ''}${message ? `: ${message}` : ''}`,
+      );
     },
     PROPERTY_MISSING: (self: Reflect) => {
       const message = `Expected ${show(self)}, but was missing`;
