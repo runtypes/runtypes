@@ -1,6 +1,7 @@
-import { Failcode, Message, Result } from '../result';
+import { Reflect } from '../reflect';
+import { Message, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { enumerableKeysOf, FAILURE, SUCCESS, typeOf } from '../util';
+import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
 
 type ArrayStaticType<E extends Runtype, RO extends boolean> = RO extends true
   ? ReadonlyArray<Static<E>>
@@ -21,29 +22,24 @@ function InternalArr<E extends Runtype, RO extends boolean>(
   element: E,
   isReadonly: RO,
 ): Arr<E, RO> {
+  const self = ({ tag: 'array', isReadonly, element } as unknown) as Reflect;
   return withExtraModifierFuncs(
-    create(
-      (xs, visited) => {
-        if (!Array.isArray(xs)) {
-          return FAILURE(Failcode.TYPE_INCORRECT, `Expected array, but was ${typeOf(xs)}`);
-        }
+    create((xs, visited) => {
+      if (!Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs);
 
-        const keys = enumerableKeysOf(xs);
-        const results: Result<unknown>[] = keys.map(key =>
-          innerValidate(element, xs[key as any], visited),
-        );
-        const message = keys.reduce<{ [key: number]: Message } & Message[]>((message, key) => {
-          const result = results[key as any];
-          if (!result.success) message[key as any] = result.message;
-          return message;
-        }, []);
+      const keys = enumerableKeysOf(xs);
+      const results: Result<unknown>[] = keys.map(key =>
+        innerValidate(element, xs[key as any], visited),
+      );
+      const message = keys.reduce<{ [key: number]: Message } & Message[]>((message, key) => {
+        const result = results[key as any];
+        if (!result.success) message[key as any] = result.message;
+        return message;
+      }, []);
 
-        if (enumerableKeysOf(message).length !== 0)
-          return FAILURE(Failcode.CONTENT_INCORRECT, message);
-        else return SUCCESS(xs);
-      },
-      { tag: 'array', isReadonly, element },
-    ),
+      if (enumerableKeysOf(message).length !== 0) return FAILURE.CONTENT_INCORRECT(message);
+      else return SUCCESS(xs);
+    }, self),
   );
 }
 

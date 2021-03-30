@@ -1,8 +1,7 @@
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { enumerableKeysOf, FAILURE, hasKey, SUCCESS, typeOf } from '../util';
-import show from '../show';
+import { enumerableKeysOf, FAILURE, hasKey, SUCCESS } from '../util';
 import { Optional } from './optional';
-import { Failcode, Message, Result } from '../result';
+import { Message, Result } from '../result';
 
 type FilterOptionalKeys<T> = Exclude<
   {
@@ -85,12 +84,12 @@ export function InternalRecord<
   return withExtraModifierFuncs(
     create((x, visited) => {
       if (x === null || x === undefined) {
-        return FAILURE(Failcode.TYPE_INCORRECT, `Expected ${show(self)}, but was ${typeOf(x)}`);
+        return FAILURE.TYPE_INCORRECT(self, x);
       }
 
       const keysOfFields = enumerableKeysOf(fields);
       if (keysOfFields.length !== 0 && typeof x !== 'object')
-        return FAILURE(Failcode.TYPE_INCORRECT, `Expected ${show(self)}, but was ${typeOf(x)}`);
+        return FAILURE.TYPE_INCORRECT(self, x);
 
       const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])];
       const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
@@ -105,11 +104,7 @@ export function InternalRecord<
               if (isOptional && value === undefined) results[key as any] = SUCCESS(value);
               else results[key as any] = innerValidate(runtype, value, visited);
             } else {
-              if (!isOptional)
-                results[key as any] = FAILURE(
-                  Failcode.PROPERTY_MISSING,
-                  `Expected property to be present and ${show(runtype.reflect)}, but was missing`,
-                );
+              if (!isOptional) results[key as any] = FAILURE.PROPERTY_MISSING(runtype.reflect);
               else results[key as any] = SUCCESS(undefined);
             }
           } else if (xHasKey) {
@@ -131,8 +126,7 @@ export function InternalRecord<
         {},
       );
 
-      if (enumerableKeysOf(message).length !== 0)
-        return FAILURE(Failcode.CONTENT_INCORRECT, message);
+      if (enumerableKeysOf(message).length !== 0) return FAILURE.CONTENT_INCORRECT(message);
       else return SUCCESS(x);
     }, self),
   );

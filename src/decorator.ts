@@ -1,6 +1,5 @@
 import { Runtype } from './runtype';
 import { ValidationError } from './errors';
-import { Failcode } from './result';
 import { FAILURE } from './util';
 
 type PropKey = string | symbol;
@@ -83,7 +82,7 @@ export function checked(...runtypes: Runtype[]) {
         const validated = type.validate(args[parameterIndex]);
         if (!validated.success) {
           const message = `${methodId}, argument #${parameterIndex}: ${validated.message}`;
-          const failure = FAILURE(Failcode.ARGUMENT_INCORRECT, message);
+          const failure = FAILURE.ARGUMENT_INCORRECT(message);
           throw new ValidationError(message, failure);
         }
       });

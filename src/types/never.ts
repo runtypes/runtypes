@@ -1,15 +1,14 @@
-import { Failcode } from '../result';
+import { Reflect } from '../reflect';
 import { Runtype, create } from '../runtype';
-import { FAILURE, typeOf } from '../util';
+import { FAILURE } from '../util';
 
 export interface Never extends Runtype<never> {
   tag: 'never';
 }
 
+const self = ({ tag: 'never' } as unknown) as Reflect;
+
 /**
  * Validates nothing (unknown fails).
  */
-export const Never = create<Never>(
-  value => FAILURE(Failcode.NOTHING_EXPECTED, `Expected nothing, but was ${typeOf(value)}`),
-  { tag: 'never' },
-);
+export const Never = create<Never>(FAILURE.NOTHING_EXPECTED, self);

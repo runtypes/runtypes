@@ -521,7 +521,7 @@ describe('check errors', () => {
       }),
       Failcode.CONTENT_INCORRECT,
       'Expected { name: string; age: number; }, but was incompatible',
-      { age: 'Expected property to be present and number, but was missing' },
+      { age: 'Expected number, but was missing' },
     );
   });
 
@@ -561,7 +561,7 @@ describe('check errors', () => {
       }).asReadonly(),
       Failcode.CONTENT_INCORRECT,
       'Expected { readonly name: string; readonly age: number; }, but was incompatible',
-      { age: 'Expected property to be present and number, but was missing' },
+      { age: 'Expected number, but was missing' },
     );
   });
 

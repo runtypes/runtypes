@@ -52,14 +52,14 @@ describe('union', () => {
       expect(Shape.validate({ kind: 'rectangle', size: new Date() })).toMatchObject({
         success: false,
         message: {
-          width: 'Expected property to be present and number, but was missing',
-          height: 'Expected property to be present and number, but was missing',
+          width: 'Expected number, but was missing',
+          height: 'Expected number, but was missing',
         },
       });
 
       expect(Shape.validate({ kind: 'circle', size: new Date() })).toMatchObject({
         success: false,
-        message: { radius: 'Expected property to be present and number, but was missing' },
+        message: { radius: 'Expected number, but was missing' },
       });
 
       expect(Shape.validate({ kind: 'other', size: new Date() })).not.toHaveProperty('key');

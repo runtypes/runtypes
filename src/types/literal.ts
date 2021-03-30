@@ -1,4 +1,4 @@
-import { Failcode } from '../result';
+import { Reflect } from '../reflect';
 import { Runtype, create } from '../runtype';
 import { FAILURE, SUCCESS } from '../util';
 
@@ -27,15 +27,15 @@ function literal(value: unknown) {
  * Construct a runtype for a type literal.
  */
 export function Literal<A extends LiteralBase>(valueBase: A): Literal<A> {
+  const self = ({ tag: 'literal', value: valueBase } as unknown) as Reflect;
   return create<Literal<A>>(
     value =>
       value === valueBase
         ? SUCCESS(value)
-        : FAILURE(
-            Failcode.VALUE_INCORRECT,
+        : FAILURE.VALUE_INCORRECT(
             `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
           ),
-    { tag: 'literal', value: valueBase },
+    self,
   );
 }
 
