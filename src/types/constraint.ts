@@ -36,8 +36,8 @@ export function Constraint<A extends Runtype, T extends Static<A> = Static<A>, K
     if (!result.success) return result;
 
     const message = constraint(result.value);
-    if (typeof message === 'string') return FAILURE.CONSTRAINT_FAILED(name, message);
-    else if (!message) return FAILURE.CONSTRAINT_FAILED(name);
+    if (typeof message === 'string') return FAILURE.CONSTRAINT_FAILED(self, message);
+    else if (!message) return FAILURE.CONSTRAINT_FAILED(self);
     return SUCCESS(result.value as T);
   }, self);
 }

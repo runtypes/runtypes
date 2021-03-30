@@ -66,10 +66,11 @@ export const FAILURE = Object.assign(
     RETURN_INCORRECT: (message: string) => {
       return FAILURE(Failcode.RETURN_INCORRECT, message);
     },
-    CONSTRAINT_FAILED: (name?: string, message?: string) => {
+    CONSTRAINT_FAILED: (self: Reflect, message?: string) => {
+      const info = message ? `: ${message}` : '';
       return FAILURE(
         Failcode.CONSTRAINT_FAILED,
-        `Failed constraint check${name ? ` for ${name}` : ''}${message ? `: ${message}` : ''}`,
+        `Failed constraint check for ${show(self)}${info}`,
       );
     },
     PROPERTY_MISSING: (self: Reflect) => {

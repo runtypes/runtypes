@@ -366,8 +366,8 @@ describe('check errors', () => {
     assertThrows(
       [0, '0'],
       Tuple(Number, String, Boolean),
-      Failcode.VALUE_INCORRECT,
-      'Expected tuple of length 3, but was 2',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for [number, string, boolean]: Expected length 3, but was 2',
     );
   });
 
