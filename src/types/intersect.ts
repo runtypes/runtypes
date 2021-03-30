@@ -26,6 +26,14 @@ export interface Intersect<
   readonly intersectees: TIntersectees;
 }
 
+export function isIntersectRuntype(
+  runtype: RuntypeBase,
+): runtype is Intersect<[RuntypeBase, ...RuntypeBase[]]> {
+  return (
+    'tag' in runtype && (runtype as Intersect<[RuntypeBase, ...RuntypeBase[]]>).tag === 'intersect'
+  );
+}
+
 /**
  * Construct an intersection runtype from runtypes for its alternatives.
  */
@@ -54,7 +62,7 @@ export function Intersect<
           }
         });
       } else if (value && typeof value === 'object') {
-        return createValidationPlaceholder<any>({}, placeholder => {
+        return createValidationPlaceholder<any>(Object.create(null), placeholder => {
           for (const targetType of intersectees) {
             let validated = innerValidate(targetType, value);
             if (!validated.success) {

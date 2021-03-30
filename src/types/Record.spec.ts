@@ -1,7 +1,7 @@
 import * as ta from 'type-assertions';
-import { Record, String, Number, Literal, Union, Object } from '..';
+import { Record, String, Number, Literal, Union, Object as ObjectType } from '..';
 
-const recordType = Object({ value: Literal(42) });
+const recordType = ObjectType({ value: Literal(42) });
 const record = { value: 42 };
 
 test('StringRecord', () => {
@@ -52,6 +52,41 @@ test('NumberRecord', () => {
   expect(dictionary.safeParse({ foo: record, bar: record })).toMatchInlineSnapshot(`
     Object {
       "message": "Expected record key to be a number, but was \\"foo\\"",
+      "success": false,
+    }
+  `);
+});
+
+test('Using Object.create', () => {
+  const dictionary = Record(String, recordType);
+  ta.assert<
+    ta.Equal<ReturnType<typeof dictionary['parse']>, { [key in string]?: { value: 42 } }>
+  >();
+  const record = Object.create(null);
+  record.value = 42;
+  const outer = Object.create(null);
+  outer.foo = record;
+  outer.bar = record;
+  expect(dictionary.safeParse(outer)).toMatchInlineSnapshot(`
+    Object {
+      "success": true,
+      "value": Object {
+        "bar": Object {
+          "value": 42,
+        },
+        "foo": Object {
+          "value": 42,
+        },
+      },
+    }
+  `);
+  const outer2 = Object.create(null);
+  outer2.foo = record;
+  outer2.bar = { value: 24 };
+  expect(dictionary.safeParse(outer2)).toMatchInlineSnapshot(`
+    Object {
+      "key": "bar.value",
+      "message": "Expected literal 42, but was 24",
       "success": false,
     }
   `);

@@ -63,40 +63,43 @@ export function Record<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>
         return expected(runtype, x);
       }
 
-      if (Object.getPrototypeOf(x) !== Object.prototype) {
+      if (Object.getPrototypeOf(x) !== Object.prototype && Object.getPrototypeOf(x) !== null) {
         if (!Array.isArray(x)) {
           return failure(`Expected ${show(runtype)}, but was ${Object.getPrototypeOf(x)}`);
         }
         return failure('Expected Record, but was Array');
       }
 
-      return createValidationPlaceholder<{ [_ in Static<K>]?: Static<V> }>({}, placeholder => {
-        for (const k in x) {
-          let keyValidation: Result<string | number> | null = null;
-          if (expectedBaseType() === 'number') {
-            if (isNaN(+k)) return expected(`record key to be a number`, k);
-            keyValidation = innerValidate(key, +k);
-          } else if (expectedBaseType() === 'string') {
-            keyValidation = innerValidate(key, k);
-          } else {
-            keyValidation = innerValidate(key, k);
-            if (!keyValidation.success && !isNaN(+k)) {
+      return createValidationPlaceholder<{ [_ in Static<K>]?: Static<V> }>(
+        Object.create(null),
+        placeholder => {
+          for (const k in x) {
+            let keyValidation: Result<string | number> | null = null;
+            if (expectedBaseType() === 'number') {
+              if (isNaN(+k)) return expected(`record key to be a number`, k);
               keyValidation = innerValidate(key, +k);
+            } else if (expectedBaseType() === 'string') {
+              keyValidation = innerValidate(key, k);
+            } else {
+              keyValidation = innerValidate(key, k);
+              if (!keyValidation.success && !isNaN(+k)) {
+                keyValidation = innerValidate(key, +k);
+              }
             }
-          }
-          if (!keyValidation.success) {
-            return expected(`record key to be ${show(key)}`, k);
-          }
+            if (!keyValidation.success) {
+              return expected(`record key to be ${show(key)}`, k);
+            }
 
-          const validated = innerValidate(value, (x as any)[k]);
-          if (!validated.success) {
-            return failure(validated.message, {
-              key: validated.key ? `${k}.${validated.key}` : k,
-            });
+            const validated = innerValidate(value, (x as any)[k]);
+            if (!validated.success) {
+              return failure(validated.message, {
+                key: validated.key ? `${k}.${validated.key}` : k,
+              });
+            }
+            (placeholder as any)[keyValidation.value] = validated.value;
           }
-          (placeholder as any)[keyValidation.value] = validated.value;
-        }
-      });
+        },
+      );
     },
     {
       key,

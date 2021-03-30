@@ -18,6 +18,7 @@ export { Intersect } from './types/intersect';
 export { Lazy } from './types/lazy';
 export type { LiteralValue } from './types/literal';
 export { Literal, Null, Undefined } from './types/literal';
+export { Named } from './types/Named';
 export { Never } from './types/never';
 export { Object, Partial } from './types/Object';
 export { Boolean, Function, Number, String, Symbol } from './types/primative';

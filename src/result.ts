@@ -30,11 +30,13 @@ type FullErrorInput = FullError | Failure | string;
 
 export function unableToAssign(
   value: unknown,
-  expected: RuntypeBase,
+  expected: RuntypeBase | string,
   ...children: FullErrorInput[]
 ): FullError {
   return [
-    `Unable to assign ${showValue(value)} to ${show(expected)}`,
+    `Unable to assign ${showValue(value)} to ${
+      typeof expected === 'string' ? expected : show(expected)
+    }`,
     ...children.map(toFullError),
   ];
 }

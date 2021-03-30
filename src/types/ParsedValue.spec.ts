@@ -157,7 +157,7 @@ test('Upgrade Example', () => {
   expect(Shape.safeSerialize({ version: 1, size: 20 } as any)).toMatchInlineSnapshot(`
     Object {
       "fullError": Array [
-        "Unable to assign {version: 1, size: 20} to ParsedValue<{ version: 1; size: number; }> | { version: 2; width: number; height: number; }",
+        "Unable to assign {version: 1, size: 20} to { version: 2; width: number; height: number; }",
         Array [
           "The types of \\"version\\" are not compatible",
           Array [
@@ -180,7 +180,7 @@ test('Upgrade Example', () => {
   `);
   expect(() => Shape.serialize({ version: 1, size: 20 } as any))
     .toThrowErrorMatchingInlineSnapshot(`
-"Unable to assign {version: 1, size: 20} to ParsedValue<{ version: 1; size: number; }> | { version: 2; width: number; height: number; }
+"Unable to assign {version: 1, size: 20} to { version: 2; width: number; height: number; }
   The types of \\"version\\" are not compatible
     Expected 2, but was 1"
 `);

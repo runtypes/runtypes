@@ -79,7 +79,7 @@ export function InternalObject<O extends RecordFields, Part extends boolean, RO 
         return failure(`Expected ${show(runtype)}, but was an Array`);
       }
 
-      return createValidationPlaceholder({} as any, (placeholder: any) => {
+      return createValidationPlaceholder(Object.create(null), (placeholder: any) => {
         let fullError: FullError | undefined = undefined;
         let firstError: Failure | undefined;
         for (const key in fields) {
