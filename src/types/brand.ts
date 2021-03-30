@@ -19,10 +19,6 @@ export interface Brand<B extends string, A extends Runtype>
 }
 
 export function Brand<B extends string, A extends Runtype>(brand: B, entity: A) {
-  const self = ({
-    tag: 'brand',
-    brand,
-    entity,
-  } as unknown) as Reflect;
+  const self = ({ tag: 'brand', brand, entity } as unknown) as Reflect;
   return create<any>(value => entity.validate(value), self);
 }
