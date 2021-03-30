@@ -1,4 +1,6 @@
+import { Reflect } from '../reflect';
 import { Runtype, Static, create, innerValidate } from '../runtype';
+import { SUCCESS } from '../util';
 
 export interface Intersect<A extends readonly [Runtype, ...Runtype[]]>
   extends Runtype<
@@ -20,16 +22,12 @@ export interface Intersect<A extends readonly [Runtype, ...Runtype[]]>
 export function Intersect<A extends readonly [Runtype, ...Runtype[]]>(
   ...intersectees: A
 ): Intersect<A> {
-  return create(
-    (value, visited) => {
-      for (const targetType of intersectees) {
-        let validated = innerValidate(targetType, value, visited);
-        if (!validated.success) {
-          return validated;
-        }
-      }
-      return { success: true, value };
-    },
-    { tag: 'intersect', intersectees },
-  );
+  const self = ({ tag: 'intersect', intersectees } as unknown) as Reflect;
+  return create((value, visited) => {
+    for (const targetType of intersectees) {
+      const result = innerValidate(targetType, value, visited);
+      if (!result.success) return result;
+    }
+    return SUCCESS(value);
+  }, self);
 }

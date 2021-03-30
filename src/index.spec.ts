@@ -32,6 +32,7 @@ import {
 
 import { Constructor } from './types/instanceof';
 import { ValidationError } from './errors';
+import { Details, Failcode } from './result';
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean);
 const record1 = Record({ Boolean, Number });
@@ -355,8 +356,9 @@ describe('check errors', () => {
     assertThrows(
       [false, '0', true],
       Tuple(Number, String, Boolean),
-      'Expected number, but was boolean in [0]',
-      '[0]',
+      Failcode.CONTENT_INCORRECT,
+      'Expected [number, string, boolean], but was incompatible',
+      { 0: 'Expected number, but was boolean' },
     );
   });
 
@@ -364,7 +366,8 @@ describe('check errors', () => {
     assertThrows(
       [0, '0'],
       Tuple(Number, String, Boolean),
-      'Expected an array of length 3, but was 2',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for [number, string, boolean]: Expected length 3, but was 2',
     );
   });
 
@@ -372,8 +375,9 @@ describe('check errors', () => {
     assertThrows(
       [0, { name: 0 }],
       Tuple(Number, Record({ name: String })),
-      'Expected string, but was number in [1].name',
-      '[1].name',
+      Failcode.CONTENT_INCORRECT,
+      'Expected [number, { name: string; }], but was incompatible',
+      { 1: { name: 'Expected string, but was number' } },
     );
   });
 
@@ -382,15 +386,22 @@ describe('check errors', () => {
   });
 
   it('array', () => {
-    assertThrows([0, 2, 'test'], Array(Number), 'Expected number, but was string in [2]', '[2]');
+    assertThrows(
+      [0, 2, 'test'],
+      Array(Number),
+      Failcode.CONTENT_INCORRECT,
+      'Expected number[], but was incompatible',
+      { 2: 'Expected number, but was string' },
+    );
   });
 
   it('array nested', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })),
-      'Expected string, but was boolean in [1].name',
-      '[1].name',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; }[], but was incompatible',
+      { 1: { name: 'Expected string, but was boolean' } },
     );
   });
 
@@ -398,8 +409,9 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })),
-      'Expected { name: string; }, but was null in [1]',
-      '[1]',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; }[], but was incompatible',
+      { 1: 'Expected { name: string; }, but was null' },
     );
   });
 
@@ -407,8 +419,9 @@ describe('check errors', () => {
     assertThrows(
       [0, 2, 'test'],
       Array(Number).asReadonly(),
-      'Expected number, but was string in [2]',
-      '[2]',
+      Failcode.CONTENT_INCORRECT,
+      'Expected readonly number[], but was incompatible',
+      { 2: 'Expected number, but was string' },
     );
   });
 
@@ -416,8 +429,9 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })).asReadonly(),
-      'Expected string, but was boolean in [1].name',
-      '[1].name',
+      Failcode.CONTENT_INCORRECT,
+      'Expected readonly { name: string; }[], but was incompatible',
+      { 1: { name: 'Expected string, but was boolean' } },
     );
   });
 
@@ -425,24 +439,32 @@ describe('check errors', () => {
     assertThrows(
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })).asReadonly(),
-      'Expected { name: string; }, but was null in [1]',
-      '[1]',
+      Failcode.CONTENT_INCORRECT,
+      'Expected readonly { name: string; }[], but was incompatible',
+      { 1: 'Expected { name: string; }, but was null' },
     );
   });
 
   it('dictionary', () => {
-    assertThrows(null, Dictionary(String), 'Expected { [_: string]: string }, but was null');
+    assertThrows(
+      null,
+      Dictionary(String),
+      Failcode.TYPE_INCORRECT,
+      'Expected { [_: string]: string }, but was null',
+    );
   });
 
   it('dictionary invalid type', () => {
     assertThrows(
       undefined,
       Dictionary(Record({ name: String })),
+      Failcode.TYPE_INCORRECT,
       'Expected { [_: string]: { name: string; } }, but was undefined',
     );
     assertThrows(
       1,
       Dictionary(Record({ name: String })),
+      Failcode.TYPE_INCORRECT,
       'Expected { [_: string]: { name: string; } }, but was number',
     );
   });
@@ -451,8 +473,9 @@ describe('check errors', () => {
     assertThrows(
       { foo: { name: false } },
       Dictionary(Record({ name: String })),
-      'Expected string, but was boolean in foo.name',
-      'foo.name',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { [_: string]: { name: string; } }, but was incompatible',
+      { foo: { name: 'Expected string, but was boolean' } },
     );
   });
 
@@ -460,8 +483,9 @@ describe('check errors', () => {
     assertThrows(
       { foo: 'bar', test: true },
       Dictionary(String),
-      'Expected string, but was boolean in test',
-      'test',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { [_: string]: string }, but was incompatible',
+      { test: 'Expected string, but was boolean' },
     );
   });
 
@@ -469,8 +493,9 @@ describe('check errors', () => {
     assertThrows(
       { 1: 'bar', 2: 20 },
       Dictionary(String, 'number'),
-      'Expected string, but was number in 2',
-      '2',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { [_: number]: string }, but was incompatible',
+      { 2: 'Expected string, but was number' },
     );
   });
 
@@ -481,8 +506,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was string in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; age: number; }, but was incompatible',
+      { age: 'Expected number, but was string' },
     );
   });
 
@@ -493,8 +519,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected "age" property to be present, but was missing in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; age: number; }, but was incompatible',
+      { age: 'Expected number, but was missing' },
     );
   });
 
@@ -506,8 +533,9 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was boolean in likes.[0].title',
-      'likes.[0].title',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name: string; age: number; likes: { title: string; }[]; }, but was incompatible',
+      { likes: { 0: { title: 'Expected string, but was boolean' } } },
     );
   });
 
@@ -518,8 +546,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected number, but was string in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { readonly name: string; readonly age: number; }, but was incompatible',
+      { age: 'Expected number, but was string' },
     );
   });
 
@@ -530,8 +559,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }).asReadonly(),
-      'Expected "age" property to be present, but was missing in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { readonly name: string; readonly age: number; }, but was incompatible',
+      { age: 'Expected number, but was missing' },
     );
   });
 
@@ -543,8 +573,9 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String }).asReadonly()),
       }).asReadonly(),
-      'Expected string, but was boolean in likes.[0].title',
-      'likes.[0].title',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { readonly name: string; readonly age: number; readonly likes: { readonly title: string; }[]; }, but was incompatible',
+      { likes: { 0: { title: 'Expected string, but was boolean' } } },
     );
   });
 
@@ -555,8 +586,9 @@ describe('check errors', () => {
         name: String,
         age: Number,
       }),
-      'Expected number, but was null in age',
-      'age',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name?: string; age?: number; }, but was incompatible',
+      { age: 'Expected number, but was null' },
     );
   });
 
@@ -568,8 +600,9 @@ describe('check errors', () => {
         age: Number,
         likes: Array(Record({ title: String })),
       }),
-      'Expected string, but was number in likes.[0].title',
-      'likes.[0].title',
+      Failcode.CONTENT_INCORRECT,
+      'Expected { name?: string; age?: number; likes?: { title: string; }[]; }, but was incompatible',
+      { likes: { 0: { title: 'Expected string, but was number' } } },
     );
   });
 
@@ -579,7 +612,8 @@ describe('check errors', () => {
       Unknown.withConstraint<SomeClass>((o: any) => o.n > 3, {
         name: 'SomeClass',
       }),
-      'Failed SomeClass check',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for SomeClass',
     );
   });
 
@@ -589,12 +623,18 @@ describe('check errors', () => {
       Unknown.withConstraint<SomeClass>((o: any) => (o.n > 3 ? true : 'n must be 3+'), {
         name: 'SomeClass',
       }),
-      'n must be 3+',
+      Failcode.CONSTRAINT_FAILED,
+      'Failed constraint check for SomeClass: n must be 3+',
     );
   });
 
   it('union', () => {
-    assertThrows(false, Union(Number, String), 'Expected number | string, but was boolean');
+    assertThrows(
+      false,
+      Union(Number, String),
+      Failcode.TYPE_INCORRECT,
+      'Expected number | string, but was boolean',
+    );
   });
 });
 
@@ -638,18 +678,21 @@ describe('reflection', () => {
     assertThrows(
       Symbol.for('runtypes!'),
       Sym('runtypes?'),
-      'Expected symbol key to be "runtypes?", but was "runtypes!"',
+      Failcode.VALUE_INCORRECT,
+      'Expected symbol key "runtypes?", but was "runtypes!"',
     );
     assertAccepts(Symbol(), Sym(undefined));
     assertThrows(
       Symbol.for('undefined'),
       Sym(undefined),
-      'Expected symbol key to be undefined, but was "undefined"',
+      Failcode.VALUE_INCORRECT,
+      'Expected symbol key undefined, but was "undefined"',
     );
     assertThrows(
       Symbol(),
       Sym('undefined'),
-      'Expected symbol key to be "undefined", but was undefined',
+      Failcode.VALUE_INCORRECT,
+      'Expected symbol key "undefined", but was undefined',
     );
   });
 
@@ -892,15 +935,25 @@ function assertRejects<A>(value: unknown, runtype: Runtype<A>) {
   if (result.success === true) fail('value passed validation even though it was not expected to');
 }
 
-function assertThrows<A>(value: unknown, runtype: Runtype<A>, error: string, key?: string) {
+function assertThrows<A>(
+  value: unknown,
+  runtype: Runtype<A>,
+  failcode: Failcode,
+  errorMessage: string,
+  errorDetails?: Details,
+) {
   try {
     runtype.check(value);
     fail('value passed validation even though it was not expected to');
   } catch (exception) {
-    const { message: errorMessage, key: errorKey } = exception;
-
     expect(exception).toBeInstanceOf(ValidationError);
-    expect(errorMessage).toBe(error);
-    expect(errorKey).toBe(key);
+    const validationError = exception as ValidationError;
+    const { code, message, details } = validationError;
+    expect(code).toBe(failcode);
+    expect(message).toBe(errorMessage);
+    if (details !== undefined) {
+      if (errorDetails !== undefined) expect(details).toMatchObject(errorDetails);
+      else expect(details).toBe(errorMessage);
+    }
   }
 }

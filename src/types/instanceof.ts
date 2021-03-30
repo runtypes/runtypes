@@ -1,5 +1,6 @@
+import { Reflect } from '../reflect';
 import { Runtype, create } from '../runtype';
-import { typeOf } from '../util';
+import { FAILURE, SUCCESS } from '../util';
 
 export interface Constructor<V> {
   new (...args: any[]): V;
@@ -11,14 +12,9 @@ export interface InstanceOf<V> extends Runtype<V> {
 }
 
 export function InstanceOf<V>(ctor: Constructor<V>) {
+  const self = ({ tag: 'instanceof', ctor } as unknown) as Reflect;
   return create<InstanceOf<V>>(
-    value =>
-      value instanceof ctor
-        ? { success: true, value }
-        : {
-            success: false,
-            message: `Expected ${(ctor as any).name}, but was ${typeOf(value)}`,
-          },
-    { tag: 'instanceof', ctor: ctor },
+    value => (value instanceof ctor ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value)),
+    self,
   );
 }

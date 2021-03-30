@@ -10,7 +10,8 @@
     "sourceMap": false,
     "outDir": "lib",
     "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "downlevelIteration": true
   },
   "exclude": ["./lib/**/*", "./examples/**/*", "./src/**/*.spec.ts"]
 }

@@ -1,7 +1,6 @@
 import { Runtype, RuntypeBase as Rt, Static, create, innerValidate } from '../runtype';
-import show from '../show';
 import { LiteralBase } from './literal';
-import { hasKey, typeOf } from '../util';
+import { FAILURE, hasKey, SUCCESS } from '../util';
 
 export interface Union<A extends readonly [Rt, ...Rt[]]>
   extends Runtype<
@@ -62,16 +61,10 @@ export function Union<T extends readonly [Rt, ...Rt[]]>(...alternatives: T): Uni
       }
     }
 
-    for (const targetType of alternatives) {
-      if (innerValidate(targetType, value, visited).success) {
-        return { success: true, value };
-      }
-    }
+    for (const targetType of alternatives)
+      if (innerValidate(targetType, value, visited).success) return SUCCESS(value);
 
-    return {
-      success: false,
-      message: `Expected ${show(self)}, but was ${typeOf(value)}`,
-    };
+    return FAILURE.TYPE_INCORRECT(self, value);
   }, self);
 }
 

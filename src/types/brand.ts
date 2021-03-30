@@ -1,3 +1,4 @@
+import { Reflect } from '../reflect';
 import { Runtype, Static, create } from '../runtype';
 
 export declare const RuntypeName: unique symbol;
@@ -18,9 +19,6 @@ export interface Brand<B extends string, A extends Runtype>
 }
 
 export function Brand<B extends string, A extends Runtype>(brand: B, entity: A) {
-  return create<any>(value => entity.validate(value), {
-    tag: 'brand',
-    brand,
-    entity,
-  });
+  const self = ({ tag: 'brand', brand, entity } as unknown) as Reflect;
+  return create<any>(value => entity.validate(value), self);
 }

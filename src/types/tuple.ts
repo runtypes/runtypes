@@ -1,6 +1,7 @@
+import { Reflect } from '../reflect';
+import { Details, Result } from '../result';
 import { Runtype, Static, create, innerValidate } from '../runtype';
-import { Array as Arr } from './array';
-import { Unknown } from './unknown';
+import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
 
 export interface Tuple<A extends readonly Runtype[]>
   extends Runtype<
@@ -16,39 +17,30 @@ export interface Tuple<A extends readonly Runtype[]>
  * Construct a tuple runtype from runtypes for each of its elements.
  */
 export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> {
-  return create(
-    (x, visited) => {
-      const validated = innerValidate(Arr(Unknown), x, visited);
+  const self = ({ tag: 'tuple', components } as unknown) as Reflect;
+  return create<any>((xs, visited) => {
+    if (!Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs);
 
-      if (!validated.success) {
-        return {
-          success: false,
-          message: `Expected tuple to be an array: ${validated.message}`,
-          key: validated.key,
-        };
-      }
+    if (xs.length !== components.length)
+      return FAILURE.CONSTRAINT_FAILED(
+        self,
+        `Expected length ${components.length}, but was ${xs.length}`,
+      );
 
-      if (validated.value.length !== components.length) {
-        return {
-          success: false,
-          message: `Expected an array of length ${components.length}, but was ${validated.value.length}`,
-        };
-      }
+    const keys = enumerableKeysOf(xs);
+    const results: Result<unknown>[] = keys.map(key =>
+      innerValidate(components[key as any], xs[key as any], visited),
+    );
+    const details = keys.reduce<{ [key: number]: string | Details } & (string | Details)[]>(
+      (details, key) => {
+        const result = results[key as any];
+        if (!result.success) details[key as any] = result.details || result.message;
+        return details;
+      },
+      [],
+    );
 
-      for (let i = 0; i < components.length; i++) {
-        let validatedComponent = innerValidate(components[i], validated.value[i], visited);
-
-        if (!validatedComponent.success) {
-          return {
-            success: false,
-            message: validatedComponent.message,
-            key: validatedComponent.key ? `[${i}].${validatedComponent.key}` : `[${i}]`,
-          };
-        }
-      }
-
-      return { success: true, value: x };
-    },
-    { tag: 'tuple', components },
-  );
+    if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
+    else return SUCCESS(xs);
+  }, self);
 }

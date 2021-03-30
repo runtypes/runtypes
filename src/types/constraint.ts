@@ -1,5 +1,6 @@
+import { Reflect } from '../reflect';
 import { Runtype, Static, create } from '../runtype';
-import { String } from './string';
+import { FAILURE, SUCCESS } from '../util';
 import { Unknown } from './unknown';
 
 export type ConstraintCheck<A extends Runtype> = (x: Static<A>) => boolean | string;
@@ -20,28 +21,25 @@ export function Constraint<A extends Runtype, T extends Static<A> = Static<A>, K
   constraint: ConstraintCheck<A>,
   options?: { name?: string; args?: K },
 ): Constraint<A, T, K> {
-  return create<Constraint<A, T, K>>(
-    value => {
-      const name = options && options.name;
-      const validated = underlying.validate(value);
+  const name = options && options.name;
+  const args = options && options.args;
+  const self = ({
+    tag: 'constraint',
+    underlying,
+    constraint,
+    name,
+    args,
+  } as unknown) as Reflect;
+  return create<Constraint<A, T, K>>(value => {
+    const result = underlying.validate(value);
 
-      if (!validated.success) {
-        return validated;
-      }
+    if (!result.success) return result;
 
-      const result = constraint(validated.value);
-      if (String.guard(result)) return { success: false, message: result };
-      else if (!result) return { success: false, message: `Failed ${name || 'constraint'} check` };
-      return { success: true, value: validated.value as T };
-    },
-    {
-      tag: 'constraint',
-      underlying,
-      constraint,
-      name: options && options.name,
-      args: options && options.args,
-    },
-  );
+    const message = constraint(result.value);
+    if (typeof message === 'string') return FAILURE.CONSTRAINT_FAILED(self, message);
+    else if (!message) return FAILURE.CONSTRAINT_FAILED(self);
+    return SUCCESS(result.value as T);
+  }, self);
 }
 
 export const Guard = <T, K = unknown>(
