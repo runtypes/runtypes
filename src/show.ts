@@ -67,6 +67,7 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
   } finally {
     circular.delete(refl);
   }
+  /* istanbul ignore next */
   throw Error('impossible');
 };
 

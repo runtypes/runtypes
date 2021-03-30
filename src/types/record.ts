@@ -111,7 +111,10 @@ export function InternalRecord<
             // TODO: exact record validation
             const value = x[key as any];
             results[key as any] = SUCCESS(value);
-          } else throw 'impossible';
+          } else {
+            /* istanbul ignore next */
+            throw new Error('impossible');
+          }
           return results;
         },
         {},
