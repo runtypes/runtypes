@@ -1,6 +1,7 @@
 import { Runtype, RuntypeBase as Rt, Static, create, innerValidate } from '../runtype';
 import { LiteralBase } from './literal';
 import { FAILURE, hasKey, SUCCESS } from '../util';
+import { Reflect } from '../reflect';
 
 export interface Union<A extends readonly [Rt, ...Rt[]]>
   extends Runtype<
@@ -24,8 +25,14 @@ export function Union<T extends readonly [Rt, ...Rt[]]>(...alternatives: T): Uni
       }
     }
   };
-  const self = { tag: 'union', alternatives, match } as any;
+  const self = ({ tag: 'union', alternatives, match } as unknown) as Reflect;
   return create<any>((value, visited) => {
+    if (typeof value !== 'object' || value === null) {
+      for (const alternative of alternatives)
+        if (innerValidate(alternative, value, visited).success) return SUCCESS(value);
+      return FAILURE.TYPE_INCORRECT(self, value);
+    }
+
     const commonLiteralFields: { [key: string]: LiteralBase[] } = {};
     for (const alternative of alternatives) {
       if (alternative.reflect.tag === 'record') {
