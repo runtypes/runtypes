@@ -73,7 +73,7 @@ describe('union', () => {
       expect(Shape.validate({ kind: 'other', size: new Date() })).not.toHaveProperty('key');
     });
 
-    it('hould not pick alternative if the discriminant is not unique', () => {
+    it('should not pick alternative if the discriminant is not unique', () => {
       const Square = Record({ kind: Literal('square'), size: Number });
       const Rectangle = Record({ kind: Literal('rectangle'), width: Number, height: Number });
       const CircularSquare = Record({ kind: Literal('square'), radius: Number });
