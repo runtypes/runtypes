@@ -51,8 +51,8 @@ const cases: [Reflect, string][] = [
   [Record({}), '{}'],
   [Record({}).asReadonly(), '{}'],
   [Partial({}), '{}'],
-  [InstanceOf(TestClass), 'InstanceOf<TestClass>'],
-  [Array(InstanceOf(TestClass)), 'InstanceOf<TestClass>[]'],
+  [InstanceOf(TestClass), 'TestClass'],
+  [Array(InstanceOf(TestClass)), 'TestClass[]'],
   [Record({ x: String, y: Array(Boolean) }), '{ x: string; y: boolean[]; }'],
   [Record({ x: String, y: Array(Boolean) }), '{ x: string; y: boolean[]; }'],
   [
