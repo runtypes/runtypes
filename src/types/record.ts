@@ -3,18 +3,12 @@ import { enumerableKeysOf, FAILURE, hasKey, SUCCESS } from '../util';
 import { Optional } from './optional';
 import { Details, Result } from '../result';
 
-type FilterOptionalKeys<T> = Exclude<
-  {
-    [K in keyof T]: T[K] extends Optional<any> ? K : never;
-  }[keyof T],
-  undefined
->;
-type FilterRequiredKeys<T> = Exclude<
-  {
-    [K in keyof T]: T[K] extends Optional<any> ? never : K;
-  }[keyof T],
-  undefined
->;
+type FilterOptionalKeys<T> = {
+  [K in keyof T]: T[K] extends Optional<any> ? K : never;
+}[keyof T];
+type FilterRequiredKeys<T> = {
+  [K in keyof T]: T[K] extends Optional<any> ? never : K;
+}[keyof T];
 
 type MergedRecord<O extends { [_: string]: Runtype }> = {
   [K in FilterRequiredKeys<O>]: Static<O[K]>;
