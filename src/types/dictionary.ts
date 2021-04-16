@@ -1,4 +1,4 @@
-import { Runtype, create, Static, innerValidate } from '../runtype';
+import { Runtype, RuntypeBase, create, Static, innerValidate } from '../runtype';
 import { String } from './string';
 import { Constraint } from './constraint';
 import show from '../show';
@@ -13,24 +13,26 @@ type StringLiteralFor<K extends DictionaryKeyType> = K extends string
   : K extends symbol
   ? 'symbol'
   : never;
-type DictionaryKeyRuntype = Runtype<string | number | symbol>;
+type DictionaryKeyRuntype = RuntypeBase<string | number | symbol>;
 
 const NumberKey = Constraint(String, s => !isNaN(+s), { name: 'number' });
 
-export interface Dictionary<V extends Runtype, K extends DictionaryKeyType>
+export interface Dictionary<V extends RuntypeBase, K extends DictionaryKeyType>
   extends Runtype<{ [_ in K]: Static<V> }> {
   tag: 'dictionary';
   key: StringLiteralFor<K>;
   value: V;
 }
 
-export interface StringDictionary<V extends Runtype> extends Runtype<{ [_: string]: Static<V> }> {
+export interface StringDictionary<V extends RuntypeBase>
+  extends Runtype<{ [_: string]: Static<V> }> {
   tag: 'dictionary';
   key: 'string';
   value: V;
 }
 
-export interface NumberDictionary<V extends Runtype> extends Runtype<{ [_: number]: Static<V> }> {
+export interface NumberDictionary<V extends RuntypeBase>
+  extends Runtype<{ [_: number]: Static<V> }> {
   tag: 'dictionary';
   key: 'number';
   value: V;
@@ -41,7 +43,7 @@ export interface NumberDictionary<V extends Runtype> extends Runtype<{ [_: numbe
  * @param value - A `Runtype` for value.
  * @param [key] - A `Runtype` for key.
  */
-export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype>(
+export function Dictionary<V extends RuntypeBase, K extends DictionaryKeyRuntype>(
   value: V,
   key?: K,
 ): Dictionary<V, Static<K>>;
@@ -52,7 +54,7 @@ export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype>(
  * @param value - A `Runtype` for value.
  * @param [key] - A string representing a type for key.
  */
-export function Dictionary<V extends Runtype>(value: V, key: 'string'): StringDictionary<V>;
+export function Dictionary<V extends RuntypeBase>(value: V, key: 'string'): StringDictionary<V>;
 
 /**
  * Construct a runtype for arbitrary dictionaries.
@@ -60,9 +62,12 @@ export function Dictionary<V extends Runtype>(value: V, key: 'string'): StringDi
  * @param value - A `Runtype` for value.
  * @param [key] - A string representing a type for key.
  */
-export function Dictionary<V extends Runtype>(value: V, key: 'number'): NumberDictionary<V>;
+export function Dictionary<V extends RuntypeBase>(value: V, key: 'number'): NumberDictionary<V>;
 
-export function Dictionary<V extends Runtype, K extends DictionaryKeyRuntype | 'string' | 'number'>(
+export function Dictionary<
+  V extends RuntypeBase,
+  K extends DictionaryKeyRuntype | 'string' | 'number'
+>(
   value: V,
   key?: K,
 ): K extends DictionaryKeyRuntype

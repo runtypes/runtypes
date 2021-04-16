@@ -1,12 +1,12 @@
-import { Runtype, RuntypeBase as Rt, Static, create, innerValidate } from '../runtype';
+import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
 import { LiteralBase } from './literal';
 import { FAILURE, hasKey, SUCCESS } from '../util';
 import { Reflect } from '../reflect';
 
-export interface Union<A extends readonly [Rt, ...Rt[]]>
+export interface Union<A extends readonly [RuntypeBase, ...RuntypeBase[]]>
   extends Runtype<
     {
-      [key in keyof A]: A[key] extends Rt ? Static<A[key]> : unknown;
+      [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown;
     }[number]
   > {
   tag: 'union';
@@ -17,7 +17,9 @@ export interface Union<A extends readonly [Rt, ...Rt[]]>
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-export function Union<T extends readonly [Rt, ...Rt[]]>(...alternatives: T): Union<T> {
+export function Union<T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
+  ...alternatives: T
+): Union<T> {
   const match = (...cases: any[]) => (x: any) => {
     for (let i = 0; i < alternatives.length; i++) {
       if (alternatives[i].guard(x)) {
@@ -33,7 +35,7 @@ export function Union<T extends readonly [Rt, ...Rt[]]>(...alternatives: T): Uni
       return FAILURE.TYPE_INCORRECT(self, value);
     }
 
-    const commonLiteralFields: { [key: string]: LiteralBase[] } = {};
+    const commonLiteralFields: { [K: string]: LiteralBase[] } = {};
     for (const alternative of alternatives) {
       if (alternative.reflect.tag === 'record') {
         for (const fieldName in alternative.reflect.fields) {
@@ -75,14 +77,14 @@ export function Union<T extends readonly [Rt, ...Rt[]]>(...alternatives: T): Uni
   }, self);
 }
 
-export interface Match<A extends readonly [Rt, ...Rt[]]> {
-  <Z>(...a: { [key in keyof A]: A[key] extends Rt ? Case<A[key], Z> : never }): Matcher<A, Z>;
+export interface Match<A extends readonly [RuntypeBase, ...RuntypeBase[]]> {
+  <Z>(...a: { [K in keyof A]: A[K] extends RuntypeBase ? Case<A[K], Z> : never }): Matcher<A, Z>;
 }
 
-export type Case<T extends Rt, Result> = (v: Static<T>) => Result;
+export type Case<T extends RuntypeBase, Result> = (v: Static<T>) => Result;
 
-export type Matcher<A extends readonly [Rt, ...Rt[]], Z> = (
+export type Matcher<A extends readonly [RuntypeBase, ...RuntypeBase[]], Z> = (
   x: {
-    [key in keyof A]: A[key] extends Rt<infer Type> ? Type : unknown;
+    [K in keyof A]: A[K] extends RuntypeBase<infer Type> ? Type : unknown;
   }[number],
 ) => Z;

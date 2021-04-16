@@ -1,12 +1,12 @@
 import { Reflect } from '../reflect';
 import { Details, Result } from '../result';
-import { Runtype, Static, create, innerValidate } from '../runtype';
+import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
 import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
 
-export interface Tuple<A extends readonly Runtype[]>
+export interface Tuple<A extends readonly RuntypeBase[]>
   extends Runtype<
     {
-      [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
+      [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown;
     }
   > {
   tag: 'tuple';
@@ -16,7 +16,7 @@ export interface Tuple<A extends readonly Runtype[]>
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
-export function Tuple<T extends readonly Runtype[]>(...components: T): Tuple<T> {
+export function Tuple<T extends readonly RuntypeBase[]>(...components: T): Tuple<T> {
   const self = ({ tag: 'tuple', components } as unknown) as Reflect;
   return create<any>((xs, visited) => {
     if (!Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs);

@@ -1,4 +1,4 @@
-import { Runtype, Static, create, innerValidate } from '../runtype';
+import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
 import { enumerableKeysOf, FAILURE, hasKey, SUCCESS } from '../util';
 import { Optional } from './optional';
 import { Details, Result } from '../result';
@@ -10,7 +10,7 @@ type FilterRequiredKeys<T> = {
   [K in keyof T]: T[K] extends Optional<any> ? never : K;
 }[keyof T];
 
-type MergedRecord<O extends { [_: string]: Runtype }> = {
+type MergedRecord<O extends { [_: string]: RuntypeBase }> = {
   [K in FilterRequiredKeys<O>]: Static<O[K]>;
 } &
   {
@@ -19,7 +19,7 @@ type MergedRecord<O extends { [_: string]: Runtype }> = {
   ? { [K in keyof P]: P[K] }
   : never;
 
-type MergedRecordReadonly<O extends { [_: string]: Runtype }> = {
+type MergedRecordReadonly<O extends { [_: string]: RuntypeBase }> = {
   [K in FilterRequiredKeys<O>]: Static<O[K]>;
 } &
   {
@@ -29,7 +29,7 @@ type MergedRecordReadonly<O extends { [_: string]: Runtype }> = {
   : never;
 
 type RecordStaticType<
-  O extends { [_: string]: Runtype },
+  O extends { [_: string]: RuntypeBase },
   Part extends boolean,
   RO extends boolean
 > = Part extends true
@@ -41,7 +41,7 @@ type RecordStaticType<
   : MergedRecord<O>;
 
 export interface InternalRecord<
-  O extends { [_: string]: Runtype },
+  O extends { [_: string]: RuntypeBase },
   Part extends boolean,
   RO extends boolean
 > extends Runtype<RecordStaticType<O, Part, RO>> {
@@ -54,13 +54,13 @@ export interface InternalRecord<
   asReadonly(): InternalRecord<O, Part, true>;
 }
 
-export type Record<O extends { [_: string]: Runtype }, RO extends boolean> = InternalRecord<
+export type Record<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalRecord<
   O,
   false,
   RO
 >;
 
-export type Partial<O extends { [_: string]: Runtype }, RO extends boolean> = InternalRecord<
+export type Partial<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalRecord<
   O,
   true,
   RO
@@ -70,7 +70,7 @@ export type Partial<O extends { [_: string]: Runtype }, RO extends boolean> = In
  * Construct a record runtype from runtypes for its values.
  */
 export function InternalRecord<
-  O extends { [_: string]: Runtype },
+  O extends { [_: string]: RuntypeBase },
   Part extends boolean,
   RO extends boolean
 >(fields: O, isPartial: Part, isReadonly: RO): InternalRecord<O, Part, RO> {
@@ -129,16 +129,16 @@ export function InternalRecord<
   );
 }
 
-export function Record<O extends { [_: string]: Runtype }>(fields: O): Record<O, false> {
+export function Record<O extends { [_: string]: RuntypeBase }>(fields: O): Record<O, false> {
   return InternalRecord(fields, false, false);
 }
 
-export function Partial<O extends { [_: string]: Runtype }>(fields: O): Partial<O, false> {
+export function Partial<O extends { [_: string]: RuntypeBase }>(fields: O): Partial<O, false> {
   return InternalRecord(fields, true, false);
 }
 
 function withExtraModifierFuncs<
-  O extends { [_: string]: Runtype },
+  O extends { [_: string]: RuntypeBase },
   Part extends boolean,
   RO extends boolean
 >(A: any): InternalRecord<O, Part, RO> {
