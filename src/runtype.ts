@@ -1,4 +1,13 @@
-import { Result, Union, Intersect, Optional, Constraint, ConstraintCheck, Brand } from './index';
+import {
+  Result,
+  Union,
+  Intersect,
+  Optional,
+  Constraint,
+  ConstraintCheck,
+  Brand,
+  Null,
+} from './index';
 import { Reflect } from './reflect';
 import show from './show';
 import { ValidationError } from './errors';
@@ -57,6 +66,11 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
    * Optionalize this Runtype.
    */
   optional(): Optional<this>;
+
+  /**
+   * Union this Runtype with `Null`.
+   */
+  nullable(): Union<[this, typeof Null]>;
 
   /**
    * Use an arbitrary constraint function to validate a runtype, and optionally
@@ -122,6 +136,7 @@ export function create<A extends RuntypeBase>(
   A.Or = Or;
   A.And = And;
   A.optional = optional;
+  A.nullable = nullable;
   A.withConstraint = withConstraint;
   A.withGuard = withGuard;
   A.withBrand = withBrand;
@@ -150,6 +165,10 @@ export function create<A extends RuntypeBase>(
 
   function optional(): Optional<A> {
     return Optional(A);
+  }
+
+  function nullable(): Union<[A, typeof Null]> {
+    return Union(A, Null);
   }
 
   function withConstraint<T extends Static<A>, K = unknown>(
