@@ -6,7 +6,7 @@ import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
 export interface Tuple<A extends readonly RuntypeBase[]>
   extends Runtype<
     {
-      [key in keyof A]: A[key] extends RuntypeBase ? Static<A[key]> : unknown;
+      [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown;
     }
   > {
   tag: 'tuple';
