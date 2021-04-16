@@ -1,18 +1,17 @@
-import { Runtype } from './index';
 import { ValidationError } from './errors';
-import { Static } from './runtype';
+import { RuntypeBase, Static } from './runtype';
 import { FAILURE } from './util';
 
-export interface AsyncContract<A extends readonly Runtype[], R extends Runtype> {
+export interface AsyncContract<A extends readonly RuntypeBase[], R extends RuntypeBase> {
   enforce(
     f: (
       ...args: {
-        [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
+        [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown;
       }
     ) => Promise<Static<R>>,
   ): (
     ...args: {
-      [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
+      [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown;
     }
   ) => Promise<Static<R>>;
 }
@@ -20,11 +19,11 @@ export interface AsyncContract<A extends readonly Runtype[], R extends Runtype> 
 /**
  * Create a function contract.
  */
-export function AsyncContract<A extends readonly Runtype[], R extends Runtype>(
+export function AsyncContract<A extends readonly RuntypeBase[], R extends RuntypeBase>(
   ...runtypes: [...A, R]
 ): AsyncContract<A, R>;
 
-export function AsyncContract<A extends readonly Runtype[], R extends Runtype>(
+export function AsyncContract<A extends readonly RuntypeBase[], R extends RuntypeBase>(
   ...runtypes: [...A, R]
 ): AsyncContract<A, R> {
   const lastIndex = runtypes.length - 1;
@@ -34,12 +33,12 @@ export function AsyncContract<A extends readonly Runtype[], R extends Runtype>(
     enforce: (
       f: (
         ...args: {
-          [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
+          [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown;
         }
       ) => Promise<Static<R>>,
     ) => (
       ...args: {
-        [key in keyof A]: A[key] extends Runtype ? Static<A[key]> : unknown;
+        [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown;
       }
     ): Promise<Static<R>> => {
       if (args.length < argRuntypes.length) {

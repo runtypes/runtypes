@@ -46,12 +46,12 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
   /**
    * Union this Runtype with another.
    */
-  Or<B extends Runtype>(B: B): Union<[this, B]>;
+  Or<B extends RuntypeBase>(B: B): Union<[this, B]>;
 
   /**
    * Intersect this Runtype with another.
    */
-  And<B extends Runtype>(B: B): Intersect<[this, B]>;
+  And<B extends RuntypeBase>(B: B): Intersect<[this, B]>;
 
   /**
    * Optionalize this Runtype.
@@ -107,7 +107,7 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
  */
 export type Static<A extends RuntypeBase> = A['_falseWitness'];
 
-export function create<A extends Runtype>(
+export function create<A extends RuntypeBase>(
   validate: (x: any, visited: VisitedState) => Result<Static<A>>,
   A: any,
 ): A {
@@ -180,21 +180,23 @@ export function innerValidate<A extends RuntypeBase>(
 }
 
 type VisitedState = {
-  has: (candidate: object, type: Runtype) => boolean;
+  has: (candidate: object, type: RuntypeBase) => boolean;
 };
 function VisitedState(): VisitedState {
-  const members: WeakMap<object, WeakMap<Runtype, true>> = new WeakMap();
+  const members: WeakMap<object, WeakMap<RuntypeBase, true>> = new WeakMap();
 
-  const add = (candidate: object, type: Runtype) => {
+  const add = (candidate: object, type: RuntypeBase) => {
     if (candidate === null || !(typeof candidate === 'object')) return;
     const typeSet = members.get(candidate);
     members.set(
       candidate,
-      typeSet ? typeSet.set(type, true) : (new WeakMap() as WeakMap<Runtype, true>).set(type, true),
+      typeSet
+        ? typeSet.set(type, true)
+        : (new WeakMap() as WeakMap<RuntypeBase, true>).set(type, true),
     );
   };
 
-  const has = (candidate: object, type: Runtype) => {
+  const has = (candidate: object, type: RuntypeBase) => {
     const typeSet = members.get(candidate);
     const value = (typeSet && typeSet.get(type)) || false;
     add(candidate, type);

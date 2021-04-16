@@ -30,6 +30,7 @@ import {
   Guard,
 } from './index';
 
+import { RuntypeBase } from './runtype';
 import { Constructor } from './types/instanceof';
 import { ValidationError } from './errors';
 import { Details, Failcode } from './result';
@@ -925,19 +926,19 @@ function expectLiteralField<O, K extends keyof O, V extends O[K]>(o: O, k: K, v:
   expect(o[k]).toBe(v);
 }
 
-function assertAccepts<A>(value: unknown, runtype: Runtype<A>) {
+function assertAccepts(value: unknown, runtype: RuntypeBase<unknown>) {
   const result = runtype.validate(value);
   if (result.success === false) fail(result.message);
 }
 
-function assertRejects<A>(value: unknown, runtype: Runtype<A>) {
+function assertRejects(value: unknown, runtype: RuntypeBase<unknown>) {
   const result = runtype.validate(value);
   if (result.success === true) fail('value passed validation even though it was not expected to');
 }
 
 function assertThrows<A>(
   value: unknown,
-  runtype: Runtype<A>,
+  runtype: RuntypeBase<A>,
   failcode: Failcode,
   errorMessage: string,
   errorDetails?: Details,

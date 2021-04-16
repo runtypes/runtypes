@@ -1,4 +1,5 @@
-import { Runtype as Rt, Case, Matcher } from '.';
+import { RuntypeBase } from './runtype';
+import { Case, Matcher } from './types/union';
 
 export function match<A extends [PairCase<any, any>, ...PairCase<any, any>[]]>(
   ...cases: A
@@ -16,4 +17,4 @@ export function match<A extends [PairCase<any, any>, ...PairCase<any, any>[]]>(
   };
 }
 
-export type PairCase<A extends Rt, Z> = [A, Case<A, Z>];
+export type PairCase<A extends RuntypeBase, Z> = [A, Case<A, Z>];
