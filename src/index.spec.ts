@@ -109,6 +109,7 @@ const runtypes = {
   Never,
   Undefined,
   Null,
+  nullable: Literal(true).nullable(),
   Empty: Record({}),
   Void,
   Boolean,
@@ -194,8 +195,8 @@ class Foo {
 
 const testValues: { value: unknown; passes: RuntypeName[] }[] = [
   { value: undefined, passes: ['Undefined', 'Void', 'OptionalBoolean'] },
-  { value: null, passes: ['Null', 'Void'] },
-  { value: true, passes: ['Boolean', 'true', 'OptionalBoolean'] },
+  { value: null, passes: ['Null', 'Void', 'nullable'] },
+  { value: true, passes: ['Boolean', 'true', 'OptionalBoolean', 'nullable'] },
   { value: false, passes: ['Boolean', 'false', 'OptionalBoolean'] },
   { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1', 'Union'] },
   {
