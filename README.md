@@ -352,13 +352,13 @@ Runtypes can be used to represent a variable that may be undefined.
 // For variables that might be `string | undefined`
 Union(String, Undefined);
 String.Or(Undefined); // shorthand syntax for the above
-Optional(String); // identical as the above two basically
+Optional(String); // equivalent to the above two basically
 String.optional(); // shorthand syntax for the above
 ```
 
 The last syntax is not any shorter than writing `Optional(String)` when you import `Optional` directly from `runtypes`, but if you use scoped import i.e. `import * as rt from 'runtypes'`, it would look better to write `rt.String.optional()` rather than `rt.Optional(rt.String)`.
 
-If a `Record` may or may not have some properties, we can declare the optional properties using `Record({ x: Optional(String) })` (or formerly `Partial({ x: String })`). Optional properties validate successfully if they are absent or undefined or the type specified.
+If a `Record` may or may not have some properties, we can declare the optional properties using `Record({ x: Optional(String) })` (or formerly `Partial({ x: String })`). Optional properties validate successfully if they are absent or `undefined` or the type specified.
 
 ```ts
 // Using `Ship` from above
@@ -379,7 +379,9 @@ const RegisteredShip = Ship.And(
 
 There's a difference between `Union(String, Undefined)` and `Optional(String)` iff they are used within a `Record`; the former means "_**it must be present**, and must be `string` or `undefined`_", while the latter means "_**it can be present or missing**, but must be `string` or `undefined` if present_".
 
-Note that `null` is a quite different thing than `undefined` in JS and TS. If your `Record` has properties which can be null, then use the `Null` runtype explicitly.
+**_Prior to v5.2, `Union(..., Undefined)` in a `Record` was passing even if the property was missing. Although some users considered this behavior was a [bug](https://github.com/pelotom/runtypes/issues/182) especially for the sake of mirroring TS behavior, it was a long-standing thing, and some other users have been surprised with this fix. So the v5.2 release has been marked [deprecated on npm](https://www.npmjs.com/package/runtypes/v/5.2.0), due to the breaking change._**
+
+Note that `null` is a quite different thing than `undefined` in JS and TS, so `Optional` doesn't take care of it. If your `Record` has properties which can be `null`, then use the `Null` runtype explicitly.
 
 ```ts
 const MilitaryShip = Ship.And(
@@ -390,6 +392,14 @@ const MilitaryShip = Ship.And(
     lastDeployedTimestamp: Number.Or(Null),
   }),
 );
+```
+
+You can save an import by using `nullable` shorthand instead. All three below are equivalent things.
+
+```ts
+Union(Number, Null);
+Number.Or(Null);
+Number.nullable();
 ```
 
 ## Readonly records and arrays
