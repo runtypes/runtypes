@@ -422,6 +422,24 @@ type AsteroidArray = Static<typeof AsteroidArray>;
 // ReadonlyArray<Asteroid>
 ```
 
+## `.pick` and `.omit`
+
+`Record` runtype has the methods `.pick()` and `.omit()`, which will return a new `Record` with or without specified fields:
+
+```ts
+const CrewMember = Record({
+  name: String,
+  rank: Rank,
+  home: Planet,
+});
+
+const PetMember = CrewMember.pick('name', 'home');
+type PetMember = Static<typeof PetMember>; // { name: string; home: Planet; }
+
+const Background = CrewMember.omit('name');
+type Background = Static<typeof Background>; // { rank: Rank; home: Planet; }
+```
+
 ## Related libraries
 
 - [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
