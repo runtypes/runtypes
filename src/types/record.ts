@@ -171,7 +171,7 @@ function withExtraModifierFuncs<
     const result: any = {};
     const existingKeys = enumerableKeysOf(A.fields);
     existingKeys.forEach(key => {
-      if ((keys as (string | symbol)[]).indexOf(key) === -1) result[key] = A.fields[key];
+      if (!(keys as (string | symbol)[]).includes(key)) result[key] = A.fields[key];
     });
     return InternalRecord(result, A.isPartial, A.isReadonly);
   }
