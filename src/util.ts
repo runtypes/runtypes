@@ -25,7 +25,8 @@ export const typeOf = (value: unknown) =>
 
 export const enumerableKeysOf = (object: unknown) =>
   typeof object === 'object' && object !== null
-    ? Reflect.ownKeys(object).filter(key => object.propertyIsEnumerable(key))
+    ? // Objects with a null prototype may not have `propertyIsEnumerable`
+      Reflect.ownKeys(object).filter(key => object.propertyIsEnumerable?.(key) ?? true)
     : [];
 
 export function SUCCESS<T extends unknown>(value: T): Success<T> {

@@ -514,6 +514,18 @@ describe('check errors', () => {
     );
   });
 
+  it('record for null prototype', () =>
+    assertAccepts(
+      Object.assign(Object.create(null), {
+        name: 'Jack',
+        age: 10,
+      }),
+      Record({
+        name: String,
+        age: Number,
+      }),
+    ));
+
   it('record missing keys', () => {
     assertThrows(
       { name: 'Jack' },
