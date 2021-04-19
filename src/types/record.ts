@@ -52,8 +52,12 @@ export interface InternalRecord<
 
   asPartial(): InternalRecord<O, true, RO>;
   asReadonly(): InternalRecord<O, Part, true>;
-  pick<K extends keyof O>(...keys: K[]): InternalRecord<Pick<O, K>, Part, RO>;
-  omit<K extends keyof O>(...keys: K[]): InternalRecord<Omit<O, K>, Part, RO>;
+  pick<K extends keyof O>(
+    ...keys: K[] extends (keyof O)[] ? K[] : never[]
+  ): InternalRecord<Pick<O, K>, Part, RO>;
+  omit<K extends keyof O>(
+    ...keys: K[] extends (keyof O)[] ? K[] : never[]
+  ): InternalRecord<Omit<O, K>, Part, RO>;
 }
 
 export type Record<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalRecord<
@@ -159,7 +163,9 @@ function withExtraModifierFuncs<
     return InternalRecord(A.fields, A.isPartial, true);
   }
 
-  function pick<K extends keyof O>(...keys: K[]): InternalRecord<Pick<O, K>, Part, RO> {
+  function pick<K extends keyof O>(
+    ...keys: K[] extends (keyof O)[] ? K[] : never[]
+  ): InternalRecord<Pick<O, K>, Part, RO> {
     const result: any = {};
     keys.forEach(key => {
       result[key] = A.fields[key];
@@ -167,7 +173,9 @@ function withExtraModifierFuncs<
     return InternalRecord(result, A.isPartial, A.isReadonly);
   }
 
-  function omit<K extends keyof O>(...keys: K[]): InternalRecord<Omit<O, K>, Part, RO> {
+  function omit<K extends keyof O>(
+    ...keys: K[] extends (keyof O)[] ? K[] : never[]
+  ): InternalRecord<Omit<O, K>, Part, RO> {
     const result: any = {};
     const existingKeys = enumerableKeysOf(A.fields);
     existingKeys.forEach(key => {
