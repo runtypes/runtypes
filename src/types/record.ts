@@ -1,5 +1,5 @@
 import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
-import { enumerableKeysOf, FAILURE, hasKey, pick as pickByKey, omit as omitByKey, SUCCESS } from '../util';
+import { enumerableKeysOf, FAILURE, hasKey, SUCCESS } from '../util';
 import { Optional } from './optional';
 import { Details, Result } from '../result';
 
@@ -160,10 +160,19 @@ function withExtraModifierFuncs<
   }
 
   function pick<K extends keyof O>(keys: K[]): InternalRecord<Pick<O, K>, Part, RO> {
-    return InternalRecord(pickByKey(A.fields, keys), A.isPartial, A.isReadonly);
+    const result: any = {};
+    keys.forEach(key => {
+      result[key] = A.fields[key];
+    });
+    return InternalRecord(result, A.isPartial, A.isReadonly);
   }
 
   function omit<K extends keyof O>(keys: K[]): InternalRecord<Omit<O, K>, Part, RO> {
-    return InternalRecord(omitByKey(A.fields, keys), A.isPartial, A.isReadonly);
+    const result: any = {};
+    const existingKeys = Object.keys(A.fields);
+    existingKeys.forEach(key => {
+      if ((keys as string[]).indexOf(key) === -1) result[key] = A.fields[key];
+    });
+    return InternalRecord(result, A.isPartial, A.isReadonly);
   }
 }
