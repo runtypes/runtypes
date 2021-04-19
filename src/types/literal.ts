@@ -1,4 +1,6 @@
+import { Reflect } from '../reflect';
 import { Runtype, create } from '../runtype';
+import { FAILURE, SUCCESS } from '../util';
 
 /**
  * The super type of all literal types.
@@ -25,15 +27,13 @@ function literal(value: unknown) {
  * Construct a runtype for a type literal.
  */
 export function Literal<A extends LiteralBase>(valueBase: A): Literal<A> {
+  const self = ({ tag: 'literal', value: valueBase } as unknown) as Reflect;
   return create<Literal<A>>(
     value =>
       value === valueBase
-        ? { success: true, value }
-        : {
-            success: false,
-            message: `Expected literal '${literal(valueBase)}', but was '${literal(value)}'`,
-          },
-    { tag: 'literal', value: valueBase },
+        ? SUCCESS(value)
+        : FAILURE.VALUE_INCORRECT('literal', `\`${literal(valueBase)}\``, `\`${literal(value)}\``),
+    self,
   );
 }
 

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "lib": ["es2015", "dom"],
+    "lib": ["es2015"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -10,7 +10,8 @@
     "sourceMap": false,
     "outDir": "lib",
     "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "downlevelIteration": true
   },
-  "exclude": ["./lib/**/*", "./examples/**/*"]
+  "exclude": ["./lib/**/*", "./examples/**/*", "./src/**/*.spec.ts"]
 }

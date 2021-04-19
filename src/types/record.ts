@@ -1,22 +1,16 @@
-import { Runtype, Static, create, innerValidate } from '../runtype';
-import { hasKey, pick as pickByKey, omit as omitByKey } from '../util';
-import show from '../show';
+import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
+import { enumerableKeysOf, FAILURE, hasKey, pick as pickByKey, omit as omitByKey, SUCCESS } from '../util';
 import { Optional } from './optional';
+import { Details, Result } from '../result';
 
-type FilterOptionalKeys<T> = Exclude<
-  {
-    [K in keyof T]: T[K] extends Optional<any> ? K : never;
-  }[keyof T],
-  undefined
->;
-type FilterRequiredKeys<T> = Exclude<
-  {
-    [K in keyof T]: T[K] extends Optional<any> ? never : K;
-  }[keyof T],
-  undefined
->;
+type FilterOptionalKeys<T> = {
+  [K in keyof T]: T[K] extends Optional<any> ? K : never;
+}[keyof T];
+type FilterRequiredKeys<T> = {
+  [K in keyof T]: T[K] extends Optional<any> ? never : K;
+}[keyof T];
 
-type MergedRecord<O extends { [_: string]: Runtype }> = {
+type MergedRecord<O extends { [_: string]: RuntypeBase }> = {
   [K in FilterRequiredKeys<O>]: Static<O[K]>;
 } &
   {
@@ -25,7 +19,7 @@ type MergedRecord<O extends { [_: string]: Runtype }> = {
   ? { [K in keyof P]: P[K] }
   : never;
 
-type MergedRecordReadonly<O extends { [_: string]: Runtype }> = {
+type MergedRecordReadonly<O extends { [_: string]: RuntypeBase }> = {
   [K in FilterRequiredKeys<O>]: Static<O[K]>;
 } &
   {
@@ -35,7 +29,7 @@ type MergedRecordReadonly<O extends { [_: string]: Runtype }> = {
   : never;
 
 type RecordStaticType<
-  O extends { [_: string]: Runtype },
+  O extends { [_: string]: RuntypeBase },
   Part extends boolean,
   RO extends boolean
 > = Part extends true
@@ -47,7 +41,7 @@ type RecordStaticType<
   : MergedRecord<O>;
 
 export interface InternalRecord<
-  O extends { [_: string]: Runtype },
+  O extends { [_: string]: RuntypeBase },
   Part extends boolean,
   RO extends boolean
 > extends Runtype<RecordStaticType<O, Part, RO>> {
@@ -62,13 +56,13 @@ export interface InternalRecord<
   omit<K extends keyof O>(keys: K[]): InternalRecord<Omit<O, K>, Part, RO>;
 }
 
-export type Record<O extends { [_: string]: Runtype }, RO extends boolean> = InternalRecord<
+export type Record<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalRecord<
   O,
   false,
   RO
 >;
 
-export type Partial<O extends { [_: string]: Runtype }, RO extends boolean> = InternalRecord<
+export type Partial<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalRecord<
   O,
   true,
   RO
@@ -78,56 +72,75 @@ export type Partial<O extends { [_: string]: Runtype }, RO extends boolean> = In
  * Construct a record runtype from runtypes for its values.
  */
 export function InternalRecord<
-  O extends { [_: string]: Runtype },
+  O extends { [_: string]: RuntypeBase },
   Part extends boolean,
   RO extends boolean
 >(fields: O, isPartial: Part, isReadonly: RO): InternalRecord<O, Part, RO> {
+  const self = { tag: 'record', isPartial, isReadonly, fields } as any;
   return withExtraModifierFuncs(
-    create(
-      (x, visited) => {
-        if (x === null || x === undefined) {
-          const a = create<any>(_x => ({ success: true, value: _x }), { tag: 'record', fields });
-          return { success: false, message: `Expected ${show(a)}, but was ${x}` };
-        }
+    create((x, visited) => {
+      if (x === null || x === undefined) {
+        return FAILURE.TYPE_INCORRECT(self, x);
+      }
 
-        for (const key in fields) {
-          const isOptional = isPartial || fields[key].reflect.tag === 'optional';
-          if (hasKey(key, x)) {
-            if (isOptional && x[key] === undefined) continue;
-            const validated = innerValidate(fields[key], x[key], visited);
-            if (!validated.success) {
-              return {
-                success: false,
-                message: validated.message,
-                key: validated.key ? `${key}.${validated.key}` : key,
-              };
+      const keysOfFields = enumerableKeysOf(fields);
+      if (keysOfFields.length !== 0 && typeof x !== 'object')
+        return FAILURE.TYPE_INCORRECT(self, x);
+
+      const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])];
+      const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
+        (results, key) => {
+          const fieldsHasKey = hasKey(key, fields);
+          const xHasKey = hasKey(key, x);
+          if (fieldsHasKey) {
+            const runtype = fields[key as any];
+            const isOptional = isPartial || runtype.reflect.tag === 'optional';
+            if (xHasKey) {
+              const value = x[key as any];
+              if (isOptional && value === undefined) results[key as any] = SUCCESS(value);
+              else results[key as any] = innerValidate(runtype, value, visited);
+            } else {
+              if (!isOptional) results[key as any] = FAILURE.PROPERTY_MISSING(runtype.reflect);
+              else results[key as any] = SUCCESS(undefined);
             }
-          } else if (!isOptional) {
-            return {
-              success: false,
-              message: `Expected "${key}" property to be present, but was missing`,
-              key,
-            };
+          } else if (xHasKey) {
+            // TODO: exact record validation
+            const value = x[key as any];
+            results[key as any] = SUCCESS(value);
+          } else {
+            /* istanbul ignore next */
+            throw new Error('impossible');
           }
-        }
+          return results;
+        },
+        {},
+      );
 
-        return { success: true, value: x };
-      },
-      { tag: 'record', isPartial, isReadonly, fields },
-    ),
+      const details = keys.reduce<{ [key in string | number | symbol]: string | Details }>(
+        (details, key) => {
+          const result = results[key as any];
+          if (!result.success) details[key as any] = result.details || result.message;
+          return details;
+        },
+        {},
+      );
+
+      if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
+      else return SUCCESS(x);
+    }, self),
   );
 }
 
-export function Record<O extends { [_: string]: Runtype }>(fields: O): Record<O, false> {
+export function Record<O extends { [_: string]: RuntypeBase }>(fields: O): Record<O, false> {
   return InternalRecord(fields, false, false);
 }
 
-export function Partial<O extends { [_: string]: Runtype }>(fields: O): Partial<O, false> {
+export function Partial<O extends { [_: string]: RuntypeBase }>(fields: O): Partial<O, false> {
   return InternalRecord(fields, true, false);
 }
 
 function withExtraModifierFuncs<
-  O extends { [_: string]: Runtype },
+  O extends { [_: string]: RuntypeBase },
   Part extends boolean,
   RO extends boolean
 >(A: any): InternalRecord<O, Part, RO> {

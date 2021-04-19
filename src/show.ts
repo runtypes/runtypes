@@ -59,14 +59,14 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
       case 'constraint':
         return refl.name || show(needsParens, circular)(refl.underlying);
       case 'instanceof':
-        const name = (refl.ctor as any).name;
-        return `InstanceOf<${name}>`;
+        return (refl.ctor as any).name;
       case 'brand':
         return show(needsParens, circular)(refl.entity);
     }
   } finally {
     circular.delete(refl);
   }
+  /* istanbul ignore next */
   throw Error('impossible');
 };
 
