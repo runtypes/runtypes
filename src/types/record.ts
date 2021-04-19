@@ -169,9 +169,9 @@ function withExtraModifierFuncs<
 
   function omit<K extends keyof O>(...keys: K[]): InternalRecord<Omit<O, K>, Part, RO> {
     const result: any = {};
-    const existingKeys = Object.keys(A.fields);
+    const existingKeys = enumerableKeysOf(A.fields);
     existingKeys.forEach(key => {
-      if ((keys as string[]).indexOf(key) === -1) result[key] = A.fields[key];
+      if ((keys as (string | symbol)[]).indexOf(key) === -1) result[key] = A.fields[key];
     });
     return InternalRecord(result, A.isPartial, A.isReadonly);
   }
