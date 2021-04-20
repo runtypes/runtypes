@@ -1,5 +1,4 @@
 import { Reflect } from './index';
-import { Optional } from './types/optional';
 
 const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): string => {
   const parenthesize = (s: string) => (needsParens ? `(${s})` : s);
@@ -41,7 +40,7 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
                 k =>
                   `${readonlyTag(refl)}${k}${partialTag(refl, k)}: ${
                     refl.fields[k].tag === 'optional'
-                      ? show(false, circular)((refl.fields[k] as Optional<any>).underlying)
+                      ? show(false, circular)((refl.fields[k] as any).underlying)
                       : show(false, circular)(refl.fields[k])
                   };`,
               )
