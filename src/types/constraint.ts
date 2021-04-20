@@ -9,7 +9,9 @@ export interface Constraint<A extends RuntypeBase, T extends Static<A> = Static<
   extends Runtype<T> {
   tag: 'constraint';
   underlying: A;
-  constraint: ConstraintCheck<A>;
+  // See: https://github.com/Microsoft/TypeScript/issues/19746 for why this isn't just
+  // `constraint: ConstraintCheck<A>`
+  constraint(x: Static<A>): boolean | string;
   name?: string;
   args?: K;
 }
