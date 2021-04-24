@@ -1,4 +1,7 @@
 import { Record, String, Static } from '..';
+import { Literal } from './literal';
+import { Number } from './number';
+import { Optional } from './optional';
 
 describe('record', () => {
   const CrewMember = Record({
@@ -36,6 +39,38 @@ describe('record', () => {
       const PetMember = CrewMember.omit();
       type PetMember = Static<typeof PetMember>;
       const petMember: PetMember = { name: '', home: '', rank: '' };
+      expect(Object.keys(PetMember.fields)).toEqual(['name', 'rank', 'home']);
+      expect(PetMember.guard(petMember)).toBe(true);
+    });
+  });
+
+  describe('extend', () => {
+    it('adds fields', () => {
+      const BaseShapeParams = Record({
+        x: Number,
+        y: Number,
+        width: Number,
+        height: Number,
+        rotation: Number,
+      });
+      const PolygonParams = BaseShapeParams.extend({
+        sides: Number,
+      });
+      expect(Object.keys(PolygonParams.fields)).toEqual([
+        'x',
+        'y',
+        'width',
+        'height',
+        'rotation',
+        'sides',
+      ]);
+    });
+    it('overwrites with a narrower type', () => {
+      // @ts-ignore
+      const WrongPetMember = CrewMember.extend({ name: Optional(String) });
+      const PetMember = CrewMember.extend({ name: Literal('pet') });
+      type PetMember = Static<typeof PetMember>;
+      const petMember: PetMember = { name: 'pet', home: '', rank: '' };
       expect(Object.keys(PetMember.fields)).toEqual(['name', 'rank', 'home']);
       expect(PetMember.guard(petMember)).toBe(true);
     });
