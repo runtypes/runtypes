@@ -52,12 +52,27 @@ export interface InternalRecord<
 
   asPartial(): InternalRecord<O, true, RO>;
   asReadonly(): InternalRecord<O, Part, true>;
+
   pick<K extends keyof O>(
     ...keys: K[] extends (keyof O)[] ? K[] : never[]
   ): InternalRecord<Pick<O, K>, Part, RO>;
   omit<K extends keyof O>(
     ...keys: K[] extends (keyof O)[] ? K[] : never[]
   ): InternalRecord<Omit<O, K>, Part, RO>;
+
+  extend<P extends { [_: string]: RuntypeBase }>(
+    fields: {
+      [K in keyof P]: K extends keyof O
+        ? Static<P[K]> extends Static<O[K]>
+          ? P[K]
+          : RuntypeBase<Static<O[K]>>
+        : P[K];
+    },
+  ): InternalRecord<
+    { [K in keyof (O & P)]: K extends keyof P ? P[K] : K extends keyof O ? O[K] : never },
+    Part,
+    RO
+  >;
 }
 
 export type Record<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalRecord<
@@ -152,6 +167,7 @@ function withExtraModifierFuncs<
   A.asReadonly = asReadonly;
   A.pick = pick;
   A.omit = omit;
+  A.extend = extend;
 
   return A;
 
@@ -182,5 +198,9 @@ function withExtraModifierFuncs<
       if (!(keys as (string | symbol)[]).includes(key)) result[key] = A.fields[key];
     });
     return InternalRecord(result, A.isPartial, A.isReadonly);
+  }
+
+  function extend(fields: any): any {
+    return InternalRecord(Object.assign({}, A.fields, fields), A.isPartial, A.isReadonly);
   }
 }
