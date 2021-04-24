@@ -71,8 +71,9 @@ describe('record', () => {
       const PetMember = CrewMember.extend({ name: Literal('pet') });
       type PetMember = Static<typeof PetMember>;
       const petMember: PetMember = { name: 'pet', home: '', rank: '' };
-      expect(Object.keys(PetMember.fields)).toEqual(['name', 'rank', 'home']);
+      const anotherMember = { name: 'another', home: '', rank: '' };
       expect(PetMember.guard(petMember)).toBe(true);
+      expect(PetMember.guard(anotherMember)).toBe(false);
     });
   });
 });
