@@ -1,6 +1,7 @@
 import { Reflect } from '../reflect';
 import { Runtype, create } from '../runtype';
 import { FAILURE, SUCCESS } from '../util';
+import { Union } from './union';
 
 /**
  * The super type of all literal types.
@@ -46,3 +47,8 @@ export const Undefined = Literal(undefined);
  * An alias for Literal(null).
  */
 export const Null = Literal(null);
+
+/**
+ * An alias for `Union(Null, Undefined)`.
+ */
+export const Nullish = Union(Null, Undefined);
