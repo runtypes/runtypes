@@ -9,7 +9,7 @@
     "lib/**/*.d.ts"
   ],
   "scripts": {
-    "build": "tsc --pretty",
+    "build": "tsc --pretty --project ./tsconfig.build.json",
     "format": "node scripts/format.js",
     "test": "jest $([ \"$CI\" = true ] && echo --coverage || echo --watch)",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",

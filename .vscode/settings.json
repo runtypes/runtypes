@@ -3,8 +3,8 @@
 
   // Files to exclude from the sidebar
   "files.exclude": {
-    "lib/": true,
-    "coverage/": true
+    "lib/": false,
+    "coverage/": false
   },
   "editor.formatOnSave": true
 }
