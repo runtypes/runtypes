@@ -422,22 +422,42 @@ type AsteroidArray = Static<typeof AsteroidArray>;
 // ReadonlyArray<Asteroid>
 ```
 
-## `.pick` and `.omit`
+## Helper functions for `Record`
 
-`Record` runtype has the methods `.pick()` and `.omit()`, which will return a new `Record` with or without specified fields:
+`Record` runtype has the methods `.pick()` and `.omit()`, which will return a new `Record` with or without specified fields (see [Example](#example) section for detailed definition of `Rank` and `Planet`):
 
 ```ts
 const CrewMember = Record({
   name: String,
+  age: Number,
   rank: Rank,
   home: Planet,
 });
 
-const PetMember = CrewMember.pick('name', 'home');
-type PetMember = Static<typeof PetMember>; // { name: string; home: Planet; }
+const Visitor = CrewMember.pick('name', 'home');
+type Visitor = Static<typeof Visitor>; // { name: string; home: Planet; }
 
 const Background = CrewMember.omit('name');
-type Background = Static<typeof Background>; // { rank: Rank; home: Planet; }
+type Background = Static<typeof Background>; // { age: number; rank: Rank; home: Planet; }
+```
+
+Also you can use `.extend()` to get a new `Record` with extended fields:
+
+```ts
+const PetMember = CrewMember.extend({
+  species: String,
+});
+type PetMember = Static<typeof PetMember>;
+// { name: string; age: number; rank: Rank; home: Planet; species: string; }
+```
+
+It is capable of reporting compile-time errors if any field is not assignable to the base runtype. You can suppress this error by using `@ts-ignore` directive or `.omit()` before, and then you'll get an incompatible version from the base `Record`.
+
+```ts
+const WrongMember = CrewMember.extend({
+  rank: Literal('wrong'),
+  // Type '"wrong"' is not assignable to type '"captain" | "first mate" | "officer" | "ensign"'.
+});
 ```
 
 ## Related libraries
