@@ -5,6 +5,7 @@ import {
   Never,
   Undefined,
   Null,
+  Nullish,
   Void,
   Boolean,
   Number,
@@ -109,6 +110,7 @@ const runtypes = {
   Never,
   Undefined,
   Null,
+  Nullish,
   nullable: Literal(true).nullable(),
   Empty: Record({}),
   Void,
@@ -194,8 +196,8 @@ class Foo {
 } // Should not be recognized as a Dictionary
 
 const testValues: { value: unknown; passes: RuntypeName[] }[] = [
-  { value: undefined, passes: ['Undefined', 'Void', 'OptionalBoolean'] },
-  { value: null, passes: ['Null', 'Void', 'nullable'] },
+  { value: undefined, passes: ['Undefined', 'Void', 'OptionalBoolean', 'Nullish'] },
+  { value: null, passes: ['Null', 'Void', 'nullable', 'Nullish'] },
   { value: true, passes: ['Boolean', 'true', 'OptionalBoolean', 'nullable'] },
   { value: false, passes: ['Boolean', 'false', 'OptionalBoolean'] },
   { value: 3, passes: ['Number', 'brandedNumber', 3, 'union1', 'Union'] },
