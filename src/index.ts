@@ -8,7 +8,7 @@ export * from './errors';
 export * from './types/unknown';
 export * from './types/never';
 export * from './types/void';
-export { Literal, Undefined, Null } from './types/literal';
+export { Literal, Undefined, Null, Nullish } from './types/literal';
 export * from './types/boolean';
 export * from './types/number';
 export * from './types/bigint';
