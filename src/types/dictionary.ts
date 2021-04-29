@@ -94,7 +94,7 @@ export function Dictionary<
     if (Object.getPrototypeOf(x) !== Object.prototype)
       if (!Array.isArray(x) || keyString === 'string') return FAILURE.TYPE_INCORRECT(self, x);
 
-    const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/u;
+    const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/;
     const keys = enumerableKeysOf(x);
     const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
       (results, key) => {
