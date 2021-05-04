@@ -113,13 +113,16 @@ export function InternalRecord<
           const xHasKey = hasKey(key, x);
           if (fieldsHasKey) {
             const runtype = fields[key as any];
+            const isNever = runtype.reflect.tag === 'never';
             const isOptional = isPartial || runtype.reflect.tag === 'optional';
             if (xHasKey) {
               const value = x[key as any];
-              if (isOptional && value === undefined) results[key as any] = SUCCESS(value);
+              if (isNever) results[key as any] = FAILURE.PROPERTY_PRESENT(value);
+              else if (isOptional && value === undefined) results[key as any] = SUCCESS(value);
               else results[key as any] = innerValidate(runtype, value, visited);
             } else {
-              if (!isOptional) results[key as any] = FAILURE.PROPERTY_MISSING(runtype.reflect);
+              if (isNever) results[key as any] = SUCCESS(undefined);
+              else if (!isOptional) results[key as any] = FAILURE.PROPERTY_MISSING(runtype.reflect);
               else results[key as any] = SUCCESS(undefined);
             }
           } else if (xHasKey) {
