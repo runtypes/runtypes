@@ -2,8 +2,19 @@ import { Record, String, Static } from '..';
 import { Literal } from './literal';
 import { Number } from './number';
 import { Optional } from './optional';
+import { Never } from './never';
 
 describe('record', () => {
+  it('should work with never properties', () => {
+    const R = Record({ foo: Never });
+    type R = Static<typeof R>;
+    // https://github.com/microsoft/TypeScript/issues/43954
+    // @ts-ignore
+    const r: R = {};
+    expect(R.guard({ foo: true })).toBe(false);
+    expect(R.guard(r)).toBe(true);
+  });
+
   const CrewMember = Record({
     name: String,
     rank: String,
