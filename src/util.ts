@@ -18,9 +18,9 @@ export const typeOf = (value: unknown) =>
       ? 'null'
       : Array.isArray(value)
       ? 'array'
-      : value.constructor.name === 'Object'
+      : value.constructor?.name === 'Object'
       ? 'object'
-      : value.constructor.name
+      : value.constructor?.name ?? typeof value
     : typeof value;
 
 export const enumerableKeysOf = (object: unknown) =>

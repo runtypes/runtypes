@@ -652,6 +652,15 @@ describe('check errors', () => {
       'Expected number | string, but was boolean',
     );
   });
+
+  it('union for null prototype', () => {
+    assertThrows(
+      Object.assign(Object.create(null)),
+      Union(Number, String),
+      Failcode.TYPE_INCORRECT,
+      'Expected number | string, but was object',
+    );
+  });
 });
 
 describe('reflection', () => {
