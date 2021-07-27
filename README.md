@@ -466,3 +466,4 @@ const WrongMember = CrewMember.extend({
 - [json-to-runtypes](https://github.com/runeh/json-to-runtypes#readme) Generates runtypes by parsing example JSON data
 - [rest.ts](https://github.com/hmil/rest.ts) Allows building type safe and runtime-checked APIs
 - [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
+- [runtyping](https://github.com/johngeorgewright/runtyping) Generate runtypes from static types & JSON schema
