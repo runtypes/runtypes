@@ -103,7 +103,7 @@ export function Dictionary<
         // string keys automatically. So, if the key can be interpreted as a
         // decimal number, then test it against a `Number` OR `String` runtype.
         const isNumberLikeKey = typeof key === 'string' && numberString.test(key);
-        const keyInterop = isNumberLikeKey ? global.Number(key) : key;
+        const keyInterop = isNumberLikeKey ? globalThis.Number(key) : key;
         if (
           isNumberLikeKey
             ? !keyRuntype.guard(keyInterop) && !keyRuntype.guard(key)
