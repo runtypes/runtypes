@@ -21,7 +21,7 @@ const f = (key: string | undefined) => {
   return create<Symbol>(value => {
     if (typeof value !== 'symbol') return FAILURE.TYPE_INCORRECT(self, value);
     else {
-      const keyForValue = global.Symbol.keyFor(value);
+      const keyForValue = globalThis.Symbol.keyFor(value);
       if (keyForValue !== key)
         return FAILURE.VALUE_INCORRECT(
           'symbol key',
