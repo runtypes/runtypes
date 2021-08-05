@@ -2,6 +2,7 @@ import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype'
 import { LiteralBase } from './literal';
 import { FAILURE, hasKey, SUCCESS } from '../util';
 import { Reflect } from '../reflect';
+import { Details } from '../result';
 
 export interface Union<A extends readonly [RuntypeBase, ...RuntypeBase[]]>
   extends Runtype<
@@ -29,11 +30,7 @@ export function Union<T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
   };
   const self = ({ tag: 'union', alternatives, match } as unknown) as Reflect;
   return create<any>((value, visited) => {
-    if (typeof value !== 'object' || value === null) {
-      for (const alternative of alternatives)
-        if (innerValidate(alternative, value, visited).success) return SUCCESS(value);
-      return FAILURE.TYPE_INCORRECT(self, value);
-    }
+    if (typeof value !== 'object' || value === null) return validate();
 
     const commonLiteralFields: { [K: string]: LiteralBase[] } = {};
     for (const alternative of alternatives) {
@@ -70,10 +67,18 @@ export function Union<T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
       }
     }
 
-    for (const targetType of alternatives)
-      if (innerValidate(targetType, value, visited).success) return SUCCESS(value);
+    return validate();
 
-    return FAILURE.TYPE_INCORRECT(self, value);
+    function validate() {
+      const details: Array<Details | string> = [];
+      for (const alternative of alternatives) {
+        const validation = innerValidate(alternative, value, visited);
+        if (validation.success) return SUCCESS(value);
+        else if (validation.details) details.push(validation.details);
+        else details.push(validation.message);
+      }
+      return FAILURE.CONTENT_INCORRECT(self, details);
+    }
   }, self);
 }
 

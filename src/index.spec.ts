@@ -671,8 +671,9 @@ describe('check errors', () => {
     assertThrows(
       false,
       Union(Number, String),
-      Failcode.TYPE_INCORRECT,
-      'Expected number | string, but was boolean',
+      Failcode.CONTENT_INCORRECT,
+      'Expected number | string, but was incompatible',
+      ['Expected number, but was boolean', 'Expected string, but was boolean'],
     );
   });
 
@@ -680,8 +681,28 @@ describe('check errors', () => {
     assertThrows(
       Object.assign(Object.create(null)),
       Union(Number, String),
-      Failcode.TYPE_INCORRECT,
-      'Expected number | string, but was object',
+      Failcode.CONTENT_INCORRECT,
+      'Expected number | string, but was incompatible',
+      ['Expected number, but was object', 'Expected string, but was object'],
+    );
+  });
+
+  it('union of records', () => {
+    assertThrows(
+      { foo: { bar: 'bar' } },
+      Union(Record({ foo: String }), Record({ foo: Record({ bar: Number }) })),
+      Failcode.CONTENT_INCORRECT,
+      'Expected { foo: string; } | { foo: { bar: number; }; }, but was incompatible',
+      [
+        {
+          foo: 'Expected string, but was object',
+        },
+        {
+          foo: {
+            bar: 'Expected number, but was string',
+          },
+        },
+      ],
     );
   });
 });
