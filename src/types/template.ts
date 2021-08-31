@@ -143,8 +143,37 @@ export function Template<
     : never
   : never {
   const [strings, runtypes] = parseArgs(args);
-
   const self = ({ tag: 'template', strings, runtypes } as unknown) as Reflect;
+
+  // Flatten inner runtypes if possible
+  for (let i = 0; i < runtypes.length; ) {
+    switch (runtypes[i].reflect.tag) {
+      case 'literal': {
+        const literal = runtypes.splice(i, 1)[0] as Literal<string>;
+        const string = literal.value;
+        strings.splice(i, 2, strings[i] + string + strings[i + 1]);
+        break;
+      }
+      case 'template': {
+        const template = runtypes[i] as Template<string[], RuntypeBase<string>[]>;
+        runtypes.splice(i, 1, ...template.runtypes);
+        const innerStrings = template.strings;
+        if (innerStrings.length === 1) {
+          strings.splice(i, 2, strings[i] + innerStrings[0] + strings[i + 1]);
+        } else {
+          const first = innerStrings[0];
+          const rest = innerStrings.slice(1, -1);
+          const last = innerStrings[innerStrings.length - 1];
+          strings.splice(i, 2, strings[i] + first, ...rest, last + strings[i + 1]);
+        }
+        break;
+      }
+      default:
+        i++;
+        break;
+    }
+  }
+
   const pattern = strings.map(escapeRegExp).join('(.*)');
   const regexp = new RegExp(`^${pattern}$`, 'us');
 
