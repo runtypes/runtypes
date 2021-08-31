@@ -83,6 +83,19 @@ const parseArgs = (
   }
 };
 
+const getLiteralsInUnion = (runtype: RuntypeBase<unknown>): Literal<string>[] => {
+  switch (runtype.reflect.tag) {
+    case 'literal':
+      return [runtype as Literal<string>];
+    case 'brand':
+      return getLiteralsInUnion(runtype.reflect.entity);
+    case 'union':
+      return runtype.reflect.alternatives.map(getLiteralsInUnion).reduce((a, x) => a.concat(x), []);
+    default:
+      throw undefined;
+  }
+};
+
 /**
  * Validates that a value is a string that conforms to the template.
  *
@@ -174,8 +187,20 @@ export function Template<
     }
   }
 
-  const pattern = strings.map(escapeRegExp).join('(.*)');
-  const regexp = new RegExp(`^${pattern}$`, 'us');
+  const pattern = strings.map(escapeRegExp).reduce((pattern, string, i) => {
+    const prefix = pattern + string;
+    if (runtypes[i]) {
+      try {
+        // Union of literals should be treated as a special-case
+        const literals = getLiteralsInUnion(runtypes[i]);
+        const values = literals.map(literal => literal.value).map(escapeRegExp);
+        return prefix + `(?<skip_${i}>${values.join('|')})`;
+      } catch (_) {
+        return prefix + '(.*)';
+      }
+    } else return prefix;
+  }, '');
+  const regexp = new RegExp(`^${pattern}$`, 'su');
 
   const test = (
     value: string,
@@ -191,7 +216,9 @@ export function Template<
     const matches = value.match(regexp);
     if (matches) {
       const values = matches.slice(1);
+      const groups = matches.groups;
       for (let i = 0; i < runtypes.length; i++) {
+        if (groups && groups[`skip_${i}`]) continue;
         const runtype = runtypes[i];
         const value = values[i];
         const validated = runtype.validate(value);

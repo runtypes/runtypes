@@ -136,6 +136,9 @@ const runtypes = {
   template3b: Template`${Literal('4')}${Literal('2')}`,
   template3c: Template('4', '2'),
   template3d: Template`42`,
+  template4: Template`Must be ${Constraint(String, s => s === s.toLowerCase(), {
+    name: 'LowercaseString',
+  })}`,
   Sym,
   SymForRuntypes: Sym('runtypes'),
   symbolArray: Array(Sym),
@@ -225,6 +228,8 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
     value: '42',
     passes: ['String', 'union1', 'template3a', 'template3b', 'template3c', 'template3d'],
   },
+  { value: 'Must be lowercase', passes: ['String', 'union1', 'template4'] },
+  { value: 'Must be LOWERcase', passes: ['String', 'union1'] },
   { value: [Symbol('0'), Symbol(42), Symbol()], passes: ['symbolArray'] },
   { value: Symbol(), passes: ['Sym'] },
   { value: Symbol.for('runtypes'), passes: ['Sym', 'SymForRuntypes'] },
