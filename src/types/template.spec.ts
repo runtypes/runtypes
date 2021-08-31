@@ -5,13 +5,13 @@ describe('template', () => {
     const Owner = Union(Literal('Bob'), Literal('Jeff'));
     const Dog = Template`${Owner}'s dog`;
     type Dog = Static<typeof Dog>;
-    // @ts-expect-error: This may be fixed in future versions of TS
+    // @ts-expect-error: These may be fixed in future versions of TS
     const dogBob: Dog = "Bob's dog";
     expect(Dog.guard(dogBob)).toBe(true);
     // @ts-expect-error
     const catBob: Dog = "Bob's cat";
     expect(Dog.guard(catBob)).toBe(false);
-    // @ts-expect-error: This may be fixed in future versions of TS
+    // @ts-expect-error
     const dogJeff: Dog = "Jeff's dog";
     expect(Dog.guard(dogJeff)).toBe(true);
     // @ts-expect-error
