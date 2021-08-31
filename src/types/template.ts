@@ -2,7 +2,7 @@ import { Reflect } from '../reflect';
 import { Runtype, create, RuntypeBase, Static } from '../runtype';
 import show from '../show';
 import { FAILURE, SUCCESS } from '../util';
-import { literal } from './literal';
+import { Literal, literal } from './literal';
 
 export type TemplateLiteralType<
   A extends readonly string[],
@@ -28,47 +28,60 @@ export interface Template<A extends readonly string[], B extends readonly Runtyp
   runtypes: B;
 }
 
-// export function Template<A extends readonly (string | RuntypeBase<string>)[]>(
-//   ...args: A
-// ): Template<ExtractStrings<A>, ExtractRuntypes<B>>
-
-type ExtractStrings<A extends readonly (string | RuntypeBase<string>)[]> = A extends readonly [
-  infer carA,
-  ...infer cdrA
-]
-  ? carA extends string
-    ? [
-        carA,
-        ...(cdrA extends [infer cadrA, ...infer cddrA]
-          ? cadrA extends RuntypeBase<string>
-            ? cddrA extends readonly any[]
-              ? ExtractStrings<cddrA>
-              : never
-            : never // cadrA is string
-          : []) // cdrA is empty
-      ]
-    : never
-  : never;
+type ExtractStrings<
+  A extends readonly (string | RuntypeBase<string>)[],
+  prefix extends string = ''
+> = A extends readonly [infer carA, ...infer cdrA]
+  ? cdrA extends readonly any[]
+    ? carA extends RuntypeBase<string>
+      ? [prefix, ...ExtractStrings<cdrA>] // Omit `carA` if it's a `RuntypeBase<string>`
+      : carA extends string
+      ? [...ExtractStrings<cdrA, `${prefix}${carA}`>]
+      : never // `carA` is neither `RuntypeBase<string>` nor `string` here
+    : never // If `A` is not empty, `cdrA` must be also an array
+  : [prefix]; // `A` is empty here
 
 type ExtractRuntypes<A extends readonly (string | RuntypeBase<string>)[]> = A extends readonly [
   infer carA,
   ...infer cdrA
 ]
-  ? carA extends string
-    ? [
-        ...(cdrA extends [infer cadrA, ...infer cddrA]
-          ? cadrA extends RuntypeBase<string>
-            ? cddrA extends readonly any[]
-              ? [cadrA, ...ExtractRuntypes<cddrA>]
-              : never
-            : never // cadrA is string
-          : []) // cdrA is empty
-      ]
-    : never
-  : never;
+  ? cdrA extends readonly any[]
+    ? carA extends RuntypeBase<string>
+      ? [carA, ...ExtractRuntypes<cdrA>]
+      : carA extends string
+      ? [...ExtractRuntypes<cdrA>]
+      : never // `carA` is neither `RuntypeBase<string>` nor `string`
+    : never // If `A` is not empty, `cdrA` must be also an array
+  : []; // `A` is empty here
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
 const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const parseArgs = (
+  args:
+    | readonly [TemplateStringsArray, ...(readonly RuntypeBase<string>[])]
+    | readonly (string | RuntypeBase<string>)[],
+): [string[], RuntypeBase<string>[]] => {
+  // If the first element is an `Array`, maybe it's called by the tagged style
+  if (0 < args.length && Array.isArray(args[0])) {
+    const [strings, ...runtypes] = args as [string[], ...RuntypeBase<string>[]];
+    // For further manipulation, recreate an `Array` because `TemplateStringsArray` is readonly
+    return [Array.from(strings), runtypes];
+  } else {
+    const convenient = args as readonly (string | RuntypeBase<string>)[];
+    const strings = convenient.reduce(
+      (strings, arg) => {
+        // Concatenate every consecutive strings
+        if (typeof arg === 'string') strings.push(strings.pop() + arg);
+        else strings.push('');
+        return strings;
+      },
+      [''],
+    );
+    const runtypes = convenient.filter(arg => typeof arg !== 'string') as RuntypeBase<string>[];
+    return [strings, runtypes];
+  }
+};
 
 /**
  * Validates that a value is a string that conforms to the template.
@@ -111,42 +124,29 @@ export function Template<A extends readonly string[], B extends readonly Runtype
   strings: A,
   ...runtypes: B
 ): Template<A, B>;
-export function Template<A extends (string | RuntypeBase<string>)[]>(
+export function Template<A extends readonly (string | RuntypeBase<string>)[]>(
   ...args: A
 ): Template<ExtractStrings<A>, ExtractRuntypes<A>>;
 export function Template<
   A extends
-    | [readonly string[], ...(readonly RuntypeBase<string>[])]
-    | (string | RuntypeBase<string>)[]
+    | [TemplateStringsArray, ...(readonly RuntypeBase<string>[])]
+    | readonly (string | RuntypeBase<string>)[]
 >(
   ...args: A
 ): A extends (string | RuntypeBase<string>)[]
-  ? Template<ExtractStrings<A>, ExtractRuntypes<A>>
+  ? Template<ExtractStrings<A>, ExtractRuntypes<A>> // For tagged function style
   : A extends [infer carA, ...infer cdrA]
   ? carA extends readonly string[]
     ? cdrA extends readonly RuntypeBase<string>[]
-      ? Template<carA, cdrA>
+      ? Template<carA, cdrA> // For convenient parameter style
       : never
     : never
   : never {
-  const [stringsOrFirstString, ...runtypesOrRestItems] = args;
-  const strings: string[] = Array.isArray(stringsOrFirstString)
-    ? (stringsOrFirstString as string[])
-    : ((args as (string | RuntypeBase<string>)[]).filter(
-        arg => typeof arg === 'string',
-      ) as string[]);
-  const runtypes: RuntypeBase<string>[] = Array.isArray(stringsOrFirstString)
-    ? (runtypesOrRestItems as RuntypeBase<string>[])
-    : ((args as (string | RuntypeBase<string>)[]).filter(
-        arg => typeof arg !== 'string',
-      ) as RuntypeBase<string>[]);
+  const [strings, runtypes] = parseArgs(args);
 
   const self = ({ tag: 'template', strings, runtypes } as unknown) as Reflect;
-
-  const pattern = strings.reduce((pattern, string) => {
-    return pattern + escapeRegExp(string) + `(.*)`;
-  }, '');
-  const regexp = new RegExp(`^${pattern}$`);
+  const pattern = strings.map(escapeRegExp).join('(.*)');
+  const regexp = new RegExp(`^${pattern}$`, 'us');
 
   const test = (
     value: string,

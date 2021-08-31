@@ -37,7 +37,7 @@ describe('template', () => {
   });
   it('supports convenient arguments form', () => {
     const Owner = Union(Literal('Bob'), Literal('Jeff'));
-    const Dog = Template('', Owner, "'s dog");
+    const Dog = Template(Owner, "'s dog");
     type Dog = Static<typeof Dog>;
     const catBob: Dog = "Bob's dog";
     expect(() => Dog.check(catBob)).not.toThrow();
