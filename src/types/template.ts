@@ -117,8 +117,6 @@ const getLiteralsInUnion = (runtype: RuntypeBase<unknown>): Literal<string>[] =>
  *
  * Because TS doesn't provide the exact string literal type information (`["foo", "baz"]` in this case) to the underlying function. See the issue [microsoft/TypeScript#33304](https://github.com/microsoft/TypeScript/issues/33304), especially this comment [microsoft/TypeScript#33304 (comment)](https://github.com/microsoft/TypeScript/issues/33304#issuecomment-697977783) we hope to be implemented.
  *
- * However, all the limitation is about static types. Runtime type checking *does* work flawlessly with the above syntax.
- *
  * If you want the type inference rather than the tagged syntax, you have to manually write a function call:
  *
  * ```ts
@@ -132,6 +130,22 @@ const getLiteralsInUnion = (runtype: RuntypeBase<unknown>): Literal<string>[] =>
  * const T = Template("foo", Literal("bar"), "baz")
  * type T = Static<typeof T> // inferred as "foobarbaz"
  * ```
+ *
+ * ## Caveats
+ *
+ * All runtypes except `Literal` or `Union` of `Literal`s won't work expectedly in the cases it should occur immediately one after another, for example:
+ *
+ * ```ts
+ * const UpperCaseString = Constraint(String, s => s === s.toUpperCase(), {
+ *   name: 'UpperCaseString',
+ * })
+ * const LowerCaseString = Constraint(String, s => s === s.toLowerCase(), {
+ *   name: 'LowerCaseString',
+ * })
+ * Template(UpperCaseString, LowerCaseString)
+ * ```
+ *
+ * Because the only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraint, which must be hardly done. Actually runtypes treats `String` runtypes as the simplest `RegExp` pattern `.*`, that is, the above runtype won't work at all because the entire pattern is just `^(.*)(.*)$`. You have to avoid using `Constraint` this way, and instead manually parse the string inside a `Constraint`.
  */
 export function Template<A extends readonly string[], B extends readonly RuntypeBase<string>[]>(
   strings: A,
