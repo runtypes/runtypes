@@ -4,7 +4,7 @@ import show from '../show';
 import { FAILURE, SUCCESS } from '../util';
 import { Literal, literal } from './literal';
 
-export type TemplateLiteralType<
+type TemplateLiteralType<
   A extends readonly string[],
   B extends readonly RuntypeBase<string>[]
 > = A extends readonly [infer carA, ...infer cdrA]
