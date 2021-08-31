@@ -29,13 +29,17 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
 
       // Complex types
       case 'template': {
-        const content = refl.strings.reduce((pattern, string, i) => {
-          const runtype = refl.runtypes[i];
-          return (
-            pattern + string + (runtype ? `\${${show(false, circular)(runtype.reflect)}}` : '')
-          );
-        }, '');
-        return refl.runtypes.length === 0 ? `"${content}"` : `\`${content}\``;
+        if (refl.strings.length === 2 && refl.strings.every(s => s === '')) {
+          return show(false, circular)(refl.runtypes[0].reflect);
+        } else {
+          const content = refl.strings.reduce((pattern, string, i) => {
+            const runtype = refl.runtypes[i];
+            return (
+              pattern + string + (runtype ? `\${${show(false, circular)(runtype.reflect)}}` : '')
+            );
+          }, '');
+          return refl.runtypes.length === 0 ? `"${content}"` : `\`${content}\``;
+        }
       }
       case 'array':
         return `${readonlyTag(refl)}${show(true, circular)(refl.element)}[]`;

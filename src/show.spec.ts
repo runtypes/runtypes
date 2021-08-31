@@ -46,6 +46,8 @@ const cases: [Reflect, string][] = [
   [Template('foo', Literal('bar'), 'baz'), '"foobarbaz"'],
   [Template('foo', Template`foo${Literal('bar')}baz`, 'baz'), '"foofoobarbazbaz"'],
   [Template('foo', Union(Literal('foo'), Literal('bar')), 'baz'), '`foo${"foo" | "bar"}baz`'],
+  [Template(String), 'string'],
+  [Template(Union(Literal('foo'), Literal('bar'))), '"foo" | "bar"'],
   [Array(String), 'string[]'],
   [Array(String).asReadonly(), 'readonly string[]'],
   [Dictionary(Array(Boolean)), '{ [_: string]: boolean[] }'],
