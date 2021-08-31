@@ -22,11 +22,20 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
       case 'symbol':
       case 'function':
         return refl.tag;
-
-      // Complex types
       case 'literal': {
         const { value } = refl;
         return typeof value === 'string' ? `"${value}"` : String(value);
+      }
+
+      // Complex types
+      case 'template': {
+        const content = refl.strings.reduce((pattern, string, i) => {
+          const runtype = refl.runtypes[i];
+          return (
+            pattern + string + (runtype ? `\${${show(false, circular)(runtype.reflect)}}` : '')
+          );
+        }, '');
+        return refl.runtypes.length === 0 ? `"${content}"` : `\`${content}\``;
       }
       case 'array':
         return `${readonlyTag(refl)}${show(true, circular)(refl.element)}[]`;

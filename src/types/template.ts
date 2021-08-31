@@ -173,11 +173,6 @@ export function Template<
     } else return false;
   };
 
-  const displayText = strings.reduce((pattern, string, i) => {
-    const runtype = runtypes[i];
-    return pattern + string + (runtype ? `\${${show(runtype.reflect)}}` : '');
-  }, '');
-
   return create<
     A extends (string | RuntypeBase<string>)[]
       ? Template<ExtractStrings<A>, ExtractRuntypes<A>>
@@ -190,9 +185,11 @@ export function Template<
       : never
   >(
     value =>
-      typeof value === 'string' && test(value)
+      typeof value !== 'string'
+        ? FAILURE.TYPE_INCORRECT(self, value)
+        : test(value)
         ? SUCCESS(value)
-        : FAILURE.VALUE_INCORRECT('string', `\`${displayText}\``, `\`${literal(value)}\``),
+        : FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `\`${literal(value)}\``),
     self,
   );
 }

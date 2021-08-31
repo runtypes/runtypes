@@ -24,9 +24,11 @@ describe('template', () => {
     type Dog = Static<typeof Dog>;
     // @ts-expect-error
     const catBob: Dog = "Bob's cat";
-    expect(() => Dog.check(catBob)).toThrow(
-      'Expected string `${"Bob" | "Jeff"}\'s dog`, but was `Bob\'s cat`',
-    );
+    expect(Dog.validate(catBob)).toEqual({
+      code: 'VALUE_INCORRECT',
+      message: 'Expected string `${"Bob" | "Jeff"}\'s dog`, but was `Bob\'s cat`',
+      success: false,
+    });
     // @ts-expect-error
     const dogAlice: Dog = "Alice's cat";
     expect(() => Dog.check(dogAlice)).toThrow(
@@ -39,5 +41,13 @@ describe('template', () => {
     type Dog = Static<typeof Dog>;
     const catBob: Dog = "Bob's dog";
     expect(() => Dog.check(catBob)).not.toThrow();
+  });
+  it('emits TYPE_INCORRECT for values other than string', () => {
+    const Dog = Template('foo');
+    expect(Dog.validate(42)).toEqual({
+      code: 'TYPE_INCORRECT',
+      message: 'Expected string "foo", but was number',
+      success: false,
+    });
   });
 });

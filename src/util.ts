@@ -42,7 +42,9 @@ export const FAILURE = Object.assign(
   }),
   {
     TYPE_INCORRECT: (self: Reflect, value: unknown) => {
-      const message = `Expected ${show(self)}, but was ${typeOf(value)}`;
+      const message = `Expected ${
+        self.tag === 'template' ? `string ${show(self)}` : show(self)
+      }, but was ${typeOf(value)}`;
       return FAILURE(Failcode.TYPE_INCORRECT, message);
     },
     VALUE_INCORRECT: (name: string, expected: unknown, received: unknown) => {
