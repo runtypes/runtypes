@@ -140,11 +140,14 @@ export function Template<
     : ((args as (string | RuntypeBase<string>)[]).filter(
         arg => typeof arg !== 'string',
       ) as RuntypeBase<string>[]);
+
   const self = ({ tag: 'template', strings, runtypes } as unknown) as Reflect;
+
   const pattern = strings.reduce((pattern, string) => {
     return pattern + escapeRegExp(string) + `(.*)`;
   }, '');
   const regexp = new RegExp(`^${pattern}$`);
+
   const test = (
     value: string,
   ): value is A extends (string | RuntypeBase<string>)[]
@@ -169,10 +172,12 @@ export function Template<
       return true;
     } else return false;
   };
+
   const displayText = strings.reduce((pattern, string, i) => {
     const runtype = runtypes[i];
     return pattern + string + (runtype ? `\${${show(runtype.reflect)}}` : '');
   }, '');
+
   return create<
     A extends (string | RuntypeBase<string>)[]
       ? Template<ExtractStrings<A>, ExtractRuntypes<A>>
