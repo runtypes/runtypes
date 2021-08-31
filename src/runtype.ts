@@ -198,7 +198,7 @@ export function innerValidate<A extends RuntypeBase>(
   return (targetType as any)._innerValidate(value, visited);
 }
 
-type VisitedState = {
+export type VisitedState = {
   has: (candidate: object, type: RuntypeBase) => boolean;
 };
 function VisitedState(): VisitedState {

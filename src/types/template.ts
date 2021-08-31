@@ -1,5 +1,5 @@
 import { Reflect } from '../reflect';
-import { Runtype, create, RuntypeBase, Static } from '../runtype';
+import { Runtype, create, RuntypeBase, Static, innerValidate, VisitedState } from '../runtype';
 import show from '../show';
 import { FAILURE, SUCCESS } from '../util';
 import { Literal, literal } from './literal';
@@ -214,6 +214,7 @@ export function Template<
 
   const test = (
     value: string,
+    visited: VisitedState,
   ): value is A extends (string | RuntypeBase<string>)[]
     ? TemplateLiteralType<ExtractStrings<A>, ExtractRuntypes<A>>
     : A extends [infer carA, ...infer cdrA]
@@ -231,7 +232,7 @@ export function Template<
         if (groups && groups[`skip_${i}`]) continue;
         const runtype = runtypes[i];
         const value = values[i];
-        const validated = runtype.validate(value);
+        const validated = innerValidate(runtype, value, visited);
         if (!validated.success) return false;
         else continue;
       }
@@ -250,10 +251,10 @@ export function Template<
         : never
       : never
   >(
-    value =>
+    (value, visited) =>
       typeof value !== 'string'
         ? FAILURE.TYPE_INCORRECT(self, value)
-        : test(value)
+        : test(value, visited)
         ? SUCCESS(value)
         : FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `\`${literal(value)}\``),
     self,
