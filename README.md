@@ -272,6 +272,54 @@ const B = Guard(Buffer.isBuffer);
 type T = Static<typeof B>; // T will have type of `Buffer`
 ```
 
+## Template literals
+
+The `Template` runtype validates that a value is a string that conforms to the template.
+
+**_There's only limited support for static type inference for this runtype._** You can use the familiar syntax to create a `Template` runtype:
+
+```ts
+const T = Template`foo${Literal('bar')}baz`;
+```
+
+But then the type inference won't work:
+
+```ts
+type T = Static<typeof T>; // inferred as ""
+```
+
+Because TS doesn't provide the exact string literal type information (`["foo", "baz"]` in this case) to the underlying function. See the issue [microsoft/TypeScript#33304](https://github.com/microsoft/TypeScript/issues/33304), especially this comment [microsoft/TypeScript#33304 (comment)](https://github.com/microsoft/TypeScript/issues/33304#issuecomment-697977783) we hope to be implemented.
+
+If you want the type inference rather than the tagged syntax, you have to manually write a function call:
+
+```ts
+const T = Template(['foo', 'baz'] as const, Literal('bar'));
+type T = Static<typeof T>; // inferred as "foobarbaz"
+```
+
+As another solution, it also supports a convenient pattern of parameters:
+
+```ts
+const T = Template('foo', Literal('bar'), 'baz');
+type T = Static<typeof T>; // inferred as "foobarbaz"
+```
+
+### Caveats
+
+All runtypes except `Literal` or `Union` of `Literal`s won't work expectedly in the cases it should occur immediately one after another, for example:
+
+```ts
+const UpperCaseString = Constraint(String, s => s === s.toUpperCase(), {
+  name: 'UpperCaseString',
+});
+const LowerCaseString = Constraint(String, s => s === s.toLowerCase(), {
+  name: 'LowerCaseString',
+});
+Template(UpperCaseString, LowerCaseString);
+```
+
+Because the only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraint, which must be hardly done. Actually runtypes treats `String` runtypes as the simplest `RegExp` pattern `.*`, that is, the above runtype won't work at all because the entire pattern is just `^(.*)(.*)$`. You have to avoid using `Constraint` this way, and instead manually parse the string inside a `Constraint`.
+
 ## Function contracts
 
 Runtypes along with constraint checking are a natural fit for enforcing function
