@@ -1,4 +1,4 @@
-import { Static, Literal, Template, Union } from '..';
+import { Static, Literal, Template, Union, Number, Boolean, String } from '..';
 
 describe('template', () => {
   it('validates', () => {
@@ -26,13 +26,13 @@ describe('template', () => {
     const catBob: Dog = "Bob's cat";
     expect(Dog.validate(catBob)).toEqual({
       code: 'VALUE_INCORRECT',
-      message: 'Expected string `${"Bob" | "Jeff"}\'s dog`, but was `Bob\'s cat`',
+      message: 'Expected string `${"Bob" | "Jeff"}\'s dog`, but was "Bob\'s cat"',
       success: false,
     });
     // @ts-expect-error
     const dogAlice: Dog = "Alice's cat";
     expect(() => Dog.check(dogAlice)).toThrow(
-      'Expected string `${"Bob" | "Jeff"}\'s dog`, but was `Alice\'s cat`',
+      'Expected string `${"Bob" | "Jeff"}\'s dog`, but was "Alice\'s cat"',
     );
   });
   it('supports convenient arguments form', () => {
@@ -41,6 +41,20 @@ describe('template', () => {
     type Dog = Static<typeof Dog>;
     const catBob: Dog = "Bob's dog";
     expect(() => Dog.check(catBob)).not.toThrow();
+  });
+  it('supports various inner runtypes', () => {
+    const DogCount = Template(
+      Number,
+      ' ',
+      Union(Template(Boolean, ' '), Literal('')),
+      String.withConstraint(s => s.toLowerCase() === 'dogs', { name: '"dogs"' }),
+    );
+    type DogCount = Static<typeof DogCount>;
+    expect(() => DogCount.check('101 dogs')).not.toThrow();
+    expect(() => DogCount.check('101 Dogs')).not.toThrow();
+    expect(() => DogCount.check('101dogs')).toThrow();
+    expect(() => DogCount.check('101 false dogs')).not.toThrow();
+    expect(() => DogCount.check('101 cats')).toThrow();
   });
   it('emits TYPE_INCORRECT for values other than string', () => {
     const Dog = Template('foo');

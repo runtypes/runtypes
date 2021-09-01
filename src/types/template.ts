@@ -1,18 +1,28 @@
 import { Reflect } from '../reflect';
-import { Runtype, create, RuntypeBase, Static, innerValidate, VisitedState } from '../runtype';
+import {
+  Runtype,
+  create,
+  RuntypeBase,
+  Static,
+  innerValidate,
+  VisitedState,
+  isRuntype,
+} from '../runtype';
 import show from '../show';
-import { FAILURE, SUCCESS } from '../util';
-import { Literal, literal } from './literal';
+import { FAILURE, SUCCESS, typeOf } from '../util';
+import { Literal, LiteralBase, literal } from './literal';
+import { Union } from './union';
+import { Intersect } from './intersect';
 
 type TemplateLiteralType<
-  A extends readonly string[],
-  B extends readonly RuntypeBase<string>[]
+  A extends readonly LiteralBase[],
+  B extends readonly RuntypeBase<LiteralBase>[]
 > = A extends readonly [infer carA, ...infer cdrA]
-  ? carA extends string
+  ? carA extends LiteralBase
     ? B extends readonly [infer carB, ...infer cdrB]
-      ? carB extends RuntypeBase<string>
-        ? cdrA extends readonly string[]
-          ? cdrB extends readonly RuntypeBase<string>[]
+      ? carB extends RuntypeBase<LiteralBase>
+        ? cdrA extends readonly LiteralBase[]
+          ? cdrB extends readonly RuntypeBase<LiteralBase>[]
             ? `${carA}${Static<carB>}${TemplateLiteralType<cdrA, cdrB>}`
             : `${carA}${Static<carB>}`
           : `${carA}${Static<carB>}`
@@ -21,36 +31,37 @@ type TemplateLiteralType<
     : ''
   : '';
 
-export interface Template<A extends readonly string[], B extends readonly RuntypeBase<string>[]>
-  extends Runtype<TemplateLiteralType<A, B>> {
+export interface Template<
+  A extends readonly [string, ...string[]],
+  B extends readonly RuntypeBase<LiteralBase>[]
+> extends Runtype<TemplateLiteralType<A, B>> {
   tag: 'template';
   strings: A;
   runtypes: B;
 }
 
 type ExtractStrings<
-  A extends readonly (string | RuntypeBase<string>)[],
+  A extends readonly (LiteralBase | RuntypeBase<LiteralBase>)[],
   prefix extends string = ''
 > = A extends readonly [infer carA, ...infer cdrA]
   ? cdrA extends readonly any[]
-    ? carA extends RuntypeBase<string>
-      ? [prefix, ...ExtractStrings<cdrA>] // Omit `carA` if it's a `RuntypeBase<string>`
-      : carA extends string
+    ? carA extends RuntypeBase<LiteralBase>
+      ? [prefix, ...ExtractStrings<cdrA>] // Omit `carA` if it's a `RuntypeBase<LiteralBase>`
+      : carA extends LiteralBase
       ? [...ExtractStrings<cdrA, `${prefix}${carA}`>]
-      : never // `carA` is neither `RuntypeBase<string>` nor `string` here
+      : never // `carA` is neither `RuntypeBase<LiteralBase>` nor `LiteralBase` here
     : never // If `A` is not empty, `cdrA` must be also an array
   : [prefix]; // `A` is empty here
 
-type ExtractRuntypes<A extends readonly (string | RuntypeBase<string>)[]> = A extends readonly [
-  infer carA,
-  ...infer cdrA
-]
+type ExtractRuntypes<
+  A extends readonly (LiteralBase | RuntypeBase<LiteralBase>)[]
+> = A extends readonly [infer carA, ...infer cdrA]
   ? cdrA extends readonly any[]
-    ? carA extends RuntypeBase<string>
+    ? carA extends RuntypeBase<LiteralBase>
       ? [carA, ...ExtractRuntypes<cdrA>]
-      : carA extends string
+      : carA extends LiteralBase
       ? [...ExtractRuntypes<cdrA>]
-      : never // `carA` is neither `RuntypeBase<string>` nor `string`
+      : never // `carA` is neither `RuntypeBase<LiteralBase>` nor `LiteralBase`
     : never // If `A` is not empty, `cdrA` must be also an array
   : []; // `A` is empty here
 
@@ -59,41 +70,216 @@ const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '
 
 const parseArgs = (
   args:
-    | readonly [TemplateStringsArray, ...(readonly RuntypeBase<string>[])]
-    | readonly (string | RuntypeBase<string>)[],
-): [string[], RuntypeBase<string>[]] => {
+    | readonly [readonly [string, ...string[]], ...RuntypeBase<LiteralBase>[]]
+    | readonly (LiteralBase | RuntypeBase<LiteralBase>)[],
+): [[string, ...string[]], RuntypeBase<LiteralBase>[]] => {
   // If the first element is an `Array`, maybe it's called by the tagged style
   if (0 < args.length && Array.isArray(args[0])) {
-    const [strings, ...runtypes] = args as [string[], ...RuntypeBase<string>[]];
+    const [strings, ...runtypes] = args as readonly [
+      readonly [string, ...string[]],
+      ...RuntypeBase<LiteralBase>[]
+    ];
     // For further manipulation, recreate an `Array` because `TemplateStringsArray` is readonly
-    return [Array.from(strings), runtypes];
+    return [Array.from(strings) as [string, ...string[]], runtypes];
   } else {
-    const convenient = args as readonly (string | RuntypeBase<string>)[];
-    const strings = convenient.reduce(
+    const convenient = args as readonly (LiteralBase | RuntypeBase<LiteralBase>)[];
+    const strings = convenient.reduce<[string, ...string[]]>(
       (strings, arg) => {
-        // Concatenate every consecutive strings
-        if (typeof arg === 'string') strings.push(strings.pop() + arg);
+        // Concatenate every consecutive literals as strings
+        if (!isRuntype(arg)) strings.push(strings.pop()! + String(arg));
+        // Skip runtypes
         else strings.push('');
         return strings;
       },
       [''],
     );
-    const runtypes = convenient.filter(arg => typeof arg !== 'string') as RuntypeBase<string>[];
+    const runtypes = convenient.filter(isRuntype) as RuntypeBase<LiteralBase>[];
     return [strings, runtypes];
   }
 };
 
-const getLiteralsInUnion = (runtype: RuntypeBase<unknown>): Literal<string>[] => {
+/**
+ * Flatten inner runtypes of a `Template` if possible, with in-place strategy
+ */
+const flattenInnerRuntypes = (
+  strings: [string, ...string[]],
+  runtypes: RuntypeBase<LiteralBase>[],
+): void => {
+  for (let i = 0; i < runtypes.length; ) {
+    switch (runtypes[i].reflect.tag) {
+      case 'literal': {
+        const literal = runtypes[i] as Literal<LiteralBase>;
+        runtypes.splice(i, 1);
+        const string = String(literal.value);
+        strings.splice(i, 2, strings[i] + string + strings[i + 1]);
+        break;
+      }
+      case 'template': {
+        const template = runtypes[i] as Template<[string, ...string[]], RuntypeBase<LiteralBase>[]>;
+        runtypes.splice(i, 1, ...template.runtypes);
+        const innerStrings = template.strings;
+        if (innerStrings.length === 1) {
+          strings.splice(i, 2, strings[i] + innerStrings[0] + strings[i + 1]);
+        } else {
+          const first = innerStrings[0];
+          const rest = innerStrings.slice(1, -1);
+          const last = innerStrings[innerStrings.length - 1];
+          strings.splice(i, 2, strings[i] + first, ...rest, last + strings[i + 1]);
+        }
+        break;
+      }
+      case 'union': {
+        const union = runtypes[i] as Union<
+          readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
+        >;
+        if (union.alternatives.length === 1) {
+          try {
+            const literal = getInnerLiterals(union)[0];
+            runtypes.splice(i, 1);
+            const string = String(literal.value);
+            strings.splice(i, 2, strings[i] + string + strings[i + 1]);
+            break;
+          } catch (_) {
+            i++;
+            break;
+          }
+        } else {
+          i++;
+          break;
+        }
+      }
+      case 'intersect': {
+        const intersect = runtypes[i] as Intersect<
+          readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
+        >;
+        if (intersect.intersectees.length === 1) {
+          try {
+            const literal = getInnerLiterals(intersect)[0];
+            runtypes.splice(i, 1);
+            const string = String(literal.value);
+            strings.splice(i, 2, strings[i] + string + strings[i + 1]);
+            break;
+          } catch (_) {
+            i++;
+            break;
+          }
+        } else {
+          i++;
+          break;
+        }
+      }
+      default:
+        i++;
+        break;
+    }
+  }
+};
+
+const normalizeArgs = (
+  args:
+    | readonly [readonly [string, ...string[]], ...RuntypeBase<LiteralBase>[]]
+    | readonly (LiteralBase | RuntypeBase<LiteralBase>)[],
+): [[string, ...string[]], RuntypeBase<LiteralBase>[]] => {
+  const [strings, runtypes] = parseArgs(args);
+  flattenInnerRuntypes(strings, runtypes);
+  return [strings, runtypes];
+};
+
+const getInnerLiterals = (runtype: RuntypeBase<unknown>): Literal<LiteralBase>[] => {
   switch (runtype.reflect.tag) {
     case 'literal':
-      return [runtype as Literal<string>];
+      return [runtype as Literal<LiteralBase>];
     case 'brand':
-      return getLiteralsInUnion(runtype.reflect.entity);
+      return getInnerLiterals(runtype.reflect.entity);
     case 'union':
-      return runtype.reflect.alternatives.map(getLiteralsInUnion).reduce((a, x) => a.concat(x), []);
+      return runtype.reflect.alternatives.map(getInnerLiterals).reduce((a, x) => a.concat(x), []);
+    case 'intersect':
+      return runtype.reflect.intersectees.map(getInnerLiterals).reduce((a, x) => a.concat(x), []);
     default:
       throw undefined;
   }
+};
+
+type Reviver = (s: string) => any;
+const identity: Reviver = s => s;
+const revivers: {
+  [tag in string]?: readonly [Reviver, string, ...string[]];
+} = {
+  string: [s => globalThis.String(s), '.*'],
+  number: [
+    s => globalThis.Number(s),
+    '[+-]?(?:\\d*\\.\\d+|\\d+\\.\\d*|\\d+)(?:[Ee][+-]?\\d+)?',
+    '0[Bb][01]+',
+    '0[Oo][07]+',
+    '0[Xx][0-9A-Fa-f]+',
+    // Note: `"NaN"` isn't here, as TS doesn't allow `"NaN"` to be a `` `${number}` ``
+  ],
+  bigint: [s => globalThis.BigInt(s), '-?[1-9]d*'],
+  boolean: [s => (s === 'false' ? false : true), 'true', 'false'],
+  null: [() => null, 'null'],
+  undefined: [() => undefined, 'undefined'],
+};
+
+const getReviversFor = (reflect: Reflect): Set<Reviver> => {
+  switch (reflect.tag) {
+    case 'literal': {
+      const [reviver] = revivers[typeOf(reflect.value)] || [identity];
+      return new Set([reviver]);
+    }
+    case 'brand':
+      return getReviversFor(reflect.entity);
+    case 'constraint':
+      return getReviversFor(reflect.underlying);
+    case 'union':
+      return reflect.alternatives.map(getReviversFor).reduce<Set<Reviver>>((set, reviver) => {
+        if (reviver instanceof Set) for (const r of reviver) set.add(r);
+        else set.add(reviver);
+        return set;
+      }, new Set());
+    case 'intersect':
+      return reflect.intersectees.map(getReviversFor).reduce<Set<Reviver>>((set, reviver) => {
+        if (reviver instanceof Set) for (const r of reviver) set.add(r);
+        else set.add(reviver);
+        return set;
+      }, new Set());
+    default:
+      const [reviver] = revivers[reflect.tag] || [identity];
+      return new Set([reviver]);
+  }
+};
+
+const getRegExpPatternFor = (reflect: Reflect): string => {
+  switch (reflect.tag) {
+    case 'literal':
+      return escapeRegExp(String(reflect.value));
+    case 'brand':
+      return getRegExpPatternFor(reflect.entity);
+    case 'constraint':
+      return getRegExpPatternFor(reflect.underlying);
+    case 'union':
+      return reflect.alternatives.map(getRegExpPatternFor).join('|');
+    case 'template': {
+      return reflect.strings.map(escapeRegExp).reduce((pattern, string, i) => {
+        const prefix = pattern + string;
+        const runtype = reflect.runtypes[i];
+        if (runtype) return prefix + `(?:${getRegExpPatternFor(runtype.reflect)})`;
+        else return prefix;
+      }, '');
+    }
+    default:
+      const [, ...patterns] = revivers[reflect.tag] || [undefined, '.*'];
+      return patterns.join('|');
+  }
+};
+
+const createRegExpForTemplate = (reflect: Reflect & { tag: 'template' }) => {
+  const pattern = reflect.strings.map(escapeRegExp).reduce((pattern, string, i) => {
+    const prefix = pattern + string;
+    const runtype = reflect.runtypes[i];
+    if (runtype) return prefix + `(${getRegExpPatternFor(runtype.reflect)})`;
+    else return prefix;
+  }, '');
+  return new RegExp(`^${pattern}$`, 'su');
 };
 
 /**
@@ -143,83 +329,44 @@ const getLiteralsInUnion = (runtype: RuntypeBase<unknown>): Literal<string>[] =>
  *
  * Because the only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraint, which must be hardly done. Actually runtypes treats `String` runtypes as the simplest `RegExp` pattern `.*`, that is, the above runtype won't work at all because the entire pattern is just `^(.*)(.*)$`. You have to avoid using `Constraint` this way, and instead manually parse the string inside a `Constraint`.
  */
-export function Template<A extends readonly string[], B extends readonly RuntypeBase<string>[]>(
-  strings: A,
-  ...runtypes: B
-): Template<A, B>;
-export function Template<A extends readonly (string | RuntypeBase<string>)[]>(
+export function Template<
+  A extends TemplateStringsArray,
+  B extends readonly RuntypeBase<LiteralBase>[]
+>(strings: A, ...runtypes: B): Template<A & [string, ...string[]], B>;
+export function Template<
+  A extends readonly [string, ...string[]],
+  B extends readonly RuntypeBase<LiteralBase>[]
+>(strings: A, ...runtypes: B): Template<A, B>;
+export function Template<A extends readonly (LiteralBase | RuntypeBase<LiteralBase>)[]>(
   ...args: A
 ): Template<ExtractStrings<A>, ExtractRuntypes<A>>;
 export function Template<
   A extends
-    | [TemplateStringsArray, ...(readonly RuntypeBase<string>[])]
-    | readonly (string | RuntypeBase<string>)[]
+    | [readonly [string, ...string[]], ...RuntypeBase<LiteralBase>[]]
+    | readonly (LiteralBase | RuntypeBase<LiteralBase>)[]
 >(
   ...args: A
-): A extends (string | RuntypeBase<string>)[]
+): A extends (LiteralBase | RuntypeBase<LiteralBase>)[]
   ? Template<ExtractStrings<A>, ExtractRuntypes<A>> // For tagged function style
   : A extends [infer carA, ...infer cdrA]
-  ? carA extends readonly string[]
-    ? cdrA extends readonly RuntypeBase<string>[]
+  ? carA extends readonly [string, ...string[]]
+    ? cdrA extends readonly RuntypeBase<LiteralBase>[]
       ? Template<carA, cdrA> // For convenient parameter style
       : never
     : never
   : never {
-  const [strings, runtypes] = parseArgs(args);
+  const [strings, runtypes] = normalizeArgs(args);
   const self = ({ tag: 'template', strings, runtypes } as unknown) as Reflect;
-
-  // Flatten inner runtypes if possible
-  for (let i = 0; i < runtypes.length; ) {
-    switch (runtypes[i].reflect.tag) {
-      case 'literal': {
-        const literal = runtypes.splice(i, 1)[0] as Literal<string>;
-        const string = literal.value;
-        strings.splice(i, 2, strings[i] + string + strings[i + 1]);
-        break;
-      }
-      case 'template': {
-        const template = runtypes[i] as Template<string[], RuntypeBase<string>[]>;
-        runtypes.splice(i, 1, ...template.runtypes);
-        const innerStrings = template.strings;
-        if (innerStrings.length === 1) {
-          strings.splice(i, 2, strings[i] + innerStrings[0] + strings[i + 1]);
-        } else {
-          const first = innerStrings[0];
-          const rest = innerStrings.slice(1, -1);
-          const last = innerStrings[innerStrings.length - 1];
-          strings.splice(i, 2, strings[i] + first, ...rest, last + strings[i + 1]);
-        }
-        break;
-      }
-      default:
-        i++;
-        break;
-    }
-  }
-
-  const pattern = strings.map(escapeRegExp).reduce((pattern, string, i) => {
-    const prefix = pattern + string;
-    if (runtypes[i]) {
-      try {
-        // Union of literals should be treated as a special-case
-        const literals = getLiteralsInUnion(runtypes[i]);
-        const values = literals.map(literal => literal.value).map(escapeRegExp);
-        return prefix + `(?<skip_${i}>${values.join('|')})`;
-      } catch (_) {
-        return prefix + '(.*)';
-      }
-    } else return prefix;
-  }, '');
-  const regexp = new RegExp(`^${pattern}$`, 'su');
+  const regexp = createRegExpForTemplate(self as any);
 
   const test = (
     value: string,
     visited: VisitedState,
-  ): value is A extends (string | RuntypeBase<string>)[]
+  ): value is A extends (LiteralBase | RuntypeBase<LiteralBase>)[]
     ? TemplateLiteralType<ExtractStrings<A>, ExtractRuntypes<A>>
     : A extends [infer carA, ...infer cdrA]
-    ? carA extends readonly string[]
-      ? cdrA extends readonly RuntypeBase<string>[]
+    ? carA extends readonly [string, ...string[]]
+      ? cdrA extends readonly RuntypeBase<LiteralBase>[]
         ? TemplateLiteralType<carA, cdrA>
         : never
       : never
@@ -227,25 +374,26 @@ export function Template<
     const matches = value.match(regexp);
     if (matches) {
       const values = matches.slice(1);
-      const groups = matches.groups;
       for (let i = 0; i < runtypes.length; i++) {
-        if (groups && groups[`skip_${i}`]) continue;
         const runtype = runtypes[i];
-        const value = values[i];
-        const validated = innerValidate(runtype, value, visited);
-        if (!validated.success) return false;
-        else continue;
+        const revivers = getReviversFor(runtype.reflect);
+        for (const reviver of revivers) {
+          const value = reviver(values[i]);
+          const validated = innerValidate(runtype, value, visited);
+          if (!validated.success) return false;
+          else continue;
+        }
       }
       return true;
     } else return false;
   };
 
   return create<
-    A extends (string | RuntypeBase<string>)[]
+    A extends (LiteralBase | RuntypeBase<LiteralBase>)[]
       ? Template<ExtractStrings<A>, ExtractRuntypes<A>>
       : A extends [infer carA, ...infer cdrA]
-      ? carA extends readonly string[]
-        ? cdrA extends readonly RuntypeBase<string>[]
+      ? carA extends readonly [string, ...string[]]
+        ? cdrA extends readonly RuntypeBase<LiteralBase>[]
           ? Template<carA, cdrA>
           : never
         : never
@@ -256,7 +404,7 @@ export function Template<
         ? FAILURE.TYPE_INCORRECT(self, value)
         : test(value, visited)
         ? SUCCESS(value)
-        : FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `\`${literal(value)}\``),
+        : FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `"${literal(value)}"`),
     self,
   );
 }

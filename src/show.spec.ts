@@ -43,11 +43,65 @@ const cases: [Reflect, string][] = [
   [Literal(true), 'true'],
   [Literal(3), '3'],
   [Literal('foo'), '"foo"'],
+  [Template(), '""'],
+  [Template('test'), '"test"'],
+  [Template('te', 'st'), '"test"'],
+  [
+    Template(
+      Literal('t').withConstraint(() => true),
+      'e',
+      's',
+      Literal('t').withConstraint(() => true),
+    ),
+    '"test"',
+  ],
   [Template('foo', Literal('bar'), 'baz'), '"foobarbaz"'],
   [Template('foo', Template`foo${Literal('bar')}baz`, 'baz'), '"foofoobarbazbaz"'],
   [Template('foo', Union(Literal('foo'), Literal('bar')), 'baz'), '`foo${"foo" | "bar"}baz`'],
   [Template(String), 'string'],
+  [Template('a', Template('b', Template('c', Number))), '`abc${number}`'],
+  [Template('', Template(String)), 'string'],
+  [Template(Template(Number)), '`${number}`'],
+  [Template(Number), '`${number}`'],
+  [Template('null', Template(String)), '`null${string}`'],
+  [Template(Template(Null), String), '`null${string}`'],
+  [Template(Intersect(Null)), '"null"'],
+  [Template(Intersect(String)), 'string'],
+  [Template(Union(Null), Union(Number)), '`null${number}`'],
+  [Template(Union(Number, Undefined)), '`${number}` | "undefined"'],
+  [Template(Union(Number, Undefined), 'foo'), '`${number | undefined}foo`'],
+  [Template(Null, Template(Number)), '`null${number}`'],
+  [
+    Template(
+      Null.withConstraint(() => true),
+      Number.withConstraint(() => true),
+    ),
+    '`null${number}`',
+  ],
   [Template(Union(Literal('foo'), Literal('bar'))), '"foo" | "bar"'],
+  [Template(Literal('baz').withBrand('qux')), 'qux'],
+  [Template('foo', Literal('baz').withBrand('qux')), '`foo${qux}`'],
+  [
+    Template(Union(Literal('foo'), Literal('bar')), Literal('baz').withBrand('qux')),
+    '`${"foo" | "bar"}${qux}`',
+  ],
+  [
+    Template(
+      'foo',
+      Literal('baz')
+        .withBrand('qux')
+        .withConstraint(() => true),
+    ),
+    '`foo${qux}`',
+  ],
+  [
+    Template(
+      Literal('baz')
+        .withBrand('qux')
+        .withConstraint(() => true),
+    ),
+    'qux',
+  ],
   [Array(String), 'string[]'],
   [Array(String).asReadonly(), 'readonly string[]'],
   [Dictionary(Array(Boolean)), '{ [_: string]: boolean[] }'],

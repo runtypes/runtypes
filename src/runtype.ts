@@ -11,7 +11,11 @@ import {
 import { Reflect } from './reflect';
 import show from './show';
 import { ValidationError } from './errors';
-import { SUCCESS } from './util';
+import { hasKey, SUCCESS } from './util';
+
+const RuntypeSymbol: unique symbol = Symbol();
+
+export const isRuntype = (x: any): x is RuntypeBase<unknown> => hasKey(RuntypeSymbol, x);
 
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
@@ -46,6 +50,7 @@ export interface RuntypeBase<A = unknown> {
   readonly reflect: Reflect;
 
   /* @internal */ readonly _falseWitness: A;
+  /* @internal */ readonly [RuntypeSymbol]: true;
 }
 
 /**
@@ -125,6 +130,7 @@ export function create<A extends RuntypeBase>(
   validate: (x: any, visited: VisitedState) => Result<Static<A>>,
   A: any,
 ): A {
+  A[RuntypeSymbol] = true;
   A.check = check;
   A.assert = check;
   A._innerValidate = (value: any, visited: VisitedState) => {
