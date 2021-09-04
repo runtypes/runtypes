@@ -13,6 +13,7 @@ import { FAILURE, SUCCESS, typeOf } from '../util';
 import { Literal, LiteralBase, literal } from './literal';
 import { Union } from './union';
 import { Intersect } from './intersect';
+import { Result } from '../result';
 
 type TemplateLiteralType<
   A extends readonly LiteralBase[],
@@ -200,6 +201,9 @@ const getInnerLiterals = (runtype: RuntypeBase<unknown>): Literal<LiteralBase>[]
   }
 };
 
+/**
+ *Reviver is used for converting string literals such as `"0x2A"` to the actual `42`
+ */
 type Reviver = (s: string) => any;
 const identity: Reviver = s => s;
 const revivers: {
@@ -220,31 +224,54 @@ const revivers: {
   undefined: [() => undefined, 'undefined'],
 };
 
-const getReviversFor = (reflect: Reflect): Set<Reviver> => {
+type Revivers = Reviver | Revivers[];
+const getReviversFor = (reflect: Reflect): Revivers => {
   switch (reflect.tag) {
     case 'literal': {
       const [reviver] = revivers[typeOf(reflect.value)] || [identity];
-      return new Set([reviver]);
+      return reviver;
     }
     case 'brand':
       return getReviversFor(reflect.entity);
     case 'constraint':
       return getReviversFor(reflect.underlying);
     case 'union':
-      return reflect.alternatives.map(getReviversFor).reduce<Set<Reviver>>((set, reviver) => {
-        if (reviver instanceof Set) for (const r of reviver) set.add(r);
-        else set.add(reviver);
-        return set;
-      }, new Set());
+      return reflect.alternatives.map(getReviversFor);
     case 'intersect':
-      return reflect.intersectees.map(getReviversFor).reduce<Set<Reviver>>((set, reviver) => {
-        if (reviver instanceof Set) for (const r of reviver) set.add(r);
-        else set.add(reviver);
-        return set;
-      }, new Set());
+      return reflect.intersectees.map(getReviversFor);
     default:
       const [reviver] = revivers[reflect.tag] || [identity];
-      return new Set([reviver]);
+      return reviver;
+  }
+};
+
+/** Recursively map corresponding reviver and  */
+const reviveValidate = (reflect: Reflect, visited: VisitedState) => (
+  value: string,
+): Result<unknown> => {
+  const revivers = getReviversFor(reflect);
+  if (Array.isArray(revivers)) {
+    switch (reflect.tag) {
+      case 'union':
+        for (const alternative of reflect.alternatives) {
+          const validated = reviveValidate(alternative.reflect, visited)(value);
+          if (validated.success) return validated;
+        }
+        return FAILURE.TYPE_INCORRECT(reflect, value);
+      case 'intersect':
+        for (const intersectee of reflect.intersectees) {
+          const validated = reviveValidate(intersectee.reflect, visited)(value);
+          if (!validated.success) return validated;
+        }
+        return SUCCESS(value);
+      default:
+        /* istanbul ignore next */
+        throw Error('impossible');
+    }
+  } else {
+    const reviver = revivers;
+    const validated = innerValidate(reflect, reviver(value), visited);
+    return validated;
   }
 };
 
@@ -381,33 +408,20 @@ export function Template<
   const self = ({ tag: 'template', strings, runtypes } as unknown) as Reflect;
   const regexp = createRegExpForTemplate(self as any);
 
-  const test = (
-    value: string,
-    visited: VisitedState,
-  ): value is A extends (LiteralBase | RuntypeBase<LiteralBase>)[]
-    ? TemplateLiteralType<ExtractStrings<A>, ExtractRuntypes<A>>
-    : A extends [infer carA, ...infer cdrA]
-    ? carA extends readonly [string, ...string[]]
-      ? cdrA extends readonly RuntypeBase<LiteralBase>[]
-        ? TemplateLiteralType<carA, cdrA>
-        : never
-      : never
-    : never => {
+  const test = (value: string, visited: VisitedState): Result<string> => {
     const matches = value.match(regexp);
     if (matches) {
       const values = matches.slice(1);
       for (let i = 0; i < runtypes.length; i++) {
         const runtype = runtypes[i];
-        const revivers = getReviversFor(runtype.reflect);
-        for (const reviver of revivers) {
-          const value = reviver(values[i]);
-          const validated = innerValidate(runtype, value, visited);
-          if (!validated.success) return false;
-          else continue;
-        }
+        const value = values[i];
+        const validated = reviveValidate(runtype.reflect, visited)(value) as Result<string>;
+        if (!validated.success) return validated;
       }
-      return true;
-    } else return false;
+      return SUCCESS(value);
+    } else {
+      return FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `"${literal(value)}"`);
+    }
   };
 
   return create<
@@ -422,11 +436,7 @@ export function Template<
       : never
   >(
     (value, visited) =>
-      typeof value !== 'string'
-        ? FAILURE.TYPE_INCORRECT(self, value)
-        : test(value, visited)
-        ? SUCCESS(value)
-        : FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `"${literal(value)}"`),
+      typeof value !== 'string' ? FAILURE.TYPE_INCORRECT(self, value) : test(value, visited),
     self,
   );
 }
