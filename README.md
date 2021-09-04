@@ -276,7 +276,7 @@ type T = Static<typeof B>; // T will have type of `Buffer`
 
 The `Template` runtype validates that a value is a string that conforms to the template.
 
-**_There's only limited support for static type inference for this runtype._** You can use the familiar syntax to create a `Template` runtype:
+You can use the familiar syntax to create a `Template` runtype:
 
 ```ts
 const T = Template`foo${Literal('bar')}baz`;
@@ -297,16 +297,38 @@ const T = Template(['foo', 'baz'] as const, Literal('bar'));
 type T = Static<typeof T>; // inferred as "foobarbaz"
 ```
 
-As another solution, it also supports a convenient pattern of parameters:
+As a convenient solution for this, it also supports another style of passing arguments:
 
 ```ts
 const T = Template('foo', Literal('bar'), 'baz');
 type T = Static<typeof T>; // inferred as "foobarbaz"
 ```
 
+You can pass various things to the `Template` constructor, as long as they are assignable to `string | number | bigint | boolean | null | undefined` and the corresponding `Runtype`s:
+
+```ts
+// Equivalent runtypes
+Template(Literal('42'));
+Template(42);
+Template(Template('42'));
+Template(4, '2');
+Template(Literal(4), '2');
+Template(String.withConstraint(s => s === '42'));
+Template(
+  Intersect(
+    Number.withConstraint(n => n === 42),
+    String.withConstraint(s => s.length === 2),
+    // `Number`s in `Template` accept alternative representations like `"0x2A"`,
+    // thus we have to constraint the length of string, to accept only `"42"`
+  ),
+);
+```
+
+Trivial items such as bare literals, `Literal`s, and single-element `Union`s and `Intersect`s are all coerced into strings at the creation time of the runtype. Additionally, `Union`s of such runtypes are converted into `RegExp` patterns like `(?:${alternative_0}|${alternative_1}|...)`, so we can assume `Union` of `Literal`s is a fully supported runtype in `Template`.
+
 ### Caveats
 
-All runtypes except `Literal` or `Union` of `Literal`s won't work expectedly in the cases it should occur immediately one after another, for example:
+A `Template` internally constructs a `RegExp` to parse strings. This can lead to a problem if it contains multiple non-literal runtypes:
 
 ```ts
 const UpperCaseString = Constraint(String, s => s === s.toUpperCase(), {
@@ -318,7 +340,7 @@ const LowerCaseString = Constraint(String, s => s === s.toLowerCase(), {
 Template(UpperCaseString, LowerCaseString);
 ```
 
-Because the only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraint, which must be hardly done. Actually runtypes treats `String` runtypes as the simplest `RegExp` pattern `.*`, that is, the above runtype won't work at all because the entire pattern is just `^(.*)(.*)$`. You have to avoid using `Constraint` this way, and instead manually parse the string inside a `Constraint`.
+The only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraint, which must be hardly done. Actually `Template` treats `String` runtypes as the simplest `RegExp` pattern `.*` and the “greedy” strategy is always used, that is, the above runtype won't work expectedly because the entire pattern is just `^(.*)(.*)$` and the first `.*` always wins. You have to avoid using `Constraint` this way, and instead manually parse it using a single `Constraint` which covers the entire string.
 
 ## Function contracts
 
