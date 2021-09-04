@@ -135,7 +135,7 @@ const flattenInnerRuntypes = (
         >;
         if (union.alternatives.length === 1) {
           try {
-            const literal = getInnerLiterals(union)[0];
+            const literal = getInnerLiteral(union);
             runtypes.splice(i, 1);
             const string = String(literal.value);
             strings.splice(i, 2, strings[i] + string + strings[i + 1]);
@@ -155,7 +155,7 @@ const flattenInnerRuntypes = (
         >;
         if (intersect.intersectees.length === 1) {
           try {
-            const literal = getInnerLiterals(intersect)[0];
+            const literal = getInnerLiteral(intersect);
             runtypes.splice(i, 1);
             const string = String(literal.value);
             strings.splice(i, 2, strings[i] + string + strings[i + 1]);
@@ -186,19 +186,24 @@ const normalizeArgs = (
   return [strings, runtypes];
 };
 
-const getInnerLiterals = (runtype: RuntypeBase<unknown>): Literal<LiteralBase>[] => {
+const getInnerLiteral = (runtype: RuntypeBase<unknown>): Literal<LiteralBase> => {
   switch (runtype.reflect.tag) {
     case 'literal':
-      return [runtype as Literal<LiteralBase>];
+      return runtype as Literal<LiteralBase>;
     case 'brand':
-      return getInnerLiterals(runtype.reflect.entity);
+      return getInnerLiteral(runtype.reflect.entity);
     case 'union':
-      return runtype.reflect.alternatives.map(getInnerLiterals).reduce((a, x) => a.concat(x), []);
+      if (runtype.reflect.alternatives.length === 1)
+        return getInnerLiteral(runtype.reflect.alternatives[0]);
+      break;
     case 'intersect':
-      return runtype.reflect.intersectees.map(getInnerLiterals).reduce((a, x) => a.concat(x), []);
+      if (runtype.reflect.intersectees.length === 1)
+        return getInnerLiteral(runtype.reflect.intersectees[0]);
+      break;
     default:
-      throw undefined;
+      break;
   }
+  throw undefined;
 };
 
 /**
@@ -271,6 +276,9 @@ const reviveValidate = (reflect: Reflect, visited: VisitedState) => (
   } else {
     const reviver = revivers;
     const validated = innerValidate(reflect, reviver(value), visited);
+    if (!validated.success && validated.code === 'VALUE_INCORRECT' && reflect.tag === 'literal')
+      // TODO: Temporary fix to show unrevived value in message; needs refactor
+      return FAILURE.VALUE_INCORRECT('literal', `"${literal(reflect.value)}"`, `"${value}"`);
     return validated;
   }
 };
@@ -434,9 +442,17 @@ export function Template<
           : never
         : never
       : never
-  >(
-    (value, visited) =>
-      typeof value !== 'string' ? FAILURE.TYPE_INCORRECT(self, value) : test(value, visited),
-    self,
-  );
+  >((value, visited) => {
+    if (typeof value !== 'string') return FAILURE.TYPE_INCORRECT(self, value);
+    else {
+      const validated = test(value, visited);
+      if (!validated.success) {
+        const result = FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `"${value}"`);
+        if (result.message !== validated.message)
+          // TODO: Should use `details` here, but it needs unionizing `string` anew to the definition of `Details`, which is a breaking change
+          result.message += ` (inner: ${validated.message})`;
+        return result;
+      } else return SUCCESS(value);
+    }
+  }, self);
 }
