@@ -16,7 +16,7 @@ export interface Literal<A extends LiteralBase> extends Runtype<A> {
 /**
  * Be aware of an Array of Symbols `[Symbol()]` which would throw "TypeError: Cannot convert a Symbol value to a string"
  */
-function literal(value: unknown) {
+export function literal(value: unknown) {
   return Array.isArray(value)
     ? String(value.map(String))
     : typeof value === 'bigint'
