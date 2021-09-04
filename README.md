@@ -285,7 +285,7 @@ const T = Template`foo${Literal('bar')}baz`;
 But then the type inference won't work:
 
 ```ts
-type T = Static<typeof T>; // inferred as ""
+type T = Static<typeof T>; // inferred as string
 ```
 
 Because TS doesn't provide the exact string literal type information (`["foo", "baz"]` in this case) to the underlying function. See the issue [microsoft/TypeScript#33304](https://github.com/microsoft/TypeScript/issues/33304), especially this comment [microsoft/TypeScript#33304 (comment)](https://github.com/microsoft/TypeScript/issues/33304#issuecomment-697977783) we hope to be implemented.
