@@ -27,7 +27,7 @@ export interface Dictionary<V extends RuntypeBase, K extends DictionaryKeyType>
 
 export interface StringDictionary<V extends RuntypeBase>
   extends Runtype<
-    V extends Optional<any> ? { [_ in string]?: Static<V> } : { [_: string]: Static<V> }
+    V extends Optional<any> ? { [_ in string]?: Static<V> } : { [_ in string]: Static<V> }
   > {
   tag: 'dictionary';
   key: 'string';
@@ -36,7 +36,7 @@ export interface StringDictionary<V extends RuntypeBase>
 
 export interface NumberDictionary<V extends RuntypeBase>
   extends Runtype<
-    V extends Optional<any> ? { [_ in number]?: Static<V> } : { [_: number]: Static<V> }
+    V extends Optional<any> ? { [_ in number]?: Static<V> } : { [_ in number]: Static<V> }
   > {
   tag: 'dictionary';
   key: 'number';
