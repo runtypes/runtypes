@@ -4,6 +4,7 @@ import { Constraint } from './constraint';
 import show from '../show';
 import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
 import { Details, Result } from '../result';
+import { Optional } from './optional';
 
 type DictionaryKeyType = string | number | symbol;
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string
@@ -18,21 +19,25 @@ type DictionaryKeyRuntype = RuntypeBase<string | number | symbol>;
 const NumberKey = Constraint(String, s => !isNaN(+s), { name: 'number' });
 
 export interface Dictionary<V extends RuntypeBase, K extends DictionaryKeyType>
-  extends Runtype<{ [_ in K]: Static<V> }> {
+  extends Runtype<V extends Optional<any> ? { [_ in K]?: Static<V> } : { [_ in K]: Static<V> }> {
   tag: 'dictionary';
   key: StringLiteralFor<K>;
   value: V;
 }
 
 export interface StringDictionary<V extends RuntypeBase>
-  extends Runtype<{ [_: string]: Static<V> }> {
+  extends Runtype<
+    V extends Optional<any> ? { [_ in string]?: Static<V> } : { [_: string]: Static<V> }
+  > {
   tag: 'dictionary';
   key: 'string';
   value: V;
 }
 
 export interface NumberDictionary<V extends RuntypeBase>
-  extends Runtype<{ [_: number]: Static<V> }> {
+  extends Runtype<
+    V extends Optional<any> ? { [_ in number]?: Static<V> } : { [_: number]: Static<V> }
+  > {
   tag: 'dictionary';
   key: 'number';
   value: V;
