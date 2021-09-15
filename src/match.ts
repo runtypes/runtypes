@@ -9,7 +9,7 @@ export function match<A extends [PairCase<any, any>, ...PairCase<any, any>[]]>(
   },
   {
     [key in keyof A]: A[key] extends PairCase<any, infer Z> ? Z : unknown;
-  }
+  }[number]
 > {
   return x => {
     for (const [T, f] of cases) if (T.guard(x)) return f(x);
