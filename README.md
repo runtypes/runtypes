@@ -177,13 +177,13 @@ if (isHabitable(spaceObject)) {
 }
 ```
 
-There's also a top-level `match` function which allows testing an ad-hoc sequence of runtypes:
+There's also a top-level `match` function which allows testing an ad-hoc sequence of runtypes. You should use it along with `when` helper function to enable type inference of the parameters of the case functions:
 
 ```ts
 const makeANumber = match(
-  [Number, n => n * 3],
-  [Boolean, b => (b ? 1 : 0)],
-  [String, s => s.length],
+  when(Number, n => n * 3),
+  when(Boolean, b => (b ? 1 : 0)),
+  when(String, s => s.length),
 );
 
 makeANumber(9); // = 27
@@ -193,10 +193,10 @@ To allow the function to be applied to anything and then handle match failures, 
 
 ```ts
 const makeANumber = match(
-  [Number, n => n * 3],
-  [Boolean, b => (b ? 1 : 0)],
-  [String, s => s.length],
-  [Unknown, () => 42],
+  when(Number, n => n * 3),
+  when(Boolean, b => (b ? 1 : 0)),
+  when(String, s => s.length),
+  when(Unknown, () => 42),
 );
 ```
 
