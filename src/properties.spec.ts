@@ -24,28 +24,34 @@ describe('properties', () => {
     expect(R.properties[1]).toBe(String);
     expect(R.properties[global.Number.MAX_SAFE_INTEGER]).toBe(String);
     expect(R.properties[global.Number.MAX_VALUE]).toBe(Never);
-    expect((R.properties as any)['foo']).toBe(Never);
+    // @ts-expect-error
+    expect(R.properties['foo']).toBe(Never);
   });
   it('should work with record', () => {
     const R = Record({ foo: String, bar: Number });
     expect(R.properties.foo).toBe(String);
     expect(R.properties.bar).toBe(Number);
-    expect((R.properties as any).baz).toBe(Never);
+    // @ts-expect-error
+    expect(R.properties.baz).toBe(Never);
   });
   it('should work with tuple', () => {
     const R = Tuple(String, Number, Boolean);
     expect(R.properties[0]).toBe(String);
     expect(R.properties[1]).toBe(Number);
     expect(R.properties[2]).toBe(Boolean);
-    expect((R.properties as any)[3]).toBe(Never);
+    // @ts-expect-error
+    expect(R.properties[3]).toBe(Never);
   });
   it('should work with dictionary', () => {
     const R = Dictionary(String, Number);
     expect(R.properties[0]).toBe(String);
-    expect((R.properties as any)['1']).toBe(String);
+    // @ts-expect-error
+    expect(R.properties['1']).toBe(String);
     expect(R.properties[0x02]).toBe(String);
-    expect((R.properties as any)['0x03']).toBe(Never);
-    expect((R.properties as any)['foo']).toBe(Never);
+    // @ts-expect-error
+    expect(R.properties['0x03']).toBe(Never);
+    // @ts-expect-error
+    expect(R.properties['foo']).toBe(Never);
   });
   it('should work with union', () => {
     const R = Union(
@@ -63,7 +69,8 @@ describe('properties', () => {
     expect(bar.guard(undefined)).toBe(true);
     expect(bar.guard(true)).toBe(true);
     expect(bar.guard('true')).toBe(false);
-    expect((R.properties as any).baz).toBe(Never);
+    // @ts-expect-error
+    expect(R.properties.baz).toBe(Never);
   });
   it('should work with intersection', () => {
     const R = Intersect(Record({ foo: String }), Record({ foo: Literal('test'), bar: String }));
@@ -74,12 +81,15 @@ describe('properties', () => {
     expect(foo.guard('crap')).toBe(false);
     expect(foo.guard(42)).toBe(false);
     expect(bar.tag).toBe('string');
-    expect((R.properties as any).baz.tag).toBe('never');
+    // @ts-expect-error
+    expect(R.properties.baz.tag).toBe('never');
   });
   it('should work with mixed union', () => {
     const R = Union(String, Record({ foo: String, bar: Optional(Boolean) }));
-    expect((R.properties as any).foo.tag).toBe('never');
-    expect((R.properties as any).bar.tag).toBe('never');
+    // @ts-expect-error
+    expect(R.properties.foo.tag).toBe('never');
+    // @ts-expect-error
+    expect(R.properties.bar.tag).toBe('never');
   });
   it('should work with mixed intersection', () => {
     const R = Intersect(String, Record({ foo: String, bar: Optional(Boolean) }));
