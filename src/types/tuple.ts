@@ -13,7 +13,7 @@ export interface Tuple<A extends readonly RuntypeBase[]>
   tag: 'tuple';
   components: A;
 
-  readonly properties: A;
+  properties: { readonly [K in keyof A]: A[K] };
 }
 
 /**

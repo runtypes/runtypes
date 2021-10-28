@@ -16,7 +16,7 @@ interface Arr<E extends RuntypeBase, RO extends boolean = boolean>
 
   asReadonly(): Arr<E, true>;
 
-  readonly properties: { [_: number]: E };
+  properties: { readonly [_: number]: E };
 }
 
 /**

@@ -26,7 +26,7 @@ export interface Dictionary<V extends RuntypeBase, K extends DictionaryKeyType>
   key: StringLiteralFor<K>;
   value: V;
 
-  readonly properties: { [_ in K]: V };
+  properties: { readonly [_ in K]: V };
 }
 
 export interface StringDictionary<V extends RuntypeBase>
@@ -37,7 +37,7 @@ export interface StringDictionary<V extends RuntypeBase>
   key: 'string';
   value: V;
 
-  readonly properties: { [_: string]: V };
+  properties: { readonly [_: string]: V };
 }
 
 export interface NumberDictionary<V extends RuntypeBase>
@@ -48,7 +48,7 @@ export interface NumberDictionary<V extends RuntypeBase>
   key: 'number';
   value: V;
 
-  readonly properties: { [_: number]: V };
+  properties: { readonly [_: number]: V };
 }
 
 /**

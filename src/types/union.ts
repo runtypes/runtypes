@@ -14,7 +14,7 @@ export interface Union<A extends readonly [RuntypeBase, ...RuntypeBase[]]>
   alternatives: A;
   match: Match<A>;
 
-  readonly properties: {
+  properties: {
     [K in keyof A]: A[K] extends { properties: unknown } ? never : A[K];
   }[number] extends never
     ? Merge<
@@ -23,7 +23,7 @@ export interface Union<A extends readonly [RuntypeBase, ...RuntypeBase[]]>
         }[number]['properties']
       > extends infer M
       ? {
-          [K in keyof M]: UnionToTuple<M[K]> extends infer T
+          readonly [K in keyof M]: UnionToTuple<M[K]> extends infer T
             ? T extends [RuntypeBase, ...RuntypeBase[]]
               ? T extends [RuntypeBase, RuntypeBase, ...RuntypeBase[]]
                 ? Union<T>

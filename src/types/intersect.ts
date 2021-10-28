@@ -16,7 +16,7 @@ export interface Intersect<A extends readonly [RuntypeBase, ...RuntypeBase[]]>
   tag: 'intersect';
   intersectees: A;
 
-  readonly properties: {
+  properties: {
     [K in keyof A]: A[K] extends { properties: unknown } ? A[K] : never;
   }[number] extends never
     ? {}
@@ -26,7 +26,7 @@ export interface Intersect<A extends readonly [RuntypeBase, ...RuntypeBase[]]>
     ? UnionToIntersection<U> extends infer I
       ? Merge<{ [K in keyof I]: I[K] extends never ? unknown : I[K] } & U> extends infer M
         ? {
-            [K in keyof M]: UnionToTuple<M[K]> extends infer T
+            readonly [K in keyof M]: UnionToTuple<M[K]> extends infer T
               ? T extends [RuntypeBase, ...RuntypeBase[]]
                 ? T extends [RuntypeBase, RuntypeBase, ...RuntypeBase[]]
                   ? Intersect<T>

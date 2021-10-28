@@ -74,7 +74,7 @@ export interface InternalRecord<
     RO
   >;
 
-  readonly properties: O;
+  properties: { readonly [K in keyof O]: O[K] };
 }
 
 export type Record<
