@@ -21,4 +21,3 @@ jobs:
           cache: 'yarn'
       - run: yarn install --frozen-lockfile
       - run: yarn test:ci
-      - run: yarn lint
