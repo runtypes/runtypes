@@ -537,3 +537,4 @@ const WrongMember = CrewMember.extend({
 - [rest.ts](https://github.com/hmil/rest.ts) Allows building type safe and runtime-checked APIs
 - [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
 - [runtyping](https://github.com/johngeorgewright/runtyping) Generate runtypes from static types & JSON schema
+- [schemart](https://github.com/codemariner/schemart) Generate runtypes from your database schema.
