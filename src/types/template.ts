@@ -219,7 +219,7 @@ const revivers: {
     s => globalThis.Number(s),
     '[+-]?(?:\\d*\\.\\d+|\\d+\\.\\d*|\\d+)(?:[Ee][+-]?\\d+)?',
     '0[Bb][01]+',
-    '0[Oo][07]+',
+    '0[Oo][0-7]+',
     '0[Xx][0-9A-Fa-f]+',
     // Note: `"NaN"` isn't here, as TS doesn't allow `"NaN"` to be a `` `${number}` ``
   ],
