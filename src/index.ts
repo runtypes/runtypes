@@ -15,6 +15,7 @@ export { Constraint, Guard } from './types/constraint';
 export { Enum } from './types/Enum';
 export { InstanceOf } from './types/instanceof';
 export { Intersect } from './types/intersect';
+export { KeyOf } from './types/KeyOf';
 export { Lazy } from './types/lazy';
 export type { LiteralValue } from './types/literal';
 export { Literal, Null, Undefined } from './types/literal';
