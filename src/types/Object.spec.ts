@@ -1,4 +1,5 @@
-import { Object as ObjectType, String } from '..';
+import { Object as ObjectType, showType, String } from '..';
+import { ReadonlyPartial } from './Object';
 
 test('pick', () => {
   const CrewMember = ObjectType({
@@ -52,6 +53,27 @@ test('omit arbitrary string does not actually break', () => {
 
   expect(Object.keys(PetMember.fields)).toEqual(['name', 'home']);
   expect(PetMember.safeParse({ name: 'my name', home: 'my home' })).toMatchInlineSnapshot(`
+    Object {
+      "success": true,
+      "value": Object {
+        "home": "my home",
+        "name": "my name",
+      },
+    }
+  `);
+});
+
+test('ReadonlyPartial', () => {
+  const CrewMember = ReadonlyPartial({
+    name: String,
+    rank: String,
+    home: String,
+  });
+
+  expect(showType(CrewMember)).toMatchInlineSnapshot(
+    `"{ readonly name?: string; readonly rank?: string; readonly home?: string; }"`,
+  );
+  expect(CrewMember.safeParse({ name: 'my name', home: 'my home' })).toMatchInlineSnapshot(`
     Object {
       "success": true,
       "value": Object {

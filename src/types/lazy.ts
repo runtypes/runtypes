@@ -13,10 +13,6 @@ export function lazyValue<T>(fn: () => T) {
   };
 }
 
-export function isLazyRuntype(runtype: RuntypeBase): runtype is Lazy<RuntypeBase> {
-  return 'tag' in runtype && (runtype as Lazy<RuntypeBase<unknown>>).tag === 'lazy';
-}
-
 /**
  * Construct a possibly-recursive Runtype.
  */
@@ -27,8 +23,11 @@ export function Lazy<TUnderlying extends RuntypeBase<unknown>>(
 
   return create<Lazy<TUnderlying>>(
     'lazy',
-    (value, _innerValidate, innerValidateToPlaceholder) =>
-      innerValidateToPlaceholder(underlying(), value) as any,
+    {
+      p: (value, _innerValidate, innerValidateToPlaceholder) =>
+        innerValidateToPlaceholder(underlying(), value) as any,
+      u: underlying,
+    },
     {
       underlying,
       show(needsParens) {

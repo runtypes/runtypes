@@ -21,8 +21,10 @@ test('Readonly(Record)', () => {
 
 test('Readonly(Object)', () => {
   const obj = ft.Object({ whatever: ft.Number });
+  expect(obj.isReadonly).toBe(false);
   ta.assert<ta.Equal<ReturnType<typeof obj['parse']>, { whatever: number }>>();
   const rObj = ft.Readonly(obj);
+  expect(rObj.isReadonly).toBe(true);
   ta.assert<ta.Equal<ReturnType<typeof rObj['parse']>, { readonly whatever: number }>>();
   expect(rObj.safeParse({ whatever: 2 })).toMatchInlineSnapshot(`
     Object {
@@ -32,6 +34,8 @@ test('Readonly(Object)', () => {
       },
     }
   `);
+  expect(obj.asPartial().isReadonly).toBe(false);
+  expect(rObj.asPartial().isReadonly).toBe(true);
 });
 
 test('Readonly(Tuple)', () => {

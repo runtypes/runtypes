@@ -24,6 +24,18 @@ test('StringRecord', () => {
   `);
   expect(dictionary.safeParse({ foo: record, bar: { value: 24 } })).toMatchInlineSnapshot(`
     Object {
+      "fullError": Array [
+        "The types of bar are not compatible",
+        Array [
+          "Unable to assign {value: 24} to { value: 42; }",
+          Array [
+            "The types of \\"value\\" are not compatible",
+            Array [
+              "Expected literal 42, but was 24",
+            ],
+          ],
+        ],
+      ],
       "key": "bar.value",
       "message": "Expected literal 42, but was 24",
       "success": false,
@@ -85,6 +97,18 @@ test('Using Object.create', () => {
   outer2.bar = { value: 24 };
   expect(dictionary.safeParse(outer2)).toMatchInlineSnapshot(`
     Object {
+      "fullError": Array [
+        "The types of bar are not compatible",
+        Array [
+          "Unable to assign {value: 24} to { value: 42; }",
+          Array [
+            "The types of \\"value\\" are not compatible",
+            Array [
+              "Expected literal 42, but was 24",
+            ],
+          ],
+        ],
+      ],
       "key": "bar.value",
       "message": "Expected literal 42, but was 24",
       "success": false,

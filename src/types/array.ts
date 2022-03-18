@@ -41,7 +41,7 @@ function InternalArr<TElement extends RuntypeBase<unknown>, IsReadonly extends b
   assertRuntype(element);
   const result = create<ReadonlyArray<TElement> | Arr<TElement>>(
     'array',
-    (xs, innerValidate) => {
+    (xs, innerValidate, _innerValidateToPlaceholder, _getFields, sealed) => {
       if (!Array.isArray(xs)) {
         return expected('an Array', xs);
       }
@@ -50,7 +50,11 @@ function InternalArr<TElement extends RuntypeBase<unknown>, IsReadonly extends b
         let fullError: FullError | undefined = undefined;
         let firstError: Failure | undefined;
         for (let i = 0; i < xs.length; i++) {
-          const validated = innerValidate(element, xs[i]);
+          const validated = innerValidate(
+            element,
+            xs[i],
+            sealed && sealed.deep ? { deep: true } : false,
+          );
           if (!validated.success) {
             if (!fullError) {
               fullError = unableToAssign(xs, result);

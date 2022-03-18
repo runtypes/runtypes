@@ -20,38 +20,40 @@ export function AsyncContract<A extends [any, ...any[]] | [], Z>(
   returnType: RuntypeBase<Z>,
 ): AsyncContract<A, Z> {
   return {
-    enforce: (f: (...args: any[]) => any) => (...args: any[]) => {
-      if (args.length < argTypes.length) {
-        return Promise.reject(
-          new ValidationError({
-            message: `Expected ${argTypes.length} arguments but only received ${args.length}`,
-          }),
-        );
-      }
-      const visited: OpaqueVisitedState = createVisitedState();
-      for (let i = 0; i < argTypes.length; i++) {
-        const result = innerValidate(argTypes[i], args[i], visited);
-        if (result.success) {
-          args[i] = result.value;
-        } else {
-          return Promise.reject(new ValidationError(result));
+    enforce:
+      (f: (...args: any[]) => any) =>
+      (...args: any[]) => {
+        if (args.length < argTypes.length) {
+          return Promise.reject(
+            new ValidationError({
+              message: `Expected ${argTypes.length} arguments but only received ${args.length}`,
+            }),
+          );
         }
-      }
-      const returnedPromise = f(...args);
-      if (!(returnedPromise instanceof Promise)) {
-        return Promise.reject(
-          new ValidationError({
-            message: `Expected function to return a promise, but instead got ${returnedPromise}`,
-          }),
-        );
-      }
-      return returnedPromise.then(value => {
-        const result = innerGuard(returnType, value, createGuardVisitedState());
-        if (result) {
-          throw new ValidationError(result);
+        const visited: OpaqueVisitedState = createVisitedState();
+        for (let i = 0; i < argTypes.length; i++) {
+          const result = innerValidate(argTypes[i], args[i], visited, false);
+          if (result.success) {
+            args[i] = result.value;
+          } else {
+            return Promise.reject(new ValidationError(result));
+          }
         }
-        return value;
-      });
-    },
+        const returnedPromise = f(...args);
+        if (!(returnedPromise instanceof Promise)) {
+          return Promise.reject(
+            new ValidationError({
+              message: `Expected function to return a promise, but instead got ${returnedPromise}`,
+            }),
+          );
+        }
+        return returnedPromise.then(value => {
+          const result = innerGuard(returnType, value, createGuardVisitedState(), false);
+          if (result) {
+            throw new ValidationError(result);
+          }
+          return value;
+        });
+      },
   };
 }

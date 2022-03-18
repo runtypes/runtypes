@@ -8,10 +8,12 @@ import {
   createVisitedState,
   OpaqueVisitedState,
   assertRuntype,
+  unwrapRuntype,
+  getFields,
 } from '../runtype';
 import show, { parenthesize } from '../show';
 import { LiteralValue, isLiteralRuntype } from './literal';
-import { lazyValue, isLazyRuntype } from './lazy';
+import { lazyValue } from './lazy';
 import { isObjectRuntype } from './Object';
 import {
   andError,
@@ -24,13 +26,8 @@ import {
   unableToAssign,
 } from '../result';
 import { isTupleRuntype } from './tuple';
-import { isBrandRuntype } from './brand';
-import { isConstraintRuntype } from './constraint';
-import { isParsedValueRuntype } from './ParsedValue';
-import { Never } from '..';
 import showValue from '../showValue';
 import { isIntersectRuntype } from './intersect';
-import { isNamedRuntype } from './Named';
 
 export type StaticUnion<TAlternatives extends readonly RuntypeBase<unknown>[]> = {
   [key in keyof TAlternatives]: TAlternatives[key] extends RuntypeBase<unknown>
@@ -49,28 +46,6 @@ export function isUnionType(runtype: RuntypeBase): runtype is Union<RuntypeBase<
   return 'tag' in runtype && (runtype as Union<RuntypeBase<unknown>[]>).tag === 'union';
 }
 
-function resolveUnderlyingType(runtype: RuntypeBase, mode: 'p' | 's' | 't'): RuntypeBase {
-  if (isLazyRuntype(runtype)) return resolveUnderlyingType(runtype.underlying(), mode);
-  if (isBrandRuntype(runtype)) return resolveUnderlyingType(runtype.entity, mode);
-  if (isConstraintRuntype(runtype)) return resolveUnderlyingType(runtype.underlying, mode);
-  if (isNamedRuntype(runtype)) return resolveUnderlyingType(runtype.underlying, mode);
-
-  if (mode === 'p' && isParsedValueRuntype(runtype))
-    return resolveUnderlyingType(runtype.underlying, mode);
-  if (mode === 't' && isParsedValueRuntype(runtype)) {
-    return runtype.config.test ? resolveUnderlyingType(runtype.config.test, mode) : Never;
-  }
-  if (mode === 's' && isParsedValueRuntype(runtype)) {
-    if (!runtype.config.serialize) {
-      // this node can never match
-      return Never;
-    }
-    return runtype.config.test ? resolveUnderlyingType(runtype.config.test, mode) : runtype;
-  }
-
-  return runtype;
-}
-
 function mapGet<TKey, TValue>(map: Map<TKey, TValue>) {
   return (key: TKey, fn: () => TValue) => {
     const existing = map.get(key);
@@ -85,10 +60,10 @@ function findFields<TResult>(
   alternative: RuntypeBase<TResult>,
   mode: 'p' | 's' | 't',
 ): [string, RuntypeBase][] {
-  const underlying = resolveUnderlyingType(alternative, mode);
+  const underlying = unwrapRuntype(alternative, mode);
   const fields: [string, RuntypeBase][] = [];
   const pushField = (fieldName: string, type: RuntypeBase) => {
-    const f = resolveUnderlyingType(type, mode);
+    const f = unwrapRuntype(type, mode);
     if (isUnionType(f)) {
       for (const type of f.alternatives) {
         pushField(fieldName, type);
@@ -162,7 +137,7 @@ function findDiscriminator<TResult>(
  * Construct a union runtype from runtypes for its alternatives.
  */
 export function Union<
-  TAlternatives extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
+  TAlternatives extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]],
 >(...alternatives: TAlternatives): Union<TAlternatives> {
   assertRuntype(...alternatives);
   type TResult = StaticUnion<TAlternatives>;
@@ -246,7 +221,7 @@ export function Union<
   // This must be lazy to avoid eagerly evaluating any circular references
   const validatorOf = (mode: 'p' | 's' | 't'): InnerValidate => {
     const withFields = flatAlternatives
-      .filter(a => resolveUnderlyingType(a, mode).tag !== 'never')
+      .filter(a => unwrapRuntype(a, mode).tag !== 'never')
       .map(a => [a, findFields(a, mode)] as const);
     const withAtLeastOneField = withFields.filter(a => a[1].length !== 0);
     const withNoFields = withFields.filter(a => a[1].length === 0);
@@ -262,11 +237,9 @@ export function Union<
         }
         const resultWithoutKey = withoutKey(value, innerValidate);
         if (!resultWithoutKey.success) {
-          if (resultWithKey.fullError) {
-            resultWithoutKey.fullError!.push(andError(resultWithKey.fullError!));
-          } else {
-            resultWithoutKey.fullError!.push(andError(unableToAssign(value, `Object`)));
-          }
+          resultWithoutKey.fullError!.push(
+            andError(resultWithKey.fullError ?? unableToAssign(value, `Object`)),
+          );
         }
         return resultWithoutKey;
       };
@@ -282,6 +255,23 @@ export function Union<
     t: validatorOf('t'),
   }));
 
+  const getFieldsForMode = (mode: 'p' | 't' | 's') => {
+    const fields = new Set<string>();
+    for (const a of alternatives) {
+      const aFields = getFields(a, mode);
+      if (aFields === undefined) return undefined;
+      for (const f of aFields) {
+        fields.add(f);
+      }
+    }
+    return fields;
+  };
+  const fields = {
+    p: lazyValue(() => getFieldsForMode(`p`)),
+    t: lazyValue(() => getFieldsForMode(`t`)),
+    s: lazyValue(() => getFieldsForMode(`s`)),
+  };
+
   const runtype: Union<TAlternatives> = create<Union<TAlternatives>>(
     'union',
     {
@@ -295,6 +285,7 @@ export function Union<
         const result = innerValidator().s(value, (t, v) => visited(t, v) || success(v as any));
         return result.success ? undefined : result;
       },
+      f: mode => fields[mode](),
     },
     {
       alternatives: flatAlternatives as any,
@@ -311,7 +302,7 @@ export function Union<
     return (x: any) => {
       const visited: OpaqueVisitedState = createVisitedState();
       for (let i = 0; i < alternatives.length; i++) {
-        const input = innerValidate(alternatives[i], x, visited);
+        const input = innerValidate(alternatives[i], x, visited, false);
         if (input.success) {
           return cases[i](input.value);
         }

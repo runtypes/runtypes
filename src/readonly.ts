@@ -18,19 +18,18 @@ export { default as showValue } from './showValue';
 export { Readonly } from './types/Readonly';
 export { Mutable } from './types/Mutable';
 
-export { Array, Array as MutableArray, ReadonlyArray } from './types/array';
+export { ReadonlyArray as Array, Array as MutableArray, ReadonlyArray } from './types/array';
 export {
-  Object,
+  ReadonlyObject as Object,
   Object as MutableObject,
   ReadonlyObject,
-  Partial,
+  ReadonlyPartial as Partial,
   Partial as MutablePartial,
   ReadonlyPartial,
 } from './types/Object';
-export { Record, Record as MutableRecord, ReadonlyRecord } from './types/Record';
-export { Tuple, Tuple as MutableTuple, ReadonlyTuple } from './types/tuple';
+export { ReadonlyRecord as Record, Record as MutableRecord, ReadonlyRecord } from './types/Record';
+export { ReadonlyTuple as Tuple, Tuple as MutableTuple, ReadonlyTuple } from './types/tuple';
 
-// TODO: should we export StaticIntersect, StaticTuple, StaticUnion etc.
 export type { ConstraintCheck } from './types/constraint';
 export { Constraint, Guard } from './types/constraint';
 export { Enum } from './types/Enum';
@@ -43,7 +42,6 @@ export { Literal, Null, Undefined } from './types/literal';
 export { Named } from './types/Named';
 export { Never } from './types/never';
 export { Boolean, Function, Number, String, Symbol } from './types/primative';
-export { Sealed } from './types/Sealed';
 export { Union } from './types/union';
 export { Unknown } from './types/unknown';
 export { Brand } from './types/brand';

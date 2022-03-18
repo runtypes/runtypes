@@ -24,7 +24,7 @@ interface Sym extends Codec<symbol> {
 
 function createPrimative<
   TType extends 'boolean' | 'function' | 'number' | 'string' | 'symbol',
-  TValue
+  TValue,
 >(type: TType): Codec<TValue> & { readonly tag: TType } {
   return create<Codec<TValue> & { readonly tag: TType }>(
     type,

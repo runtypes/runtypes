@@ -17,7 +17,7 @@ export type ReadonlyStaticTuple<TElements extends readonly RuntypeBase<unknown>[
 };
 
 export interface Tuple<
-  TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[]
+  TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[],
 > extends Codec<StaticTuple<TElements>> {
   readonly tag: 'tuple';
   readonly components: TElements;
@@ -25,7 +25,7 @@ export interface Tuple<
 }
 
 export interface ReadonlyTuple<
-  TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[]
+  TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[],
 > extends Codec<ReadonlyStaticTuple<TElements>> {
   readonly tag: 'tuple';
   readonly components: TElements;
@@ -40,12 +40,12 @@ export function isTupleRuntype(runtype: RuntypeBase): runtype is Tuple<readonly 
  * Construct a tuple runtype from runtypes for each of its elements.
  */
 export function Tuple<
-  T extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]] | readonly []
+  T extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]] | readonly [],
 >(...components: T): Tuple<T> {
   assertRuntype(...components);
   const result = create<Tuple<T>>(
     'tuple',
-    (x, innerValidate) => {
+    (x, innerValidate, _innerValidateToPlaceholder, _getFields, sealed) => {
       if (!Array.isArray(x)) {
         return expected(`tuple to be an array`, x);
       }
@@ -58,7 +58,11 @@ export function Tuple<
         let fullError: FullError | undefined = undefined;
         let firstError: Failure | undefined;
         for (let i = 0; i < components.length; i++) {
-          let validatedComponent = innerValidate(components[i], x[i]);
+          let validatedComponent = innerValidate(
+            components[i],
+            x[i],
+            sealed && sealed.deep ? { deep: true } : false,
+          );
 
           if (!validatedComponent.success) {
             if (!fullError) {
@@ -82,11 +86,21 @@ export function Tuple<
       components,
       isReadonly: false,
       show() {
-        return `[${(components as readonly RuntypeBase<unknown>[])
+        return `${this.isReadonly ? `readonly ` : ``}[${(
+          components as readonly RuntypeBase<unknown>[]
+        )
           .map(e => show(e, false))
           .join(', ')}]`;
       },
     },
   );
   return result;
+}
+
+export function ReadonlyTuple<
+  T extends readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]] | readonly [],
+>(...components: T): ReadonlyTuple<T> {
+  const tuple: any = Tuple(...components);
+  tuple.isReadonly = true;
+  return tuple;
 }

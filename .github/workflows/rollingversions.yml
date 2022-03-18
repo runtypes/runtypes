@@ -10,8 +10,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
-        typescript-version: ['3.9.7', '4.0.2']
+        node-version: [12.x, 14.x, 16.x]
+        # typescript-version: ['4.0.2']
 
     steps:
       - uses: actions/checkout@v2
@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn install --frozen-lockfile
-      - run: yarn add -D typescript@${{ matrix.typescript-version }}
+      # - run: yarn add -D typescript@${{ matrix.typescript-version }}
       - run: yarn build
       - run: yarn test
 

@@ -1,34 +1,51 @@
 {
   "name": "funtypes",
-  "version": "5.0.1",
+  "version": "0.0.0",
   "description": "Runtime validation for static types",
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
   "sideEffects": false,
+  "exports": {
+    "./readonly": {
+      "types": "./lib/readonly.d.ts",
+      "import": "./lib/readonly.mjs",
+      "default": "./lib/readonly.js"
+    },
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.mjs",
+      "default": "./lib/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "readonly": [
+        "lib/readonly.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "postbuild": "tsc --noEmit && rimraf lib/**/*.spec.*",
     "build": "rollup -c",
     "format": "node scripts/format.js",
     "test": "jest $([ \"$CI\" = true ] && echo --coverage || echo --watch)",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "typecheck": "tsc --noEmit --watch"
   },
   "author": "Thomas Crockett",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "24.0.18",
-    "coveralls": "^3.0.6",
-    "jest": "24.9.0",
-    "prettier": "^2.1.1",
+    "@types/jest": "^27.4.1",
+    "jest": "^27.5.1",
+    "prettier": "^2.6.0",
     "rollup": "^2.26.11",
     "rollup-plugin-prettier": "^2.1.0",
     "rollup-plugin-size-snapshot": "^0.12.0",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.27.2",
-    "ts-jest": "^24.1.0",
+    "ts-jest": "^27.1.3",
     "type-assertions": "^1.1.0",
-    "typescript": "4.0.2"
+    "typescript": "^4.6.2"
   },
   "keywords:": [
     "runtime",

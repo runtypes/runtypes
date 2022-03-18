@@ -15,7 +15,7 @@ export type RecordFields = { readonly [_: string]: RuntypeBase<unknown> };
 type RecordStaticType<
   O extends RecordFields,
   IsPartial extends boolean,
-  IsReadonly extends boolean
+  IsReadonly extends boolean,
 > = IsPartial extends false
   ? IsReadonly extends false
     ? { -readonly [K in keyof O]: Static<O[K]> }
@@ -27,7 +27,7 @@ type RecordStaticType<
 export interface InternalRecord<
   O extends RecordFields,
   IsPartial extends boolean,
-  IsReadonly extends boolean
+  IsReadonly extends boolean,
 > extends Codec<RecordStaticType<O, IsPartial, IsReadonly>> {
   readonly tag: 'object';
   readonly fields: O;
@@ -69,41 +69,66 @@ export function InternalObject<O extends RecordFields, Part extends boolean, RO 
   isReadonly: RO,
 ): InternalRecord<O, Part, RO> {
   assertRuntype(...Object.values(fields));
+  const fieldNames: ReadonlySet<string> = new Set(Object.keys(fields));
   const runtype: InternalRecord<O, Part, RO> = create<InternalRecord<O, Part, RO>>(
     'object',
-    (x, innerValidate) => {
-      if (x === null || x === undefined || typeof x !== 'object') {
-        return expected(runtype, x);
-      }
-      if (Array.isArray(x)) {
-        return failure(`Expected ${show(runtype)}, but was an Array`);
-      }
+    {
+      p: (x, innerValidate, _innerValidateToPlaceholder, _getFields, sealed) => {
+        if (x === null || x === undefined || typeof x !== 'object') {
+          return expected(runtype, x);
+        }
+        if (Array.isArray(x)) {
+          return failure(`Expected ${show(runtype)}, but was an Array`);
+        }
 
-      return createValidationPlaceholder(Object.create(null), (placeholder: any) => {
-        let fullError: FullError | undefined = undefined;
-        let firstError: Failure | undefined;
-        for (const key in fields) {
-          if (!isPartial || (hasKey(key, x) && x[key] !== undefined)) {
-            const value = isPartial || hasKey(key, x) ? x[key] : undefined;
-            let validated = innerValidate(fields[key], value);
-            if (!validated.success) {
-              if (!fullError) {
-                fullError = unableToAssign(x, runtype);
+        return createValidationPlaceholder(Object.create(null), (placeholder: any) => {
+          let fullError: FullError | undefined = undefined;
+          let firstError: Failure | undefined;
+          for (const key in fields) {
+            if (!isPartial || (hasKey(key, x) && x[key] !== undefined)) {
+              const value = isPartial || hasKey(key, x) ? x[key] : undefined;
+              let validated = innerValidate(
+                fields[key],
+                value,
+                sealed && sealed.deep ? { deep: true } : false,
+              );
+              if (!validated.success) {
+                if (!fullError) {
+                  fullError = unableToAssign(x, runtype);
+                }
+                fullError.push(typesAreNotCompatible(`"${key}"`, validated));
+                firstError =
+                  firstError ||
+                  failure(validated.message, {
+                    key: validated.key ? `${key}.${validated.key}` : key,
+                    fullError: fullError,
+                  });
+              } else {
+                placeholder[key] = validated.value;
               }
-              fullError.push(typesAreNotCompatible(`"${key}"`, validated));
-              firstError =
-                firstError ||
-                failure(validated.message, {
-                  key: validated.key ? `${key}.${validated.key}` : key,
-                  fullError: fullError,
-                });
-            } else {
-              placeholder[key] = validated.value;
             }
           }
-        }
-        return firstError;
-      });
+          if (!firstError && sealed) {
+            for (const key of Object.keys(x)) {
+              if (!fieldNames.has(key) && !sealed.keysFromIntersect?.has(key)) {
+                const message = `Unexpected property: ${key}`;
+                if (!fullError) {
+                  fullError = unableToAssign(x, runtype);
+                }
+                fullError.push([message]);
+                firstError =
+                  firstError ||
+                  failure(message, {
+                    key: key,
+                    fullError: fullError,
+                  });
+              }
+            }
+          }
+          return firstError;
+        });
+      },
+      f: () => fieldNames,
     },
     {
       isPartial,
@@ -164,7 +189,14 @@ export function InternalObject<O extends RecordFields, Part extends boolean, RO 
 function Obj<O extends RecordFields>(fields: O): Obj<O, false> {
   return InternalObject(fields, false, false);
 }
+export function ReadonlyObject<O extends RecordFields>(fields: O): Obj<O, true> {
+  return InternalObject(fields, false, true);
+}
 
 export function Partial<O extends RecordFields>(fields: O): Partial<O, false> {
   return InternalObject(fields, true, false);
+}
+
+export function ReadonlyPartial<O extends RecordFields>(fields: O): Partial<O, true> {
+  return InternalObject(fields, true, true);
 }

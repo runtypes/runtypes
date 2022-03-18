@@ -14,16 +14,15 @@ export interface Brand<B extends string, A extends RuntypeBase<unknown>>
   readonly entity: A;
 }
 
-export function isBrandRuntype(runtype: RuntypeBase): runtype is Brand<string, RuntypeBase> {
-  return 'tag' in runtype && (runtype as Brand<string, RuntypeBase>).tag === 'brand';
-}
-
 export function Brand<B extends string, A extends RuntypeBase<unknown>>(brand: B, entity: A) {
   assertRuntype(entity);
   return create<Brand<B, A>>(
     'brand',
-    (value, _innerValidate, innerValidateToPlaceholder) =>
-      innerValidateToPlaceholder(entity, value) as any,
+    {
+      p: (value, _innerValidate, innerValidateToPlaceholder) =>
+        innerValidateToPlaceholder(entity, value) as any,
+      u: () => entity,
+    },
     {
       brand,
       entity,

@@ -7,18 +7,19 @@ import pkg from './package.json';
 export default {
   input: {
     index: 'src/index.ts',
-    // contracts: 'src/contracts.ts',
+    readonly: 'src/readonly.ts',
   },
   output: [
     {
       dir: 'lib/',
       entryFileNames: '[name].js',
+      chunkFileNames: 'chunk-[hash].js',
       format: 'cjs',
     },
     {
       dir: 'lib/',
       entryFileNames: '[name].mjs',
-      chunkFileNames: '[name]-[hash].mjs',
+      chunkFileNames: 'chunk-[hash].mjs',
       format: 'es',
     },
   ],

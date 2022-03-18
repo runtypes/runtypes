@@ -25,7 +25,7 @@ export function Readonly<TElement extends RuntypeBase>(
   input: Arr<TElement>,
 ): ReadonlyArray<TElement>;
 export function Readonly<
-  TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[]
+  TElements extends readonly RuntypeBase<unknown>[] = readonly RuntypeBase<unknown>[],
 >(input: Tuple<TElements>): ReadonlyTuple<TElements>;
 export function Readonly<K extends KeyRuntypeBase, V extends RuntypeBase<unknown>>(
   record: Record<K, V>,

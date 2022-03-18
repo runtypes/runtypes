@@ -9,7 +9,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "declaration": true,
-    "sourceMap": false,
+    "sourceMap": true,
     "outDir": "lib",
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true

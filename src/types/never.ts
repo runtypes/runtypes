@@ -8,4 +8,8 @@ export interface Never extends Codec<never> {
 /**
  * Validates nothing (unknown fails).
  */
-export const Never: Never = create('never', value => expected('nothing', value), {}) as any;
+export const Never: Never = create(
+  'never',
+  { p: value => expected('nothing', value), f: () => new Set() },
+  {},
+) as any;
