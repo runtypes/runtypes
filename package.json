@@ -35,6 +35,7 @@
   "author": "Thomas Crockett",
   "license": "MIT",
   "devDependencies": {
+    "@babel/parser": "^7.17.8",
     "@types/jest": "^27.4.1",
     "jest": "^27.5.1",
     "prettier": "^2.6.0",

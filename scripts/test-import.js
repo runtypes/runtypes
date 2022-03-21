@@ -1,7 +1,59 @@
 const { spawnSync } = require('child_process');
-const { mkdtempSync, writeFileSync, readdirSync, mkdirSync } = require('fs');
+const { mkdtempSync, writeFileSync, mkdirSync, readFileSync } = require('fs');
 const { tmpdir } = require('os');
 const { join, resolve, relative } = require('path');
+
+const { parse } = require('@babel/parser');
+
+function getExports(filename) {
+  const ast = parse(readFileSync(`${__dirname}/../${filename}`, `utf8`), {
+    plugins: [`typescript`],
+    sourceType: 'module',
+    sourceFilename: filename,
+  });
+  const exports = { value: [], type: [] };
+  for (const statement of ast.program.body) {
+    switch (statement.type) {
+      case 'ExpressionStatement':
+      case 'ImportDeclaration':
+        break;
+      case 'ExportNamedDeclaration':
+        for (const specifier of statement.specifiers) {
+          const exportKind =
+            specifier.exportKind === 'type' ? 'type' : statement.exportKind ?? 'value';
+          exports[exportKind].push(specifier.exported.name);
+        }
+        break;
+      default:
+        console.log(statement);
+        process.exit(1);
+    }
+  }
+  return { filename, value: new Set(exports.value), type: new Set(exports.type) };
+}
+
+let foundMissingExport = false;
+function compare(a, b, exportKind) {
+  for (const e of a[exportKind]) {
+    if (!b[exportKind].has(e)) {
+      console.error(
+        `${exportKind} export ${JSON.stringify(e)} is in ${a.filename} but not ${b.filename}`,
+      );
+      foundMissingExport = true;
+    }
+  }
+}
+const readOnlyExports = getExports(`src/readonly.ts`);
+const mutableExports = getExports(`src/index.ts`);
+
+compare(mutableExports, readOnlyExports, `value`);
+compare(mutableExports, readOnlyExports, `type`);
+compare(readOnlyExports, mutableExports, `value`);
+compare(readOnlyExports, mutableExports, `type`);
+
+if (foundMissingExport) {
+  process.exit(1);
+}
 
 console.info(`$ npm pack`);
 inheritExit(spawnSync(`npm`, [`pack`], { cwd: join(__dirname, `..`), stdio: `inherit` }));
@@ -30,6 +82,9 @@ const assertions = [
     `assert(typeof t.${n} === 'function');`,
     `assert(typeof r.${n} === 'function');`,
   ]),
+  ...[...mutableExports.value]
+    .sort()
+    .map(n => `assert(t.${n} !== undefined && typeof t.${n} === typeof r.${n});`),
   `assert(t.Object({}).isReadonly === false)`,
   `assert(r.Object({}).isReadonly === true)`,
 ];

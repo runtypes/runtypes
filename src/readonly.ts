@@ -42,6 +42,7 @@ export { Literal, Null, Undefined } from './types/literal';
 export { Named } from './types/Named';
 export { Never } from './types/never';
 export { Boolean, Function, Number, String, Symbol } from './types/primative';
+export { Sealed } from './types/Sealed';
 export { Union } from './types/union';
 export { Unknown } from './types/unknown';
 export { Brand } from './types/brand';
