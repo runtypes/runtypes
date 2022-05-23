@@ -6,11 +6,14 @@ export type ID = Static<typeof ID>;
 export const ArrayNonEmpty = <T extends Runtype>(element: T) =>
   Array(element).withConstraint(a => 0 < a.length || 'array must not be empty');
 
-export const IDRequiedAndOptional = Record({ required: ArrayNonEmpty(ID) })
+export const IDRequiredAndOptional = Record({ required: ArrayNonEmpty(ID) })
   .And(Partial({ optional: ArrayNonEmpty(ID) }))
   .withBrand('IDRequiedAndOptional');
-export type IDRequiedAndOptional = Static<typeof IDRequiedAndOptional>;
+export type IDRequiedAndOptional = Static<typeof IDRequiredAndOptional>;
 
-const test: IDRequiedAndOptional = IDRequiedAndOptional.check({ required: ['a'], optional: ['b'] });
+const test: IDRequiedAndOptional = IDRequiredAndOptional.check({
+  required: ['a'],
+  optional: ['b'],
+});
 
-export default IDRequiedAndOptional;
+export default IDRequiredAndOptional;
