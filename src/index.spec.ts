@@ -409,7 +409,7 @@ describe('check errors', () => {
       Failcode.CONTENT_INCORRECT,
       `Validation failed:\n` +
         `[\n` +
-        `    {\n` +
+        `  {\n` +
         `    "name": "Expected string, but was number"\n` +
         `  }\n` +
         `].\n` +
@@ -429,7 +429,7 @@ describe('check errors', () => {
       Failcode.CONTENT_INCORRECT,
       `Validation failed:\n` +
         `[\n` +
-        `      "Expected number, but was string"\n` +
+        `  "Expected number, but was string"\n` +
         `].\n` +
         `Object should match number[]`,
       { 2: 'Expected number, but was string' },
@@ -443,7 +443,7 @@ describe('check errors', () => {
       Failcode.CONTENT_INCORRECT,
       `Validation failed:\n` +
         `[\n` +
-        `    {\n` +
+        `  {\n` +
         `    "name": "Expected string, but was boolean"\n` +
         `  }\n` +
         `].\n` +
@@ -459,7 +459,7 @@ describe('check errors', () => {
       Failcode.CONTENT_INCORRECT,
       `Validation failed:\n` +
         `[\n` +
-        `    "Expected { name: string; }, but was null"\n` +
+        `  "Expected { name: string; }, but was null"\n` +
         `].\n` +
         `Object should match { name: string; }[]`,
       { 1: 'Expected { name: string; }, but was null' },
@@ -473,7 +473,7 @@ describe('check errors', () => {
       Failcode.CONTENT_INCORRECT,
       `Validation failed:\n` +
         `[\n` +
-        `      "Expected number, but was string"\n` +
+        `  "Expected number, but was string"\n` +
         `].\n` +
         `Object should match readonly number[]`,
       { 2: 'Expected number, but was string' },
@@ -487,7 +487,7 @@ describe('check errors', () => {
       Failcode.CONTENT_INCORRECT,
       `Validation failed:\n` +
         `[\n` +
-        `    {\n` +
+        `  {\n` +
         `    "name": "Expected string, but was boolean"\n` +
         `  }\n` +
         `].\n` +
@@ -503,7 +503,7 @@ describe('check errors', () => {
       Failcode.CONTENT_INCORRECT,
       `Validation failed:\n` +
         `[\n` +
-        `    "Expected { name: string; }, but was null"\n` +
+        `  "Expected { name: string; }, but was null"\n` +
         `].\n` +
         `Object should match readonly { name: string; }[]`,
       { 1: 'Expected { name: string; }, but was null' },
