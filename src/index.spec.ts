@@ -37,6 +37,8 @@ import { Constructor } from './types/instanceof';
 import { ValidationError } from './errors';
 import { Details, Failcode } from './result';
 
+import outdent from 'outdent';
+
 const boolTuple = Tuple(Boolean, Boolean, Boolean);
 const record1 = Record({ Boolean, Number });
 const union1 = Union(Literal(3), String, boolTuple, record1);
@@ -384,11 +386,13 @@ describe('check errors', () => {
       [false, '0', true],
       Tuple(Number, String, Boolean),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `[\n` +
-        `  "Expected number, but was boolean"\n` +
-        `].\n` +
-        `Object should match [number, string, boolean]`,
+      outdent`
+        Validation failed:
+        [
+          "Expected number, but was boolean"
+        ].
+        Object should match [number, string, boolean]
+      `,
       { 0: 'Expected number, but was boolean' },
     );
   });
@@ -407,13 +411,15 @@ describe('check errors', () => {
       [0, { name: 0 }],
       Tuple(Number, Record({ name: String })),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `[\n` +
-        `  {\n` +
-        `    "name": "Expected string, but was number"\n` +
-        `  }\n` +
-        `].\n` +
-        `Object should match [number, { name: string; }]`,
+      outdent`
+        Validation failed:
+        [
+          {
+            "name": "Expected string, but was number"
+          }
+        ].
+        Object should match [number, { name: string; }]
+      `,
       { 1: { name: 'Expected string, but was number' } },
     );
   });
@@ -427,11 +433,13 @@ describe('check errors', () => {
       [0, 2, 'test'],
       Array(Number),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `[\n` +
-        `  "Expected number, but was string"\n` +
-        `].\n` +
-        `Object should match number[]`,
+      outdent`
+        Validation failed:
+        [
+          "Expected number, but was string"
+        ].
+        Object should match number[]
+      `,
       { 2: 'Expected number, but was string' },
     );
   });
@@ -441,13 +449,15 @@ describe('check errors', () => {
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `[\n` +
-        `  {\n` +
-        `    "name": "Expected string, but was boolean"\n` +
-        `  }\n` +
-        `].\n` +
-        `Object should match { name: string; }[]`,
+      outdent`
+        Validation failed:
+        [
+          {
+            "name": "Expected string, but was boolean"
+          }
+        ].
+        Object should match { name: string; }[]
+      `,
       { 1: { name: 'Expected string, but was boolean' } },
     );
   });
@@ -457,11 +467,13 @@ describe('check errors', () => {
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `[\n` +
-        `  "Expected { name: string; }, but was null"\n` +
-        `].\n` +
-        `Object should match { name: string; }[]`,
+      outdent`
+        Validation failed:
+        [
+          "Expected { name: string; }, but was null"
+        ].
+        Object should match { name: string; }[]
+      `,
       { 1: 'Expected { name: string; }, but was null' },
     );
   });
@@ -471,11 +483,13 @@ describe('check errors', () => {
       [0, 2, 'test'],
       Array(Number).asReadonly(),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `[\n` +
-        `  "Expected number, but was string"\n` +
-        `].\n` +
-        `Object should match readonly number[]`,
+      outdent`
+        Validation failed:
+        [
+          "Expected number, but was string"
+        ].
+        Object should match readonly number[]
+      `,
       { 2: 'Expected number, but was string' },
     );
   });
@@ -485,13 +499,15 @@ describe('check errors', () => {
       [{ name: 'Foo' }, { name: false }],
       Array(Record({ name: String })).asReadonly(),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `[\n` +
-        `  {\n` +
-        `    "name": "Expected string, but was boolean"\n` +
-        `  }\n` +
-        `].\n` +
-        `Object should match readonly { name: string; }[]`,
+      outdent`
+        Validation failed:
+        [
+          {
+            "name": "Expected string, but was boolean"
+          }
+        ].
+        Object should match readonly { name: string; }[]
+      `,
       { 1: { name: 'Expected string, but was boolean' } },
     );
   });
@@ -501,11 +517,13 @@ describe('check errors', () => {
       [{ name: 'Foo' }, null],
       Array(Record({ name: String })).asReadonly(),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `[\n` +
-        `  "Expected { name: string; }, but was null"\n` +
-        `].\n` +
-        `Object should match readonly { name: string; }[]`,
+      outdent`
+        Validation failed:
+        [
+          "Expected { name: string; }, but was null"
+        ].
+        Object should match readonly { name: string; }[]
+      `,
       { 1: 'Expected { name: string; }, but was null' },
     );
   });
@@ -539,13 +557,15 @@ describe('check errors', () => {
       { foo: { name: false } },
       Dictionary(Record({ name: String })),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "foo": {\n` +
-        `    "name": "Expected string, but was boolean"\n` +
-        `  }\n` +
-        `}.\n` +
-        `Object should match { [_: string]: { name: string; } }`,
+      outdent`
+        Validation failed:
+        {
+          "foo": {
+            "name": "Expected string, but was boolean"
+          }
+        }.
+        Object should match { [_: string]: { name: string; } }
+      `,
       { foo: { name: 'Expected string, but was boolean' } },
     );
   });
@@ -555,11 +575,13 @@ describe('check errors', () => {
       { foo: 'bar', test: true },
       Dictionary(String),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "test": "Expected string, but was boolean"\n` +
-        `}.\n` +
-        `Object should match { [_: string]: string }`,
+      outdent`
+        Validation failed:
+        {
+          "test": "Expected string, but was boolean"
+        }.
+        Object should match { [_: string]: string }
+      `,
       { test: 'Expected string, but was boolean' },
     );
   });
@@ -569,11 +591,13 @@ describe('check errors', () => {
       { 1: 'bar', 2: 20 },
       Dictionary(String, 'number'),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "2": "Expected string, but was number"\n` +
-        `}.\n` +
-        `Object should match { [_: number]: string }`,
+      outdent`
+        Validation failed:
+        {
+          "2": "Expected string, but was number"
+        }.
+        Object should match { [_: number]: string }
+      `,
       { 2: 'Expected string, but was number' },
     );
   });
@@ -586,11 +610,13 @@ describe('check errors', () => {
         age: Number,
       }),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "age": "Expected number, but was string"\n` +
-        `}.\n` +
-        `Object should match { name: string; age: number; }`,
+      outdent`
+        Validation failed:
+        {
+          "age": "Expected number, but was string"
+        }.
+        Object should match { name: string; age: number; }
+      `,
       { age: 'Expected number, but was string' },
     );
   });
@@ -615,11 +641,13 @@ describe('check errors', () => {
         age: Number,
       }),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "age": "Expected number, but was missing"\n` +
-        `}.\n` +
-        `Object should match { name: string; age: number; }`,
+      outdent`
+        Validation failed:
+        {
+          "age": "Expected number, but was missing"
+        }.
+        Object should match { name: string; age: number; }
+      `,
       { age: 'Expected number, but was missing' },
     );
   });
@@ -633,15 +661,17 @@ describe('check errors', () => {
         likes: Array(Record({ title: String })),
       }),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "likes": [\n` +
-        `    {\n` +
-        `      "title": "Expected string, but was boolean"\n` +
-        `    }\n` +
-        `  ]\n` +
-        `}.\n` +
-        `Object should match { name: string; age: number; likes: { title: string; }[]; }`,
+      outdent`
+        Validation failed:
+        {
+          "likes": [
+            {
+              "title": "Expected string, but was boolean"
+            }
+          ]
+        }.
+        Object should match { name: string; age: number; likes: { title: string; }[]; }
+      `,
       { likes: { 0: { title: 'Expected string, but was boolean' } } },
     );
   });
@@ -654,11 +684,13 @@ describe('check errors', () => {
         age: Number,
       }).asReadonly(),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "age": "Expected number, but was string"\n` +
-        `}.\n` +
-        `Object should match { readonly name: string; readonly age: number; }`,
+      outdent`
+        Validation failed:
+        {
+          "age": "Expected number, but was string"
+        }.
+        Object should match { readonly name: string; readonly age: number; }
+      `,
       { age: 'Expected number, but was string' },
     );
   });
@@ -671,11 +703,13 @@ describe('check errors', () => {
         age: Number,
       }).asReadonly(),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "age": "Expected number, but was missing"\n` +
-        `}.\n` +
-        `Object should match { readonly name: string; readonly age: number; }`,
+      outdent`
+        Validation failed:
+        {
+          "age": "Expected number, but was missing"
+        }.
+        Object should match { readonly name: string; readonly age: number; }
+      `,
       { age: 'Expected number, but was missing' },
     );
   });
@@ -689,15 +723,17 @@ describe('check errors', () => {
         likes: Array(Record({ title: String }).asReadonly()),
       }).asReadonly(),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "likes": [\n` +
-        `    {\n` +
-        `      "title": "Expected string, but was boolean"\n` +
-        `    }\n` +
-        `  ]\n` +
-        `}.\n` +
-        `Object should match { readonly name: string; readonly age: number; readonly likes: { readonly title: string; }[]; }`,
+      outdent`
+        Validation failed:
+        {
+          "likes": [
+            {
+              "title": "Expected string, but was boolean"
+            }
+          ]
+        }.
+        Object should match { readonly name: string; readonly age: number; readonly likes: { readonly title: string; }[]; }
+      `,
       { likes: { 0: { title: 'Expected string, but was boolean' } } },
     );
   });
@@ -710,11 +746,13 @@ describe('check errors', () => {
         age: Number,
       }),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "age": "Expected number, but was null"\n` +
-        `}.\n` +
-        `Object should match { name?: string; age?: number; }`,
+      outdent`
+        Validation failed:
+        {
+          "age": "Expected number, but was null"
+        }.
+        Object should match { name?: string; age?: number; }
+      `,
       { age: 'Expected number, but was null' },
     );
   });
@@ -728,15 +766,17 @@ describe('check errors', () => {
         likes: Array(Record({ title: String })),
       }),
       Failcode.CONTENT_INCORRECT,
-      `Validation failed:\n` +
-        `{\n` +
-        `  "likes": [\n` +
-        `    {\n` +
-        `      "title": "Expected string, but was number"\n` +
-        `    }\n` +
-        `  ]\n` +
-        `}.\n` +
-        `Object should match { name?: string; age?: number; likes?: { title: string; }[]; }`,
+      outdent`
+        Validation failed:
+        {
+          "likes": [
+            {
+              "title": "Expected string, but was number"
+            }
+          ]
+        }.
+        Object should match { name?: string; age?: number; likes?: { title: string; }[]; }
+      `,
       { likes: { 0: { title: 'Expected string, but was number' } } },
     );
   });
