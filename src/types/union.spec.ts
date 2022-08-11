@@ -52,9 +52,9 @@ describe('union', () => {
         message: outdent`
           Validation failed:
           {
-            \"size\": \"Expected number, but was Date\"
+            "size": "Expected number, but was Date"
           }.
-          Object should match { kind: \"square\"; size: number; }
+          Object should match { kind: "square"; size: number; }
         `,
         details: { size: 'Expected number, but was Date' },
       });
@@ -65,8 +65,8 @@ describe('union', () => {
         message: outdent`
           Validation failed:
           {
-            \"width\": \"Expected number, but was missing\",
-            \"height\": \"Expected number, but was missing\"
+            "width": "Expected number, but was missing",
+            "height": "Expected number, but was missing"
           }.
           Object should match { kind: "rectangle"; width: number; height: number; }
         `,
@@ -82,7 +82,7 @@ describe('union', () => {
         message: outdent`
           Validation failed:
           {
-            \"radius\": \"Expected number, but was missing\"
+            "radius": "Expected number, but was missing"
           }.
           Object should match { kind: "circle"; radius: number; }
         `,
