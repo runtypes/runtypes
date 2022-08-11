@@ -60,7 +60,7 @@ export const FAILURE = Object.assign(
       );
     },
     CONTENT_INCORRECT: (self: Reflect, details: Details) => {
-      const formattedDetails = JSON.stringify(details, null, 2).replace(/null,\n/g, '')
+      const formattedDetails = JSON.stringify(details, null, 2).replace(/null,\n/g, '');
       const message = `Validation failed:\n${formattedDetails}.\nObject should match ${show(self)}`;
       return FAILURE(Failcode.CONTENT_INCORRECT, message, details);
     },

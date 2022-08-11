@@ -48,23 +48,25 @@ describe('union', () => {
       expect(Shape.validate({ kind: 'square', size: new Date() })).toMatchObject({
         success: false,
         code: Failcode.CONTENT_INCORRECT,
-        message: `Validation failed:\n`+
-        `{\n`+
-        `  \"size\": \"Expected number, but was Date\"\n`+
-        `}.\n`+
-        `Object should match { kind: \"square\"; size: number; }`,
+        message:
+          `Validation failed:\n` +
+          `{\n` +
+          `  \"size\": \"Expected number, but was Date\"\n` +
+          `}.\n` +
+          `Object should match { kind: \"square\"; size: number; }`,
         details: { size: 'Expected number, but was Date' },
       });
 
       expect(Shape.validate({ kind: 'rectangle', size: new Date() })).toMatchObject({
         success: false,
         code: Failcode.CONTENT_INCORRECT,
-        message: `Validation failed:\n`+
-        `{\n`+
-        `  \"width\": \"Expected number, but was missing\",\n`+
-        `  \"height\": \"Expected number, but was missing\"\n`+
-        `}.\n`+
-        `Object should match { kind: "rectangle"; width: number; height: number; }`,
+        message:
+          `Validation failed:\n` +
+          `{\n` +
+          `  \"width\": \"Expected number, but was missing\",\n` +
+          `  \"height\": \"Expected number, but was missing\"\n` +
+          `}.\n` +
+          `Object should match { kind: "rectangle"; width: number; height: number; }`,
         details: {
           width: 'Expected number, but was missing',
           height: 'Expected number, but was missing',
@@ -74,11 +76,12 @@ describe('union', () => {
       expect(Shape.validate({ kind: 'circle', size: new Date() })).toMatchObject({
         success: false,
         code: Failcode.CONTENT_INCORRECT,
-        message: `Validation failed:\n`+
-        `{\n`+
-        `  \"radius\": \"Expected number, but was missing\"\n`+
-        `}.\n`+
-        `Object should match { kind: "circle"; radius: number; }`,
+        message:
+          `Validation failed:\n` +
+          `{\n` +
+          `  \"radius\": \"Expected number, but was missing\"\n` +
+          `}.\n` +
+          `Object should match { kind: "circle"; radius: number; }`,
         details: { radius: 'Expected number, but was missing' },
       });
 
