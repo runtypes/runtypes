@@ -60,7 +60,8 @@ export const FAILURE = Object.assign(
       );
     },
     CONTENT_INCORRECT: (self: Reflect, details: Details) => {
-      const message = `Expected ${show(self)}, but was incompatible`;
+      const formattedDetails = JSON.stringify(details, null, 2).replace(/^ *null,\n/gm, '');
+      const message = `Validation failed:\n${formattedDetails}.\nObject should match ${show(self)}`;
       return FAILURE(Failcode.CONTENT_INCORRECT, message, details);
     },
     ARGUMENT_INCORRECT: (message: string) => {

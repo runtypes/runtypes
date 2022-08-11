@@ -2,6 +2,7 @@ import { Union, String, Literal, Record, Number, InstanceOf } from '..';
 import { Failcode } from '../result';
 import { Static } from '../runtype';
 import { LiteralBase } from './literal';
+import outdent from 'outdent';
 
 const ThreeOrString = Union(Literal(3), String);
 
@@ -48,15 +49,27 @@ describe('union', () => {
       expect(Shape.validate({ kind: 'square', size: new Date() })).toMatchObject({
         success: false,
         code: Failcode.CONTENT_INCORRECT,
-        message: 'Expected { kind: "square"; size: number; }, but was incompatible',
+        message: outdent`
+          Validation failed:
+          {
+            "size": "Expected number, but was Date"
+          }.
+          Object should match { kind: "square"; size: number; }
+        `,
         details: { size: 'Expected number, but was Date' },
       });
 
       expect(Shape.validate({ kind: 'rectangle', size: new Date() })).toMatchObject({
         success: false,
         code: Failcode.CONTENT_INCORRECT,
-        message:
-          'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+        message: outdent`
+          Validation failed:
+          {
+            "width": "Expected number, but was missing",
+            "height": "Expected number, but was missing"
+          }.
+          Object should match { kind: "rectangle"; width: number; height: number; }
+        `,
         details: {
           width: 'Expected number, but was missing',
           height: 'Expected number, but was missing',
@@ -66,7 +79,13 @@ describe('union', () => {
       expect(Shape.validate({ kind: 'circle', size: new Date() })).toMatchObject({
         success: false,
         code: Failcode.CONTENT_INCORRECT,
-        message: 'Expected { kind: "circle"; radius: number; }, but was incompatible',
+        message: outdent`
+          Validation failed:
+          {
+            "radius": "Expected number, but was missing"
+          }.
+          Object should match { kind: "circle"; radius: number; }
+        `,
         details: { radius: 'Expected number, but was missing' },
       });
 
