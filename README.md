@@ -112,6 +112,17 @@ const spaceObject = SpaceObject.check(obj);
 
 If the object doesn't conform to the type specification, `check` will throw an exception.
 
+## Error information
+
+When it fails to validate, your runtype emits a `ValidationError` object that contains detailed information that describes what's the problem. Following properties are available in the object:
+
+- `name`: Always `"ValidationError"`
+- `message`: A `string` that summarizes the problem overall
+- `code`: A [`Failcode`](https://github.com/pelotom/runtypes/blob/dcd4fe0d0bd0fc9c3ec445bda30586f3e6acc71c/src/result.ts#L12-L33) that categorizes the problem
+- `details`: An object that describes which property was invalid precisely; only for complex runtypes (e.g. `Record`, `Array`, and the like)
+
+If you want to inform your users about the validation error, it's strongly discouraged to rely on the format of `message` property in your code, as it may change across minor versions for readability thoughts. Instead of parsing `message`, you should use `code` and/or `details` property to programmatically inspect the validation error, and handle other stuff such as i18n.
+
 ## Static type inference
 
 In TypeScript, the inferred type of `Asteroid` in the above example is
