@@ -353,6 +353,16 @@ Template(UpperCaseString, LowerCaseString);
 
 The only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraints, which must be hardly done. Actually `Template` treats `String` runtypes as the simplest `RegExp` pattern `.*` and the “greedy” strategy is always used, that is, the above runtype won't work expectedly because the entire pattern is just `^(.*)(.*)$` and the first `.*` always wins. You have to avoid using `Constraint` this way, and instead manually parse it using a single `Constraint` which covers the entire string.
 
+## `instanceof` wrapper
+
+If you have access to the class that you want to test values with the `instanceof` operator, then the `InstanceOf` runtype is exactly what you're looking for. Usage is straightforward:
+
+```ts
+class ObjectId { ... };
+const ObjectIdChecker = InstanceOf(ObjectId);
+ObjectIdChecker.check(value);
+```
+
 ## Function contracts
 
 Runtypes along with constraint checking are a natural fit for enforcing function
