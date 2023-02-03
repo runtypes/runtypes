@@ -468,7 +468,7 @@ const RegisteredShip = Ship.And(
 );
 ```
 
-There's a difference between `Union(String, Undefined)` and `Optional(String)` iff they are used within a `Record`; the former means "_**it must be present**, and must be `string` or `undefined`_", while the latter means "_**it can be present or missing**, but must be `string` or `undefined` if present_".
+There's a difference between `Union(String, Undefined)` and `Optional(String)` if they are used within a `Record`; the former means "_**it must be present**, and must be `string` or `undefined`_", while the latter means "_**it can be present or missing**, but must be `string` or `undefined` if present_".
 
 **_Prior to v5.2, `Union(..., Undefined)` in a `Record` was passing even if the property was missing. Although some users considered this behavior was a [bug](https://github.com/pelotom/runtypes/issues/182) especially for the sake of mirroring TS behavior, it was a long-standing thing, and some other users have been surprised with this fix. So the v5.2 release has been marked [deprecated on npm](https://www.npmjs.com/package/runtypes/v/5.2.0), due to the breaking change._**
 
