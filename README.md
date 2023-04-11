@@ -553,7 +553,7 @@ const WrongMember = CrewMember.extend({
 
 ## Related libraries
 
-- [generate-runtypes](https://github.com/cobraz/generate-runtypes#readme) Generates runtypes from structured data. Useful for code generators
+- [generate-runtypes](https://github.com/simenandre/generate-runtypes#readme) Generates runtypes from structured data. Useful for code generators
 - [json-to-runtypes](https://github.com/runeh/json-to-runtypes#readme) Generates runtypes by parsing example JSON data
 - [rest.ts](https://github.com/hmil/rest.ts) Allows building type safe and runtime-checked APIs
 - [runtypes-generate](https://github.com/typeetfunc/runtypes-generate) Generates random data by `Runtype` for property-based testing
