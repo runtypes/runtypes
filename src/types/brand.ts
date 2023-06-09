@@ -4,7 +4,9 @@ import { Runtype, RuntypeBase, Static, create } from '../runtype';
 export declare const RuntypeName: unique symbol;
 
 export interface RuntypeBrand<B extends string> {
-  [RuntypeName]: B;
+  [RuntypeName]: {
+    [k in B]: B;
+  };
 }
 
 export interface Brand<B extends string, A extends RuntypeBase>
