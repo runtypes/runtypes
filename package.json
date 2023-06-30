@@ -12,7 +12,6 @@
     "build": "tsc --pretty --project ./tsconfig.build.json",
     "format": "node scripts/format.js",
     "test": "jest",
-    "test:ci": "CI=true jest --coverage --reporters=default --reporters=jest-github-actions-reporter",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "typecheck": "tsc --noEmit --watch",
     "prepare": "npm run build"
