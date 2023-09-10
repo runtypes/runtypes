@@ -153,6 +153,7 @@ export function InternalRecord<
               : {
                   message: result.message,
                   received: result.received,
+                  code: result.code,
                 };
 
           return details;

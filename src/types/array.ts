@@ -49,6 +49,7 @@ function InternalArr<E extends RuntypeBase, RO extends boolean>(
               : {
                   message: result.message,
                   received: result.received,
+                  code: result.code,
                 };
           return details;
         },

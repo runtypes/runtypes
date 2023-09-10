@@ -138,6 +138,7 @@ export function Dictionary<
             : {
                 message: result.message,
                 received: result.received,
+                code: result.code,
               };
         return details;
       },

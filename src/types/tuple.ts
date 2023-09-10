@@ -48,6 +48,7 @@ export function Tuple<T extends readonly RuntypeBase[]>(...components: T): Tuple
             : {
                 message: result.message,
                 received: result.received,
+                code: result.code,
               };
         return details;
       },
