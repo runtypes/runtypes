@@ -129,8 +129,23 @@ export function Dictionary<
       },
       {},
     );
+    const extraDetails = keys.reduce<{ [key in string | number | symbol]: string | Details }>(
+      (details, key) => {
+        const result = results[key as any];
+        if (!result.success)
+          details[key as any] = result.extraDetails
+            ? result.extraDetails
+            : {
+                message: result.message,
+                received: result.received,
+              };
+        return details;
+      },
+      {},
+    );
 
-    if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
+    if (enumerableKeysOf(details).length !== 0)
+      return FAILURE.CONTENT_INCORRECT(self, details, extraDetails);
     else return SUCCESS(x);
   }, self);
 }
