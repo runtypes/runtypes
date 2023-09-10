@@ -90,7 +90,7 @@ export function Dictionary<
       : key === 'number'
       ? NumberKey
       : (key as Exclude<K, string>);
-  const keyString = show(keyRuntype as any);
+  const keyString = show(keyRuntype as any, true);
   const self = { tag: 'dictionary', key: keyString, value } as any;
   return create<any>((x, visited) => {
     if (x === null || x === undefined || typeof x !== 'object')

@@ -150,7 +150,7 @@ const cases: [Reflect, string][] = [
 ];
 
 for (const [T, expected] of cases) {
-  const s = show(T);
+  const s = show(T, false);
   it(s, () => {
     expect(s).toBe(expected);
     expect(T.toString()).toBe(`Runtype<${s}>`);

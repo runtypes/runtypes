@@ -43,7 +43,7 @@ export const FAILURE = Object.assign(
   {
     TYPE_INCORRECT: (self: Reflect, value: unknown) => {
       const message = `Expected ${
-        self.tag === 'template' ? `string ${show(self)}` : show(self)
+        self.tag === 'template' ? `string ${show(self, true)}` : show(self, false)
       }, but was ${typeOf(value)}`;
       return FAILURE(Failcode.TYPE_INCORRECT, message);
     },
@@ -56,12 +56,15 @@ export const FAILURE = Object.assign(
     KEY_INCORRECT: (self: Reflect, expected: Reflect, value: unknown) => {
       return FAILURE(
         Failcode.KEY_INCORRECT,
-        `Expected ${show(self)} key to be ${show(expected)}, but was ${typeOf(value)}`,
+        `Expected ${show(self, true)} key to be ${show(expected, true)}, but was ${typeOf(value)}`,
       );
     },
     CONTENT_INCORRECT: (self: Reflect, details: Details) => {
       const formattedDetails = JSON.stringify(details, null, 2).replace(/^ *null,\n/gm, '');
-      const message = `Validation failed:\n${formattedDetails}.\nObject should match ${show(self)}`;
+      const message = `Validation failed:\n${formattedDetails}.\nObject should match ${show(
+        self,
+        true,
+      )}`;
       return FAILURE(Failcode.CONTENT_INCORRECT, message, details);
     },
     ARGUMENT_INCORRECT: (message: string) => {
@@ -74,11 +77,11 @@ export const FAILURE = Object.assign(
       const info = message ? `: ${message}` : '';
       return FAILURE(
         Failcode.CONSTRAINT_FAILED,
-        `Failed constraint check for ${show(self)}${info}`,
+        `Failed constraint check for ${show(self, true)}${info}`,
       );
     },
     PROPERTY_MISSING: (self: Reflect) => {
-      const message = `Expected ${show(self)}, but was missing`;
+      const message = `Expected ${show(self, false)}, but was missing`;
       return FAILURE(Failcode.PROPERTY_MISSING, message);
     },
     PROPERTY_PRESENT: (value: unknown) => {
