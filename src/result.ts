@@ -77,7 +77,7 @@ export type Failure = {
   details?: Details;
 
   /**
-   * The same as `details`, but with received value
+   * The same as `details`, but with more detailed error explanation
    */
   extraDetails?: Details;
 };
