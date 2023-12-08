@@ -1,17 +1,19 @@
+import { ValidationError } from './errors';
 import {
-  Result,
-  Union,
-  Intersect,
-  Optional,
+  Brand,
   Constraint,
   ConstraintCheck,
-  Brand,
+  Intersect,
   Null,
+  Optional,
+  Result,
+  Transform,
+  Transformer,
+  Union,
 } from './index';
 import { Reflect } from './reflect';
 import show from './show';
-import { ValidationError } from './errors';
-import { hasKey, SUCCESS } from './util';
+import { SUCCESS, hasKey } from './util';
 
 const RuntypeSymbol: unique symbol = Symbol();
 
@@ -20,24 +22,18 @@ export const isRuntype = (x: any): x is RuntypeBase<unknown> => hasKey(RuntypeSy
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export interface RuntypeBase<A = unknown> {
-  /**
-   * Verifies that a value conforms to this runtype. When given a value that does
-   * not conform to the runtype, throws an exception.
-   */
-  assert(x: any): asserts x is A;
-
+export interface RuntypeBase<A = unknown, C = A> {
   /**
    * Verifies that a value conforms to this runtype. If so, returns the same value,
    * statically typed. Otherwise throws an exception.
    */
-  check(x: any): A;
+  check(x: any): C;
 
   /**
    * Validates that a value conforms to this type, and returns a result indicating
    * success or failure (does not throw).
    */
-  validate(x: any): Result<A>;
+  validate(x: any): Result<C>;
 
   /**
    * A type guard for this runtype.
@@ -45,18 +41,24 @@ export interface RuntypeBase<A = unknown> {
   guard(x: any): x is A;
 
   /**
+   * Verifies that a value conforms to this runtype. When given a value that does
+   * not conform to the runtype, throws an exception.
+   */
+  assert(x: any): asserts x is A;
+
+  /**
    * Convert this to a Reflect, capable of introspecting the structure of the type.
    */
   readonly reflect: Reflect;
 
-  /* @internal */ readonly _falseWitness: A;
+  /* @internal */ readonly _falseWitness: C;
   /* @internal */ readonly [RuntypeSymbol]: true;
 }
 
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
  */
-export interface Runtype<A = unknown> extends RuntypeBase<A> {
+export interface Runtype<A = unknown, C = A> extends RuntypeBase<A, C> {
   /**
    * Union this Runtype with another.
    */
@@ -119,6 +121,11 @@ export interface Runtype<A = unknown> extends RuntypeBase<A> {
    * Adds a brand to the type.
    */
   withBrand<B extends string>(brand: B): Brand<B, this>;
+
+  /**
+   * Transforms the validated value into another value.
+   */
+  withTransform<A extends this, B>(transformer: Transformer<A, B>): Transform<A, B>;
 }
 
 /**
@@ -146,6 +153,7 @@ export function create<A extends RuntypeBase>(
   A.withConstraint = withConstraint;
   A.withGuard = withGuard;
   A.withBrand = withBrand;
+  A.withTransform = withTransform;
   A.reflect = A;
   A.toString = () => `Runtype<${show(A)}>`;
 
@@ -193,6 +201,10 @@ export function create<A extends RuntypeBase>(
 
   function withBrand<B extends string>(B: B): Brand<B, A> {
     return Brand(B, A);
+  }
+
+  function withTransform<B>(transformer: Transformer<A, B>): Transform<A, B> {
+    return Transform(A, transformer);
   }
 }
 

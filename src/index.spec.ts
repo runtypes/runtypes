@@ -1,41 +1,42 @@
 import {
-  Runtype,
-  Static,
-  Unknown,
-  Never,
-  Undefined,
-  Null,
-  Nullish,
-  Void,
-  Boolean,
-  Number,
-  BigInt,
-  String,
-  Symbol as Sym,
-  Literal,
-  Template,
   Array,
-  Dictionary,
-  Record,
-  Partial as RTPartial,
-  Tuple,
-  Union,
-  Intersect,
-  Optional,
-  Function,
-  Lazy,
+  BigInt,
+  Boolean,
+  Brand,
   Constraint,
   Contract,
-  Reflect,
-  InstanceOf,
-  Brand,
+  Dictionary,
+  Function,
   Guard,
+  InstanceOf,
+  Intersect,
+  Lazy,
+  Literal,
+  Never,
+  Null,
+  Nullish,
+  Number,
+  Optional,
+  Partial as RTPartial,
+  Record,
+  Reflect,
+  Runtype,
+  Static,
+  String,
+  Symbol as Sym,
+  Template,
+  Transform,
+  Tuple,
+  Undefined,
+  Union,
+  Unknown,
+  Void,
 } from './index';
 
-import { RuntypeBase } from './runtype';
-import { Constructor } from './types/instanceof';
 import { ValidationError } from './errors';
 import { Details, Failcode } from './result';
+import { RuntypeBase } from './runtype';
+import { Constructor } from './types/instanceof';
 
 import outdent from 'outdent';
 
@@ -87,6 +88,9 @@ const PartialPerson: Runtype<PartialPerson> = Lazy(() =>
 );
 const partialNarcissus: PartialPerson = { firstName: 'Narcissish' };
 partialNarcissus.likes = partialNarcissus;
+
+const P = Person.withTransform(p => p.name);
+P.guard(true);
 
 class SomeClass {
   constructor(public n: number) {}
@@ -1045,7 +1049,8 @@ describe('change static type with Constraint', () => {
     | Function
     | Constraint<Reflect, any, any>
     | InstanceOf<Constructor<never>>
-    | Brand<string, Reflect>,
+    | Brand<string, Reflect>
+    | Transform<any, any>,
 ): Reflect => {
   const check = <A>(X: Runtype<A>): A => X.check({});
   switch (X.tag) {
