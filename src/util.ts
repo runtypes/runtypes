@@ -34,60 +34,74 @@ export function SUCCESS<T extends unknown>(value: T): Success<T> {
 }
 
 export const FAILURE = Object.assign(
-  (code: Failcode, message: string, details?: Details): Failure => ({
+  ({
+    code,
+    message,
+    ...rest
+  }: {
+    code: Failcode;
+    message: string;
+    details?: Details;
+    thrown?: unknown;
+  }): Failure => ({
     success: false,
     code,
     message,
-    ...(details ? { details } : {}),
+    ...('details' in rest ? { details: rest.details } : {}),
+    ...('thrown' in rest ? { thrown: rest.thrown } : {}),
   }),
   {
     TYPE_INCORRECT: (self: Reflect, value: unknown) => {
       const message = `Expected ${
         self.tag === 'template' ? `string ${show(self)}` : show(self)
       }, but was ${typeOf(value)}`;
-      return FAILURE(Failcode.TYPE_INCORRECT, message);
+      return FAILURE({ code: Failcode.TYPE_INCORRECT, message });
     },
     VALUE_INCORRECT: (name: string, expected: unknown, received: unknown) => {
-      return FAILURE(
-        Failcode.VALUE_INCORRECT,
-        `Expected ${name} ${String(expected)}, but was ${String(received)}`,
-      );
+      return FAILURE({
+        code: Failcode.VALUE_INCORRECT,
+        message: `Expected ${name} ${String(expected)}, but was ${String(received)}`,
+      });
     },
     KEY_INCORRECT: (self: Reflect, expected: Reflect, value: unknown) => {
-      return FAILURE(
-        Failcode.KEY_INCORRECT,
-        `Expected ${show(self)} key to be ${show(expected)}, but was ${typeOf(value)}`,
-      );
+      return FAILURE({
+        code: Failcode.KEY_INCORRECT,
+        message: `Expected ${show(self)} key to be ${show(expected)}, but was ${typeOf(value)}`,
+      });
     },
     CONTENT_INCORRECT: (self: Reflect, details: Details) => {
       const formattedDetails = JSON.stringify(details, null, 2).replace(/^ *null,\n/gm, '');
       const message = `Validation failed:\n${formattedDetails}.\nObject should match ${show(self)}`;
-      return FAILURE(Failcode.CONTENT_INCORRECT, message, details);
+      return FAILURE({ code: Failcode.CONTENT_INCORRECT, message, details });
     },
     ARGUMENT_INCORRECT: (message: string) => {
-      return FAILURE(Failcode.ARGUMENT_INCORRECT, message);
+      return FAILURE({ code: Failcode.ARGUMENT_INCORRECT, message });
     },
     RETURN_INCORRECT: (message: string) => {
-      return FAILURE(Failcode.RETURN_INCORRECT, message);
+      return FAILURE({ code: Failcode.RETURN_INCORRECT, message });
     },
     CONSTRAINT_FAILED: (self: Reflect, message?: string) => {
       const info = message ? `: ${message}` : '';
-      return FAILURE(
-        Failcode.CONSTRAINT_FAILED,
-        `Failed constraint check for ${show(self)}${info}`,
-      );
+      return FAILURE({
+        code: Failcode.CONSTRAINT_FAILED,
+        message: `Failed constraint check for ${show(self)}${info}`,
+      });
     },
     PROPERTY_MISSING: (self: Reflect) => {
       const message = `Expected ${show(self)}, but was missing`;
-      return FAILURE(Failcode.PROPERTY_MISSING, message);
+      return FAILURE({ code: Failcode.PROPERTY_MISSING, message });
     },
     PROPERTY_PRESENT: (value: unknown) => {
       const message = `Expected nothing, but was ${typeOf(value)}`;
-      return FAILURE(Failcode.PROPERTY_PRESENT, message);
+      return FAILURE({ code: Failcode.PROPERTY_PRESENT, message });
     },
     NOTHING_EXPECTED: (value: unknown) => {
       const message = `Expected nothing, but was ${typeOf(value)}`;
-      return FAILURE(Failcode.NOTHING_EXPECTED, message);
+      return FAILURE({ code: Failcode.NOTHING_EXPECTED, message });
+    },
+    TRANSFORM_FAILED: (error: unknown) => {
+      const message = `Transformer threw: ${error}`;
+      return FAILURE({ code: Failcode.TRANSFORM_FAILED, message, thrown: error });
     },
   },
 );

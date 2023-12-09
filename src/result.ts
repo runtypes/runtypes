@@ -30,6 +30,8 @@ export const Failcode = {
   PROPERTY_PRESENT: 'PROPERTY_PRESENT',
   /** The value must not be present but present. */
   NOTHING_EXPECTED: 'NOTHING_EXPECTED',
+  /** The value can't be transformed. */
+  TRANSFORM_FAILED: 'TRANSFORM_FAILED',
 } as const;
 
 /**
@@ -70,6 +72,11 @@ export type Failure = {
    * A detailed object enumerating where the validation failed exactly.
    */
   details?: Details;
+
+  /**
+   * A value thrown by the transformer function.
+   */
+  thrown?: unknown;
 };
 
 /**

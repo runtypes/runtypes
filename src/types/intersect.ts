@@ -24,10 +24,12 @@ export function Intersect<A extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 ): Intersect<A> {
   const self = ({ tag: 'intersect', intersectees } as unknown) as Reflect;
   return create((value, visited) => {
+    let transformed = value;
     for (const targetType of intersectees) {
-      const result = innerValidate(targetType, value, visited);
+      const result = innerValidate(targetType, transformed, visited);
       if (!result.success) return result;
+      transformed = result.value;
     }
-    return SUCCESS(value);
+    return SUCCESS(transformed);
   }, self);
 }

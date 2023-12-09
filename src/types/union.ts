@@ -1,7 +1,7 @@
-import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
-import { LiteralBase } from './literal';
-import { FAILURE, hasKey, SUCCESS } from '../util';
 import { Reflect } from '../reflect';
+import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
+import { FAILURE, SUCCESS, hasKey } from '../util';
+import { LiteralBase } from './literal';
 
 export interface Union<A extends readonly [RuntypeBase, ...RuntypeBase[]]>
   extends Runtype<
@@ -30,8 +30,10 @@ export function Union<T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
   const self = ({ tag: 'union', alternatives, match } as unknown) as Reflect;
   return create<any>((value, visited) => {
     if (typeof value !== 'object' || value === null) {
-      for (const alternative of alternatives)
-        if (innerValidate(alternative, value, visited).success) return SUCCESS(value);
+      for (const alternative of alternatives) {
+        const result = innerValidate(alternative, value, visited);
+        if (result.success) return SUCCESS(result.value);
+      }
       return FAILURE.TYPE_INCORRECT(self, value);
     }
 
@@ -70,8 +72,10 @@ export function Union<T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
       }
     }
 
-    for (const targetType of alternatives)
-      if (innerValidate(targetType, value, visited).success) return SUCCESS(value);
+    for (const targetType of alternatives) {
+      const result = innerValidate(targetType, value, visited);
+      if (result.success) return SUCCESS(result.value);
+    }
 
     return FAILURE.TYPE_INCORRECT(self, value);
   }, self);

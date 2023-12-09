@@ -1,7 +1,7 @@
-import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
-import { enumerableKeysOf, FAILURE, hasKey, SUCCESS } from '../util';
-import { Optional } from './optional';
 import { Details, Result } from '../result';
+import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
+import { FAILURE, SUCCESS, enumerableKeysOf, hasKey } from '../util';
+import { Optional } from './optional';
 
 type FilterOptionalKeys<T> = {
   [K in keyof T]: T[K] extends Optional<any> ? K : never;
@@ -135,17 +135,19 @@ export function InternalRecord<
         {},
       );
 
+      const values: { [key in string | number | symbol]: unknown } = {};
       const details = keys.reduce<{ [key in string | number | symbol]: string | Details }>(
         (details, key) => {
           const result = results[key as any];
           if (!result.success) details[key as any] = result.details || result.message;
+          else values[key as any] = result.value;
           return details;
         },
         {},
       );
 
       if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
-      else return SUCCESS(x);
+      else return SUCCESS(values);
     }, self),
   );
 }

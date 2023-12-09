@@ -1,7 +1,7 @@
 import { Reflect } from '../reflect';
 import { Details, Result } from '../result';
 import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
-import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
+import { FAILURE, SUCCESS, enumerableKeysOf } from '../util';
 
 type ArrayStaticType<E extends RuntypeBase, RO extends boolean> = RO extends true
   ? ReadonlyArray<Static<E>>
@@ -31,17 +31,16 @@ function InternalArr<E extends RuntypeBase, RO extends boolean>(
       const results: Result<unknown>[] = keys.map(key =>
         innerValidate(element, xs[key as any], visited),
       );
-      const details = keys.reduce<{ [key: number]: string | Details } & (string | Details)[]>(
-        (details, key) => {
-          const result = results[key as any];
-          if (!result.success) details[key as any] = result.details || result.message;
-          return details;
-        },
-        [],
-      );
+      const values: unknown[] = [];
+      const details = keys.reduce<{ [key: number]: string | Details }>((details, key) => {
+        const result = results[key as any];
+        if (!result.success) details[key as any] = result.details || result.message;
+        else values[key as any] = result.value;
+        return details;
+      }, []);
 
       if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
-      else return SUCCESS(xs);
+      else return SUCCESS(values);
     }, self),
   );
 }

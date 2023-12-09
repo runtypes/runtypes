@@ -1,10 +1,10 @@
-import { Runtype, RuntypeBase, create, Static, innerValidate } from '../runtype';
-import { String } from './string';
-import { Constraint } from './constraint';
-import show from '../show';
-import { enumerableKeysOf, FAILURE, SUCCESS } from '../util';
 import { Details, Result } from '../result';
+import { Runtype, RuntypeBase, Static, create, innerValidate } from '../runtype';
+import show from '../show';
+import { FAILURE, SUCCESS, enumerableKeysOf } from '../util';
+import { Constraint } from './constraint';
 import { Optional } from './optional';
+import { String } from './string';
 
 type DictionaryKeyType = string | number | symbol;
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string
@@ -101,6 +101,7 @@ export function Dictionary<
 
     const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/;
     const keys = enumerableKeysOf(x);
+    const values: { [key in string | number | symbol]: unknown } = {};
     const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
       (results, key) => {
         // We should provide interoperability with `number` and `string` here,
@@ -125,12 +126,13 @@ export function Dictionary<
       (details, key) => {
         const result = results[key as any];
         if (!result.success) details[key as any] = result.details || result.message;
+        else values[key as any] = result.value;
         return details;
       },
       {},
     );
 
     if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details);
-    else return SUCCESS(x);
+    else return SUCCESS(values);
   }, self);
 }

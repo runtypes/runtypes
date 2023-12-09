@@ -1,7 +1,7 @@
 import { Runtype } from './runtype';
-import { LiteralBase } from './types/literal';
 import { ConstraintCheck } from './types/constraint';
 import { Constructor } from './types/instanceof';
+import { LiteralBase } from './types/literal';
 
 export type Reflect =
   | ({ tag: 'unknown' } & Runtype)
@@ -38,4 +38,5 @@ export type Reflect =
       name?: string;
     } & Runtype)
   | ({ tag: 'instanceof'; ctor: Constructor<unknown> } & Runtype)
-  | ({ tag: 'brand'; brand: string; entity: Reflect } & Runtype);
+  | ({ tag: 'brand'; brand: string; entity: Reflect } & Runtype)
+  | ({ tag: 'transform'; validator: Reflect; transformer: (x: unknown) => unknown } & Runtype);
