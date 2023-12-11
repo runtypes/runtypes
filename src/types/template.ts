@@ -428,7 +428,7 @@ export function Template<
       }
       return SUCCESS(value);
     } else {
-      return FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `"${literal(value)}"`);
+      return FAILURE.VALUE_INCORRECT('string', `${show(self, true)}`, `"${literal(value)}"`);
     }
   };
 
@@ -447,7 +447,7 @@ export function Template<
     else {
       const validated = test(value, visited);
       if (!validated.success) {
-        const result = FAILURE.VALUE_INCORRECT('string', `${show(self)}`, `"${value}"`);
+        const result = FAILURE.VALUE_INCORRECT('string', `${show(self, true)}`, `"${value}"`);
         if (result.message !== validated.message)
           // TODO: Should use `details` here, but it needs unionizing `string` anew to the definition of `Details`, which is a breaking change
           result.message += ` (inner: ${validated.message})`;

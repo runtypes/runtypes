@@ -67,9 +67,19 @@ export type Failure = {
   message: string;
 
   /**
+   * Received value
+   */
+  received: any;
+
+  /**
    * A detailed object enumerating where the validation failed exactly.
    */
   details?: Details;
+
+  /**
+   * The same as `details`, but with more detailed error explanation
+   */
+  extraDetails?: Details;
 };
 
 /**

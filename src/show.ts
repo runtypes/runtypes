@@ -8,7 +8,9 @@ import { Reflect } from './index';
  * - `Literal(42)` -> `"42"`
  * - `Union(Literal("foo"), Number)` -> `` "foo" | `${number}` ``
  */
-const showStringified = (circular: Set<Reflect>) => (refl: Reflect): string => {
+const showStringified = (circular: Set<Reflect>, verboseTypings: boolean) => (
+  refl: Reflect,
+): string => {
   switch (refl.tag) {
     case 'literal':
       return `"${String(refl.value)}"`;
@@ -17,15 +19,15 @@ const showStringified = (circular: Set<Reflect>) => (refl: Reflect): string => {
     case 'brand':
       return refl.brand;
     case 'constraint':
-      return refl.name || showStringified(circular)(refl.underlying);
+      return refl.name || showStringified(circular, verboseTypings)(refl.underlying);
     case 'union':
-      return refl.alternatives.map(showStringified(circular)).join(' | ');
+      return refl.alternatives.map(showStringified(circular, verboseTypings)).join(' | ');
     case 'intersect':
-      return refl.intersectees.map(showStringified(circular)).join(' & ');
+      return refl.intersectees.map(showStringified(circular, verboseTypings)).join(' & ');
     default:
       break;
   }
-  return `\`\${${show(false, circular)(refl)}}\``;
+  return `\`\${${show(false, circular)(refl, verboseTypings)}}\``;
 };
 
 /**
@@ -37,33 +39,40 @@ const showStringified = (circular: Set<Reflect>) => (refl: Reflect): string => {
  * - `Literal("foo")` -> `foo`
  * - `Union(Literal(42), Number)` -> `${"42" | number}`
  */
-const showEmbedded = (circular: Set<Reflect>) => (refl: Reflect): string => {
+const showEmbedded = (circular: Set<Reflect>, verboseTypings: boolean) => (
+  refl: Reflect,
+): string => {
   switch (refl.tag) {
     case 'literal':
       return String(refl.value);
     case 'brand':
       return `\${${refl.brand}}`;
     case 'constraint':
-      return refl.name ? `\${${refl.name}}` : showEmbedded(circular)(refl.underlying);
+      return refl.name
+        ? `\${${refl.name}}`
+        : showEmbedded(circular, verboseTypings)(refl.underlying);
     case 'union':
       if (refl.alternatives.length === 1) {
         const inner = refl.alternatives[0];
-        return showEmbedded(circular)(inner.reflect);
+        return showEmbedded(circular, verboseTypings)(inner.reflect);
       }
       break;
     case 'intersect':
       if (refl.intersectees.length === 1) {
         const inner = refl.intersectees[0];
-        return showEmbedded(circular)(inner.reflect);
+        return showEmbedded(circular, verboseTypings)(inner.reflect);
       }
       break;
     default:
       break;
   }
-  return `\${${show(false, circular)(refl)}}`;
+  return `\${${show(false, circular)(refl, verboseTypings)}}`;
 };
 
-const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): string => {
+const show = (needsParens: boolean, circular: Set<Reflect>) => (
+  refl: Reflect,
+  verboseTypings: boolean,
+): string => {
   const parenthesize = (s: string) => (needsParens ? `(${s})` : s);
 
   if (circular.has(refl)) return parenthesize(`CIRCULAR ${refl.tag}`);
@@ -94,7 +103,7 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
         else if (refl.strings.length === 2) {
           if (refl.strings.every(string => string === '')) {
             const runtype = refl.runtypes[0];
-            return showStringified(circular)(runtype.reflect);
+            return showStringified(circular, verboseTypings)(runtype.reflect);
           }
         }
         let backtick = false;
@@ -102,7 +111,7 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
           const prefix = inner + string;
           const runtype = refl.runtypes[i];
           if (runtype) {
-            const suffix = showEmbedded(circular)(runtype.reflect);
+            const suffix = showEmbedded(circular, verboseTypings)(runtype.reflect);
             if (!backtick && suffix.startsWith('$')) backtick = true;
             return prefix + suffix;
           } else return prefix;
@@ -110,10 +119,13 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
         return backtick ? `\`${inner}\`` : `"${inner}"`;
       }
       case 'array':
-        return `${readonlyTag(refl)}${show(true, circular)(refl.element)}[]`;
+        if (!verboseTypings) return 'array';
+        return `${readonlyTag(refl)}${show(true, circular)(refl.element, verboseTypings)}[]`;
       case 'dictionary':
-        return `{ [_: ${refl.key}]: ${show(false, circular)(refl.value)} }`;
+        if (!verboseTypings) return 'dictionary';
+        return `{ [_: ${refl.key}]: ${show(false, circular)(refl.value, verboseTypings)} }`;
       case 'record': {
+        if (!verboseTypings) return 'object';
         const keys = Object.keys(refl.fields);
         return keys.length
           ? `{ ${keys
@@ -121,27 +133,32 @@ const show = (needsParens: boolean, circular: Set<Reflect>) => (refl: Reflect): 
                 k =>
                   `${readonlyTag(refl)}${k}${partialTag(refl, k)}: ${
                     refl.fields[k].tag === 'optional'
-                      ? show(false, circular)((refl.fields[k] as any).underlying)
-                      : show(false, circular)(refl.fields[k])
+                      ? show(false, circular)((refl.fields[k] as any).underlying, verboseTypings)
+                      : show(false, circular)(refl.fields[k], verboseTypings)
                   };`,
               )
               .join(' ')} }`
           : '{}';
       }
       case 'tuple':
-        return `[${refl.components.map(show(false, circular)).join(', ')}]`;
+        if (!verboseTypings) return 'tuple';
+        return `[${refl.components.map(r => show(false, circular)(r, verboseTypings)).join(', ')}]`;
       case 'union':
-        return parenthesize(`${refl.alternatives.map(show(true, circular)).join(' | ')}`);
+        return parenthesize(
+          `${refl.alternatives.map(r => show(true, circular)(r, verboseTypings)).join(' | ')}`,
+        );
       case 'intersect':
-        return parenthesize(`${refl.intersectees.map(show(true, circular)).join(' & ')}`);
+        return parenthesize(
+          `${refl.intersectees.map(r => show(true, circular)(r, verboseTypings)).join(' & ')}`,
+        );
       case 'optional':
-        return show(needsParens, circular)(refl.underlying) + ' | undefined';
+        return show(needsParens, circular)(refl.underlying, verboseTypings) + ' | undefined';
       case 'constraint':
-        return refl.name || show(needsParens, circular)(refl.underlying);
+        return refl.name || show(needsParens, circular)(refl.underlying, verboseTypings);
       case 'instanceof':
         return (refl.ctor as any).name;
       case 'brand':
-        return show(needsParens, circular)(refl.entity);
+        return show(needsParens, circular)(refl.entity, verboseTypings);
     }
   } finally {
     circular.delete(refl);

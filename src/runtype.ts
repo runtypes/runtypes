@@ -147,7 +147,7 @@ export function create<A extends RuntypeBase>(
   A.withGuard = withGuard;
   A.withBrand = withBrand;
   A.reflect = A;
-  A.toString = () => `Runtype<${show(A)}>`;
+  A.toString = () => `Runtype<${show(A, true)}>`;
 
   return A;
 
