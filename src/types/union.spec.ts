@@ -1,6 +1,7 @@
 import { Union, String, Literal, Record, Number, InstanceOf } from '..';
 import { Failcode } from '../result';
 import { Static } from '../runtype';
+// import { Boolean } from './boolean';
 import { LiteralBase } from './literal';
 import outdent from 'outdent';
 
@@ -88,6 +89,8 @@ describe('union', () => {
         `,
         details: { radius: 'Expected number, but was missing' },
       });
+
+      // console.log(Union(String, Number, Record({ test: Boolean })).validate({ test: new Date() }));
 
       expect(Shape.validate({ kind: 'other', size: new Date() })).not.toHaveProperty('key');
     });
