@@ -1,17 +1,16 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
-    "lib": ["es2015"],
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "declaration": true,
-    "sourceMap": false,
-    "outDir": "lib",
-    "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true,
-    "downlevelIteration": true
-  },
-  "exclude": ["./lib/**/*", "./examples/**/*"]
+	"compilerOptions": {
+		"strict": true,
+		"alwaysStrict": true,
+		"exactOptionalPropertyTypes": true,
+		"noUncheckedIndexedAccess": true,
+		"target": "esnext",
+		"module": "esnext",
+		"sourceMap": true,
+		"removeComments": true,
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"declaration": true,
+		"baseUrl": "src"
+	}
 }

@@ -1,0 +1,68 @@
+{
+	"root": true,
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaVersion": "latest",
+		"ecmaFeatures": {
+			"jsx": true
+		},
+		"project": "./deno.json",
+		"sourceType": "module"
+	},
+	"plugins": [
+		"@typescript-eslint",
+		"import",
+		"unused-imports",
+		"consistent-default-export-name",
+		"prefer-arrow-functions"
+	],
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/eslint-recommended",
+		"plugin:@typescript-eslint/recommended",
+		"prettier"
+	],
+	"rules": {
+		"prefer-arrow-functions/prefer-arrow-functions": "warn",
+		"no-fallthrough": "off",
+		"no-constant-condition": "off",
+		"@typescript-eslint/no-explicit-any": "warn",
+		"@typescript-eslint/explicit-module-boundary-types": "off",
+		"@typescript-eslint/no-var-requires": "off",
+		"@typescript-eslint/no-namespace": "off",
+		"@typescript-eslint/ban-types": "off",
+		"@typescript-eslint/no-inferrable-types": "off",
+		"@typescript-eslint/no-empty-interface": "off",
+		"@typescript-eslint/no-unused-vars": "off",
+		"@typescript-eslint/no-empty-function": "off",
+		"@typescript-eslint/ban-ts-comment": "error",
+		"@typescript-eslint/no-unnecessary-condition": "warn",
+		"@typescript-eslint/no-unnecessary-type-constraint": "warn",
+		"@typescript-eslint/no-non-null-assertion": "warn",
+		"no-empty-pattern": "off",
+		"import/first": "warn",
+		"import/exports-last": "warn",
+		"import/no-anonymous-default-export": "warn",
+		"import/newline-after-import": "warn",
+		"import/order": [
+			"warn",
+			{
+				"alphabetize": { "order": "asc" },
+				"groups": [],
+				"newlines-between": "never"
+			}
+		],
+		"import/no-named-export": "warn",
+		"unused-imports/no-unused-imports": "warn",
+		"consistent-default-export-name/default-export-match-filename": "warn",
+		"consistent-default-export-name/default-import-match-filename": "warn"
+	},
+	"overrides": [
+		{
+			"files": ["*.run.ts"],
+			"rules": {
+				"import/no-anonymous-default-export": "off"
+			}
+		}
+	]
+}

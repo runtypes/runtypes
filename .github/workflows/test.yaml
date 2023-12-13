@@ -1,0 +1,16 @@
+name: Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  "test":
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/rtx-action@v1
+      - run: just ci
+      - uses: coverallsapp/github-action@v2
