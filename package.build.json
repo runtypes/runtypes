@@ -1,0 +1,14 @@
+{
+	"name": "runtypes",
+	"version": "6.7.0",
+	"description": "Runtime validation for static types",
+	"type": "module",
+	"sideEffects": false,
+	"author": "Thomas Crockett",
+	"license": "MIT",
+	"keywords:": ["runtime", "type", "validation", "typescript"],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/pelotom/runtypes"
+	}
+}

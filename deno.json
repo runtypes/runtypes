@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"alwaysStrict": true,
+		"exactOptionalPropertyTypes": true,
+		"noUncheckedIndexedAccess": true
+	},
+	"importMap": "import-map.json",
+	"fmt": {
+		"options": {
+			"semiColons": false,
+			"useTabs": true
+		}
+	}
+}

@@ -1,0 +1,8 @@
+{
+	"*.ts": ["eslint --fix", "prettier --write", "eclint fix"],
+	"*.(json|md|yaml)": ["prettier --write", "eclint fix"],
+	".env*": ["eclint fix"],
+	".!(env)rc": ["prettier --write", "eclint fix"],
+	".*ignore": ["eclint fix"],
+	".editorconfig": ["eclint fix"]
+}

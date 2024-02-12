@@ -1,0 +1,14 @@
+#!/bin/sh
+
+pnpm lint-staged || exit 1
+
+for FILE in `git diff --cached --name-only`; do
+	if [ -f $FILE ]; then
+		case $FILE in
+			*.rs)
+				rustfmt --unstable-features --skip-children $FILE ;;
+		esac
+		perl -pi -e 'chomp if eof' $FILE
+		git add $FILE
+	fi
+done

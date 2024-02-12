@@ -1,8 +1,5 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 
-# TypeScript files will always have LF line endings on checkout,
-# so that running 'yarn format' on Windows will not need to change
-# line endings from CRLF to LF causing git to report modified files
-# with no code changes.
+# TypeScript files will always have LF line endings on checkout, so that running formatters on Windows will not need to change line endings from CRLF to LF causing git to report modified files with no code changes.
 *.ts text eol=lf
