@@ -908,13 +908,13 @@ Deno.test("reflection", async t => {
 
 	await t.step("string dictionary", async t => {
 		const Rec = Dictionary(Unknown)
-		expectLiteralField(Rec, "tag", "dictionary")
+		expectLiteralField(Rec, "tag", "record")
 		expectLiteralField(Rec, "key", "string")
 	})
 
 	await t.step("number dictionary", async t => {
 		const Rec = Dictionary(Unknown, "number")
-		expectLiteralField(Rec, "tag", "dictionary")
+		expectLiteralField(Rec, "tag", "record")
 		expectLiteralField(Rec, "key", "number")
 	})
 
@@ -999,7 +999,7 @@ Deno.test("reflection", async t => {
 	await t.step("instanceof", async t => {
 		class Test {}
 		expectLiteralField(InstanceOf(Test), "tag", "instanceof")
-		expectLiteralField(Dictionary(Array(InstanceOf(Test))), "tag", "dictionary")
+		expectLiteralField(Dictionary(Array(InstanceOf(Test))), "tag", "record")
 	})
 
 	await t.step("brand", async t => {

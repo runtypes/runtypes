@@ -117,7 +117,7 @@ const show =
 				}
 				case "array":
 					return `${readonlyTag(refl)}${show(true, circular)(refl.element)}[]`
-				case "dictionary":
+				case "record":
 					return `{ [_: ${refl.key}]: ${show(false, circular)(refl.value)} }`
 				case "object": {
 					const keys = globalThis.Object.keys(refl.fields)
