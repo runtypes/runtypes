@@ -39,4 +39,4 @@ const Literal = <A extends LiteralBase>(value: A): Literal<A> => {
 
 export default Literal
 // eslint-disable-next-line import/no-named-export
-export { literal, type LiteralBase }
+export { type LiteralBase, literal }
