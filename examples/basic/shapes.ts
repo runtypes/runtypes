@@ -1,10 +1,10 @@
 // Inspired by https://github.com/Microsoft/TypeScript/issues/165#issuecomment-342989523
 
-import { match, Record, Number, Union } from "../../src/index.ts"
+import { match, Object, Number, Union } from "../../src/index.ts"
 
-const Square = Record({ size: Number })
-const Rectangle = Record({ width: Number, height: Number })
-const Circle = Record({ radius: Number })
+const Square = Object({ size: Number })
+const Rectangle = Object({ width: Number, height: Number })
+const Circle = Object({ radius: Number })
 
 const Shape = Union(Square, Rectangle, Circle)
 

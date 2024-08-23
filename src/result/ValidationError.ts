@@ -10,7 +10,7 @@ class ValidationError extends Error {
 		super(failure.message)
 		this.code = failure.code
 		if (failure.details !== undefined) this.details = failure.details
-		Object.setPrototypeOf(this, ValidationError.prototype)
+		globalThis.Object.setPrototypeOf(this, ValidationError.prototype)
 	}
 }
 

@@ -1,7 +1,7 @@
 import InstanceOf from "./InstanceOf.ts"
 import Literal, { LiteralBase } from "./Literal.ts"
 import Number from "./Number.ts"
-import Record from "./Record.ts"
+import Object from "./Object.ts"
 import String from "./String.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
@@ -45,9 +45,9 @@ Deno.test("union", async t => {
 
 	await t.step("discriminated union", async t => {
 		await t.step("should pick correct alternative with typescript docs example", async t => {
-			const Square = Record({ kind: Literal("square"), size: Number })
-			const Rectangle = Record({ kind: Literal("rectangle"), width: Number, height: Number })
-			const Circle = Record({ kind: Literal("circle"), radius: Number })
+			const Square = Object({ kind: Literal("square"), size: Number })
+			const Rectangle = Object({ kind: Literal("rectangle"), width: Number, height: Number })
+			const Circle = Object({ kind: Literal("circle"), radius: Number })
 
 			const Shape = Union(Square, Rectangle, Circle)
 
@@ -98,18 +98,18 @@ Deno.test("union", async t => {
 		})
 
 		await t.step("should not pick alternative if the discriminant is not unique", async t => {
-			const Square = Record({ kind: Literal("square"), size: Number })
-			const Rectangle = Record({ kind: Literal("rectangle"), width: Number, height: Number })
-			const CircularSquare = Record({ kind: Literal("square"), radius: Number })
+			const Square = Object({ kind: Literal("square"), size: Number })
+			const Rectangle = Object({ kind: Literal("rectangle"), width: Number, height: Number })
+			const CircularSquare = Object({ kind: Literal("square"), radius: Number })
 
 			const Shape = Union(Square, Rectangle, CircularSquare)
 
 			assert(!("key" in Shape.validate({ kind: "square", size: new Date() })))
 		})
 
-		await t.step("should not pick alternative if not all types are records", async t => {
-			const Square = Record({ kind: Literal("square"), size: Number })
-			const Rectangle = Record({ kind: Literal("rectangle"), width: Number, height: Number })
+		await t.step("should not pick alternative if not all types are objects", async t => {
+			const Square = Object({ kind: Literal("square"), size: Number })
+			const Rectangle = Object({ kind: Literal("rectangle"), width: Number, height: Number })
 
 			const Shape = Union(Square, Rectangle, InstanceOf(Date))
 

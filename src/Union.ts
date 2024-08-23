@@ -42,7 +42,7 @@ const Union = <T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 
 		const commonLiteralFields: { [K: string]: LiteralBase[] } = {}
 		for (const alternative of alternatives) {
-			if (alternative.reflect.tag === "record") {
+			if (alternative.reflect.tag === "object") {
 				for (const fieldName in alternative.reflect.fields) {
 					const field = alternative.reflect.fields[fieldName]!
 					if (field.tag === "literal") {
@@ -61,7 +61,7 @@ const Union = <T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 		for (const fieldName in commonLiteralFields) {
 			if (commonLiteralFields[fieldName]!.length === alternatives.length) {
 				for (const alternative of alternatives) {
-					if (alternative.reflect.tag === "record") {
+					if (alternative.reflect.tag === "object") {
 						const field = alternative.reflect.fields[fieldName]!
 						if (
 							field.tag === "literal" &&

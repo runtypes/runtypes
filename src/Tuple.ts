@@ -34,7 +34,10 @@ const Tuple = <T extends readonly RuntypeBase[]>(...components: T): Tuple<T> => 
 			innerValidate(components[key as any]!, xs[key as any]!, visited),
 		)
 		const details = keys.reduce<
-			Record<number, { [key: number]: string | Failure.Details } & (string | Failure.Details)>
+			globalThis.Record<
+				number,
+				{ [key: number]: string | Failure.Details } & (string | Failure.Details)
+			>
 		>((details, key) => {
 			const result = results[key as any]!
 			if (!result.success) details[key as any] = result.details || result.message

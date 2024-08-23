@@ -1,13 +1,13 @@
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
+import Object from "./Object.ts"
 import Optional from "./Optional.ts"
-import Record from "./Record.ts"
 import String from "./String.ts"
 import Static from "./utils/Static.ts"
 import { assert, assertEquals } from "std/assert/mod.ts"
 
-Deno.test("record", async t => {
-	const CrewMember = Record({
+Deno.test("object", async t => {
+	const CrewMember = Object({
 		name: String,
 		rank: String,
 		home: String,
@@ -18,14 +18,14 @@ Deno.test("record", async t => {
 			const PetMember = CrewMember.pick("name", "home")
 			type PetMember = Static<typeof PetMember>
 			const petMember: PetMember = { name: "", home: "" }
-			assertEquals(Object.keys(PetMember.fields), ["name", "home"])
+			assertEquals(globalThis.Object.keys(PetMember.fields), ["name", "home"])
 			assert(PetMember.guard(petMember))
 		})
 		await t.step("works with empty arguments", async t => {
 			const PetMember = CrewMember.pick()
 			type PetMember = Static<typeof PetMember>
 			const petMember: PetMember = {}
-			assertEquals(Object.keys(PetMember.fields), [])
+			assertEquals(globalThis.Object.keys(PetMember.fields), [])
 			assert(PetMember.guard(petMember))
 		})
 	})
@@ -35,21 +35,21 @@ Deno.test("record", async t => {
 			const PetMember = CrewMember.omit("name", "home")
 			type PetMember = Static<typeof PetMember>
 			const petMember: PetMember = { rank: "" }
-			assertEquals(Object.keys(PetMember.fields), ["rank"])
+			assertEquals(globalThis.Object.keys(PetMember.fields), ["rank"])
 			assert(PetMember.guard(petMember))
 		})
 		await t.step("works with empty arguments", async t => {
 			const PetMember = CrewMember.omit()
 			type PetMember = Static<typeof PetMember>
 			const petMember: PetMember = { name: "", home: "", rank: "" }
-			assertEquals(Object.keys(PetMember.fields), ["name", "rank", "home"])
+			assertEquals(globalThis.Object.keys(PetMember.fields), ["name", "rank", "home"])
 			assert(PetMember.guard(petMember))
 		})
 	})
 
 	await t.step("extend", async t => {
 		await t.step("adds fields", async t => {
-			const BaseShapeParams = Record({
+			const BaseShapeParams = Object({
 				x: Number,
 				y: Number,
 				width: Number,
@@ -59,7 +59,7 @@ Deno.test("record", async t => {
 			const PolygonParams = BaseShapeParams.extend({
 				sides: Number,
 			})
-			assertEquals(Object.keys(PolygonParams.fields), [
+			assertEquals(globalThis.Object.keys(PolygonParams.fields), [
 				"x",
 				"y",
 				"width",
