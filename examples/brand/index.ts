@@ -7,7 +7,7 @@ export const ArrayNonEmpty = <T extends Runtype>(element: T) =>
 export const ID = String.withBrand("ID")
 
 export const IDRequiredAndOptional = Object({ required: ArrayNonEmpty(ID) })
-	.And(Partial({ optional: ArrayNonEmpty(ID) }))
+	.and(Partial({ optional: ArrayNonEmpty(ID) }))
 	.withBrand("IDRequiedAndOptional")
 
 export const test: IDRequiedAndOptional = IDRequiredAndOptional.check({
