@@ -195,5 +195,25 @@
     "https://deno.land/x/ts_morph@20.0.0/common/typescript.js": "b9edf0a451685d13e0467a7ed4351d112b74bd1e256b915a2b941054e31c1736",
     "https://deno.land/x/wasmbuild@0.15.1/cache.ts": "9d01b5cb24e7f2a942bbd8d14b093751fa690a6cde8e21709ddc97667e6669ed",
     "https://deno.land/x/wasmbuild@0.15.1/loader.ts": "8c2fc10e21678e42f84c5135d8ab6ab7dc92424c3f05d2354896a29ccfd02a63"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@typescript-eslint/eslint-plugin@^6.14.0",
+        "npm:@typescript-eslint/parser@^6.14.0",
+        "npm:eclint@^2.8.1",
+        "npm:eslint-config-prettier@^9.1.0",
+        "npm:eslint-plugin-consistent-default-export-name@^0.0.15",
+        "npm:eslint-plugin-import@^2.29.0",
+        "npm:eslint-plugin-jest@^27.6.0",
+        "npm:eslint-plugin-prefer-arrow-functions@^3.2.4",
+        "npm:eslint-plugin-prettier@^5.0.1",
+        "npm:eslint-plugin-unused-imports@^3.0.0",
+        "npm:eslint@^8.55.0",
+        "npm:lint-staged@^15.2.0",
+        "npm:prettier@^3.1.1",
+        "npm:typescript@5.3.3"
+      ]
+    }
   }
 }
