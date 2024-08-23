@@ -119,8 +119,8 @@ const show =
 					return `${readonlyTag(refl)}${show(true, circular)(refl.element)}[]`
 				case "dictionary":
 					return `{ [_: ${refl.key}]: ${show(false, circular)(refl.value)} }`
-				case "record": {
-					const keys = Object.keys(refl.fields)
+				case "object": {
+					const keys = globalThis.Object.keys(refl.fields)
 					return keys.length
 						? `{ ${keys
 								.map(

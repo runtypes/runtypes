@@ -36,7 +36,10 @@ const InternalArray = <E extends RuntypeBase, RO extends boolean>(
 				innerValidate(element, xs[key as any], visited),
 			)
 			const details = keys.reduce<
-				Record<number, { [key: number]: string | Failure.Details } & (string | Failure.Details)>
+				globalThis.Record<
+					number,
+					{ [key: number]: string | Failure.Details } & (string | Failure.Details)
+				>
 			>((details, key) => {
 				const result = results[key as any]!
 				if (!result.success) details[key as any] = result.details || result.message

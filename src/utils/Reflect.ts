@@ -17,7 +17,7 @@ type Reflect =
 	| ({ tag: "template"; strings: string[]; runtypes: Runtype<LiteralBase>[] } & Runtype<string>)
 	| ({ tag: "array"; element: Reflect; isReadonly: boolean } & Runtype<ReadonlyArray<unknown>>)
 	| ({
-			tag: "record"
+			tag: "object"
 			fields: { [_: string]: Reflect }
 			isPartial: boolean
 			isReadonly: boolean

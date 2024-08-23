@@ -3,7 +3,7 @@ const typeOf = (value: unknown) => {
 	if (type === "object") {
 		if (value === null) return "null"
 		if (Array.isArray(value)) return "array"
-		const prototype = Object.getPrototypeOf(value)
+		const prototype = globalThis.Object.getPrototypeOf(value)
 		if (prototype === null) return "object"
 		if (prototype.constructor.name === "Object") return "object"
 		return prototype.constructor.name

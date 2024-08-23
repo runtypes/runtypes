@@ -5,7 +5,7 @@ import {
 	Literal,
 	Array,
 	Tuple,
-	Record,
+	Object,
 	Dictionary,
 	Union,
 	Static,
@@ -17,7 +17,7 @@ type NonNegative = Static<typeof NonNegative> // = number
 const Vector = Tuple(Number, Number, Number)
 type Vector = Static<typeof Vector> // = [number, number, number]
 
-const Asteroid = Record({
+const Asteroid = Object({
 	type: Literal("asteroid"),
 	location: Vector,
 	mass: NonNegative,
@@ -28,7 +28,7 @@ type Asteroid = Static<typeof Asteroid> /* = {
 	mass: NonNegative;
 }*/
 
-const Planet = Record({
+const Planet = Object({
 	type: Literal("planet"),
 	location: Vector,
 	mass: NonNegative,
@@ -46,7 +46,7 @@ type Planet = Static<typeof Planet> /* = {
 const Rank = Union(Literal("captain"), Literal("first mate"), Literal("officer"), Literal("ensign"))
 type Rank = Static<typeof Rank> // = 'captain' | 'first mate' | 'officer' | 'ensign'
 
-const CrewMember = Record({
+const CrewMember = Object({
 	name: String,
 	age: NonNegative,
 	rank: Rank,
@@ -59,7 +59,7 @@ type CrewMember = Static<typeof CrewMember> /* = {
 	home: Planet;
 }*/
 
-const Ship = Record({
+const Ship = Object({
 	type: Literal("ship"),
 	location: Vector,
 	mass: NonNegative,

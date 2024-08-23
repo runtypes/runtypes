@@ -41,7 +41,7 @@ const self = { tag: "symbol" } as unknown as Reflect
  */
 const Symbol = create<Symbol>(
 	value => (typeof value === "symbol" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value)),
-	Object.assign(f, self),
+	globalThis.Object.assign(f, self),
 )
 
 const quoteIfPresent = (key: string | undefined) => (key === undefined ? "undefined" : `"${key}"`)

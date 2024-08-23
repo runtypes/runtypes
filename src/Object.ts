@@ -15,7 +15,7 @@ type FilterRequiredKeys<T> = {
 	[K in keyof T]: T[K] extends Optional<any> ? never : K
 }[keyof T]
 
-type MergedRecord<O extends { [_: string]: RuntypeBase }> = {
+type MergedObject<O extends { [_: string]: RuntypeBase }> = {
 	[K in FilterRequiredKeys<O>]: Static<O[K]>
 } & {
 	[K in FilterOptionalKeys<O>]?: Static<O[K]>
@@ -23,7 +23,7 @@ type MergedRecord<O extends { [_: string]: RuntypeBase }> = {
 	? { [K in keyof P]: P[K] }
 	: never
 
-type MergedRecordReadonly<O extends { [_: string]: RuntypeBase }> = {
+type MergedObjectReadonly<O extends { [_: string]: RuntypeBase }> = {
 	[K in FilterRequiredKeys<O>]: Static<O[K]>
 } & {
 	[K in FilterOptionalKeys<O>]?: Static<O[K]>
@@ -31,7 +31,7 @@ type MergedRecordReadonly<O extends { [_: string]: RuntypeBase }> = {
 	? { readonly [K in keyof P]: P[K] }
 	: never
 
-type RecordStaticType<
+type ObjectStaticType<
 	O extends { [_: string]: RuntypeBase },
 	Part extends boolean,
 	RO extends boolean,
@@ -40,28 +40,28 @@ type RecordStaticType<
 		? { readonly [K in keyof O]?: Static<O[K]> }
 		: { [K in keyof O]?: Static<O[K]> }
 	: RO extends true
-		? MergedRecordReadonly<O>
-		: MergedRecord<O>
+		? MergedObjectReadonly<O>
+		: MergedObject<O>
 
-interface InternalRecord<
+interface InternalObject<
 	O extends { [_: string]: RuntypeBase },
 	Part extends boolean,
 	RO extends boolean,
-> extends Runtype<RecordStaticType<O, Part, RO>> {
-	tag: "record"
+> extends Runtype<ObjectStaticType<O, Part, RO>> {
+	tag: "object"
 	fields: O
 	isPartial: Part
 	isReadonly: RO
 
-	asPartial(): InternalRecord<O, true, RO>
-	asReadonly(): InternalRecord<O, Part, true>
+	asPartial(): InternalObject<O, true, RO>
+	asReadonly(): InternalObject<O, Part, true>
 
 	pick<K extends keyof O>(
 		...keys: K[] extends (keyof O)[] ? K[] : never[]
-	): InternalRecord<Pick<O, K>, Part, RO>
+	): InternalObject<Pick<O, K>, Part, RO>
 	omit<K extends keyof O>(
 		...keys: K[] extends (keyof O)[] ? K[] : never[]
-	): InternalRecord<Omit<O, K>, Part, RO>
+	): InternalObject<Omit<O, K>, Part, RO>
 
 	extend<P extends { [_: string]: RuntypeBase }>(fields: {
 		[K in keyof P]: K extends keyof O
@@ -69,29 +69,29 @@ interface InternalRecord<
 				? P[K]
 				: RuntypeBase<Static<O[K]>>
 			: P[K]
-	}): InternalRecord<
+	}): InternalObject<
 		{ [K in keyof (O & P)]: K extends keyof P ? P[K] : K extends keyof O ? O[K] : never },
 		Part,
 		RO
 	>
 }
 
-type Record<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalRecord<
+type Object<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalObject<
 	O,
 	false,
 	RO
 >
 
-type Partial<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalRecord<
+type Partial<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalObject<
 	O,
 	true,
 	RO
 >
 
 /**
- * Construct a record runtype from runtypes for its values.
+ * Construct an object runtype from runtypes for its values.
  */
-const InternalRecord = <
+const InternalObject = <
 	O extends { [_: string]: RuntypeBase },
 	Part extends boolean,
 	RO extends boolean,
@@ -99,8 +99,8 @@ const InternalRecord = <
 	fields: O,
 	isPartial: Part,
 	isReadonly: RO,
-): InternalRecord<O, Part, RO> => {
-	const self = { tag: "record", isPartial, isReadonly, fields } as any
+): InternalObject<O, Part, RO> => {
+	const self = { tag: "object", isPartial, isReadonly, fields } as any
 	return withExtraModifierFuncs(
 		create((x, visited) => {
 			if (x === null || x === undefined) {
@@ -127,7 +127,7 @@ const InternalRecord = <
 							else results[key as any] = SUCCESS(undefined)
 						}
 					} else if (xHasKey) {
-						// TODO: exact record validation
+						// TODO: exact object validation
 						const value = x[key as any]
 						results[key as any] = SUCCESS(value)
 					} else {
@@ -154,11 +154,11 @@ const InternalRecord = <
 	)
 }
 
-const Record = <O extends { [_: string]: RuntypeBase }>(fields: O): Record<O, false> =>
-	InternalRecord(fields, false, false)
+const Object = <O extends { [_: string]: RuntypeBase }>(fields: O): Object<O, false> =>
+	InternalObject(fields, false, false)
 
 const Partial = <O extends { [_: string]: RuntypeBase }>(fields: O): Partial<O, false> =>
-	InternalRecord(fields, true, false)
+	InternalObject(fields, true, false)
 
 const withExtraModifierFuncs = <
 	O extends { [_: string]: RuntypeBase },
@@ -166,34 +166,34 @@ const withExtraModifierFuncs = <
 	RO extends boolean,
 >(
 	A: any,
-): InternalRecord<O, Part, RO> => {
-	const asPartial = () => InternalRecord(A.fields, true, A.isReadonly)
+): InternalObject<O, Part, RO> => {
+	const asPartial = () => InternalObject(A.fields, true, A.isReadonly)
 
-	const asReadonly = () => InternalRecord(A.fields, A.isPartial, true)
+	const asReadonly = () => InternalObject(A.fields, A.isPartial, true)
 
 	const pick = <K extends keyof O>(
 		...keys: K[] extends (keyof O)[] ? K[] : never[]
-	): InternalRecord<Pick<O, K>, Part, RO> => {
+	): InternalObject<Pick<O, K>, Part, RO> => {
 		const result: any = {}
 		keys.forEach(key => {
 			result[key] = A.fields[key]
 		})
-		return InternalRecord(result, A.isPartial, A.isReadonly)
+		return InternalObject(result, A.isPartial, A.isReadonly)
 	}
 
 	const omit = <K extends keyof O>(
 		...keys: K[] extends (keyof O)[] ? K[] : never[]
-	): InternalRecord<Omit<O, K>, Part, RO> => {
+	): InternalObject<Omit<O, K>, Part, RO> => {
 		const result: any = {}
 		const existingKeys = enumerableKeysOf(A.fields)
 		existingKeys.forEach(key => {
 			if (!(keys as (string | symbol)[]).includes(key)) result[key] = A.fields[key]
 		})
-		return InternalRecord(result, A.isPartial, A.isReadonly) as InternalRecord<Omit<O, K>, Part, RO>
+		return InternalObject(result, A.isPartial, A.isReadonly) as InternalObject<Omit<O, K>, Part, RO>
 	}
 
 	const extend = (fields: any): any =>
-		InternalRecord(Object.assign({}, A.fields, fields), A.isPartial, A.isReadonly)
+		InternalObject(globalThis.Object.assign({}, A.fields, fields), A.isPartial, A.isReadonly)
 
 	A.asPartial = asPartial
 	A.asReadonly = asReadonly
@@ -204,6 +204,6 @@ const withExtraModifierFuncs = <
 	return A
 }
 
-export default Record
+export default Object
 // eslint-disable-next-line import/no-named-export
 export { Partial }

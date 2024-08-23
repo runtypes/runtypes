@@ -11,8 +11,8 @@ import Literal from "../Literal.ts"
 import Never from "../Never.ts"
 import Null from "../Null.ts"
 import Number from "../Number.ts"
+import Object, { Partial } from "../Object.ts"
 import Optional from "../Optional.ts"
-import Record, { Partial } from "../Record.ts"
 import String from "../String.ts"
 import Symbol from "../Symbol.ts"
 import Template from "../Template.ts"
@@ -106,31 +106,31 @@ const cases: [Reflect, string][] = [
 	[Dictionary(Array(Boolean), Symbol), "{ [_: symbol]: boolean[] }"],
 	[Dictionary(Array(Boolean), "string"), "{ [_: string]: boolean[] }"],
 	[Dictionary(Array(Boolean), "number"), "{ [_: number]: boolean[] }"],
-	[Record({}), "{}"],
-	[Record({}).asReadonly(), "{}"],
+	[Object({}), "{}"],
+	[Object({}).asReadonly(), "{}"],
 	[Partial({}), "{}"],
 	[InstanceOf(TestClass), "TestClass"],
 	[Array(InstanceOf(TestClass)), "TestClass[]"],
-	[Record({ x: String, y: Array(Boolean) }), "{ x: string; y: boolean[]; }"],
-	[Record({ x: String, y: Array(Boolean) }), "{ x: string; y: boolean[]; }"],
+	[Object({ x: String, y: Array(Boolean) }), "{ x: string; y: boolean[]; }"],
+	[Object({ x: String, y: Array(Boolean) }), "{ x: string; y: boolean[]; }"],
 	[
-		Record({ x: Number, y: Optional(Number) }).asReadonly(),
+		Object({ x: Number, y: Optional(Number) }).asReadonly(),
 		"{ readonly x: number; readonly y?: number; }",
 	],
-	[Record({ x: Number, y: Optional(Number) }), "{ x: number; y?: number; }"],
-	[Record({ x: Number, y: Union(Number, Undefined) }), "{ x: number; y: number | undefined; }"],
-	[Record({ x: Number }).And(Partial({ y: Number })), "{ x: number; } & { y?: number; }"],
+	[Object({ x: Number, y: Optional(Number) }), "{ x: number; y?: number; }"],
+	[Object({ x: Number, y: Union(Number, Undefined) }), "{ x: number; y: number | undefined; }"],
+	[Object({ x: Number }).And(Partial({ y: Number })), "{ x: number; } & { y?: number; }"],
 	[
-		Record({ x: String, y: Array(Boolean) }).asReadonly(),
+		Object({ x: String, y: Array(Boolean) }).asReadonly(),
 		"{ readonly x: string; readonly y: boolean[]; }",
 	],
-	[Record({ x: String, y: Array(Boolean).asReadonly() }), "{ x: string; y: readonly boolean[]; }"],
+	[Object({ x: String, y: Array(Boolean).asReadonly() }), "{ x: string; y: readonly boolean[]; }"],
 	[
-		Record({ x: String, y: Array(Boolean).asReadonly() }).asReadonly(),
+		Object({ x: String, y: Array(Boolean).asReadonly() }).asReadonly(),
 		"{ readonly x: string; readonly y: readonly boolean[]; }",
 	],
 	[Partial({ x: String, y: Array(Boolean) }), "{ x?: string; y?: boolean[]; }"],
-	[Record({ x: String, y: Array(Boolean) }).asPartial(), "{ x?: string; y?: boolean[]; }"],
+	[Object({ x: String, y: Array(Boolean) }).asPartial(), "{ x?: string; y?: boolean[]; }"],
 	[Tuple(Boolean, Number), "[boolean, number]"],
 	[Union(Boolean, Number), "boolean | number"],
 	[Intersect(Boolean, Number), "boolean & number"],
@@ -144,7 +144,7 @@ const cases: [Reflect, string][] = [
 	// Parenthesization
 	[Boolean.And(Number.Or(String)), "boolean & (number | string)"],
 	[Boolean.Or(Number.And(String)), "boolean | (number & string)"],
-	[Boolean.Or(Record({ x: String, y: Number })), "boolean | { x: string; y: number; }"],
+	[Boolean.Or(Object({ x: String, y: Number })), "boolean | { x: string; y: number; }"],
 ]
 
 Deno.test("show", async t => {

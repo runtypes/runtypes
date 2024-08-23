@@ -14,8 +14,8 @@ import Never from "./Never.ts"
 import Null from "./Null.ts"
 import Nullish from "./Nullish.ts"
 import Number from "./Number.ts"
+import Object, { Partial as RTPartial } from "./Object.ts"
 import Optional from "./Optional.ts"
-import Record, { Partial as RTPartial } from "./Record.ts"
 import Runtype, { RuntypeBase } from "./Runtype.ts"
 import String from "./String.ts"
 import { default as Sym } from "./Symbol.ts"
@@ -35,11 +35,11 @@ import { assert, assertEquals, assertThrows, fail } from "std/assert/mod.ts"
 import outdent from "x/outdent@v0.8/mod.ts"
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
-const record1 = Record({ Boolean, Number })
-const union1 = Union(Literal(3), String, boolTuple, record1)
+const object1 = Object({ Boolean, Number })
+const union1 = Union(Literal(3), String, boolTuple, object1)
 
 type Person = { name: string; likes: Person[] }
-const Person: Runtype<Person> = Lazy(() => Record({ name: String, likes: Array(Person) }))
+const Person: Runtype<Person> = Lazy(() => Object({ name: String, likes: Array(Person) }))
 const narcissist: Person = { name: "Narcissus", likes: [] }
 narcissist.likes = [narcissist]
 
@@ -61,13 +61,13 @@ const srDict: SRDict = {}
 srDict["self"] = srDict
 
 type Hand = { left: Hand } | { right: Hand }
-const Hand: Runtype<Hand> = Lazy(() => Union(Record({ left: Hand }), Record({ right: Hand })))
+const Hand: Runtype<Hand> = Lazy(() => Union(Object({ left: Hand }), Object({ right: Hand })))
 const leftHand: Hand = { left: null as any as Hand }
 const rightHand: Hand = { right: leftHand }
 leftHand.left = rightHand
 
 type Ambi = { left: Ambi } & { right: Ambi }
-const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Record({ left: Ambi }), Record({ right: Ambi })))
+const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Object({ left: Ambi }), Object({ right: Ambi })))
 const ambi: Ambi = { left: null as any as Ambi, right: null as any as Ambi }
 ambi.left = ambi
 ambi.right = ambi
@@ -110,7 +110,7 @@ const runtypes = {
 	Null,
 	Nullish,
 	nullable: Literal(true).nullable(),
-	Empty: Record({}),
+	Empty: Object({}),
 	Void,
 	Boolean,
 	true: Literal(true),
@@ -141,9 +141,9 @@ const runtypes = {
 	symbolArray: Array(Sym),
 	boolArray: Array(Boolean),
 	boolTuple,
-	record1,
+	object1,
 	union1,
-	Partial: RTPartial({ foo: String }).And(Record({ Boolean })),
+	Partial: RTPartial({ foo: String }).And(Object({ Boolean })),
 	Function,
 	Person,
 	MoreThanThree: Number.withConstraint(n => n > 3),
@@ -180,18 +180,18 @@ const runtypes = {
 	),
 	DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
 	OptionalBoolean: Optional(Boolean),
-	OptionalProperty: Record({ foo: String, bar: Optional(Number) }),
-	UnionProperty: Record({ foo: String, bar: Union(Number, Undefined) }),
-	PartialProperty: Record({ foo: String }).And(RTPartial({ bar: Number })),
+	OptionalProperty: Object({ foo: String, bar: Optional(Number) }),
+	UnionProperty: Object({ foo: String, bar: Union(Number, Undefined) }),
+	PartialProperty: Object({ foo: String }).And(RTPartial({ bar: Number })),
 	ReadonlyNumberArray: Array(Number).asReadonly(),
-	ReadonlyRecord: Record({ foo: Number, bar: String }).asReadonly(),
+	ReadonlyObject: Object({ foo: Number, bar: String }).asReadonly(),
 	Graph,
 	SRDict,
 	Hand,
 	Ambi,
 	BarbellBall,
 	PartialPerson,
-	ReadonlyPartial: Record({ foo: Number })
+	ReadonlyPartial: Object({ foo: Number })
 		.asReadonly()
 		.And(RTPartial({ bar: String }).asReadonly()),
 	EmptyTuple: Tuple(),
@@ -200,7 +200,7 @@ const runtypes = {
 
 type RuntypeName = keyof typeof runtypes
 
-const runtypeNames = Object.keys(runtypes) as RuntypeName[]
+const runtypeNames = globalThis.Object.keys(runtypes) as RuntypeName[]
 
 class Foo {
 	x!: "blah"
@@ -231,7 +231,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	{ value: Symbol(), passes: ["Sym"] },
 	{ value: Symbol.for("runtypes"), passes: ["Sym", "SymForRuntypes"] },
 	{ value: [true, false, true], passes: ["boolArray", "boolTuple", "union1"] },
-	{ value: { Boolean: true, Number: 3 }, passes: ["record1", "union1", "Partial"] },
+	{ value: { Boolean: true, Number: 3 }, passes: ["object1", "union1", "Partial"] },
 	{ value: { Boolean: true }, passes: ["Partial"] },
 	{ value: { Boolean: true, foo: undefined }, passes: ["Partial"] },
 	{
@@ -290,7 +290,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 		value: { foo: "hello", bar: undefined },
 		passes: ["OptionalProperty", "UnionProperty", "PartialProperty"],
 	},
-	{ value: { foo: 4, bar: "baz" }, passes: ["ReadonlyRecord", "ReadonlyPartial"] },
+	{ value: { foo: 4, bar: "baz" }, passes: ["ReadonlyObject", "ReadonlyPartial"] },
 	{ value: narcissist, passes: ["Person"] },
 	{ value: [narcissist, narcissist], passes: ["ArrayPerson"] },
 	{ value: barbell, passes: ["Graph"] },
@@ -403,7 +403,7 @@ Deno.test("check errors", async t => {
 	await t.step("tuple nested", async t => {
 		assertRuntypeThrows(
 			[0, { name: 0 }],
-			Tuple(Number, Record({ name: String })),
+			Tuple(Number, Object({ name: String })),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -441,7 +441,7 @@ Deno.test("check errors", async t => {
 	await t.step("array nested", async t => {
 		assertRuntypeThrows(
 			[{ name: "Foo" }, { name: false }],
-			Array(Record({ name: String })),
+			Array(Object({ name: String })),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -459,7 +459,7 @@ Deno.test("check errors", async t => {
 	await t.step("array null", async t => {
 		assertRuntypeThrows(
 			[{ name: "Foo" }, null],
-			Array(Record({ name: String })),
+			Array(Object({ name: String })),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -491,7 +491,7 @@ Deno.test("check errors", async t => {
 	await t.step("readonly array nested", async t => {
 		assertRuntypeThrows(
 			[{ name: "Foo" }, { name: false }],
-			Array(Record({ name: String })).asReadonly(),
+			Array(Object({ name: String })).asReadonly(),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -509,7 +509,7 @@ Deno.test("check errors", async t => {
 	await t.step("readonly array null", async t => {
 		assertRuntypeThrows(
 			[{ name: "Foo" }, null],
-			Array(Record({ name: String })).asReadonly(),
+			Array(Object({ name: String })).asReadonly(),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -534,13 +534,13 @@ Deno.test("check errors", async t => {
 	await t.step("dictionary invalid type", async t => {
 		assertRuntypeThrows(
 			undefined,
-			Dictionary(Record({ name: String })),
+			Dictionary(Object({ name: String })),
 			Failcode.TYPE_INCORRECT,
 			"Expected { [_: string]: { name: string; } }, but was undefined",
 		)
 		assertRuntypeThrows(
 			1,
-			Dictionary(Record({ name: String })),
+			Dictionary(Object({ name: String })),
 			Failcode.TYPE_INCORRECT,
 			"Expected { [_: string]: { name: string; } }, but was number",
 		)
@@ -549,7 +549,7 @@ Deno.test("check errors", async t => {
 	await t.step("dictionary complex", async t => {
 		assertRuntypeThrows(
 			{ foo: { name: false } },
-			Dictionary(Record({ name: String })),
+			Dictionary(Object({ name: String })),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -596,10 +596,10 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("record", async t => {
+	await t.step("object", async t => {
 		assertRuntypeThrows(
 			{ name: "Jack", age: "10" },
-			Record({
+			Object({
 				name: String,
 				age: Number,
 			}),
@@ -615,23 +615,23 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("record for null prototype", () =>
+	await t.step("object for null prototype", () =>
 		assertAccepts(
-			Object.assign(Object.create(null), {
+			globalThis.Object.assign(globalThis.Object.create(null), {
 				name: "Jack",
 				age: 10,
 			}),
-			Record({
+			Object({
 				name: String,
 				age: Number,
 			}),
 		),
 	)
 
-	await t.step("record missing keys", async t => {
+	await t.step("object missing keys", async t => {
 		assertRuntypeThrows(
 			{ name: "Jack" },
-			Record({
+			Object({
 				name: String,
 				age: Number,
 			}),
@@ -647,13 +647,13 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("record complex", async t => {
+	await t.step("object complex", async t => {
 		assertRuntypeThrows(
 			{ name: "Jack", age: 10, likes: [{ title: false }] },
-			Record({
+			Object({
 				name: String,
 				age: Number,
-				likes: Array(Record({ title: String })),
+				likes: Array(Object({ title: String })),
 			}),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
@@ -671,10 +671,10 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("readonly record", async t => {
+	await t.step("readonly object", async t => {
 		assertRuntypeThrows(
 			{ name: "Jack", age: "10" },
-			Record({
+			Object({
 				name: String,
 				age: Number,
 			}).asReadonly(),
@@ -690,10 +690,10 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("readonly record missing keys", async t => {
+	await t.step("readonly object missing keys", async t => {
 		assertRuntypeThrows(
 			{ name: "Jack" },
-			Record({
+			Object({
 				name: String,
 				age: Number,
 			}).asReadonly(),
@@ -709,13 +709,13 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("readonly record complex", async t => {
+	await t.step("readonly object complex", async t => {
 		assertRuntypeThrows(
 			{ name: "Jack", age: 10, likes: [{ title: false }] },
-			Record({
+			Object({
 				name: String,
 				age: Number,
-				likes: Array(Record({ title: String }).asReadonly()),
+				likes: Array(Object({ title: String }).asReadonly()),
 			}).asReadonly(),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
@@ -758,7 +758,7 @@ Deno.test("check errors", async t => {
 			RTPartial({
 				name: String,
 				age: Number,
-				likes: Array(Record({ title: String })),
+				likes: Array(Object({ title: String })),
 			}),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
@@ -809,7 +809,7 @@ Deno.test("check errors", async t => {
 
 	await t.step("union for null prototype", async t => {
 		assertRuntypeThrows(
-			Object.assign(Object.create(null)),
+			globalThis.Object.assign(globalThis.Object.create(null)),
 			Union(Number, String),
 			Failcode.TYPE_INCORRECT,
 			"Expected number | string, but was object",
@@ -918,18 +918,18 @@ Deno.test("reflection", async t => {
 		expectLiteralField(Rec, "key", "number")
 	})
 
-	await t.step("record", async t => {
-		const Rec = Record({ x: Number, y: Literal(3) })
-		expectLiteralField(Rec, "tag", "record")
+	await t.step("object", async t => {
+		const Rec = Object({ x: Number, y: Literal(3) })
+		expectLiteralField(Rec, "tag", "object")
 		expectLiteralField(Rec.fields.x, "tag", "number")
 		expectLiteralField(Rec.fields.y, "tag", "literal")
 		expectLiteralField(Rec.fields.y, "value", 3)
 		expectLiteralField(Rec, "isReadonly", false)
 	})
 
-	await t.step("record (asReadonly)", async t => {
-		const Rec = Record({ x: Number, y: Literal(3) }).asReadonly()
-		expectLiteralField(Rec, "tag", "record")
+	await t.step("object (asReadonly)", async t => {
+		const Rec = Object({ x: Number, y: Literal(3) }).asReadonly()
+		expectLiteralField(Rec, "tag", "object")
 		expectLiteralField(Rec.fields.x, "tag", "number")
 		expectLiteralField(Rec.fields.y, "tag", "literal")
 		expectLiteralField(Rec.fields.y, "value", 3)
@@ -938,7 +938,7 @@ Deno.test("reflection", async t => {
 
 	await t.step("partial", async t => {
 		const Opt = RTPartial({ x: Number, y: Literal(3) })
-		expectLiteralField(Opt, "tag", "record")
+		expectLiteralField(Opt, "tag", "object")
 		expectLiteralField(Opt.fields.x, "tag", "number")
 		expectLiteralField(Opt.fields.y, "tag", "literal")
 		expectLiteralField(Opt.fields.y, "value", 3)
@@ -958,14 +958,14 @@ Deno.test("reflection", async t => {
 	})
 
 	await t.step("intersect", async t => {
-		const intersectees = [Record({ x: Number }), Record({ y: Number })] as const
+		const intersectees = [Object({ x: Number }), Object({ y: Number })] as const
 		const I = Intersect(...intersectees)
 		type I = Static<typeof I>
 		const i: I = { x: 1, y: 2 }
 		expectLiteralField(I, "tag", "intersect")
 		assertEquals(
 			I.intersectees.map(A => A.tag),
-			["record", "record"],
+			["object", "object"],
 		)
 		I.check(i)
 	})
@@ -1031,6 +1031,7 @@ Deno.test("change static type with Constraint", async t => {
 })
 
 // Static tests of reflection
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 ;(
 	X:
 		| Unknown
@@ -1044,8 +1045,8 @@ Deno.test("change static type with Constraint", async t => {
 		| Literal<boolean | number | string>
 		| Array<Reflect, false>
 		| Array<Reflect, true>
-		| Record<{ [_ in string]: Reflect }, false>
-		| Record<{ [_ in string]: Reflect }, true>
+		| Object<{ [_ in string]: Reflect }, false>
+		| Object<{ [_ in string]: Reflect }, true>
 		| RTPartial<{ [_ in string]: Reflect }, false>
 		| RTPartial<{ [_ in string]: Reflect }, true>
 		| Tuple<[Reflect, Reflect]>
@@ -1086,7 +1087,7 @@ Deno.test("change static type with Constraint", async t => {
 		case "array":
 			check<ReadonlyArray<Static<typeof X.element>>>(X)
 			break
-		case "record":
+		case "object":
 			check<{ readonly [K in keyof typeof X.fields]: Static<(typeof X.fields)[K]> }>(X)
 			break
 		case "tuple":

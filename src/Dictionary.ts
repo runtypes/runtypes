@@ -91,7 +91,7 @@ const Dictionary: {
 		if (x === null || x === undefined || typeof x !== "object")
 			return FAILURE.TYPE_INCORRECT(self, x)
 
-		if (Object.getPrototypeOf(x) !== Object.prototype)
+		if (globalThis.Object.getPrototypeOf(x) !== globalThis.Object.prototype)
 			if (!Array.isArray(x) || keyString === "string") return FAILURE.TYPE_INCORRECT(self, x)
 
 		const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/

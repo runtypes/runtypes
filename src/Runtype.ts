@@ -122,7 +122,7 @@ interface Runtype<A = unknown> extends RuntypeBase<A> {
 
 class FunctionExtensible<F extends Function> {
 	constructor(f: F) {
-		return Object.setPrototypeOf(f, new.target.prototype)
+		return globalThis.Object.setPrototypeOf(f, new.target.prototype)
 	}
 }
 

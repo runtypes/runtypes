@@ -4,7 +4,7 @@ import Failcode from "../result/Failcode.ts"
 import Failure from "../result/Failure.ts"
 import Reflect from "../utils/Reflect.ts"
 
-const FAILURE = Object.assign(
+const FAILURE = globalThis.Object.assign(
 	(code: Failcode, message: string, details?: Failure.Details): Failure => ({
 		success: false,
 		code,
