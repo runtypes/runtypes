@@ -125,7 +125,7 @@ const show =
 						? `{ ${keys
 								.map(
 									k =>
-										`${readonlyTag(refl)}${k}${partialTag(refl, k)}: ${
+										`${readonlyTag(refl)}${k}${optionalTag(refl, k)}: ${
 											refl.fields[k]!.tag === "optional"
 												? show(false, circular)((refl.fields[k]! as any).underlying)
 												: show(false, circular)(refl.fields[k]!)
@@ -154,18 +154,8 @@ const show =
 		}
 	}
 
-const partialTag = (
-	{
-		isPartial,
-		fields,
-	}: {
-		isPartial: boolean
-		fields: {
-			[_: string]: Reflect
-		}
-	},
-	key?: string,
-): string => (isPartial || (key !== undefined && fields[key]!.tag === "optional") ? "?" : "")
+const optionalTag = ({ fields }: { fields: { [_: string]: Reflect } }, key?: string): string =>
+	key !== undefined && fields[key]!.tag === "optional" ? "?" : ""
 
 const readonlyTag = ({ isReadonly }: { isReadonly: boolean }): string =>
 	isReadonly ? "readonly " : ""

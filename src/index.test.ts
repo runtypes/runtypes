@@ -14,7 +14,7 @@ import Never from "./Never.ts"
 import Null from "./Null.ts"
 import Nullish from "./Nullish.ts"
 import Number from "./Number.ts"
-import Object, { Partial as RTPartial } from "./Object.ts"
+import Object from "./Object.ts"
 import Optional from "./Optional.ts"
 import Runtype, { RuntypeBase } from "./Runtype.ts"
 import String from "./String.ts"
@@ -71,17 +71,6 @@ const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Object({ left: Ambi }), Object(
 const ambi: Ambi = { left: null as any as Ambi, right: null as any as Ambi }
 ambi.left = ambi
 ambi.right = ambi
-
-type PartialPerson = { likes?: PartialPerson } & { firstName: string }
-const PartialPerson: Runtype<PartialPerson> = Lazy(() =>
-	RTPartial({ firstName: String, likes: PartialPerson }).and(
-		Guard<{ firstName: string }>(
-			(p: any): p is { firstName: string } => p.firstName && typeof p.firstName === "string",
-		),
-	),
-)
-const partialNarcissus: PartialPerson = { firstName: "Narcissish" }
-partialNarcissus.likes = partialNarcissus
 
 class SomeClass {
 	constructor(public n: number) {}
@@ -143,7 +132,6 @@ const runtypes = {
 	boolTuple,
 	object1,
 	union1,
-	Partial: RTPartial({ foo: String }).and(Object({ Boolean })),
 	Function,
 	Person,
 	MoreThanThree: Number.withConstraint(n => n > 3),
@@ -182,7 +170,6 @@ const runtypes = {
 	OptionalBoolean: Optional(Boolean),
 	OptionalProperty: Object({ foo: String, bar: Optional(Number) }),
 	UnionProperty: Object({ foo: String, bar: Union(Number, Undefined) }),
-	PartialProperty: Object({ foo: String }).and(RTPartial({ bar: Number })),
 	ReadonlyNumberArray: Array(Number).asReadonly(),
 	ReadonlyObject: Object({ foo: Number, bar: String }).asReadonly(),
 	Graph,
@@ -190,10 +177,6 @@ const runtypes = {
 	Hand,
 	Ambi,
 	BarbellBall,
-	PartialPerson,
-	ReadonlyPartial: Object({ foo: Number })
-		.asReadonly()
-		.and(RTPartial({ bar: String }).asReadonly()),
 	EmptyTuple: Tuple(),
 	Union: Union(Literal("a"), Literal("b"), Literal(3)),
 }
@@ -231,13 +214,13 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	{ value: Symbol(), passes: ["Sym"] },
 	{ value: Symbol.for("runtypes"), passes: ["Sym", "SymForRuntypes"] },
 	{ value: [true, false, true], passes: ["boolArray", "boolTuple", "union1"] },
-	{ value: { Boolean: true, Number: 3 }, passes: ["object1", "union1", "Partial"] },
-	{ value: { Boolean: true }, passes: ["Partial"] },
+	{ value: { Boolean: true, Number: 3 }, passes: ["object1", "union1"] },
+	{ value: { Boolean: true }, passes: [] },
 	{
 		value: { Boolean: true, foo: "hello" },
-		passes: ["Partial", "OptionalProperty", "PartialProperty"],
+		passes: ["OptionalProperty"],
 	},
-	{ value: { Boolean: true, foo: 5 }, passes: ["ReadonlyPartial"] },
+	{ value: { Boolean: true, foo: 5 }, passes: [] },
 	{ value: (x: number, y: string) => x + y.length, passes: ["Function"] },
 	{ value: { name: undefined, likes: [] }, passes: [] },
 	{ value: { name: "Jimmy", likes: [{ name: undefined, likes: [] }] }, passes: [] },
@@ -255,7 +238,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	{ value: { a: [], b: [true, false] }, passes: ["DictionaryOfArrays"] },
 	{ value: new Foo(), passes: [] },
 	{ value: [1, 2, 4], passes: ["ArrayNumber", "ReadonlyNumberArray"] },
-	{ value: { Boolean: true, Number: "5" }, passes: ["Partial"] },
+	{ value: { Boolean: true, Number: "5" }, passes: [] },
 	{
 		value: [1, 2, 3, 4],
 		passes: ["ArrayNumber", "ReadonlyNumberArray", "CustomArray", "CustomArrayWithMessage"],
@@ -283,13 +266,13 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	{ value: { xxx: [new SomeClass(55)] }, passes: ["DictionaryOfArraysOfSomeClass"] },
 	{
 		value: { foo: "hello" },
-		passes: ["OptionalProperty", "PartialProperty", "Dictionary"],
+		passes: ["OptionalProperty", "Dictionary"],
 	},
 	{
 		value: { foo: "hello", bar: undefined },
 		passes: ["UnionProperty"],
 	},
-	{ value: { foo: 4, bar: "baz" }, passes: ["ReadonlyObject", "ReadonlyPartial"] },
+	{ value: { foo: 4, bar: "baz" }, passes: ["ReadonlyObject"] },
 	{ value: narcissist, passes: ["Person"] },
 	{ value: [narcissist, narcissist], passes: ["ArrayPerson"] },
 	{ value: barbell, passes: ["Graph"] },
@@ -297,7 +280,6 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	{ value: srDict, passes: ["SRDict"] },
 	{ value: leftHand, passes: ["Hand", "SRDict"] },
 	{ value: ambi, passes: ["Ambi", "Hand", "SRDict"] },
-	{ value: partialNarcissus, passes: ["PartialPerson"] },
 ]
 
 const getCircularReplacer = () => {
@@ -732,49 +714,6 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("partial", async t => {
-		assertRuntypeThrows(
-			{ name: "Jack", age: null },
-			RTPartial({
-				name: String,
-				age: Number,
-			}),
-			Failcode.CONTENT_INCORRECT,
-			outdent`
-				Validation failed:
-				{
-					"age": "Expected number, but was null"
-				}.
-				Object should match { name?: string; age?: number; }
-			`,
-			{ age: "Expected number, but was null" },
-		)
-	})
-
-	await t.step("partial complex", async t => {
-		assertRuntypeThrows(
-			{ name: "Jack", likes: [{ title: 2 }] },
-			RTPartial({
-				name: String,
-				age: Number,
-				likes: Array(Object({ title: String })),
-			}),
-			Failcode.CONTENT_INCORRECT,
-			outdent`
-				Validation failed:
-				{
-					"likes": [
-						{
-							"title": "Expected string, but was number"
-						}
-					]
-				}.
-				Object should match { name?: string; age?: number; likes?: { title: string; }[]; }
-			`,
-			{ likes: { 0: { title: "Expected string, but was number" } } },
-		)
-	})
-
 	await t.step("constraint standard message", async t => {
 		assertRuntypeThrows(
 			new SomeClass(1),
@@ -935,14 +874,6 @@ Deno.test("reflection", async t => {
 		expectLiteralField(Rec, "isReadonly", true)
 	})
 
-	await t.step("partial", async t => {
-		const Opt = RTPartial({ x: Number, y: Literal(3) })
-		expectLiteralField(Opt, "tag", "object")
-		expectLiteralField(Opt.fields.x, "tag", "number")
-		expectLiteralField(Opt.fields.y, "tag", "literal")
-		expectLiteralField(Opt.fields.y, "value", 3)
-	})
-
 	await t.step("union", async t => {
 		expectLiteralField(Union(X, Y), "tag", "union")
 		expectLiteralField(Union(X, Y), "tag", "union")
@@ -1046,8 +977,6 @@ Deno.test("change static type with Constraint", async t => {
 		| Array<Reflect, true>
 		| Object<{ [_ in string]: Reflect }, false>
 		| Object<{ [_ in string]: Reflect }, true>
-		| RTPartial<{ [_ in string]: Reflect }, false>
-		| RTPartial<{ [_ in string]: Reflect }, true>
 		| Tuple<[Reflect, Reflect]>
 		| Union<[Reflect, Reflect]>
 		| Intersect<[Reflect, Reflect]>

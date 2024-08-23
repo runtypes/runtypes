@@ -11,7 +11,7 @@ import Literal from "../Literal.ts"
 import Never from "../Never.ts"
 import Null from "../Null.ts"
 import Number from "../Number.ts"
-import Object, { Partial } from "../Object.ts"
+import Object from "../Object.ts"
 import Optional from "../Optional.ts"
 import String from "../String.ts"
 import Symbol from "../Symbol.ts"
@@ -108,7 +108,6 @@ const cases: [Reflect, string][] = [
 	[Dictionary(Array(Boolean), "number"), "{ [_: number]: boolean[] }"],
 	[Object({}), "{}"],
 	[Object({}).asReadonly(), "{}"],
-	[Partial({}), "{}"],
 	[InstanceOf(TestClass), "TestClass"],
 	[Array(InstanceOf(TestClass)), "TestClass[]"],
 	[Object({ x: String, y: Array(Boolean) }), "{ x: string; y: boolean[]; }"],
@@ -119,7 +118,6 @@ const cases: [Reflect, string][] = [
 	],
 	[Object({ x: Number, y: Optional(Number) }), "{ x: number; y?: number; }"],
 	[Object({ x: Number, y: Union(Number, Undefined) }), "{ x: number; y: number | undefined; }"],
-	[Object({ x: Number }).and(Partial({ y: Number })), "{ x: number; } & { y?: number; }"],
 	[
 		Object({ x: String, y: Array(Boolean) }).asReadonly(),
 		"{ readonly x: string; readonly y: boolean[]; }",
@@ -129,7 +127,6 @@ const cases: [Reflect, string][] = [
 		Object({ x: String, y: Array(Boolean).asReadonly() }).asReadonly(),
 		"{ readonly x: string; readonly y: readonly boolean[]; }",
 	],
-	[Partial({ x: String, y: Array(Boolean) }), "{ x?: string; y?: boolean[]; }"],
 	[Object({ x: String, y: Array(Boolean) }).asPartial(), "{ x?: string; y?: boolean[]; }"],
 	[Tuple(Boolean, Number), "[boolean, number]"],
 	[Union(Boolean, Number), "boolean | number"],

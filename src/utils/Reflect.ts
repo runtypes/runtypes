@@ -19,7 +19,6 @@ type Reflect =
 	| ({
 			tag: "object"
 			fields: { [_: string]: Reflect }
-			isPartial: boolean
 			isReadonly: boolean
 	  } & Runtype<{ readonly [_ in string]: unknown }>)
 	| ({ tag: "record"; key: "string" | "number" | "symbol"; value: Reflect } & Runtype<{
