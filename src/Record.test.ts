@@ -12,6 +12,7 @@ Deno.test("record", async t => {
 		type Expected = { bar?: string | undefined }
 		const x: [Expected, T] extends [T, Expected] ? T : never = {}
 		assert(T.guard(x))
+		// @ts-expect-error: intended
 		const y: [Expected, T] extends [T, Expected] ? T : never = { foo: true }
 		assert(!T.guard(y))
 		const z: [Expected, T] extends [T, Expected] ? T : never = { bar: "baz" }

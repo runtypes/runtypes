@@ -32,7 +32,10 @@ interface Record<K extends RecordKeyRuntype, V extends RuntypeBase>
  * @param key - A `Runtype` for key.
  * @param value - A `Runtype` for value.
  */
-const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(key: K, value: V) => {
+const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
+	key: K,
+	value: V,
+): Record<K, V> => {
 	const keyRuntype = key
 	const keyString = show(keyRuntype as any)
 	const self = { tag: "record", key: keyString, value } as any

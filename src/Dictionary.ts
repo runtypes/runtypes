@@ -24,24 +24,6 @@ interface Dictionary<V extends RuntypeBase, K extends DictionaryKeyType>
 	value: V
 }
 
-interface StringDictionary<V extends RuntypeBase>
-	extends Runtype<
-		V extends Optional<any> ? { [_ in string]?: Static<V> } : { [_ in string]: Static<V> }
-	> {
-	tag: "record"
-	key: "string"
-	value: V
-}
-
-interface NumberDictionary<V extends RuntypeBase>
-	extends Runtype<
-		V extends Optional<any> ? { [_ in number]?: Static<V> } : { [_ in number]: Static<V> }
-	> {
-	tag: "record"
-	key: "number"
-	value: V
-}
-
 /**
  * @deprecated Use `Record` instead.
  */
@@ -62,7 +44,7 @@ const Dictionary: {
 	 * @param value - A `Runtype` for value.
 	 * @param [key] - A string representing a type for key.
 	 */
-	<V extends RuntypeBase>(value: V, key: "string"): StringDictionary<V>
+	<V extends RuntypeBase>(value: V, key: "string"): Dictionary<V, string>
 
 	/**
 	 * Construct a runtype for arbitrary dictionaries.
@@ -70,7 +52,7 @@ const Dictionary: {
 	 * @param value - A `Runtype` for value.
 	 * @param [key] - A string representing a type for key.
 	 */
-	<V extends RuntypeBase>(value: V, key: "number"): NumberDictionary<V>
+	<V extends RuntypeBase>(value: V, key: "number"): Dictionary<V, number>
 } = <V extends RuntypeBase, K extends DictionaryKeyRuntype | "string" | "number">(
 	value: V,
 	key?: K,
@@ -83,9 +65,7 @@ const Dictionary: {
 				: key === "number"
 					? NumberKey
 					: (key as Exclude<K, string>)
-	return Record(keyRuntype, value)
+	return Record(keyRuntype, value) as Dictionary<V, K extends DictionaryKeyRuntype ? Static<K> : K>
 }
 
 export default Dictionary
-// eslint-disable-next-line import/no-named-export
-export { type NumberDictionary, type StringDictionary }
