@@ -12,6 +12,7 @@
 	"plugins": [
 		"@typescript-eslint",
 		"import",
+		"sort-exports",
 		"unused-imports",
 		"consistent-default-export-name",
 		"prefer-arrow-functions"
@@ -52,6 +53,7 @@
 				"newlines-between": "never"
 			}
 		],
+		"sort-exports/sort-exports": ["warn", { "sortDir": "asc", "sortExportKindFirst": "value" }],
 		"import/no-named-export": "warn",
 		"unused-imports/no-unused-imports": "warn",
 		"consistent-default-export-name/default-export-match-filename": "warn",

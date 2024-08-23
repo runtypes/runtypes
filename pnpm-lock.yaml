@@ -35,6 +35,9 @@ devDependencies:
   eslint-plugin-prettier:
     specifier: ^5.0.1
     version: 5.0.1(eslint-config-prettier@9.1.0)(eslint@8.55.0)(prettier@3.1.1)
+  eslint-plugin-sort-exports:
+    specifier: ^0.9.1
+    version: 0.9.1(eslint@8.55.0)
   eslint-plugin-unused-imports:
     specifier: ^3.0.0
     version: 3.0.0(@typescript-eslint/eslint-plugin@6.14.0)(eslint@8.55.0)
@@ -874,6 +877,15 @@ packages:
     dependencies:
       balanced-match: 1.0.2
       concat-map: 0.0.1
+    dev: true
+
+  /brace-expansion@2.0.1:
+    resolution:
+      {
+        integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==,
+      }
+    dependencies:
+      balanced-match: 1.0.2
     dev: true
 
   /braces@3.0.2:
@@ -1719,6 +1731,18 @@ packages:
       prettier: 3.1.1
       prettier-linter-helpers: 1.0.0
       synckit: 0.8.6
+    dev: true
+
+  /eslint-plugin-sort-exports@0.9.1(eslint@8.55.0):
+    resolution:
+      {
+        integrity: sha512-2w6jHusdF2K60bcGKpa9HEinETwNzVrvplZipVculCfu3ZDd5IW3xL54XVEnVkGIPJnp/LitFCg7owL4DOtuHg==,
+      }
+    peerDependencies:
+      eslint: ">=5.0.0"
+    dependencies:
+      eslint: 8.55.0
+      minimatch: 9.0.5
     dev: true
 
   /eslint-plugin-unused-imports@3.0.0(@typescript-eslint/eslint-plugin@6.14.0)(eslint@8.55.0):
@@ -3484,6 +3508,16 @@ packages:
       }
     dependencies:
       brace-expansion: 1.1.11
+    dev: true
+
+  /minimatch@9.0.5:
+    resolution:
+      {
+        integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==,
+      }
+    engines: { node: ">=16 || 14 >=14.17" }
+    dependencies:
+      brace-expansion: 2.0.1
     dev: true
 
   /minimist@1.2.8:
