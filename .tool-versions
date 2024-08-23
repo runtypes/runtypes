@@ -1,3 +1,3 @@
-node 20.10.0
-deno 1.38.5
+nodejs 20.11.1
+deno 1.45.2
 just 1.16.0
