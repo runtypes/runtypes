@@ -822,14 +822,12 @@ Deno.test("reflection", async t => {
 		expectLiteralField(Array(X), "tag", "array")
 		expectLiteralField(Array(X).element, "tag", "literal")
 		expectLiteralField(Array(X).element, "value", "x")
-		expectLiteralField(Array(X), "isReadonly", false)
 	})
 
 	await t.step("array (asReadonly)", async t => {
 		expectLiteralField(Array(X).asReadonly(), "tag", "array")
 		expectLiteralField(Array(X).asReadonly().element, "tag", "literal")
 		expectLiteralField(Array(X).asReadonly().element, "value", "x")
-		expectLiteralField(Array(X).asReadonly(), "isReadonly", true)
 	})
 
 	await t.step("tuple", async t => {
@@ -862,7 +860,6 @@ Deno.test("reflection", async t => {
 		expectLiteralField(Rec.fields.x, "tag", "number")
 		expectLiteralField(Rec.fields.y, "tag", "literal")
 		expectLiteralField(Rec.fields.y, "value", 3)
-		expectLiteralField(Rec, "isReadonly", false)
 	})
 
 	await t.step("object (asReadonly)", async t => {
@@ -871,7 +868,6 @@ Deno.test("reflection", async t => {
 		expectLiteralField(Rec.fields.x, "tag", "number")
 		expectLiteralField(Rec.fields.y, "tag", "literal")
 		expectLiteralField(Rec.fields.y, "value", 3)
-		expectLiteralField(Rec, "isReadonly", true)
 	})
 
 	await t.step("union", async t => {
@@ -973,10 +969,8 @@ Deno.test("change static type with Constraint", async t => {
 		| String
 		| Sym
 		| Literal<boolean | number | string>
-		| Array<Reflect, false>
-		| Array<Reflect, true>
-		| Object<{ [_ in string]: Reflect }, false>
-		| Object<{ [_ in string]: Reflect }, true>
+		| Array<Reflect>
+		| Object<{ [_ in string]: Reflect }>
 		| Tuple<[Reflect, Reflect]>
 		| Union<[Reflect, Reflect]>
 		| Intersect<[Reflect, Reflect]>

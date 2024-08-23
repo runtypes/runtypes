@@ -15,14 +15,13 @@ type Reflect =
 	| ({ tag: "symbol"; (key: string | undefined): Runtype<symbol> } & Runtype<symbol>)
 	| ({ tag: "literal"; value: LiteralBase } & Runtype<LiteralBase>)
 	| ({ tag: "template"; strings: string[]; runtypes: Runtype<LiteralBase>[] } & Runtype<string>)
-	| ({ tag: "array"; element: Reflect; isReadonly: boolean } & Runtype<ReadonlyArray<unknown>>)
+	| ({ tag: "array"; element: Reflect } & Runtype<readonly unknown[]>)
 	| ({
 			tag: "object"
-			fields: { [_: string]: Reflect }
-			isReadonly: boolean
-	  } & Runtype<{ readonly [_ in string]: unknown }>)
+			fields: { [_: string | number | symbol]: Reflect }
+	  } & Runtype<{ [_: string | number | symbol]: unknown }>)
 	| ({ tag: "record"; key: "string" | "number" | "symbol"; value: Reflect } & Runtype<{
-			[_: string]: unknown
+			[_: string | number | symbol]: unknown
 	  }>)
 	| ({ tag: "tuple"; components: Reflect[] } & Runtype<unknown[]>)
 	| ({ tag: "union"; alternatives: Reflect[] } & Runtype)
