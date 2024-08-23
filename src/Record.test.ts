@@ -9,13 +9,16 @@ Deno.test("record", async t => {
 	await t.step("works with optional properties", async t => {
 		const T = Record(Literal("bar"), Optional(String))
 		type T = Static<typeof T>
-		type Expected = { bar?: string | undefined }
-		const x: [Expected, T] extends [T, Expected] ? T : never = {}
+		type Expected = { bar?: string }
+		type Unexpected = { bar?: string | undefined }
+		const isExpected: [Expected, T] extends [T, Expected] ? true : false = true
+		const isNotUnexpected: [Unexpected, T] extends [T, Unexpected] ? false : true = true
+		const x: T = {}
 		assert(T.guard(x))
-		// @ts-expect-error: intended
-		const y: [Expected, T] extends [T, Expected] ? T : never = { foo: true }
+		// @ts-expect-error: must not be undefined
+		const y: T = { bar: undefined }
 		assert(!T.guard(y))
-		const z: [Expected, T] extends [T, Expected] ? T : never = { bar: "baz" }
+		const z: T = { bar: "baz" }
 		assert(T.guard(z))
 	})
 })

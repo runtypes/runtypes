@@ -18,7 +18,7 @@ type FilterRequiredKeys<T> = {
 type MergedObject<O extends { [_: string]: RuntypeBase }> = {
 	[K in FilterRequiredKeys<O>]: Static<O[K]>
 } & {
-	[K in FilterOptionalKeys<O>]?: Static<O[K]>
+	[K in FilterOptionalKeys<O>]?: Exclude<Static<O[K]>, undefined>
 } extends infer P
 	? { [K in keyof P]: P[K] }
 	: never
@@ -26,7 +26,7 @@ type MergedObject<O extends { [_: string]: RuntypeBase }> = {
 type MergedObjectReadonly<O extends { [_: string]: RuntypeBase }> = {
 	[K in FilterRequiredKeys<O>]: Static<O[K]>
 } & {
-	[K in FilterOptionalKeys<O>]?: Static<O[K]>
+	[K in FilterOptionalKeys<O>]?: Exclude<Static<O[K]>, undefined>
 } extends infer P
 	? { readonly [K in keyof P]: P[K] }
 	: never
@@ -116,15 +116,17 @@ const InternalObject = <
 					const fieldsHasKey = hasKey(key, fields)
 					const xHasKey = hasKey(key, x)
 					if (fieldsHasKey) {
-						const runtype = fields[key as any]!
-						const isOptional = isPartial || runtype.reflect.tag === "optional"
+						const field = fields[key as any]!
+						const runtype = isPartial && field.reflect.tag !== "optional" ? Optional(field) : field
+						const isOptional = runtype.reflect.tag === "optional"
 						if (xHasKey) {
 							const value = x[key as any]
-							if (isOptional && value === undefined) results[key as any] = SUCCESS(value)
+							if (isOptional)
+								results[key as any] = innerValidate(runtype.reflect.underlying, value, visited)
 							else results[key as any] = innerValidate(runtype, value, visited)
 						} else {
-							if (!isOptional) results[key as any] = FAILURE.PROPERTY_MISSING(runtype.reflect)
-							else results[key as any] = SUCCESS(undefined)
+							if (isOptional) results[key as any] = SUCCESS(undefined)
+							else results[key as any] = FAILURE.PROPERTY_MISSING(runtype.reflect)
 						}
 					} else if (xHasKey) {
 						// TODO: exact object validation

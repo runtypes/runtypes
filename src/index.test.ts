@@ -233,7 +233,6 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	{ value: [true, false, true], passes: ["boolArray", "boolTuple", "union1"] },
 	{ value: { Boolean: true, Number: 3 }, passes: ["object1", "union1", "Partial"] },
 	{ value: { Boolean: true }, passes: ["Partial"] },
-	{ value: { Boolean: true, foo: undefined }, passes: ["Partial"] },
 	{
 		value: { Boolean: true, foo: "hello" },
 		passes: ["Partial", "OptionalProperty", "PartialProperty"],
@@ -288,7 +287,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	},
 	{
 		value: { foo: "hello", bar: undefined },
-		passes: ["OptionalProperty", "UnionProperty", "PartialProperty"],
+		passes: ["UnionProperty"],
 	},
 	{ value: { foo: 4, bar: "baz" }, passes: ["ReadonlyObject", "ReadonlyPartial"] },
 	{ value: narcissist, passes: ["Person"] },
