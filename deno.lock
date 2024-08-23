@@ -208,6 +208,7 @@
         "npm:eslint-plugin-jest@^27.6.0",
         "npm:eslint-plugin-prefer-arrow-functions@^3.2.4",
         "npm:eslint-plugin-prettier@^5.0.1",
+        "npm:eslint-plugin-sort-exports@^0.9.1",
         "npm:eslint-plugin-unused-imports@^3.0.0",
         "npm:eslint@^8.55.0",
         "npm:lint-staged@^15.2.0",

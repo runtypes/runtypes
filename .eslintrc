@@ -6,7 +6,7 @@
 		"ecmaFeatures": {
 			"jsx": true
 		},
-		"project": "./deno.json",
+		"project": "deno.json",
 		"sourceType": "module"
 	},
 	"plugins": [
@@ -40,6 +40,8 @@
 		"@typescript-eslint/no-unnecessary-condition": "warn",
 		"@typescript-eslint/no-unnecessary-type-constraint": "warn",
 		"@typescript-eslint/no-non-null-assertion": "warn",
+		"@typescript-eslint/no-unused-expressions": "warn",
+		"@typescript-eslint/no-unsafe-function-type": "warn",
 		"no-empty-pattern": "off",
 		"import/first": "warn",
 		"import/exports-last": "warn",
@@ -58,13 +60,5 @@
 		"unused-imports/no-unused-imports": "warn",
 		"consistent-default-export-name/default-export-match-filename": "warn",
 		"consistent-default-export-name/default-import-match-filename": "warn"
-	},
-	"overrides": [
-		{
-			"files": ["*.run.ts"],
-			"rules": {
-				"import/no-anonymous-default-export": "off"
-			}
-		}
-	]
+	}
 }
