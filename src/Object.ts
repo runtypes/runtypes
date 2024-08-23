@@ -8,13 +8,55 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 
-interface Object<O extends { [_: string | number | symbol]: RuntypeBase }>
-	extends Runtype<{ [K in keyof O]: Static<O[K]> }> {
+type FilterOptionalKeys<T> = {
+	[K in keyof T]: T[K] extends Optional<any> ? K : never
+}[keyof T]
+type FilterRequiredKeys<T> = {
+	[K in keyof T]: T[K] extends Optional<any> ? never : K
+}[keyof T]
+type ObjectStatic<O extends { [_: string | number | symbol]: RuntypeBase }> = {
+	[K in FilterRequiredKeys<O>]: Static<O[K]>
+} & {
+	[K in FilterOptionalKeys<O>]?: Exclude<Static<O[K]>, undefined>
+} extends infer P
+	? { [K in keyof P]: P[K] }
+	: never
+type ObjectStaticReadonly<O extends { [_: string | number | symbol]: RuntypeBase }> = {
+	[K in FilterRequiredKeys<O>]: Static<O[K]>
+} & {
+	[K in FilterOptionalKeys<O>]?: Exclude<Static<O[K]>, undefined>
+} extends infer P
+	? { readonly [K in keyof P]: P[K] }
+	: never
+
+interface ObjectReadonly<O extends { [_: string | number | symbol]: RuntypeBase }>
+	extends Runtype<ObjectStaticReadonly<O>> {
 	tag: "object"
 	fields: O
 
-	asPartial(): Object<O extends infer O ? { [K in keyof O]?: O[K] } : never>
-	asReadonly(): Object<{ readonly [K in keyof O]: O[K] }>
+	asPartial(): ObjectReadonly<{
+		[K in keyof O]: O[K] extends Optional<any> ? O[K] : Optional<O[K]>
+	}>
+
+	pick<K extends keyof O>(...keys: K[] extends (keyof O)[] ? K[] : never[]): Object<Pick<O, K>>
+	omit<K extends keyof O>(...keys: K[] extends (keyof O)[] ? K[] : never[]): Object<Omit<O, K>>
+
+	extend<P extends { [_: string | number | symbol]: RuntypeBase }>(fields: {
+		[K in keyof P]: K extends keyof O
+			? Static<P[K]> extends Static<O[K]>
+				? P[K]
+				: RuntypeBase<Static<O[K]>>
+			: P[K]
+	}): Object<{ [K in keyof (O & P)]: K extends keyof P ? P[K] : K extends keyof O ? O[K] : never }>
+}
+
+interface Object<O extends { [_: string | number | symbol]: RuntypeBase }>
+	extends Runtype<ObjectStatic<O>> {
+	tag: "object"
+	fields: O
+
+	asPartial(): Object<{ [K in keyof O]: O[K] extends Optional<any> ? O[K] : Optional<O[K]> }>
+	asReadonly(): ObjectReadonly<O>
 
 	pick<K extends keyof O>(...keys: K[] extends (keyof O)[] ? K[] : never[]): Object<Pick<O, K>>
 	omit<K extends keyof O>(...keys: K[] extends (keyof O)[] ? K[] : never[]): Object<Omit<O, K>>
