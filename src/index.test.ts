@@ -74,7 +74,7 @@ ambi.right = ambi
 
 type PartialPerson = { likes?: PartialPerson } & { firstName: string }
 const PartialPerson: Runtype<PartialPerson> = Lazy(() =>
-	RTPartial({ firstName: String, likes: PartialPerson }).And(
+	RTPartial({ firstName: String, likes: PartialPerson }).and(
 		Guard<{ firstName: string }>(
 			(p: any): p is { firstName: string } => p.firstName && typeof p.firstName === "string",
 		),
@@ -143,7 +143,7 @@ const runtypes = {
 	boolTuple,
 	object1,
 	union1,
-	Partial: RTPartial({ foo: String }).And(Object({ Boolean })),
+	Partial: RTPartial({ foo: String }).and(Object({ Boolean })),
 	Function,
 	Person,
 	MoreThanThree: Number.withConstraint(n => n > 3),
@@ -182,7 +182,7 @@ const runtypes = {
 	OptionalBoolean: Optional(Boolean),
 	OptionalProperty: Object({ foo: String, bar: Optional(Number) }),
 	UnionProperty: Object({ foo: String, bar: Union(Number, Undefined) }),
-	PartialProperty: Object({ foo: String }).And(RTPartial({ bar: Number })),
+	PartialProperty: Object({ foo: String }).and(RTPartial({ bar: Number })),
 	ReadonlyNumberArray: Array(Number).asReadonly(),
 	ReadonlyObject: Object({ foo: Number, bar: String }).asReadonly(),
 	Graph,
@@ -193,7 +193,7 @@ const runtypes = {
 	PartialPerson,
 	ReadonlyPartial: Object({ foo: Number })
 		.asReadonly()
-		.And(RTPartial({ bar: String }).asReadonly()),
+		.and(RTPartial({ bar: String }).asReadonly()),
 	EmptyTuple: Tuple(),
 	Union: Union(Literal("a"), Literal("b"), Literal(3)),
 }

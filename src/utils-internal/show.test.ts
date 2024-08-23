@@ -119,7 +119,7 @@ const cases: [Reflect, string][] = [
 	],
 	[Object({ x: Number, y: Optional(Number) }), "{ x: number; y?: number; }"],
 	[Object({ x: Number, y: Union(Number, Undefined) }), "{ x: number; y: number | undefined; }"],
-	[Object({ x: Number }).And(Partial({ y: Number })), "{ x: number; } & { y?: number; }"],
+	[Object({ x: Number }).and(Partial({ y: Number })), "{ x: number; } & { y?: number; }"],
 	[
 		Object({ x: String, y: Array(Boolean) }).asReadonly(),
 		"{ readonly x: string; readonly y: boolean[]; }",
@@ -142,9 +142,9 @@ const cases: [Reflect, string][] = [
 	[Number.withBrand("someNumber").withConstraint(x => x > 3), "number"],
 
 	// Parenthesization
-	[Boolean.And(Number.Or(String)), "boolean & (number | string)"],
-	[Boolean.Or(Number.And(String)), "boolean | (number & string)"],
-	[Boolean.Or(Object({ x: String, y: Number })), "boolean | { x: string; y: number; }"],
+	[Boolean.and(Number.or(String)), "boolean & (number | string)"],
+	[Boolean.or(Number.and(String)), "boolean | (number & string)"],
+	[Boolean.or(Object({ x: String, y: Number })), "boolean | { x: string; y: number; }"],
 ]
 
 Deno.test("show", async t => {
