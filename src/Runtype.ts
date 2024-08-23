@@ -59,12 +59,12 @@ interface Runtype<A = unknown> extends RuntypeBase<A> {
 	/**
 	 * Union this Runtype with another.
 	 */
-	Or<B extends RuntypeBase>(B: B): Union<[this, B]>
+	or<B extends RuntypeBase>(B: B): Union<[this, B]>
 
 	/**
 	 * Intersect this Runtype with another.
 	 */
-	And<B extends RuntypeBase>(B: B): Intersect<[this, B]>
+	and<B extends RuntypeBase>(B: B): Intersect<[this, B]>
 
 	/**
 	 * Optionalize this Runtype.
@@ -143,9 +143,9 @@ const create = <A extends RuntypeBase>(
 
 	const guard = (x: any): x is A => base.validate(x).success
 
-	const Or = <B extends Runtype>(B: B): Union<[A, B]> => Union(base, B)
+	const or = <B extends Runtype>(B: B): Union<[A, B]> => Union(base, B)
 
-	const And = <B extends Runtype>(B: B): Intersect<[A, B]> => Intersect(base, B)
+	const and = <B extends Runtype>(B: B): Intersect<[A, B]> => Intersect(base, B)
 
 	const optional = (): Optional<A> => Optional(base)
 
@@ -172,8 +172,8 @@ const create = <A extends RuntypeBase>(
 	}
 	base.validate = (value: any) => base._innerValidate(value, VisitedState())
 	base.guard = guard
-	base.Or = Or
-	base.And = And
+	base.or = or
+	base.and = and
 	base.optional = optional
 	base.nullable = nullable
 	base.withConstraint = withConstraint
