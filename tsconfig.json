@@ -11,6 +11,7 @@
 		"isolatedModules": true,
 		"esModuleInterop": true,
 		"declaration": true,
-		"baseUrl": "src"
+		"baseUrl": "src",
+		"experimentalDecorators": true
 	}
 }
