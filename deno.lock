@@ -199,21 +199,21 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@typescript-eslint/eslint-plugin@^6.14.0",
-        "npm:@typescript-eslint/parser@^6.14.0",
+        "npm:@typescript-eslint/eslint-plugin@^8.2.0",
+        "npm:@typescript-eslint/parser@^8.2.0",
         "npm:eclint@^2.8.1",
         "npm:eslint-config-prettier@^9.1.0",
         "npm:eslint-plugin-consistent-default-export-name@^0.0.15",
-        "npm:eslint-plugin-import@^2.29.0",
-        "npm:eslint-plugin-jest@^27.6.0",
-        "npm:eslint-plugin-prefer-arrow-functions@^3.2.4",
-        "npm:eslint-plugin-prettier@^5.0.1",
+        "npm:eslint-plugin-import@^2.29.1",
+        "npm:eslint-plugin-jest@^28.8.0",
+        "npm:eslint-plugin-prefer-arrow-functions@^3.4.1",
+        "npm:eslint-plugin-prettier@^5.2.1",
         "npm:eslint-plugin-sort-exports@^0.9.1",
-        "npm:eslint-plugin-unused-imports@^3.0.0",
-        "npm:eslint@^8.55.0",
-        "npm:lint-staged@^15.2.0",
-        "npm:prettier@^3.1.1",
-        "npm:typescript@5.3.3"
+        "npm:eslint-plugin-unused-imports@^4.1.3",
+        "npm:eslint@8",
+        "npm:lint-staged@^15.2.9",
+        "npm:prettier@^3.3.3",
+        "npm:typescript@5.5.2"
       ]
     }
   }
