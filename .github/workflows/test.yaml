@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: jdx/rtx-action@v1
+      - uses: jdx/mise-action@v2
       - run: just ci
       - uses: coverallsapp/github-action@v2

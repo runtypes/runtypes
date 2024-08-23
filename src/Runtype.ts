@@ -218,5 +218,6 @@ const VisitedState = (): VisitedState => {
 	return { has }
 }
 
-export default Runtype // eslint-disable-next-line import/no-named-export
+export default Runtype
+// eslint-disable-next-line import/no-named-export
 export { type RuntypeBase, VisitedState, create, innerValidate, isRuntype }
