@@ -8,11 +8,7 @@ export { default as Brand, type RuntypeBrand } from "./Brand.ts"
 export { type Case, type Match, type Matcher, default as Union } from "./Union.ts"
 export { default as Constraint } from "./Constraint.ts"
 export { default as Contract } from "./utils/Contract.ts"
-export {
-	default as Dictionary,
-	type NumberDictionary,
-	type StringDictionary,
-} from "./Dictionary.ts"
+export { default as Dictionary } from "./Dictionary.ts"
 export { type default as Failure } from "./result/Failure.ts"
 export { default as Function } from "./Function.ts"
 export { default as InstanceOf } from "./InstanceOf.ts"
