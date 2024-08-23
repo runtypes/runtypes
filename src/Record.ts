@@ -20,7 +20,9 @@ type RecordKeyRuntype = RuntypeBase<string | number | symbol>
 
 interface Record<K extends RecordKeyRuntype, V extends RuntypeBase>
 	extends Runtype<
-		V extends Optional<any> ? { [_ in Static<K>]?: Static<V> } : { [_ in Static<K>]: Static<V> }
+		V extends Optional<any>
+			? { [_ in Static<K>]?: Exclude<Static<V>, undefined> }
+			: { [_ in Static<K>]: Static<V> }
 	> {
 	tag: "record"
 	key: StringLiteralFor<Static<K>>
@@ -37,6 +39,7 @@ const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
 	value: V,
 ): Record<K, V> => {
 	const keyRuntype = key
+	const valueRuntype = value
 	const keyString = show(keyRuntype as any)
 	const self = { tag: "record", key: keyString, value } as any
 	return create<any>((x, visited) => {
@@ -61,8 +64,13 @@ const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
 						? !keyRuntype.guard(keyInterop) && !keyRuntype.guard(key)
 						: !keyRuntype.guard(keyInterop)
 				) {
-					results[key as any] = FAILURE.KEY_INCORRECT(self, keyRuntype.reflect, keyInterop)
-				} else results[key as any] = innerValidate(value, x[key], visited)
+					results[key] = FAILURE.KEY_INCORRECT(self, keyRuntype.reflect, keyInterop)
+				} else {
+					const value = (x as { [key in typeof key]: unknown })[key]
+					const runtype =
+						valueRuntype.reflect.tag === "optional" ? valueRuntype.reflect.underlying : valueRuntype
+					results[key] = innerValidate(runtype, value, visited)
+				}
 				return results
 			},
 			{},
@@ -70,8 +78,8 @@ const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
 
 		const details = keys.reduce<{ [key in string | number | symbol]: string | Failure.Details }>(
 			(details, key) => {
-				const result = results[key as any]!
-				if (!result.success) details[key as any] = result.details || result.message
+				const result = results[key]!
+				if (!result.success) details[key] = result.details || result.message
 				return details
 			},
 			{},
