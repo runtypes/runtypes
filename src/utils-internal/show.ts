@@ -116,7 +116,7 @@ const show =
 					return backtick ? `\`${inner}\`` : `"${inner}"`
 				}
 				case "array":
-					return `${readonlyTag(refl)}${show(true, circular)(refl.element)}[]`
+					return `${show(true, circular)(refl.element)}[]`
 				case "record":
 					return `{ [_: ${refl.key}]: ${show(false, circular)(refl.value)} }`
 				case "object": {
@@ -125,7 +125,7 @@ const show =
 						? `{ ${keys
 								.map(
 									k =>
-										`${readonlyTag(refl)}${k}${optionalTag(refl, k)}: ${
+										`${k}${optionalTag(refl, k)}: ${
 											refl.fields[k]!.tag === "optional"
 												? show(false, circular)((refl.fields[k]! as any).underlying)
 												: show(false, circular)(refl.fields[k]!)
@@ -154,10 +154,9 @@ const show =
 		}
 	}
 
-const optionalTag = ({ fields }: { fields: { [_: string]: Reflect } }, key?: string): string =>
-	key !== undefined && fields[key]!.tag === "optional" ? "?" : ""
-
-const readonlyTag = ({ isReadonly }: { isReadonly: boolean }): string =>
-	isReadonly ? "readonly " : ""
+const optionalTag = (
+	{ fields }: { fields: { [_: string | number | symbol]: Reflect } },
+	key: string | number | symbol,
+): string => (fields[key]!.tag === "optional" ? "?" : "")
 
 export default show(false, new Set<Reflect>())

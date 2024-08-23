@@ -8,48 +8,32 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 
-type ObjectStaticType<O extends { [_: string]: RuntypeBase }, RO extends boolean> = RO extends true
-	? { readonly [K in keyof O]: Static<O[K]> }
-	: { [K in keyof O]: Static<O[K]> }
-
-interface InternalObject<O extends { [_: string]: RuntypeBase }, RO extends boolean>
-	extends Runtype<ObjectStaticType<O, RO>> {
+interface Object<O extends { [_: string | number | symbol]: RuntypeBase }>
+	extends Runtype<{ [K in keyof O]: Static<O[K]> }> {
 	tag: "object"
 	fields: O
-	isReadonly: RO
 
-	asPartial(): InternalObject<O extends infer P ? { [K in keyof P]?: P[K] } : never, RO>
-	asReadonly(): InternalObject<O, true>
+	asPartial(): Object<O extends infer O ? { [K in keyof O]?: O[K] } : never>
+	asReadonly(): Object<{ readonly [K in keyof O]: O[K] }>
 
-	pick<K extends keyof O>(
-		...keys: K[] extends (keyof O)[] ? K[] : never[]
-	): InternalObject<Pick<O, K>, RO>
-	omit<K extends keyof O>(
-		...keys: K[] extends (keyof O)[] ? K[] : never[]
-	): InternalObject<Omit<O, K>, RO>
+	pick<K extends keyof O>(...keys: K[] extends (keyof O)[] ? K[] : never[]): Object<Pick<O, K>>
+	omit<K extends keyof O>(...keys: K[] extends (keyof O)[] ? K[] : never[]): Object<Omit<O, K>>
 
-	extend<P extends { [_: string]: RuntypeBase }>(fields: {
+	extend<P extends { [_: string | number | symbol]: RuntypeBase }>(fields: {
 		[K in keyof P]: K extends keyof O
 			? Static<P[K]> extends Static<O[K]>
 				? P[K]
 				: RuntypeBase<Static<O[K]>>
 			: P[K]
-	}): InternalObject<
-		{ [K in keyof (O & P)]: K extends keyof P ? P[K] : K extends keyof O ? O[K] : never },
-		RO
-	>
+	}): Object<{ [K in keyof (O & P)]: K extends keyof P ? P[K] : K extends keyof O ? O[K] : never }>
 }
-
-type Object<O extends { [_: string]: RuntypeBase }, RO extends boolean> = InternalObject<O, RO>
 
 /**
  * Construct an object runtype from runtypes for its values.
  */
-const InternalObject = <O extends { [_: string]: RuntypeBase }, RO extends boolean>(
-	fields: O,
-	isReadonly: RO,
-): InternalObject<O, RO> => {
-	const self = { tag: "object", isReadonly, fields } as any
+
+const Object = <O extends { [_: string | number | symbol]: RuntypeBase }>(fields: O): Object<O> => {
+	const self = { tag: "object", fields } as any
 	return withExtraModifierFuncs(
 		create((x, visited) => {
 			if (x === null || x === undefined) {
@@ -65,21 +49,21 @@ const InternalObject = <O extends { [_: string]: RuntypeBase }, RO extends boole
 					const fieldsHasKey = hasKey(key, fields)
 					const xHasKey = hasKey(key, x)
 					if (fieldsHasKey) {
-						const runtype = fields[key as any]!
+						const runtype = fields[key]!
 						const isOptional = runtype.reflect.tag === "optional"
 						if (xHasKey) {
-							const value = x[key as any]
+							const value = x[key]
 							if (isOptional)
-								results[key as any] = innerValidate(runtype.reflect.underlying, value, visited)
-							else results[key as any] = innerValidate(runtype, value, visited)
+								results[key] = innerValidate(runtype.reflect.underlying, value, visited)
+							else results[key] = innerValidate(runtype, value, visited)
 						} else {
-							if (isOptional) results[key as any] = SUCCESS(undefined)
-							else results[key as any] = FAILURE.PROPERTY_MISSING(runtype.reflect)
+							if (isOptional) results[key] = SUCCESS(undefined)
+							else results[key] = FAILURE.PROPERTY_MISSING(runtype.reflect)
 						}
 					} else if (xHasKey) {
 						// TODO: exact object validation
-						const value = x[key as any]
-						results[key as any] = SUCCESS(value)
+						const value = x[key]
+						results[key] = SUCCESS(value)
 					} else {
 						/* istanbul ignore next */
 						throw new Error("impossible")
@@ -91,8 +75,8 @@ const InternalObject = <O extends { [_: string]: RuntypeBase }, RO extends boole
 
 			const details = keys.reduce<{ [key in string | number | symbol]: string | Failure.Details }>(
 				(details, key) => {
-					const result = results[key as any]!
-					if (!result.success) details[key as any] = result.details || result.message
+					const result = results[key]!
+					if (!result.success) details[key] = result.details || result.message
 					return details
 				},
 				{},
@@ -104,48 +88,43 @@ const InternalObject = <O extends { [_: string]: RuntypeBase }, RO extends boole
 	)
 }
 
-const Object = <O extends { [_: string]: RuntypeBase }>(fields: O): Object<O, false> =>
-	InternalObject(fields, false)
-
-const withExtraModifierFuncs = <O extends { [_: string]: RuntypeBase }, RO extends boolean>(
+const withExtraModifierFuncs = <O extends { [_: string | number | symbol]: RuntypeBase }>(
 	A: any,
-): InternalObject<O, RO> => {
+): Object<O> => {
 	const asPartial = () =>
-		InternalObject(
+		Object(
 			globalThis.Object.fromEntries(
 				globalThis.Object.entries(A.fields).map(([key, value]) => [
 					key,
 					Optional(value as RuntypeBase),
 				]),
 			),
-			A.isReadonly,
 		)
 
-	const asReadonly = () => InternalObject(A.fields, true)
+	const asReadonly = () => Object(A.fields)
 
 	const pick = <K extends keyof O>(
 		...keys: K[] extends (keyof O)[] ? K[] : never[]
-	): InternalObject<Pick<O, K>, RO> => {
+	): Object<Pick<O, K>> => {
 		const result: any = {}
 		keys.forEach(key => {
 			result[key] = A.fields[key]
 		})
-		return InternalObject(result, A.isReadonly)
+		return Object(result)
 	}
 
 	const omit = <K extends keyof O>(
 		...keys: K[] extends (keyof O)[] ? K[] : never[]
-	): InternalObject<Omit<O, K>, RO> => {
+	): Object<Omit<O, K>> => {
 		const result: any = {}
 		const existingKeys = enumerableKeysOf(A.fields)
 		existingKeys.forEach(key => {
 			if (!(keys as (string | symbol)[]).includes(key)) result[key] = A.fields[key]
 		})
-		return InternalObject(result, A.isReadonly) as InternalObject<Omit<O, K>, RO>
+		return Object(result) as Object<Omit<O, K>>
 	}
 
-	const extend = (fields: any): any =>
-		InternalObject(globalThis.Object.assign({}, A.fields, fields), A.isReadonly)
+	const extend = (fields: any): any => Object(globalThis.Object.assign({}, A.fields, fields))
 
 	A.asPartial = asPartial
 	A.asReadonly = asReadonly

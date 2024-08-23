@@ -7,26 +7,23 @@ import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 
-type ArrayStaticType<E extends RuntypeBase, RO extends boolean> = RO extends true
-	? ReadonlyArray<Static<E>>
-	: Static<E>[]
-
-interface Array<E extends RuntypeBase, RO extends boolean> extends Runtype<ArrayStaticType<E, RO>> {
+interface ArrayReadonly<E extends RuntypeBase> extends Runtype<readonly Static<E>[]> {
 	tag: "array"
 	element: E
-	isReadonly: RO
+}
 
-	asReadonly(): Array<E, true>
+interface Array<E extends RuntypeBase> extends Runtype<Static<E>[]> {
+	tag: "array"
+	element: E
+
+	asReadonly(): ArrayReadonly<E>
 }
 
 /**
  * Construct an array runtype from a runtype for its elements.
  */
-const InternalArray = <E extends RuntypeBase, RO extends boolean>(
-	element: E,
-	isReadonly: RO,
-): Array<E, RO> => {
-	const self = { tag: "array", isReadonly, element } as unknown as Reflect
+const Array = <E extends RuntypeBase>(element: E): Array<E> => {
+	const self = { tag: "array", element } as unknown as Reflect
 	return withExtraModifierFuncs(
 		create((xs, visited) => {
 			if (!globalThis.Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs)
@@ -51,14 +48,8 @@ const InternalArray = <E extends RuntypeBase, RO extends boolean>(
 		}, self),
 	)
 }
-
-const Array = <E extends RuntypeBase, RO extends boolean>(element: E): Array<E, false> =>
-	InternalArray(element, false)
-
-const withExtraModifierFuncs = <E extends RuntypeBase, RO extends boolean>(
-	A: any,
-): Array<E, RO> => {
-	A.asReadonly = (): Array<E, true> => InternalArray(A.element, true)
+const withExtraModifierFuncs = <E extends RuntypeBase>(A: any): Array<E> => {
+	A.asReadonly = () => A
 	return A
 }
 
