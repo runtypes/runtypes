@@ -1,5 +1,5 @@
 import packageBuildJson from "./package.build.json" assert { type: "json" }
-import { build, emptyDir } from "https://deno.land/x/dnt@0.39.0/mod.ts"
+import { build, emptyDir } from "jsr:@deno/dnt@^0.41.3"
 
 await emptyDir("./lib")
 

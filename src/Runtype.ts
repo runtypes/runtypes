@@ -48,8 +48,8 @@ interface RuntypeBase<A = unknown> {
 	 */
 	readonly reflect: Reflect
 
-	/* @internal */ readonly _falseWitness: A
-	/* @internal */ readonly [RuntypeSymbol]: true
+	/** @internal */ readonly _falseWitness: A
+	/** @internal */ readonly [RuntypeSymbol]: true
 }
 
 /**
