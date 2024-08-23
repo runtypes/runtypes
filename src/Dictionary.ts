@@ -32,6 +32,7 @@ const Dictionary: {
 	 * Construct a runtype for arbitrary dictionaries.
 	 * @param value - A `Runtype` for value.
 	 * @param [key] - A `Runtype` for key.
+	 * @deprecated Use `Record` instead.
 	 */
 	<V extends RuntypeBase, K extends DictionaryKeyRuntype>(
 		value: V,
@@ -43,6 +44,7 @@ const Dictionary: {
 	 * @deprecated When you want to specify `key`, pass a `Runtype` for it.
 	 * @param value - A `Runtype` for value.
 	 * @param [key] - A string representing a type for key.
+	 * @deprecated Use `Record` instead.
 	 */
 	<V extends RuntypeBase>(value: V, key: "string"): Dictionary<V, string>
 
@@ -51,6 +53,7 @@ const Dictionary: {
 	 * @deprecated When you want to specify `key`, pass a `Runtype` for it.
 	 * @param value - A `Runtype` for value.
 	 * @param [key] - A string representing a type for key.
+	 * @deprecated Use `Record` instead.
 	 */
 	<V extends RuntypeBase>(value: V, key: "number"): Dictionary<V, number>
 } = <V extends RuntypeBase, K extends DictionaryKeyRuntype | "string" | "number">(
