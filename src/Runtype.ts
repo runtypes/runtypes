@@ -7,14 +7,18 @@ import Union from "./Union.ts"
 import type Result from "./result/Result.ts"
 import ValidationError from "./result/ValidationError.ts"
 import type Reflect from "./utils/Reflect.ts"
-import type Static from "./utils/Static.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 import show from "./utils-internal/show.ts"
 
-const RuntypeSymbol: unique symbol = Symbol()
+const RuntypeSymbol = Symbol()
 
 const isRuntype = (x: any): x is RuntypeBase<unknown> => hasKey(RuntypeSymbol, x)
+
+/**
+ * Obtains the static type associated with a Runtype.
+ */
+type Static<A extends { readonly [RuntypeSymbol]: unknown }> = A[typeof RuntypeSymbol]
 
 /**
  * A runtype determines at runtime whether a value conforms to a type specification.
@@ -48,8 +52,7 @@ interface RuntypeBase<A = unknown> {
 	 */
 	readonly reflect: Reflect
 
-	/** @internal */ readonly _falseWitness: A
-	/** @internal */ readonly [RuntypeSymbol]: true
+	/** @internal */ readonly [RuntypeSymbol]: A
 }
 
 /**
@@ -163,7 +166,7 @@ const create = <A extends RuntypeBase>(
 
 	const withBrand = <B extends string>(B: B): Brand<B, A> => Brand(B, base)
 
-	base[RuntypeSymbol] = true
+	base[RuntypeSymbol] = undefined
 	base.check = check
 	base.assert = check
 	base._innerValidate = (value: any, visited: VisitedState) => {
@@ -220,4 +223,4 @@ const VisitedState = (): VisitedState => {
 
 export default Runtype
 // eslint-disable-next-line import/no-named-export
-export { type RuntypeBase, VisitedState, create, innerValidate, isRuntype }
+export { type RuntypeBase, type Static, VisitedState, create, innerValidate, isRuntype }
