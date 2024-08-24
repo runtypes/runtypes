@@ -1,5 +1,4 @@
-import type Static from "./Static.ts"
-import { type RuntypeBase } from "../Runtype.ts"
+import { type Static, type RuntypeBase } from "../Runtype.ts"
 import { type Case, type Matcher } from "../Union.ts"
 
 const match =

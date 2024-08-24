@@ -1,8 +1,7 @@
 import type Runtype from "./Runtype.ts"
-import { type RuntypeBase } from "./Runtype.ts"
+import { type RuntypeBase, type Static } from "./Runtype.ts"
 import { create, innerValidate } from "./Runtype.ts"
 import type Reflect from "./utils/Reflect.ts"
-import type Static from "./utils/Static.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 interface Intersect<A extends readonly [RuntypeBase, ...RuntypeBase[]]>

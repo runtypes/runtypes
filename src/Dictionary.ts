@@ -1,10 +1,9 @@
 import Constraint from "./Constraint.ts"
 import type Optional from "./Optional.ts"
 import Record from "./Record.ts"
-import { type RuntypeBase } from "./Runtype.ts"
 import type Runtype from "./Runtype.ts"
+import { type RuntypeBase, type Static } from "./Runtype.ts"
 import String from "./String.ts"
-import type Static from "./utils/Static.ts"
 
 type DictionaryKeyType = string | number | symbol
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string

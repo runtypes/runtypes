@@ -1,10 +1,10 @@
 import Boolean from "./Boolean.ts"
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
+import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Template from "./Template.ts"
 import Union from "./Union.ts"
-import type Static from "./utils/Static.ts"
 import { assert, assertEquals, assertThrows } from "std/assert/mod.ts"
 
 Deno.test("template", async t => {
