@@ -1,6 +1,8 @@
-import Runtype, { RuntypeBase, create } from "./Runtype.ts"
-import Reflect from "./utils/Reflect.ts"
-import Static from "./utils/Static.ts"
+import type Runtype from "./Runtype.ts"
+import { type RuntypeBase } from "./Runtype.ts"
+import { create } from "./Runtype.ts"
+import type Reflect from "./utils/Reflect.ts"
+import type Static from "./utils/Static.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 interface Optional<R extends RuntypeBase> extends Runtype<Static<R> | undefined> {

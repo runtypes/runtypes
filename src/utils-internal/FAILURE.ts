@@ -1,8 +1,8 @@
 import show from "./show.ts"
 import typeOf from "./typeOf.ts"
 import Failcode from "../result/Failcode.ts"
-import Failure from "../result/Failure.ts"
-import Reflect from "../utils/Reflect.ts"
+import type Failure from "../result/Failure.ts"
+import type Reflect from "../utils/Reflect.ts"
 
 const FAILURE = globalThis.Object.assign(
 	(code: Failcode, message: string, details?: Failure.Details): Failure => ({

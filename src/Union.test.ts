@@ -1,11 +1,11 @@
 import InstanceOf from "./InstanceOf.ts"
-import Literal, { LiteralBase } from "./Literal.ts"
+import Literal, { type LiteralBase } from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
 import String from "./String.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
-import Static from "./utils/Static.ts"
+import type Static from "./utils/Static.ts"
 import { assert, assertObjectMatch } from "std/assert/mod.ts"
 import outdent from "x/outdent@v0.8/mod.ts"
 

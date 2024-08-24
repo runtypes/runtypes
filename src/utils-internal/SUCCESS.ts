@@ -1,4 +1,4 @@
-import Success from "../result/Success.ts"
+import type Success from "../result/Success.ts"
 
 const SUCCESS = <T>(value: T): Success<T> => ({ success: true, value })
 

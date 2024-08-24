@@ -8,7 +8,7 @@ import {
 	Object,
 	Dictionary,
 	Union,
-	Static,
+	type Static,
 } from "../../src/index.ts"
 
 const NonNegative = Number.withConstraint(n => n >= 0)

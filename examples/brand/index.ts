@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-export */
-import { String, Static, Object, Array, Runtype } from "../../src/index.ts"
+import { String, type Static, Object, Array, type Runtype } from "../../src/index.ts"
 
 export const ArrayNonEmpty = <T extends Runtype>(element: T) =>
 	Array(element).withConstraint(a => 0 < a.length || "array must not be empty")

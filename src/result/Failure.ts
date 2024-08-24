@@ -1,4 +1,4 @@
-import Failcode from "./Failcode.ts"
+import type Failcode from "./Failcode.ts"
 
 /**
  * A detailed object enumerating where the validation failed exactly.

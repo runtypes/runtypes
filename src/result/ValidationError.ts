@@ -1,5 +1,5 @@
-import Failcode from "./Failcode.ts"
-import Failure from "./Failure.ts"
+import type Failcode from "./Failcode.ts"
+import type Failure from "./Failure.ts"
 
 class ValidationError extends Error {
 	public name: string = "ValidationError"
