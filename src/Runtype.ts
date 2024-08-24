@@ -123,17 +123,6 @@ interface Runtype<A = unknown> extends RuntypeBase<A> {
 	withBrand<B extends string>(brand: B): Brand<B, this>
 }
 
-class FunctionExtensible<F extends Function> {
-	constructor(f: F) {
-		return globalThis.Object.setPrototypeOf(f, new.target.prototype)
-	}
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-class Runtype<A = unknown, T = A>
-	extends FunctionExtensible<(...args: any) => void>
-	implements Runtype<A, T> {}
-
 const create = <A extends RuntypeBase>(
 	validate: (x: any, visited: VisitedState) => Result<Static<A>>,
 	base: any,
