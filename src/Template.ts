@@ -3,7 +3,7 @@ import type Literal from "./Literal.ts"
 import { type LiteralBase } from "./Literal.ts"
 import { literal } from "./Literal.ts"
 import type Runtype from "./Runtype.ts"
-import { type RuntypeBase, type VisitedState, type Static } from "./Runtype.ts"
+import { type RuntypeBase, type Static } from "./Runtype.ts"
 import { create, innerValidate, isRuntype } from "./Runtype.ts"
 import type Union from "./Union.ts"
 import type Result from "./result/Result.ts"
@@ -13,6 +13,8 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import escapeRegExp from "./utils-internal/escapeRegExp.ts"
 import show from "./utils-internal/show.ts"
 import typeOf from "./utils-internal/typeOf.ts"
+
+type VisitedState = Parameters<Parameters<typeof create>[0]>[1]
 
 type TemplateLiteralType<
 	A extends readonly LiteralBase[],
