@@ -1,12 +1,18 @@
-# Runtypes [![Build Status](https://travis-ci.org/pelotom/runtypes.svg?branch=master)](https://travis-ci.org/pelotom/runtypes) [![Coverage Status](https://coveralls.io/repos/github/pelotom/runtypes/badge.svg?branch=master)](https://coveralls.io/github/pelotom/runtypes?branch=master)
+<div align="center"><br><br>
 
-### Safely bring untyped data into the fold
+# Runtypes
 
-Runtypes allow you to take values about which you have no assurances and check that they conform to some type `A`. This is done by means of composable type validators of primitives, literals, arrays, tuples, records, unions, intersections and more.
+[![License](https://img.shields.io/github/license/runtypes/runtypes?color=%231e2327)](LICENSE) [![Coverage Status](https://coveralls.io/repos/github/runtypes/runtypes/badge.svg?branch=master)](https://coveralls.io/github/pelotom/runtypes?branch=master)
+
+Safely bring untyped data into the fold.
+
+<br><br></div>
+
+Runtypes allow you to take values about which you have no assurances and check that they conform to some type `A`. This is done by means of composable type validators of primitives, literals, arrays, tuples, objects, unions, intersections and more.
 
 ## Installation
 
-```
+```sh
 npm install --save runtypes
 ```
 
@@ -54,17 +60,17 @@ type SpaceObject = Asteroid | Planet | Ship
 If the objects which are supposed to have these shapes are loaded from some external source, perhaps a JSON file, we need to validate that the objects conform to their specifications. We do so by building corresponding `Runtype`s in a very straightforward manner:
 
 ```ts
-import { Boolean, Number, String, Literal, Array, Tuple, Record, Union } from "runtypes"
+import { Boolean, Number, String, Literal, Array, Tuple, Object, Union } from "runtypes"
 
 const Vector = Tuple(Number, Number, Number)
 
-const Asteroid = Record({
+const Asteroid = Object({
 	type: Literal("asteroid"),
 	location: Vector,
 	mass: Number,
 })
 
-const Planet = Record({
+const Planet = Object({
 	type: Literal("planet"),
 	location: Vector,
 	mass: Number,
@@ -74,14 +80,14 @@ const Planet = Record({
 
 const Rank = Union(Literal("captain"), Literal("first mate"), Literal("officer"), Literal("ensign"))
 
-const CrewMember = Record({
+const CrewMember = Object({
 	name: String,
 	age: Number,
 	rank: Rank,
 	home: Planet,
 })
 
-const Ship = Record({
+const Ship = Object({
 	type: Literal("ship"),
 	location: Vector,
 	mass: Number,
@@ -110,7 +116,7 @@ When it fails to validate, your runtype emits a `ValidationError` object that co
 - `name`: Always `"ValidationError"`
 - `message`: A `string` that summarizes the problem overall
 - `code`: A [`Failcode`](https://github.com/pelotom/runtypes/blob/dcd4fe0d0bd0fc9c3ec445bda30586f3e6acc71c/src/result.ts#L12-L33) that categorizes the problem
-- `details`: An object that describes which property was invalid precisely; only for complex runtypes (e.g. `Record`, `Array`, and the like)
+- `details`: An object that describes which property was invalid precisely; only for complex runtypes (e.g. `Object`, `Array`, and the like)
 
 If you want to inform your users about the validation error, it's strongly discouraged to rely on the format of `message` property in your code, as it may change across minor versions for readability thoughts. Instead of parsing `message`, you should use `code` and/or `details` property to programmatically inspect the validation error, and handle other stuff such as i18n.
 
@@ -376,31 +382,6 @@ signIn(password, username)
 signIn("someone@example.com", "12345678")
 ```
 
-Branded types are like [opaque types](https://flow.org/en/docs/types/opaque-types) and work as expected, except it is impossible to use as a key of an object type:
-
-```ts
-const StringBranded = String.withBrand("StringBranded")
-type StringBranded = Static<typeof StringBranded>
-// Then the type `StringBranded` is computed as:
-// string & { [RuntypeName]: "StringBranded" }
-
-// TS1023: An index signature parameter type must be either `string` or `number`.
-type SomeObject1 = { [K: StringBranded]: number }
-
-// Both of these result in empty object type i.e. `{}`
-type SomeObject2 = { [K in StringBranded]: number }
-type SomeObject3 = Record<StringBranded, number>
-
-// You can do like this, but...
-const key = StringBranded.check("key")
-const SomeRecord = Record({ [key]: Number })
-// This type results in { [x: string]: number }
-type SomeRecord = Static<typeof SomeRecord>
-
-// So you have to use `Map` to achieve strongly-typed branded keys
-type SomeMap = Map<StringBranded, number>
-```
-
 ## Optional values
 
 Runtypes can be used to represent a variable that may be undefined.
@@ -408,45 +389,43 @@ Runtypes can be used to represent a variable that may be undefined.
 ```ts
 // For variables that might be `string | undefined`
 Union(String, Undefined)
-String.Or(Undefined) // shorthand syntax for the above
-Optional(String) // equivalent to the above two basically
+String.or(Undefined) // shorthand syntax for the above
+Optional(String) // equivalent to the above two when used outside of `Object`
 String.optional() // shorthand syntax for the above
 ```
 
-The last syntax is not any shorter than writing `Optional(String)` when you import `Optional` directly from `runtypes`, but if you use scoped import i.e. `import * as rt from 'runtypes'`, it would look better to write `rt.String.optional()` rather than `rt.Optional(rt.String)`.
+The last syntax is not any shorter than writing `Optional(String)`, but if you use scoped import i.e. `import * as rt from 'runtypes'`, it would be handy to write `rt.String.optional()` rather than `rt.Optional(rt.String)`.
 
-If a `Record` may or may not have some properties, we can declare the optional properties using `Record({ x: Optional(String) })` (or formerly `Partial({ x: String })`). Optional properties validate successfully if they are absent or `undefined` or the type specified.
+If an `Object` may or may not have some properties, we can declare the optional properties using `Object({ x: Optional(String) })`. Optional properties validate successfully if they are absent or of type specified inner.
 
 ```ts
 // Using `Ship` from above
-const RegisteredShip = Ship.And(
-	Record({
+const RegisteredShip = Ship.and(
+	Object({
 		// All registered ships must have this flag
 		isRegistered: Literal(true),
 
 		// We may or may not know the ship's classification
 		shipClass: Optional(Union(Literal("military"), Literal("civilian"))),
 
-		// We may not know the ship's rank (so we allow it to be undefined via `Optional`),
+		// We may not know the ship's rank (so we allow it to be absent via `Optional`),
 		// we may also know that a civilian ship doesn't have a rank (e.g. null)
-		rank: Optional(Rank.Or(Null)),
+		rank: Optional(Rank.or(Null)),
 	}),
 )
 ```
 
-There's a difference between `Union(String, Undefined)` and `Optional(String)` iff they are used within a `Record`; the former means "_**it must be present**, and must be `string` or `undefined`_", while the latter means "_**it can be present or missing**, but must be `string` or `undefined` if present_".
+There's a difference between `Union(String, Undefined)` and `Optional(String)` iff they are used within an `Object`; the former means "_**it must be present**, and must be `string` or `undefined`_", while the latter means "_**it can be present or absent**, but must be `string` if present_".
 
-**_Prior to v5.2, `Union(..., Undefined)` in a `Record` was passing even if the property was missing. Although some users considered this behavior was a [bug](https://github.com/pelotom/runtypes/issues/182) especially for the sake of mirroring TS behavior, it was a long-standing thing, and some other users have been surprised with this fix. So the v5.2 release has been marked [deprecated on npm](https://www.npmjs.com/package/runtypes/v/5.2.0), due to the breaking change._**
-
-Note that `null` is a quite different thing than `undefined` in JS and TS, so `Optional` doesn't take care of it. If your `Record` has properties which can be `null`, then use the `Null` runtype explicitly.
+Note that `null` is a quite different thing than `undefined` in JS and TS, so `Optional` doesn't take care of it. If your `Object` has properties which can be `null`, then use the `Null` runtype explicitly.
 
 ```ts
-const MilitaryShip = Ship.And(
-	Record({
+const MilitaryShip = Ship.and(
+	Object({
 		shipClass: Literal("military"),
 
-		// Must NOT be undefined, but can be null
-		lastDeployedTimestamp: Number.Or(Null),
+		// Can be present or absent, but must be `number` or `null` if present.
+		lastDeployedTimestamp: Number.or(Null).optional(),
 	}),
 )
 ```
@@ -455,18 +434,18 @@ You can save an import by using `nullable` shorthand instead. All three below ar
 
 ```ts
 Union(Number, Null)
-Number.Or(Null)
+Number.or(Null)
 Number.nullable()
 ```
 
-## Readonly records and arrays
+## Readonly objects and arrays
 
-Array and Record runtypes have a special function `.asReadonly()`, that creates a new runtype where the values are readonly.
+`Array` and `Object` runtypes have a special function `.asReadonly()`, that returns the same runtype but the static counterpart is readonly.
 
 For example:
 
 ```typescript
-const Asteroid = Record({
+const Asteroid = Object({
 	type: Literal("asteroid"),
 	location: Vector,
 	mass: Number,
@@ -476,15 +455,15 @@ type Asteroid = Static<typeof Asteroid>
 
 const AsteroidArray = Array(Asteroid).asReadonly()
 type AsteroidArray = Static<typeof AsteroidArray>
-// ReadonlyArray<Asteroid>
+// readonly Asteroid[]
 ```
 
-## Helper functions for `Record`
+## Helper functions for `Object`
 
-`Record` runtype has the methods `.pick()` and `.omit()`, which will return a new `Record` with or without specified fields (see [Example](#example) section for detailed definition of `Rank` and `Planet`):
+`Object` runtype has the methods `.pick()` and `.omit()`, which will return a new `Object` with or without specified fields (see [Example](#example) section for detailed definition of `Rank` and `Planet`):
 
 ```ts
-const CrewMember = Record({
+const CrewMember = Object({
 	name: String,
 	age: Number,
 	rank: Rank,
@@ -498,7 +477,7 @@ const Background = CrewMember.omit("name")
 type Background = Static<typeof Background> // { age: number; rank: Rank; home: Planet; }
 ```
 
-Also you can use `.extend()` to get a new `Record` with extended fields:
+Also you can use `.extend()` to get a new `Object` with extended fields:
 
 ```ts
 const PetMember = CrewMember.extend({
@@ -508,7 +487,7 @@ type PetMember = Static<typeof PetMember>
 // { name: string; age: number; rank: Rank; home: Planet; species: string; }
 ```
 
-It is capable of reporting compile-time errors if any field is not assignable to the base runtype. You can suppress this error by using `@ts-ignore` directive or `.omit()` before, and then you'll get an incompatible version from the base `Record`.
+It is capable of reporting compile-time errors if any field is not assignable to the base runtype. You can suppress this error by using `@ts-ignore` directive or `.omit()` before, and then you'll get an incompatible version from the base `Object`.
 
 ```ts
 const WrongMember = CrewMember.extend({
