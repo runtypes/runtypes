@@ -1,5 +1,5 @@
-import Static from "./Static.ts"
-import { RuntypeBase } from "../Runtype.ts"
+import type Static from "./Static.ts"
+import { type RuntypeBase } from "../Runtype.ts"
 import ValidationError from "../result/ValidationError.ts"
 import FAILURE from "../utils-internal/FAILURE.ts"
 

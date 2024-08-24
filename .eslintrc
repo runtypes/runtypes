@@ -27,6 +27,7 @@
 		"prefer-arrow-functions/prefer-arrow-functions": "warn",
 		"no-fallthrough": "off",
 		"no-constant-condition": "off",
+		"no-empty-pattern": "off",
 		"@typescript-eslint/no-explicit-any": "warn",
 		"@typescript-eslint/explicit-module-boundary-types": "off",
 		"@typescript-eslint/no-var-requires": "off",
@@ -42,7 +43,12 @@
 		"@typescript-eslint/no-non-null-assertion": "warn",
 		"@typescript-eslint/no-unused-expressions": "warn",
 		"@typescript-eslint/no-unsafe-function-type": "warn",
-		"no-empty-pattern": "off",
+		"@typescript-eslint/consistent-type-imports": ["warn", { "fixStyle": "inline-type-imports" }],
+		"@typescript-eslint/consistent-type-exports": [
+			"warn",
+			{ "fixMixedExportsWithInlineTypeSpecifier": true }
+		],
+		"import/no-duplicates": ["warn", { "prefer-inline": false }],
 		"import/first": "warn",
 		"import/exports-last": "warn",
 		"import/no-anonymous-default-export": "warn",

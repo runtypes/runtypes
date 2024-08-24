@@ -21,7 +21,7 @@ import Undefined from "../Undefined.ts"
 import Union from "../Union.ts"
 import Unknown from "../Unknown.ts"
 import Void from "../Void.ts"
-import Reflect from "../utils/Reflect.ts"
+import type Reflect from "../utils/Reflect.ts"
 import { assert } from "std/assert/mod.ts"
 
 class TestClass {}

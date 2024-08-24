@@ -1,5 +1,6 @@
-import Runtype, { create } from "./Runtype.ts"
-import Reflect from "./utils/Reflect.ts"
+import type Runtype from "./Runtype.ts"
+import { create } from "./Runtype.ts"
+import type Reflect from "./utils/Reflect.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 interface Unknown extends Runtype<unknown> {

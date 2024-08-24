@@ -3,7 +3,7 @@ import Number from "./Number.ts"
 import Object from "./Object.ts"
 import Optional from "./Optional.ts"
 import String from "./String.ts"
-import Static from "./utils/Static.ts"
+import type Static from "./utils/Static.ts"
 import { assert, assertEquals } from "std/assert/mod.ts"
 
 Deno.test("object", async t => {

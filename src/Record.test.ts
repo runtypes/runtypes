@@ -2,7 +2,7 @@ import Literal from "./Literal.ts"
 import Optional from "./Optional.ts"
 import Record from "./Record.ts"
 import String from "./String.ts"
-import Static from "./utils/Static.ts"
+import type Static from "./utils/Static.ts"
 import { assert } from "std/assert/mod.ts"
 
 Deno.test("record", async t => {

@@ -4,7 +4,7 @@ import Number from "./Number.ts"
 import String from "./String.ts"
 import Template from "./Template.ts"
 import Union from "./Union.ts"
-import Static from "./utils/Static.ts"
+import type Static from "./utils/Static.ts"
 import { assert, assertEquals, assertThrows } from "std/assert/mod.ts"
 
 Deno.test("template", async t => {

@@ -1,6 +1,6 @@
 /* eslint-disable import/exports-last */
 /* eslint-disable import/no-named-export */
-import { RuntypeBase } from "../Runtype.ts"
+import { type RuntypeBase } from "../Runtype.ts"
 import ValidationError from "../result/ValidationError.ts"
 import FAILURE from "../utils-internal/FAILURE.ts"
 

@@ -1,6 +1,6 @@
-import Static from "./Static.ts"
-import { RuntypeBase } from "../Runtype.ts"
-import { Case, Matcher } from "../Union.ts"
+import type Static from "./Static.ts"
+import { type RuntypeBase } from "../Runtype.ts"
+import { type Case, type Matcher } from "../Union.ts"
 
 const match =
 	<A extends [PairCase<any, any>, ...PairCase<any, any>[]]>(

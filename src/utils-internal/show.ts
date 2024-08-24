@@ -1,4 +1,4 @@
-import Reflect from "../utils/Reflect.ts"
+import type Reflect from "../utils/Reflect.ts"
 
 /**
  * Return the display string for the stringified version of a type, e.g.
