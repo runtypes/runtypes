@@ -62,13 +62,13 @@ srDict["self"] = srDict
 
 type Hand = { left: Hand } | { right: Hand }
 const Hand: Runtype<Hand> = Lazy(() => Union(Object({ left: Hand }), Object({ right: Hand })))
-const leftHand: Hand = { left: null as any as Hand }
+const leftHand: Hand = { left: undefined as unknown as Hand }
 const rightHand: Hand = { right: leftHand }
 leftHand.left = rightHand
 
-type Ambi = { left: Ambi } & { right: Ambi }
 const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Object({ left: Ambi }), Object({ right: Ambi })))
-const ambi: Ambi = { left: null as any as Ambi, right: null as any as Ambi }
+type Ambi = { left: Ambi; right: Ambi }
+const ambi: Ambi = { left: undefined as unknown as Ambi, right: undefined as unknown as Ambi }
 ambi.left = ambi
 ambi.right = ambi
 
