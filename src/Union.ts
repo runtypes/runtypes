@@ -1,7 +1,7 @@
 import { type LiteralBase } from "./Literal.ts"
 import type Runtype from "./Runtype.ts"
 import { type RuntypeBase, type Static } from "./Runtype.ts"
-import { create, innerValidate } from "./Runtype.ts"
+import { create } from "./Runtype.ts"
 import type Reflect from "./utils/Reflect.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
@@ -34,10 +34,10 @@ const Union = <T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 			}
 		}
 	const self = { tag: "union", alternatives, match } as unknown as Reflect
-	return create<any>((value, visited) => {
+	return create<any>((value, innerValidate) => {
 		if (typeof value !== "object" || value === null) {
 			for (const alternative of alternatives)
-				if (innerValidate(alternative, value, visited).success) return SUCCESS(value)
+				if (innerValidate(alternative, value).success) return SUCCESS(value)
 			return FAILURE.TYPE_INCORRECT(self, value)
 		}
 
@@ -69,7 +69,7 @@ const Union = <T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 							hasKey(fieldName, value) &&
 							value[fieldName] === field.value
 						) {
-							return innerValidate(alternative, value, visited)
+							return innerValidate(alternative, value)
 						}
 					}
 				}
@@ -77,7 +77,7 @@ const Union = <T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 		}
 
 		for (const targetType of alternatives)
-			if (innerValidate(targetType, value, visited).success) return SUCCESS(value)
+			if (innerValidate(targetType, value).success) return SUCCESS(value)
 
 		return FAILURE.TYPE_INCORRECT(self, value)
 	}, self)

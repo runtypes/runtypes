@@ -31,6 +31,7 @@ import type Failure from "./result/Failure.ts"
 import ValidationError from "./result/ValidationError.ts"
 import Contract from "./utils/Contract.ts"
 import type Reflect from "./utils/Reflect.ts"
+import hasKey from "./utils-internal/hasKey.ts"
 import { assert, assertEquals, assertThrows, fail } from "std/assert/mod.ts"
 import outdent from "x/outdent@v0.8/mod.ts"
 
@@ -62,13 +63,13 @@ srDict["self"] = srDict
 
 type Hand = { left: Hand } | { right: Hand }
 const Hand: Runtype<Hand> = Lazy(() => Union(Object({ left: Hand }), Object({ right: Hand })))
-const leftHand: Hand = { left: null as any as Hand }
+const leftHand: Hand = { left: undefined as unknown as Hand }
 const rightHand: Hand = { right: leftHand }
 leftHand.left = rightHand
 
-type Ambi = { left: Ambi } & { right: Ambi }
 const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Object({ left: Ambi }), Object({ right: Ambi })))
-const ambi: Ambi = { left: null as any as Ambi, right: null as any as Ambi }
+type Ambi = { left: Ambi; right: Ambi }
+const ambi: Ambi = { left: undefined as unknown as Ambi, right: undefined as unknown as Ambi }
 ambi.left = ambi
 ambi.right = ambi
 
@@ -83,13 +84,13 @@ class SomeClassV1 {
 	constructor(public n: number) {}
 	public _someClassTag = SOMECLASS_TAG
 	public static isSomeClass = (o: any): o is SomeClassV1 =>
-		o !== null && typeof o === "object" && o._someClassTag === SOMECLASS_TAG
+		hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
 }
 class SomeClassV2 {
 	constructor(public n: number) {}
 	public _someClassTag = SOMECLASS_TAG
 	public static isSomeClass = (o: any): o is SomeClassV2 =>
-		o !== null && typeof o === "object" && o._someClassTag === SOMECLASS_TAG
+		hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
 }
 
 const runtypes = {
@@ -154,14 +155,13 @@ const runtypes = {
 	CustomGuardType: Guard(SomeClassV2.isSomeClass),
 	ChangeType: Unknown.withConstraint<SomeClass>(SomeClassV2.isSomeClass),
 	ChangeTypeAndName: Unknown.withConstraint<SomeClass>(
-		(o: any) => o !== null && typeof o === "object" && o._someClassTag === SOMECLASS_TAG,
+		(o: any) => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
 		{
 			name: "SomeClass",
 		},
 	),
 	GuardChangeTypeAndName: Guard(
-		(o: any): o is SomeClass =>
-			o !== null && typeof o === "object" && o._someClassTag === SOMECLASS_TAG,
+		(o: any): o is SomeClass => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
 		{
 			name: "SomeClass",
 		},

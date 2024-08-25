@@ -1,6 +1,6 @@
 import type Runtype from "./Runtype.ts"
 import { type RuntypeBase, type Static } from "./Runtype.ts"
-import { create, innerValidate } from "./Runtype.ts"
+import { create } from "./Runtype.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import type Reflect from "./utils/Reflect.ts"
@@ -36,7 +36,7 @@ interface Tuple<A extends readonly RuntypeBase[]>
 const Tuple = <T extends readonly RuntypeBase[]>(...components: T): Tuple<T> => {
 	const self = { tag: "tuple", components } as unknown as Reflect
 	return withExtraModifierFuncs(
-		create<any>((xs, visited) => {
+		create<any>((xs, innerValidate) => {
 			if (!Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs)
 
 			if (xs.length !== components.length)
@@ -47,7 +47,7 @@ const Tuple = <T extends readonly RuntypeBase[]>(...components: T): Tuple<T> => 
 
 			const keys = enumerableKeysOf(xs)
 			const results: Result<unknown>[] = keys.map(key =>
-				innerValidate(components[key as any]!, xs[key as any]!, visited),
+				innerValidate(components[key as any]!, xs[key as any]!),
 			)
 			const details = keys.reduce<
 				globalThis.Record<

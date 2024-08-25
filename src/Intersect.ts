@@ -1,6 +1,6 @@
 import type Runtype from "./Runtype.ts"
 import { type RuntypeBase, type Static } from "./Runtype.ts"
-import { create, innerValidate } from "./Runtype.ts"
+import { create } from "./Runtype.ts"
 import type Reflect from "./utils/Reflect.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
@@ -25,9 +25,9 @@ const Intersect = <A extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 	...intersectees: A
 ): Intersect<A> => {
 	const self = { tag: "intersect", intersectees } as unknown as Reflect
-	return create((value, visited) => {
-		for (const targetType of intersectees) {
-			const result = innerValidate(targetType, value, visited)
+	return create((value, innerValidate) => {
+		for (const runtype of intersectees) {
+			const result = innerValidate(runtype, value)
 			if (!result.success) return result
 		}
 		return SUCCESS(value)

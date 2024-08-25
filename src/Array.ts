@@ -1,6 +1,6 @@
 import type Runtype from "./Runtype.ts"
 import { type RuntypeBase, type Static } from "./Runtype.ts"
-import { create, innerValidate } from "./Runtype.ts"
+import { create } from "./Runtype.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import type Reflect from "./utils/Reflect.ts"
@@ -26,13 +26,11 @@ interface Array<E extends RuntypeBase> extends Runtype<Static<E>[]> {
 const Array = <E extends RuntypeBase>(element: E): Array<E> => {
 	const self = { tag: "array", element } as unknown as Reflect
 	return withExtraModifierFuncs(
-		create((xs, visited) => {
+		create((xs, innerValidate) => {
 			if (!globalThis.Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs)
 
 			const keys = enumerableKeysOf(xs)
-			const results: Result<unknown>[] = keys.map(key =>
-				innerValidate(element, xs[key as any], visited),
-			)
+			const results: Result<unknown>[] = keys.map(key => innerValidate(element, xs[key as any]))
 			const details = keys.reduce<
 				globalThis.Record<
 					number,

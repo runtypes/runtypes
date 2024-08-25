@@ -3,8 +3,8 @@ import type Literal from "./Literal.ts"
 import { type LiteralBase } from "./Literal.ts"
 import { literal } from "./Literal.ts"
 import type Runtype from "./Runtype.ts"
-import { type RuntypeBase, type VisitedState, type Static } from "./Runtype.ts"
-import { create, innerValidate, isRuntype } from "./Runtype.ts"
+import { type RuntypeBase, type Static } from "./Runtype.ts"
+import { create, isRuntype } from "./Runtype.ts"
 import type Union from "./Union.ts"
 import type Result from "./result/Result.ts"
 import type Reflect from "./utils/Reflect.ts"
@@ -13,6 +13,8 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import escapeRegExp from "./utils-internal/escapeRegExp.ts"
 import show from "./utils-internal/show.ts"
 import typeOf from "./utils-internal/typeOf.ts"
+
+type InnerValidate = Parameters<Parameters<typeof create>[0]>[1]
 
 type TemplateLiteralType<
 	A extends readonly LiteralBase[],
@@ -248,20 +250,20 @@ const getReviversFor = (reflect: Reflect): Revivers => {
 
 /** Recursively map corresponding reviver and  */
 const reviveValidate =
-	(reflect: Reflect, visited: VisitedState) =>
+	(reflect: Reflect, innerValidate: InnerValidate) =>
 	(value: string): Result<unknown> => {
 		const revivers = getReviversFor(reflect)
 		if (Array.isArray(revivers)) {
 			switch (reflect.tag) {
 				case "union":
 					for (const alternative of reflect.alternatives) {
-						const validated = reviveValidate(alternative.reflect, visited)(value)
+						const validated = reviveValidate(alternative.reflect, innerValidate)(value)
 						if (validated.success) return validated
 					}
 					return FAILURE.TYPE_INCORRECT(reflect, value)
 				case "intersect":
 					for (const intersectee of reflect.intersectees) {
-						const validated = reviveValidate(intersectee.reflect, visited)(value)
+						const validated = reviveValidate(intersectee.reflect, innerValidate)(value)
 						if (!validated.success) return validated
 					}
 					return SUCCESS(value)
@@ -271,7 +273,7 @@ const reviveValidate =
 			}
 		} else {
 			const reviver = revivers
-			const validated = innerValidate(reflect, reviver(value), visited)
+			const validated = innerValidate(reflect, reviver(value))
 			if (!validated.success && validated.code === "VALUE_INCORRECT" && reflect.tag === "literal")
 				// TODO: Temporary fix to show unrevived value in message; needs refactor
 				return FAILURE.VALUE_INCORRECT("literal", `"${literal(reflect.value)}"`, `"${value}"`)
@@ -414,14 +416,14 @@ const Template: {
 	const self = { tag: "template", strings, runtypes } as unknown as Reflect
 	const regexp = createRegExpForTemplate(self as any)
 
-	const test = (value: string, visited: VisitedState): Result<string> => {
+	const test = (value: string, innerValidate: InnerValidate): Result<string> => {
 		const matches = value.match(regexp)
 		if (matches) {
 			const values = matches.slice(1)
 			for (let i = 0; i < runtypes.length; i++) {
 				const runtype = runtypes[i]!
 				const value = values[i]!
-				const validated = reviveValidate(runtype.reflect, visited)(value) as Result<string>
+				const validated = reviveValidate(runtype.reflect, innerValidate)(value) as Result<string>
 				if (!validated.success) return validated
 			}
 			return SUCCESS(value)
@@ -440,10 +442,10 @@ const Template: {
 						: never
 					: never
 				: never
-	>((value, visited) => {
+	>((value, innerValidate) => {
 		if (typeof value !== "string") return FAILURE.TYPE_INCORRECT(self, value)
 		else {
-			const validated = test(value, visited)
+			const validated = test(value, innerValidate)
 			if (!validated.success) {
 				const result = FAILURE.VALUE_INCORRECT("string", `${show(self)}`, `"${value}"`)
 				if (result.message !== validated.message)
