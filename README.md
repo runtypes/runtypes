@@ -242,7 +242,7 @@ type T = Static<typeof B> // T is Buffer
 However, if you want to return a custom error message from your constraint function, you can't do this with a type guard because these functions can only return boolean values. Instead, you can roll your own constraint function and use the `withConstraint<T>()` method. Remember to specify the type parameter for the `Constraint` because it can't be inferred from your check function!
 
 ```typescript
-const check = (o: any) => Buffer.isBuffer(o) || "Dude, not a Buffer!"
+const check = (o: unknown) => Buffer.isBuffer(o) || "Dude, not a Buffer!"
 const B = Unknown.withConstraint<Buffer>(check)
 type T = Static<typeof B> // T will have type of `Buffer`
 ```

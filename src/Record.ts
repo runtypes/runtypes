@@ -7,6 +7,7 @@ import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
+import isNumberLikeKey from "./utils-internal/isNumberLikeKey.ts"
 import show from "./utils-internal/show.ts"
 
 type RecordKeyType = string | number | symbol
@@ -43,14 +44,13 @@ const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
 	const valueRuntype = value
 	const keyString = show(keyRuntype as any)
 	const self = { tag: "record", key: keyString, value } as any
-	return create<any>((x, innerValidate) => {
+	return create<Record<K, V>>((x, innerValidate) => {
 		if (x === null || x === undefined || typeof x !== "object")
 			return FAILURE.TYPE_INCORRECT(self, x)
 
 		if (globalThis.Object.getPrototypeOf(x) !== globalThis.Object.prototype)
 			if (!Array.isArray(x) || keyString === "string") return FAILURE.TYPE_INCORRECT(self, x)
 
-		const numberString = /^(?:NaN|-?\d+(?:\.\d+)?)$/
 		const keys = enumerableKeysOf(x)
 		const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
 			(results, key) => {
@@ -58,10 +58,10 @@ const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
 				// as a user would expect JavaScript engines to convert numeric keys to
 				// string keys automatically. So, if the key can be interpreted as a
 				// decimal number, then test it against a `Number` OR `String` runtype.
-				const isNumberLikeKey = typeof key === "string" && numberString.test(key)
-				const keyInterop = isNumberLikeKey ? globalThis.Number(key) : key
+				const isNumberLike = isNumberLikeKey(key)
+				const keyInterop = isNumberLike ? globalThis.Number(key) : key
 				if (
-					isNumberLikeKey
+					isNumberLike
 						? !keyRuntype.guard(keyInterop) && !keyRuntype.guard(key)
 						: !keyRuntype.guard(keyInterop)
 				) {
@@ -87,7 +87,7 @@ const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
 		)
 
 		if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
-		else return SUCCESS(x)
+		else return SUCCESS(x as Static<Record<K, V>>)
 	}, self)
 }
 

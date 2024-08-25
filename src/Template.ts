@@ -206,7 +206,7 @@ const getInnerLiteral = (runtype: RuntypeBase<unknown>): Literal<LiteralBase> =>
 /**
  *Reviver is used for converting string literals such as `"0x2A"` to the actual `42`
  */
-type Reviver = (s: string) => any
+type Reviver = (s: string) => string | number | bigint | boolean | null | undefined
 const identity: Reviver = s => s
 const revivers: {
 	[tag in string]?: readonly [Reviver, string, ...string[]]

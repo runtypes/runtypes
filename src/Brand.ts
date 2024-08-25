@@ -1,6 +1,7 @@
 import type Runtype from "./Runtype.ts"
 import { type RuntypeBase, type Static } from "./Runtype.ts"
 import { create } from "./Runtype.ts"
+import type Result from "./result/Result.ts"
 import type Reflect from "./utils/Reflect.ts"
 
 declare const RuntypeName: unique symbol
@@ -24,7 +25,10 @@ interface Brand<B extends string, A extends RuntypeBase>
 
 const Brand = <B extends string, A extends RuntypeBase>(brand: B, entity: A) => {
 	const self = { tag: "brand", brand, entity } as unknown as Reflect
-	return create<any>(value => entity.validate(value), self)
+	return create<Brand<B, A>>(
+		value => entity.validate(value) as Result<Static<A> & RuntypeBrand<B>>,
+		self,
+	)
 }
 
 export default Brand

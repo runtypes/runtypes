@@ -5,7 +5,14 @@ export { default as AsyncContract } from "./utils/AsyncContract.ts"
 export { default as BigInt } from "./BigInt.ts"
 export { default as Boolean } from "./Boolean.ts"
 export { default as Brand, type RuntypeBrand } from "./Brand.ts"
-export { type Case, type Match, type Matcher, default as Union } from "./Union.ts"
+export {
+	type Case,
+	type Match,
+	type Matcher,
+	type PairCase,
+	default as match,
+	when,
+} from "./utils/match.ts"
 export { default as Constraint } from "./Constraint.ts"
 export { default as Contract } from "./utils/Contract.ts"
 export { default as Dictionary } from "./Dictionary.ts"
@@ -21,7 +28,6 @@ export { default as Nullish } from "./Nullish.ts"
 export { default as Number } from "./Number.ts"
 export { default as Object } from "./Object.ts"
 export { default as Optional } from "./Optional.ts"
-export { type PairCase, default as match, when } from "./utils/match.ts"
 export { type default as Reflect } from "./utils/Reflect.ts"
 export { type default as Runtype, type Static } from "./Runtype.ts"
 export { default as String } from "./String.ts"
@@ -29,6 +35,7 @@ export { default as Symbol } from "./Symbol.ts"
 export { default as Template } from "./Template.ts"
 export { default as Tuple } from "./Tuple.ts"
 export { default as Undefined } from "./Undefined.ts"
+export { default as Union } from "./Union.ts"
 export { default as Unknown } from "./Unknown.ts"
 export { default as ValidationError } from "./result/ValidationError.ts"
 export { default as Void } from "./Void.ts"

@@ -127,7 +127,7 @@ const show =
 									k =>
 										`${k}${optionalTag(refl, k)}: ${
 											refl.fields[k]!.tag === "optional"
-												? show(false, circular)((refl.fields[k]! as any).underlying)
+												? show(false, circular)(refl.fields[k]!.underlying)
 												: show(false, circular)(refl.fields[k]!)
 										};`,
 								)

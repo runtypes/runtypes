@@ -15,6 +15,7 @@ Deno.test("match", async t => {
 		assert(f(42) === 21)
 		assert(f(16) === 25)
 		assert(f("yooo") === 8)
-		assertThrows(() => f(true as any), "No alternatives were matched")
+		// @ts-expect-error: must fail
+		assertThrows(() => f(true), "No alternatives were matched")
 	})
 })

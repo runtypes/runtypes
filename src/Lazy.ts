@@ -5,9 +5,9 @@ import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
  * Construct a possibly-recursive Runtype.
  */
 const Lazy = <A extends RuntypeBase>(delayed: () => A) => {
-	const data: any = {
+	const data = {
 		get tag() {
-			return (getWrapped() as any)["tag"]
+			return getWrapped().reflect.tag
 		},
 	}
 
@@ -16,7 +16,8 @@ const Lazy = <A extends RuntypeBase>(delayed: () => A) => {
 		if (!cached) {
 			cached = delayed()
 			for (const key of enumerableKeysOf(cached))
-				if (key !== "tag") data[key] = cached[key as keyof A]
+				if (key !== "tag")
+					globalThis.Object.defineProperty(data, key, { value: cached[key as keyof A] })
 		}
 		return cached
 	}

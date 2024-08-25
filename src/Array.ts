@@ -7,6 +7,7 @@ import type Reflect from "./utils/Reflect.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
+import isNumberLikeKey from "./utils-internal/isNumberLikeKey.ts"
 
 interface ArrayReadonly<E extends RuntypeBase> extends Runtype<readonly Static<E>[]> {
 	tag: "array"
@@ -26,24 +27,24 @@ interface Array<E extends RuntypeBase> extends Runtype<Static<E>[]> {
 const Array = <E extends RuntypeBase>(element: E): Array<E> => {
 	const self = { tag: "array", element } as unknown as Reflect
 	return withExtraModifierFuncs(
-		create((xs, innerValidate) => {
-			if (!globalThis.Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs)
+		create((x, innerValidate) => {
+			if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT(self, x)
 
-			const keys = enumerableKeysOf(xs)
-			const results: Result<unknown>[] = keys.map(key => innerValidate(element, xs[key as any]))
+			const keys = enumerableKeysOf(x).filter(isNumberLikeKey)
+			const results: Result<unknown>[] = keys.map(key => innerValidate(element, x[key]))
 			const details = keys.reduce<
 				globalThis.Record<
 					number,
 					{ [key: number]: string | Failure.Details } & (string | Failure.Details)
 				>
 			>((details, key) => {
-				const result = results[key as any]!
-				if (!result.success) details[key as any] = result.details || result.message
+				const result = results[key]!
+				if (!result.success) details[key] = result.details || result.message
 				return details
 			}, {})
 
 			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
-			else return SUCCESS(xs)
+			else return SUCCESS(x)
 		}, self),
 	)
 }

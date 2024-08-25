@@ -83,13 +83,13 @@ const SOMECLASS_TAG = "I am a SomeClass instance (any version)"
 class SomeClassV1 {
 	constructor(public n: number) {}
 	public _someClassTag = SOMECLASS_TAG
-	public static isSomeClass = (o: any): o is SomeClassV1 =>
+	public static isSomeClass = (o: unknown): o is SomeClassV1 =>
 		hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
 }
 class SomeClassV2 {
 	constructor(public n: number) {}
 	public _someClassTag = SOMECLASS_TAG
-	public static isSomeClass = (o: any): o is SomeClassV2 =>
+	public static isSomeClass = (o: unknown): o is SomeClassV2 =>
 		hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
 }
 
@@ -155,13 +155,13 @@ const runtypes = {
 	CustomGuardType: Guard(SomeClassV2.isSomeClass),
 	ChangeType: Unknown.withConstraint<SomeClass>(SomeClassV2.isSomeClass),
 	ChangeTypeAndName: Unknown.withConstraint<SomeClass>(
-		(o: any) => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
+		o => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
 		{
 			name: "SomeClass",
 		},
 	),
 	GuardChangeTypeAndName: Guard(
-		(o: any): o is SomeClass => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
+		(o): o is SomeClass => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
 		{
 			name: "SomeClass",
 		},
@@ -322,7 +322,8 @@ Deno.test("contracts", async t => {
 		const f = () => 3
 		assert(Contract(Number).enforce(f)() === 3)
 		try {
-			Contract(String).enforce(f as any)()
+			// @ts-expect-error: must fail
+			Contract(String).enforce(f)()
 			fail("contract was violated but no exception was thrown")
 		} catch (exception) {
 			assert(exception instanceof ValidationError)
@@ -334,7 +335,8 @@ Deno.test("contracts", async t => {
 		const f = (x: string) => x.length
 		assert(Contract(String, Number).enforce(f)("hel") === 3)
 		try {
-			;(Contract(String, Number).enforce(f) as any)(3)
+			// @ts-expect-error: must fail
+			Contract(String, Number).enforce(f)(3)
 			fail("contract was violated but no exception was thrown")
 		} catch (exception) {
 			assert(exception instanceof ValidationError)
@@ -346,7 +348,8 @@ Deno.test("contracts", async t => {
 		const f = (x: string, y: boolean) => (y ? x.length : 4)
 		assert(Contract(String, Boolean, Number).enforce(f)("hello", false) === 4)
 		try {
-			;(Contract(String, Boolean, Number).enforce(f) as any)("hello")
+			// @ts-expect-error: must fail
+			Contract(String, Boolean, Number).enforce(f)("hello")
 			fail("contract was violated but no exception was thrown")
 		} catch (exception) {
 			assert(exception instanceof ValidationError)
@@ -717,7 +720,7 @@ Deno.test("check errors", async t => {
 	await t.step("constraint standard message", async t => {
 		assertRuntypeThrows(
 			new SomeClass(1),
-			Unknown.withConstraint<SomeClass>((o: any) => o.n > 3, {
+			Unknown.withConstraint<SomeClass>(o => hasKey("n", o) && typeof o.n === "number" && o.n > 3, {
 				name: "SomeClass",
 			}),
 			Failcode.CONSTRAINT_FAILED,
@@ -728,9 +731,12 @@ Deno.test("check errors", async t => {
 	await t.step("constraint custom message", async t => {
 		assertRuntypeThrows(
 			new SomeClass(1),
-			Unknown.withConstraint<SomeClass>((o: any) => (o.n > 3 ? true : "n must be 3+"), {
-				name: "SomeClass",
-			}),
+			Unknown.withConstraint<SomeClass>(
+				o => (hasKey("n", o) && typeof o.n === "number" && o.n > 3 ? true : "n must be 3+"),
+				{
+					name: "SomeClass",
+				},
+			),
 			Failcode.CONSTRAINT_FAILED,
 			"Failed constraint check for SomeClass: n must be 3+",
 		)
@@ -976,7 +982,7 @@ Deno.test("change static type with Constraint", async t => {
 		| Intersect<[Reflect, Reflect]>
 		| Optional<Reflect>
 		| Function
-		| Constraint<Reflect, any, any>
+		| Constraint<Reflect>
 		| InstanceOf<Constructor<never>>
 		| Brand<string, Reflect>,
 ): Reflect => {
@@ -1022,7 +1028,7 @@ Deno.test("change static type with Constraint", async t => {
 			check<Static<(typeof X.intersectees)[0]> & Static<(typeof X.intersectees)[1]>>(X)
 			break
 		case "function":
-			check<(...args: any[]) => any>(X)
+			check<(...args: never[]) => unknown>(X)
 			break
 		case "constraint":
 			check<Static<typeof X.underlying>>(X)

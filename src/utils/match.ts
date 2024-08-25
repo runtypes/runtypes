@@ -1,5 +1,4 @@
 import { type Static, type RuntypeBase } from "../Runtype.ts"
-import { type Case, type Matcher } from "../Union.ts"
 
 const match =
 	<A extends [PairCase<any, any>, ...PairCase<any, any>[]]>(
@@ -19,6 +18,18 @@ const match =
 
 type PairCase<A extends RuntypeBase, Z> = [A, Case<A, Z>]
 
+type Match<A extends readonly [RuntypeBase, ...RuntypeBase[]]> = {
+	<Z>(...a: { [K in keyof A]: A[K] extends RuntypeBase ? Case<A[K], Z> : never }): Matcher<A, Z>
+}
+
+type Case<T extends RuntypeBase, Result> = (v: Static<T>) => Result
+
+type Matcher<A extends readonly [RuntypeBase, ...RuntypeBase[]], Z> = (
+	x: {
+		[K in keyof A]: A[K] extends RuntypeBase<infer Type> ? Type : unknown
+	}[number],
+) => Z
+
 const when = <A extends RuntypeBase<any>, B>(
 	runtype: A,
 	transformer: (value: Static<A>) => B,
@@ -26,4 +37,4 @@ const when = <A extends RuntypeBase<any>, B>(
 
 export default match
 // eslint-disable-next-line import/no-named-export
-export { type PairCase, when }
+export { type Case, type Match, type Matcher, type PairCase, when }

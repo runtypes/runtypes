@@ -27,7 +27,7 @@ type Reflect =
 	| ({ tag: "union"; alternatives: Reflect[] } & Runtype)
 	| ({ tag: "intersect"; intersectees: Reflect[] } & Runtype)
 	| ({ tag: "optional"; underlying: Reflect } & Runtype)
-	| ({ tag: "function" } & Runtype<(...args: any[]) => any>)
+	| ({ tag: "function" } & Runtype<(...args: never[]) => unknown>)
 	| ({
 			tag: "constraint"
 			underlying: Reflect

@@ -7,6 +7,7 @@ import type Reflect from "./utils/Reflect.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
+import isNumberLikeKey from "./utils-internal/isNumberLikeKey.ts"
 
 type ToReadonlyImpl<A extends readonly unknown[], B extends readonly unknown[]> = A extends [
 	infer A0,
@@ -36,32 +37,30 @@ interface Tuple<A extends readonly RuntypeBase[]>
 const Tuple = <T extends readonly RuntypeBase[]>(...components: T): Tuple<T> => {
 	const self = { tag: "tuple", components } as unknown as Reflect
 	return withExtraModifierFuncs(
-		create<any>((xs, innerValidate) => {
-			if (!Array.isArray(xs)) return FAILURE.TYPE_INCORRECT(self, xs)
+		create<Tuple<T>>((x, innerValidate) => {
+			if (!Array.isArray(x)) return FAILURE.TYPE_INCORRECT(self, x)
 
-			if (xs.length !== components.length)
+			if (x.length !== components.length)
 				return FAILURE.CONSTRAINT_FAILED(
 					self,
-					`Expected length ${components.length}, but was ${xs.length}`,
+					`Expected length ${components.length}, but was ${x.length}`,
 				)
 
-			const keys = enumerableKeysOf(xs)
-			const results: Result<unknown>[] = keys.map(key =>
-				innerValidate(components[key as any]!, xs[key as any]!),
-			)
+			const keys = enumerableKeysOf(x).filter(isNumberLikeKey)
+			const results: Result<unknown>[] = keys.map(key => innerValidate(components[key]!, x[key]!))
 			const details = keys.reduce<
 				globalThis.Record<
 					number,
 					{ [key: number]: string | Failure.Details } & (string | Failure.Details)
 				>
 			>((details, key) => {
-				const result = results[key as any]!
-				if (!result.success) details[key as any] = result.details || result.message
+				const result = results[key]!
+				if (!result.success) details[key] = result.details || result.message
 				return details
 			}, [])
 
 			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
-			else return SUCCESS(xs)
+			else return SUCCESS(x as Static<Tuple<T>>)
 		}, self),
 	)
 }
