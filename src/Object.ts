@@ -1,7 +1,7 @@
 import Optional from "./Optional.ts"
 import type Runtype from "./Runtype.ts"
 import { type RuntypeBase, type Static } from "./Runtype.ts"
-import { create, innerValidate } from "./Runtype.ts"
+import { create } from "./Runtype.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
@@ -78,7 +78,7 @@ interface Object<O extends { [_: string | number | symbol]: RuntypeBase }>
 const Object = <O extends { [_: string | number | symbol]: RuntypeBase }>(fields: O): Object<O> => {
 	const self = { tag: "object", fields } as any
 	return withExtraModifierFuncs(
-		create((x, visited) => {
+		create((x, innerValidate) => {
 			if (x === null || x === undefined) {
 				return FAILURE.TYPE_INCORRECT(self, x)
 			}
@@ -96,9 +96,8 @@ const Object = <O extends { [_: string | number | symbol]: RuntypeBase }>(fields
 						const isOptional = runtype.reflect.tag === "optional"
 						if (xHasKey) {
 							const value = x[key]
-							if (isOptional)
-								results[key] = innerValidate(runtype.reflect.underlying, value, visited)
-							else results[key] = innerValidate(runtype, value, visited)
+							if (isOptional) results[key] = innerValidate(runtype.reflect.underlying, value)
+							else results[key] = innerValidate(runtype, value)
 						} else {
 							if (isOptional) results[key] = SUCCESS(undefined)
 							else results[key] = FAILURE.PROPERTY_MISSING(runtype.reflect)

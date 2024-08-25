@@ -9,6 +9,7 @@ import ValidationError from "./result/ValidationError.ts"
 import type Reflect from "./utils/Reflect.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import hasKey from "./utils-internal/hasKey.ts"
+import isObject from "./utils-internal/isObject.ts"
 import show from "./utils-internal/show.ts"
 
 const RuntypeSymbol = Symbol()
@@ -124,7 +125,7 @@ interface Runtype<A = unknown> extends RuntypeBase<A> {
 }
 
 const create = <A extends RuntypeBase>(
-	validate: (x: any, visited: VisitedState) => Result<Static<A>>,
+	validate: (x: any, innerValidate: InnerValidate) => Result<Static<A>>,
 	base: any,
 ): A => {
 	const check = (x: any) => {
@@ -155,14 +156,13 @@ const create = <A extends RuntypeBase>(
 
 	const withBrand = <B extends string>(B: B): Brand<B, A> => Brand(B, base)
 
-	base[RuntypeSymbol] = undefined
+	base[RuntypeSymbol] = (value: unknown, visited: VisitedState) => {
+		if (visited.has(value, base)) return SUCCESS(value)
+		return validate(value, createInnerValidate(visited))
+	}
+	base.validate = (value: unknown) => base[RuntypeSymbol](value, createVisitedState())
 	base.check = check
 	base.assert = check
-	base._innerValidate = (value: any, visited: VisitedState) => {
-		if (visited.has(value, base)) return SUCCESS(value)
-		return validate(value, visited)
-	}
-	base.validate = (value: any) => base._innerValidate(value, VisitedState())
 	base.guard = guard
 	base.or = or
 	base.and = and
@@ -177,33 +177,29 @@ const create = <A extends RuntypeBase>(
 	return base
 }
 
-const innerValidate = <A extends RuntypeBase>(
-	targetType: A,
-	value: any,
-	visited: VisitedState,
-): Result<Static<A>> => (targetType as any)._innerValidate(value, visited)
+type InnerValidate = <A extends RuntypeBase>(runtype: A, value: unknown) => Result<Static<A>>
+
+const createInnerValidate =
+	(visited: VisitedState): InnerValidate =>
+	<A extends RuntypeBase>(runtype: A, value: unknown): Result<Static<A>> =>
+		(runtype as any)[RuntypeSymbol](value, visited)
 
 type VisitedState = {
-	has: (candidate: object, type: RuntypeBase) => boolean
+	has: (candidate: unknown, runtype: RuntypeBase) => boolean
 }
-const VisitedState = (): VisitedState => {
-	const members: WeakMap<object, WeakMap<RuntypeBase, true>> = new WeakMap()
 
-	const add = (candidate: unknown, type: RuntypeBase) => {
-		if (candidate === null || !(typeof candidate === "object")) return
-		const typeSet = members.get(candidate)
-		members.set(
-			candidate,
-			typeSet
-				? typeSet.set(type, true)
-				: (new WeakMap() as WeakMap<RuntypeBase, true>).set(type, true),
-		)
+const createVisitedState = (): VisitedState => {
+	const members = new WeakMap<object, WeakSet<RuntypeBase>>()
+
+	const add = (candidate: unknown, runtype: RuntypeBase) => {
+		if (!isObject(candidate)) return
+		members.set(candidate, (members.get(candidate) ?? new WeakSet()).add(runtype))
 	}
 
-	const has = (candidate: object, type: RuntypeBase) => {
-		const typeSet = members.get(candidate)
-		const value = (typeSet && typeSet.get(type)) || false
-		add(candidate, type)
+	const has = (candidate: unknown, runtype: RuntypeBase) => {
+		if (!isObject(candidate)) return false
+		const value = members.get(candidate)?.has(runtype) ?? false
+		add(candidate, runtype)
 		return value
 	}
 
@@ -212,4 +208,4 @@ const VisitedState = (): VisitedState => {
 
 export default Runtype
 // eslint-disable-next-line import/no-named-export
-export { type RuntypeBase, type Static, create, innerValidate, isRuntype }
+export { type RuntypeBase, type Static, create, isRuntype }

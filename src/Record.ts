@@ -1,7 +1,7 @@
 import type Optional from "./Optional.ts"
 import type Runtype from "./Runtype.ts"
 import { type RuntypeBase, type Static } from "./Runtype.ts"
-import { create, innerValidate } from "./Runtype.ts"
+import { create } from "./Runtype.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
@@ -43,7 +43,7 @@ const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
 	const valueRuntype = value
 	const keyString = show(keyRuntype as any)
 	const self = { tag: "record", key: keyString, value } as any
-	return create<any>((x, visited) => {
+	return create<any>((x, innerValidate) => {
 		if (x === null || x === undefined || typeof x !== "object")
 			return FAILURE.TYPE_INCORRECT(self, x)
 
@@ -70,7 +70,7 @@ const Record = <K extends RecordKeyRuntype, V extends RuntypeBase>(
 					const value = (x as { [key in typeof key]: unknown })[key]
 					const runtype =
 						valueRuntype.reflect.tag === "optional" ? valueRuntype.reflect.underlying : valueRuntype
-					results[key] = innerValidate(runtype, value, visited)
+					results[key] = innerValidate(runtype, value)
 				}
 				return results
 			},
