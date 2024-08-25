@@ -4,7 +4,7 @@ import type Reflect from "./utils/Reflect.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Function extends Runtype<(...args: any[]) => any> {
+interface Function extends Runtype<(...args: never[]) => unknown> {
 	tag: "function"
 }
 
@@ -14,7 +14,10 @@ const self = { tag: "function" } as unknown as Reflect
  * Construct a runtype for functions.
  */
 const Function = create<Function>(
-	value => (typeof value === "function" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value)),
+	value =>
+		typeof value === "function"
+			? SUCCESS(value as (...args: never[]) => unknown)
+			: FAILURE.TYPE_INCORRECT(self, value),
 	self,
 )
 

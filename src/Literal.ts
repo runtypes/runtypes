@@ -32,7 +32,7 @@ const Literal = <A extends LiteralBase>(value: A): Literal<A> => {
 	return create<Literal<A>>(
 		x =>
 			x === value
-				? SUCCESS(x)
+				? SUCCESS(x as A)
 				: FAILURE.VALUE_INCORRECT("literal", `\`${literal(value)}\``, `\`${literal(x)}\``),
 		self,
 	)

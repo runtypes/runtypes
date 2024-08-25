@@ -3,6 +3,7 @@ import type Runtype from "./Runtype.ts"
 import { type RuntypeBase, type Static } from "./Runtype.ts"
 import { create } from "./Runtype.ts"
 import type Reflect from "./utils/Reflect.ts"
+import { type Match } from "./utils/match.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import hasKey from "./utils-internal/hasKey.ts"
@@ -83,18 +84,4 @@ const Union = <T extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 	}, self)
 }
 
-type Match<A extends readonly [RuntypeBase, ...RuntypeBase[]]> = {
-	<Z>(...a: { [K in keyof A]: A[K] extends RuntypeBase ? Case<A[K], Z> : never }): Matcher<A, Z>
-}
-
-type Case<T extends RuntypeBase, Result> = (v: Static<T>) => Result
-
-type Matcher<A extends readonly [RuntypeBase, ...RuntypeBase[]], Z> = (
-	x: {
-		[K in keyof A]: A[K] extends RuntypeBase<infer Type> ? Type : unknown
-	}[number],
-) => Z
-
 export default Union
-// eslint-disable-next-line import/no-named-export
-export { type Case, type Match, type Matcher }

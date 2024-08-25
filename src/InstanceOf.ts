@@ -5,7 +5,7 @@ import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 type Constructor<V> = {
-	new (...args: any[]): V
+	new (...args: never[]): V
 }
 
 interface InstanceOf<V> extends Runtype<V> {

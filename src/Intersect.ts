@@ -9,7 +9,7 @@ interface Intersect<A extends readonly [RuntypeBase, ...RuntypeBase[]]>
 		// We use the fact that a union of functions is effectively an intersection of parameters
 		// e.g. to safely call (({x: 1}) => void | ({y: 2}) => void) you must pass {x: 1, y: 2}
 		{
-			[K in keyof A]: A[K] extends RuntypeBase ? (parameter: Static<A[K]>) => any : unknown
+			[K in keyof A]: A[K] extends RuntypeBase ? (parameter: Static<A[K]>) => unknown : unknown
 		}[number] extends (k: infer I) => void
 			? I
 			: never
@@ -30,7 +30,7 @@ const Intersect = <A extends readonly [RuntypeBase, ...RuntypeBase[]]>(
 			const result = innerValidate(runtype, value)
 			if (!result.success) return result
 		}
-		return SUCCESS(value)
+		return SUCCESS(value as Static<Intersect<A>>)
 	}, self)
 }
 

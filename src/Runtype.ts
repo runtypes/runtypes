@@ -14,7 +14,7 @@ import show from "./utils-internal/show.ts"
 
 const RuntypeSymbol = Symbol()
 
-const isRuntype = (x: any): x is RuntypeBase<unknown> => hasKey(RuntypeSymbol, x)
+const isRuntype = (x: unknown): x is RuntypeBase<unknown> => hasKey(RuntypeSymbol, x)
 
 /**
  * Obtains the static type associated with a Runtype.
@@ -29,24 +29,24 @@ interface RuntypeBase<A = unknown> {
 	 * Verifies that a value conforms to this runtype. When given a value that does
 	 * not conform to the runtype, throws an exception.
 	 */
-	assert(x: any): asserts x is A
+	assert(x: unknown): asserts x is A
 
 	/**
 	 * Verifies that a value conforms to this runtype. If so, returns the same value,
 	 * statically typed. Otherwise throws an exception.
 	 */
-	check(x: any): A
+	check(x: unknown): A
 
 	/**
 	 * Validates that a value conforms to this type, and returns a result indicating
 	 * success or failure (does not throw).
 	 */
-	validate(x: any): Result<A>
+	validate(x: unknown): Result<A>
 
 	/**
 	 * A type guard for this runtype.
 	 */
-	guard(x: any): x is A
+	guard(x: unknown): x is A
 
 	/**
 	 * Convert this to a Reflect, capable of introspecting the structure of the type.
@@ -125,16 +125,16 @@ interface Runtype<A = unknown> extends RuntypeBase<A> {
 }
 
 const create = <A extends RuntypeBase>(
-	validate: (x: any, innerValidate: InnerValidate) => Result<Static<A>>,
+	validate: (x: unknown, innerValidate: InnerValidate) => Result<Static<A>>,
 	base: any,
 ): A => {
-	const check = (x: any) => {
+	const check = (x: unknown) => {
 		const result: Result<unknown> = base.validate(x)
 		if (result.success) return result.value
 		else throw new ValidationError(result)
 	}
 
-	const guard = (x: any): x is A => base.validate(x).success
+	const guard = (x: unknown): x is A => base.validate(x).success
 
 	const or = <B extends Runtype>(B: B): Union<[A, B]> => Union(base, B)
 
