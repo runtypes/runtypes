@@ -18,7 +18,7 @@ interface SymbolFor<K extends string | undefined> extends Runtype<symbol> {
 	key: K
 }
 
-const f = (key: string | undefined) => {
+const SymbolFor = (key: string | undefined) => {
 	const self = { tag: "symbol", key } as unknown as Reflect
 	return create<Symbol>(value => {
 		if (typeof value !== "symbol") return FAILURE.TYPE_INCORRECT(self, value)
@@ -42,7 +42,7 @@ const self = { tag: "symbol" } as unknown as Reflect
  */
 const Symbol = create<Symbol>(
 	value => (typeof value === "symbol" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value)),
-	globalThis.Object.assign(f, self),
+	globalThis.Object.assign(SymbolFor, self),
 )
 
 const quoteIfPresent = (key: string | undefined) => (key === undefined ? "undefined" : `"${key}"`)

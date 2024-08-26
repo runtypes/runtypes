@@ -8,13 +8,13 @@ import type Result from "./result/Result.ts"
 import ValidationError from "./result/ValidationError.ts"
 import type Reflect from "./utils/Reflect.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
-import hasKey from "./utils-internal/hasKey.ts"
 import isObject from "./utils-internal/isObject.ts"
 import show from "./utils-internal/show.ts"
 
 const RuntypeSymbol = Symbol()
 
-const isRuntype = (x: unknown): x is RuntypeBase<unknown> => hasKey(RuntypeSymbol, x)
+const isRuntype = (x: unknown): x is RuntypeBase<unknown> =>
+	isObject(x) && globalThis.Object.hasOwn(x, RuntypeSymbol)
 
 /**
  * Obtains the static type associated with a Runtype.
@@ -156,25 +156,48 @@ const create = <A extends RuntypeBase>(
 
 	const withBrand = <B extends string>(B: B): Brand<B, A> => Brand(B, base)
 
-	base[RuntypeSymbol] = (value: unknown, visited: VisitedState) => {
-		if (visited.has(value, base)) return SUCCESS(value)
-		return validate(value, createInnerValidate(visited))
+	const propertiesNonEnumerable = {
+		[RuntypeSymbol]: (value: unknown, visited: VisitedState) => {
+			if (visited.has(value, base)) return SUCCESS(value)
+			return validate(value, createInnerValidate(visited))
+		},
+		toString: () => `Runtype<${show(base)}>`,
 	}
-	base.validate = (value: unknown) => base[RuntypeSymbol](value, createVisitedState())
-	base.check = check
-	base.assert = check
-	base.guard = guard
-	base.or = or
-	base.and = and
-	base.optional = optional
-	base.nullable = nullable
-	base.withConstraint = withConstraint
-	base.withGuard = withGuard
-	base.withBrand = withBrand
-	base.reflect = base
-	base.toString = () => `Runtype<${show(base)}>`
+	const propertiesEnumerable = {
+		validate: (value: unknown) => base[RuntypeSymbol](value, createVisitedState()),
+		check,
+		assert: check,
+		guard,
+		or,
+		and,
+		optional,
+		nullable,
+		withConstraint,
+		withGuard,
+		withBrand,
+		reflect: base,
+	}
+
+	const writable = true
+	const configurable = true
+	defineProperties(base, propertiesNonEnumerable, { enumerable: false, writable, configurable })
+	defineProperties(base, propertiesEnumerable, { enumerable: true, writable, configurable })
 
 	return base
+}
+
+const defineProperties = (
+	target: object,
+	properties: object,
+	descriptor: { enumerable: boolean; writable: boolean; configurable: boolean },
+) => {
+	for (const key of Reflect.ownKeys(properties)) {
+		const value = properties[key as keyof typeof properties]
+		globalThis.Object.defineProperty(target, key, {
+			...descriptor,
+			value,
+		})
+	}
 }
 
 type InnerValidate = <A extends RuntypeBase>(runtype: A, value: unknown) => Result<Static<A>>

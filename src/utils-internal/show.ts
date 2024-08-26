@@ -1,3 +1,4 @@
+import enumerableKeysOf from "./enumerableKeysOf.ts"
 import type Reflect from "../utils/Reflect.ts"
 
 /**
@@ -120,15 +121,15 @@ const show =
 				case "record":
 					return `{ [_: ${refl.key}]: ${show(false, circular)(refl.value)} }`
 				case "object": {
-					const keys = globalThis.Object.keys(refl.fields)
+					const keys = enumerableKeysOf(refl.fields)
 					return keys.length
 						? `{ ${keys
 								.map(
-									k =>
-										`${k}${optionalTag(refl, k)}: ${
-											refl.fields[k]!.tag === "optional"
-												? show(false, circular)(refl.fields[k]!.underlying)
-												: show(false, circular)(refl.fields[k]!)
+									key =>
+										`${key.toString()}${optionalTag(refl, key)}: ${
+											refl.fields[key]!.tag === "optional"
+												? show(false, circular)(refl.fields[key]!.underlying)
+												: show(false, circular)(refl.fields[key]!)
 										};`,
 								)
 								.join(" ")} }`
