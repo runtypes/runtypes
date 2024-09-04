@@ -1,11 +1,10 @@
 import { type RuntypeBase, create } from "./Runtype.ts"
-import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 
 /**
- * Construct a possibly-recursive Runtype.
+ * Construct a possibly-recursive runtype.
  */
 const Lazy = <A extends RuntypeBase>(delayed: () => A) => {
-	const data = {
+	const self = {
 		get tag() {
 			return getWrapped().reflect.tag
 		},
@@ -15,16 +14,20 @@ const Lazy = <A extends RuntypeBase>(delayed: () => A) => {
 	const getWrapped = () => {
 		if (!cached) {
 			cached = delayed()
-			for (const key of enumerableKeysOf(cached))
-				if (key !== "tag")
-					globalThis.Object.defineProperty(data, key, { value: cached[key as keyof A] })
+			for (const key of Reflect.ownKeys(cached)) {
+				if (key !== "tag") {
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					const descriptor = globalThis.Object.getOwnPropertyDescriptor(cached, key)!
+					globalThis.Object.defineProperty(self, key, descriptor)
+				}
+			}
 		}
 		return cached
 	}
 
 	return create<A>(x => {
 		return getWrapped().validate(x)
-	}, data)
+	}, self)
 }
 
 export default Lazy
