@@ -2,7 +2,7 @@ import match, { when } from "./match.ts"
 import Literal from "../Literal.ts"
 import Number from "../Number.ts"
 import String from "../String.ts"
-import { assert, assertThrows } from "std/assert/mod.ts"
+import { assert, assertThrows } from "assert/mod.ts"
 
 Deno.test("match", async t => {
 	await t.step("works", async t => {

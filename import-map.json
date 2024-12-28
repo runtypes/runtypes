@@ -1,6 +1,6 @@
 {
 	"imports": {
-		"std/": "https://lib.deno.dev/std@0.208/",
-		"x/": "https://lib.deno.dev/x/"
+		"assert/": "https://jsr.io/@std/assert/1.0.10/",
+		"x/": "https://deno.land/x/"
 	}
 }

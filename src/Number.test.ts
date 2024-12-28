@@ -1,5 +1,5 @@
 import Number from "./Number.ts"
-import { assert } from "std/assert/mod.ts"
+import { assert } from "assert/mod.ts"
 
 Deno.test("Number", async t => {
 	await t.step("validates `42`", async t => {

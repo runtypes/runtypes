@@ -22,7 +22,7 @@ import Union from "../Union.ts"
 import Unknown from "../Unknown.ts"
 import Void from "../Void.ts"
 import type Reflect from "../utils/Reflect.ts"
-import { assert } from "std/assert/mod.ts"
+import { assert } from "assert/mod.ts"
 
 class TestClass {}
 
