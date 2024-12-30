@@ -32,7 +32,7 @@ import ValidationError from "./result/ValidationError.ts"
 import Contract from "./utils/Contract.ts"
 import type Reflect from "./utils/Reflect.ts"
 import hasKey from "./utils-internal/hasKey.ts"
-import { assert, assertEquals, assertThrows, fail } from "assert/mod.ts"
+import { assert, assertEquals, assertThrows, fail } from "@std/assert"
 import outdent from "x/outdent@v0.8.0/mod.ts"
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)

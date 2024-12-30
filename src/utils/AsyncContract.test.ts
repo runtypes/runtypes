@@ -1,7 +1,7 @@
 import AsyncContract from "./AsyncContract.ts"
 import Number from "../Number.ts"
 import ValidationError from "../result/ValidationError.ts"
-import { assert, assertThrows } from "assert/mod.ts"
+import { assert, assertThrows } from "@std/assert"
 
 Deno.test("AsyncContract", async t => {
 	await t.step("when function does not return a promise", async t => {

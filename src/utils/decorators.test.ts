@@ -1,6 +1,6 @@
 import { check, checked } from "./decorators.ts"
 import String from "../String.ts"
-import { assert, assertEquals, assertThrows } from "assert/mod.ts"
+import { assert, assertEquals, assertThrows } from "@std/assert"
 
 Deno.test("Decorators", async t => {
 	await t.step("@checked", async t => {
