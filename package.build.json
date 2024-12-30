@@ -6,7 +6,7 @@
 	"sideEffects": false,
 	"author": "Thomas Crockett",
 	"license": "MIT",
-	"keywords:": ["runtime", "type", "validation", "typescript"],
+	"keywords": ["runtime", "type", "validation", "typescript"],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/pelotom/runtypes"
