@@ -2,29 +2,27 @@ import type Intersect from "./Intersect.ts"
 import type Literal from "./Literal.ts"
 import { type LiteralBase } from "./Literal.ts"
 import { literal } from "./Literal.ts"
-import type Runtype from "./Runtype.ts"
-import { type RuntypeBase, type Static } from "./Runtype.ts"
-import { create, isRuntype } from "./Runtype.ts"
+import Runtype from "./Runtype.ts"
+import { type Static } from "./Runtype.ts"
 import type Union from "./Union.ts"
 import type Result from "./result/Result.ts"
-import type Reflect from "./utils/Reflect.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import escapeRegExp from "./utils-internal/escapeRegExp.ts"
 import show from "./utils-internal/show.ts"
 import typeOf from "./utils-internal/typeOf.ts"
 
-type InnerValidate = Parameters<Parameters<typeof create>[0]>[1]
+type InnerValidate = <R extends Runtype.Core<T>, T>(runtype: R, value: unknown) => Result<T>
 
 type TemplateLiteralType<
 	A extends readonly LiteralBase[],
-	B extends readonly RuntypeBase<LiteralBase>[],
+	B extends readonly Runtype.Core<LiteralBase>[],
 > = A extends readonly [infer carA, ...infer cdrA]
 	? carA extends LiteralBase
 		? B extends readonly [infer carB, ...infer cdrB]
-			? carB extends RuntypeBase<LiteralBase>
+			? carB extends Runtype.Core<LiteralBase>
 				? cdrA extends readonly LiteralBase[]
-					? cdrB extends readonly RuntypeBase<LiteralBase>[]
+					? cdrB extends readonly Runtype.Core<LiteralBase>[]
 						? `${carA}${Static<carB>}${TemplateLiteralType<cdrA, cdrB>}`
 						: `${carA}${Static<carB>}`
 					: `${carA}${Static<carB>}`
@@ -34,20 +32,20 @@ type TemplateLiteralType<
 	: ""
 
 interface Template<
-	A extends readonly [string, ...string[]],
-	B extends readonly RuntypeBase<LiteralBase>[],
-> extends Runtype<A extends TemplateStringsArray ? string : TemplateLiteralType<A, B>> {
+	A extends readonly [string, ...string[]] = readonly [string, ...string[]],
+	B extends readonly Runtype.Core<LiteralBase>[] = readonly Runtype.Core<LiteralBase>[],
+> extends Runtype.Common<A extends TemplateStringsArray ? string : TemplateLiteralType<A, B>> {
 	tag: "template"
 	strings: A
 	runtypes: B
 }
 
 type ExtractStrings<
-	A extends readonly (LiteralBase | RuntypeBase<LiteralBase>)[],
+	A extends readonly (LiteralBase | Runtype.Core<LiteralBase>)[],
 	prefix extends string = "",
 > = A extends readonly [infer carA, ...infer cdrA]
 	? cdrA extends readonly any[]
-		? carA extends RuntypeBase<LiteralBase>
+		? carA extends Runtype.Core<LiteralBase>
 			? [prefix, ...ExtractStrings<cdrA>] // Omit `carA` if it's a `RuntypeBase<LiteralBase>`
 			: carA extends LiteralBase
 				? [...ExtractStrings<cdrA, `${prefix}${carA}`>]
@@ -55,10 +53,10 @@ type ExtractStrings<
 		: never // If `A` is not empty, `cdrA` must be also an array
 	: [prefix] // `A` is empty here
 
-type ExtractRuntypes<A extends readonly (LiteralBase | RuntypeBase<LiteralBase>)[]> =
+type ExtractRuntypes<A extends readonly (LiteralBase | Runtype.Core<LiteralBase>)[]> =
 	A extends readonly [infer carA, ...infer cdrA]
 		? cdrA extends readonly any[]
-			? carA extends RuntypeBase<LiteralBase>
+			? carA extends Runtype.Core<LiteralBase>
 				? [carA, ...ExtractRuntypes<cdrA>]
 				: carA extends LiteralBase
 					? [...ExtractRuntypes<cdrA>]
@@ -68,30 +66,30 @@ type ExtractRuntypes<A extends readonly (LiteralBase | RuntypeBase<LiteralBase>)
 
 const parseArgs = (
 	args:
-		| readonly [readonly [string, ...string[]], ...RuntypeBase<LiteralBase>[]]
-		| readonly (LiteralBase | RuntypeBase<LiteralBase>)[],
-): [[string, ...string[]], RuntypeBase<LiteralBase>[]] => {
+		| readonly [readonly [string, ...string[]], ...Runtype.Core<LiteralBase>[]]
+		| readonly (LiteralBase | Runtype.Core<LiteralBase>)[],
+): [[string, ...string[]], Runtype.Core<LiteralBase>[]] => {
 	// If the first element is an `Array`, maybe it's called by the tagged style
 	if (0 < args.length && Array.isArray(args[0])) {
 		const [strings, ...runtypes] = args as readonly [
 			readonly [string, ...string[]],
-			...RuntypeBase<LiteralBase>[],
+			...Runtype.Core<LiteralBase>[],
 		]
 		// For further manipulation, recreate an `Array` because `TemplateStringsArray` is readonly
 		return [Array.from(strings) as [string, ...string[]], runtypes]
 	} else {
-		const convenient = args as readonly (LiteralBase | RuntypeBase<LiteralBase>)[]
+		const convenient = args as readonly (LiteralBase | Runtype.Core<LiteralBase>)[]
 		const strings = convenient.reduce<[string, ...string[]]>(
 			(strings, arg) => {
 				// Concatenate every consecutive literals as strings
-				if (!isRuntype(arg)) strings.push(strings.pop()! + String(arg))
+				if (!Runtype.isRuntype(arg)) strings.push(strings.pop()! + String(arg))
 				// Skip runtypes
 				else strings.push("")
 				return strings
 			},
 			[""],
 		)
-		const runtypes = convenient.filter(isRuntype) as RuntypeBase<LiteralBase>[]
+		const runtypes = convenient.filter(Runtype.isRuntype) as Runtype.Core<LiteralBase>[]
 		return [strings, runtypes]
 	}
 }
@@ -101,10 +99,10 @@ const parseArgs = (
  */
 const flattenInnerRuntypes = (
 	strings: [string, ...string[]],
-	runtypes: RuntypeBase<LiteralBase>[],
+	runtypes: Runtype.Core<LiteralBase>[],
 ): void => {
 	for (let i = 0; i < runtypes.length; ) {
-		switch (runtypes[i]!.reflect.tag) {
+		switch (runtypes[i]!.tag) {
 			case "literal": {
 				const literal = runtypes[i] as Literal<LiteralBase>
 				runtypes.splice(i, 1)
@@ -113,7 +111,7 @@ const flattenInnerRuntypes = (
 				break
 			}
 			case "template": {
-				const template = runtypes[i] as Template<[string, ...string[]], RuntypeBase<LiteralBase>[]>
+				const template = runtypes[i] as Template<[string, ...string[]], Runtype.Core<LiteralBase>[]>
 				runtypes.splice(i, 1, ...template.runtypes)
 				const innerStrings = template.strings
 				if (innerStrings.length === 1) {
@@ -128,7 +126,7 @@ const flattenInnerRuntypes = (
 			}
 			case "union": {
 				const union = runtypes[i] as Union<
-					readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
+					readonly [Runtype.Core<unknown>, ...Runtype.Core<unknown>[]]
 				>
 				if (union.alternatives.length === 1) {
 					try {
@@ -148,7 +146,7 @@ const flattenInnerRuntypes = (
 			}
 			case "intersect": {
 				const intersect = runtypes[i] as Intersect<
-					readonly [RuntypeBase<unknown>, ...RuntypeBase<unknown>[]]
+					readonly [Runtype.Core<unknown>, ...Runtype.Core<unknown>[]]
 				>
 				if (intersect.intersectees.length === 1) {
 					try {
@@ -175,27 +173,27 @@ const flattenInnerRuntypes = (
 
 const normalizeArgs = (
 	args:
-		| readonly [readonly [string, ...string[]], ...RuntypeBase<LiteralBase>[]]
-		| readonly (LiteralBase | RuntypeBase<LiteralBase>)[],
-): [[string, ...string[]], RuntypeBase<LiteralBase>[]] => {
+		| readonly [readonly [string, ...string[]], ...Runtype.Core<LiteralBase>[]]
+		| readonly (LiteralBase | Runtype.Core<LiteralBase>)[],
+): [[string, ...string[]], Runtype.Core<LiteralBase>[]] => {
 	const [strings, runtypes] = parseArgs(args)
 	flattenInnerRuntypes(strings, runtypes)
 	return [strings, runtypes]
 }
 
-const getInnerLiteral = (runtype: RuntypeBase<unknown>): Literal<LiteralBase> => {
-	switch (runtype.reflect.tag) {
+const getInnerLiteral = (runtype: Runtype): Literal<LiteralBase> => {
+	switch (runtype.tag) {
 		case "literal":
-			return runtype as Literal<LiteralBase>
+			return runtype
 		case "brand":
-			return getInnerLiteral(runtype.reflect.entity)
+			return getInnerLiteral(runtype.entity as Runtype)
 		case "union":
-			if (runtype.reflect.alternatives.length === 1)
-				return getInnerLiteral(runtype.reflect.alternatives[0]!)
+			if (runtype.alternatives.length === 1)
+				return getInnerLiteral(runtype.alternatives[0]! as Runtype)
 			break
 		case "intersect":
-			if (runtype.reflect.intersectees.length === 1)
-				return getInnerLiteral(runtype.reflect.intersectees[0]!)
+			if (runtype.intersectees.length === 1)
+				return getInnerLiteral(runtype.intersectees[0]! as Runtype)
 			break
 		default:
 			break
@@ -204,7 +202,7 @@ const getInnerLiteral = (runtype: RuntypeBase<unknown>): Literal<LiteralBase> =>
 }
 
 /**
- *Reviver is used for converting string literals such as `"0x2A"` to the actual `42`
+ * Reviver is used for converting string literals such as `"0x2A"` to the actual `42`
  */
 type Reviver = (s: string) => string | number | bigint | boolean | null | undefined
 const identity: Reviver = s => s
@@ -227,22 +225,22 @@ const revivers: {
 }
 
 type Revivers = Reviver | Revivers[]
-const getReviversFor = (reflect: Reflect): Revivers => {
-	switch (reflect.tag) {
+const getReviversFor = (runtype: Runtype): Revivers => {
+	switch (runtype.tag) {
 		case "literal": {
-			const [reviver] = revivers[typeOf(reflect.value)] || [identity]
+			const [reviver] = revivers[typeOf(runtype.value)] || [identity]
 			return reviver
 		}
 		case "brand":
-			return getReviversFor(reflect.entity)
+			return getReviversFor(runtype.entity as Runtype)
 		case "constraint":
-			return getReviversFor(reflect.underlying)
+			return getReviversFor(runtype.underlying as Runtype)
 		case "union":
-			return reflect.alternatives.map(getReviversFor)
+			return runtype.alternatives.map(alternative => getReviversFor(alternative as Runtype))
 		case "intersect":
-			return reflect.intersectees.map(getReviversFor)
+			return runtype.intersectees.map(alternative => getReviversFor(alternative as Runtype))
 		default: {
-			const [reviver] = revivers[reflect.tag] || [identity]
+			const [reviver] = revivers[runtype.tag] || [identity]
 			return reviver
 		}
 	}
@@ -250,20 +248,20 @@ const getReviversFor = (reflect: Reflect): Revivers => {
 
 /** Recursively map corresponding reviver and  */
 const reviveValidate =
-	(reflect: Reflect, innerValidate: InnerValidate) =>
+	(runtype: Runtype, innerValidate: InnerValidate) =>
 	(value: string): Result<unknown> => {
-		const revivers = getReviversFor(reflect)
+		const revivers = getReviversFor(runtype)
 		if (Array.isArray(revivers)) {
-			switch (reflect.tag) {
+			switch (runtype.tag) {
 				case "union":
-					for (const alternative of reflect.alternatives) {
-						const validated = reviveValidate(alternative.reflect, innerValidate)(value)
+					for (const alternative of runtype.alternatives) {
+						const validated = reviveValidate(alternative as Runtype, innerValidate)(value)
 						if (validated.success) return validated
 					}
-					return FAILURE.TYPE_INCORRECT(reflect, value)
+					return FAILURE.TYPE_INCORRECT(runtype, value)
 				case "intersect":
-					for (const intersectee of reflect.intersectees) {
-						const validated = reviveValidate(intersectee.reflect, innerValidate)(value)
+					for (const intersectee of runtype.intersectees) {
+						const validated = reviveValidate(intersectee as Runtype, innerValidate)(value)
 						if (!validated.success) return validated
 					}
 					return SUCCESS(value)
@@ -273,44 +271,55 @@ const reviveValidate =
 			}
 		} else {
 			const reviver = revivers
-			const validated = innerValidate(reflect, reviver(value))
-			if (!validated.success && validated.code === "VALUE_INCORRECT" && reflect.tag === "literal")
+			const validated = innerValidate(runtype, reviver(value))
+			if (!validated.success && validated.code === "VALUE_INCORRECT" && runtype.tag === "literal")
 				// TODO: Temporary fix to show unrevived value in message; needs refactor
-				return FAILURE.VALUE_INCORRECT("literal", `"${literal(reflect.value)}"`, `"${value}"`)
+				return FAILURE.VALUE_INCORRECT(
+					"literal",
+					`"${literal((runtype as Literal<LiteralBase>).value)}"`,
+					`"${value}"`,
+				)
 			return validated
 		}
 	}
 
-const getRegExpPatternFor = (reflect: Reflect): string => {
-	switch (reflect.tag) {
+const getRegExpPatternFor = (runtype: Runtype): string => {
+	switch (runtype.tag) {
 		case "literal":
-			return escapeRegExp(String(reflect.value))
+			return escapeRegExp(String(runtype.value))
 		case "brand":
-			return getRegExpPatternFor(reflect.entity)
+			return getRegExpPatternFor(runtype.entity as Runtype)
 		case "constraint":
-			return getRegExpPatternFor(reflect.underlying)
+			return getRegExpPatternFor(runtype.underlying as Runtype)
 		case "union":
-			return reflect.alternatives.map(getRegExpPatternFor).join("|")
+			return runtype.alternatives
+				.map(alternative => getRegExpPatternFor(alternative as Runtype))
+				.join("|")
 		case "template": {
-			return reflect.strings.map(escapeRegExp).reduce((pattern, string, i) => {
+			return runtype.strings.map(escapeRegExp).reduce((pattern, string, i) => {
 				const prefix = pattern + string
-				const runtype = reflect.runtypes[i]
-				if (runtype) return prefix + `(?:${getRegExpPatternFor(runtype.reflect)})`
+				const r = runtype.runtypes[i]
+				if (r) return prefix + `(?:${getRegExpPatternFor(r as Runtype)})`
 				else return prefix
 			}, "")
 		}
 		default: {
-			const [, ...patterns] = revivers[reflect.tag] || [undefined, ".*"]
+			const [, ...patterns] = revivers[runtype.tag] || [undefined, ".*"]
 			return patterns.join("|")
 		}
 	}
 }
 
-const createRegExpForTemplate = (reflect: Reflect & { tag: "template" }) => {
-	const pattern = reflect.strings.map(escapeRegExp).reduce((pattern, string, i) => {
+const createRegExpForTemplate = <
+	A extends readonly [string, ...string[]],
+	B extends readonly Runtype.Core<LiteralBase>[],
+>(
+	runtype: Template<A, B>,
+) => {
+	const pattern = runtype.strings.map(escapeRegExp).reduce((pattern, string, i) => {
 		const prefix = pattern + string
-		const runtype = reflect.runtypes[i]
-		if (runtype) return prefix + `(${getRegExpPatternFor(runtype.reflect)})`
+		const r = runtype.runtypes[i]
+		if (r) return prefix + `(${getRegExpPatternFor(r as Runtype)})`
 		else return prefix
 	}, "")
 	return new RegExp(`^${pattern}$`, "su")
@@ -386,75 +395,80 @@ const createRegExpForTemplate = (reflect: Reflect & { tag: "template" }) => {
  * The only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraints, which must be hardly done. Actually `Template` treats `String` runtypes as the simplest `RegExp` pattern `.*` and the “greedy” strategy is always used, that is, the above runtype won't work expectedly because the entire pattern is just `^(.*)(.*)$` and the first `.*` always wins. You have to avoid using `Constraint` this way, and instead manually parse it using a single `Constraint` which covers the entire string.
  */
 const Template: {
-	<A extends TemplateStringsArray, B extends readonly RuntypeBase<LiteralBase>[]>(
+	<A extends TemplateStringsArray, B extends readonly Runtype.Core<LiteralBase>[]>(
 		strings: A,
 		...runtypes: B
 	): Template<A & [string, ...string[]], B>
-	<A extends readonly [string, ...string[]], B extends readonly RuntypeBase<LiteralBase>[]>(
+	<A extends readonly [string, ...string[]], B extends readonly Runtype.Core<LiteralBase>[]>(
 		strings: A,
 		...runtypes: B
 	): Template<A, B>
-	<A extends readonly (LiteralBase | RuntypeBase<LiteralBase>)[]>(
+	<A extends readonly (LiteralBase | Runtype.Core<LiteralBase>)[]>(
 		...args: A
 	): Template<ExtractStrings<A>, ExtractRuntypes<A>>
 } = <
 	A extends
-		| [readonly [string, ...string[]], ...RuntypeBase<LiteralBase>[]]
-		| readonly (LiteralBase | RuntypeBase<LiteralBase>)[],
+		| [readonly [string, ...string[]], ...Runtype.Core<LiteralBase>[]]
+		| readonly (LiteralBase | Runtype.Core<LiteralBase>)[],
 >(
 	...args: A
-): A extends (LiteralBase | RuntypeBase<LiteralBase>)[]
-	? Template<ExtractStrings<A>, ExtractRuntypes<A>> // For tagged function style
-	: A extends [infer carA, ...infer cdrA]
-		? carA extends readonly [string, ...string[]]
-			? cdrA extends readonly RuntypeBase<LiteralBase>[]
-				? Template<carA, cdrA> // For convenient parameter style
-				: never
-			: never
-		: never => {
+) => {
 	const [strings, runtypes] = normalizeArgs(args)
-	const self = { tag: "template", strings, runtypes } as unknown as Reflect
-	const regexp = createRegExpForTemplate(self as any)
-
-	const test = (value: string, innerValidate: InnerValidate): Result<string> => {
-		const matches = value.match(regexp)
-		if (matches) {
-			const values = matches.slice(1)
-			for (let i = 0; i < runtypes.length; i++) {
-				const runtype = runtypes[i]!
-				const value = values[i]!
-				const validated = reviveValidate(runtype.reflect, innerValidate)(value) as Result<string>
-				if (!validated.success) return validated
-			}
-			return SUCCESS(value)
-		} else {
-			return FAILURE.VALUE_INCORRECT("string", `${show(self)}`, `"${literal(value)}"`)
-		}
-	}
-
-	return create<
-		A extends (LiteralBase | RuntypeBase<LiteralBase>)[]
+	return Runtype.create<
+		A extends (LiteralBase | Runtype.Core<LiteralBase>)[]
 			? Template<ExtractStrings<A>, ExtractRuntypes<A>>
 			: A extends [infer carA, ...infer cdrA]
 				? carA extends readonly [string, ...string[]]
-					? cdrA extends readonly RuntypeBase<LiteralBase>[]
+					? cdrA extends readonly Runtype.Core<LiteralBase>[]
 						? Template<carA, cdrA>
 						: never
 					: never
 				: never
-	>((value, innerValidate) => {
-		if (typeof value !== "string") return FAILURE.TYPE_INCORRECT(self, value)
-		else {
-			const validated = test(value, innerValidate)
-			if (!validated.success) {
-				const result = FAILURE.VALUE_INCORRECT("string", `${show(self)}`, `"${value}"`)
-				if (result.message !== validated.message)
-					// TODO: Should use `details` here, but it needs unionizing `string` anew to the definition of `Details`, which is a breaking change
-					result.message += ` (inner: ${validated.message})`
-				return result
-			} else return SUCCESS(value)
-		}
-	}, self)
+	>(
+		(value, innerValidate, self) => {
+			const regexp = createRegExpForTemplate(self as any)
+
+			const test = (value: string, innerValidate: InnerValidate): Result<string> => {
+				const matches = value.match(regexp)
+				if (matches) {
+					const values = matches.slice(1)
+					for (let i = 0; i < runtypes.length; i++) {
+						const runtype = runtypes[i]!
+						const value = values[i]!
+						const validated = reviveValidate(
+							runtype as Runtype,
+							innerValidate,
+						)(value) as Result<string>
+						if (!validated.success) return validated
+					}
+					return SUCCESS(value)
+				} else {
+					return FAILURE.VALUE_INCORRECT(
+						"string",
+						`${show(self as unknown as Runtype)}`,
+						`"${literal(value)}"`,
+					)
+				}
+			}
+
+			if (typeof value !== "string") return FAILURE.TYPE_INCORRECT(self, value)
+			else {
+				const validated = test(value, innerValidate)
+				if (!validated.success) {
+					const result = FAILURE.VALUE_INCORRECT(
+						"string",
+						`${show(self as unknown as Runtype)}`,
+						`"${value}"`,
+					)
+					if (result.message !== validated.message)
+						// TODO: Should use `details` here, but it needs unionizing `string` anew to the definition of `Details`, which is a breaking change
+						result.message += ` (inner: ${validated.message})`
+					return result
+				} else return SUCCESS(value)
+			}
+		},
+		{ tag: "template", strings, runtypes } as any,
+	)
 }
 
 export default Template

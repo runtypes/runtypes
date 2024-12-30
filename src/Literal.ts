@@ -1,6 +1,5 @@
-import type Runtype from "./Runtype.ts"
-import { create } from "./Runtype.ts"
-import type Reflect from "./utils/Reflect.ts"
+import Runtype from "./Runtype.ts"
+import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
@@ -9,9 +8,9 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
  */
 type LiteralBase = undefined | null | boolean | number | bigint | string
 
-interface Literal<A extends LiteralBase> extends Runtype<A> {
+interface Literal<T extends LiteralBase = LiteralBase> extends Runtype.Common<T> {
 	tag: "literal"
-	value: A
+	value: T
 }
 
 /**
@@ -27,16 +26,18 @@ const literal = (value: unknown) =>
 /**
  * Construct a runtype for a type literal.
  */
-const Literal = <A extends LiteralBase>(value: A): Literal<A> => {
-	const self = { tag: "literal", value } as unknown as Reflect
-	return create<Literal<A>>(
+const Literal = <T extends LiteralBase>(value: T) =>
+	Runtype.create<Literal<T>>(
 		x =>
-			x === value
-				? SUCCESS(x as A)
-				: FAILURE.VALUE_INCORRECT("literal", `\`${literal(value)}\``, `\`${literal(x)}\``),
-		self,
+			(x === value
+				? SUCCESS(x as T)
+				: FAILURE.VALUE_INCORRECT(
+						"literal",
+						`\`${literal(value)}\``,
+						`\`${literal(x)}\``,
+					)) as Result<T>,
+		{ tag: "literal", value },
 	)
-}
 
 export default Literal
 // eslint-disable-next-line import/no-named-export

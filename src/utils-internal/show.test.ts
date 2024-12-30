@@ -13,6 +13,7 @@ import Null from "../Null.ts"
 import Number from "../Number.ts"
 import Object from "../Object.ts"
 import Optional from "../Optional.ts"
+import type Runtype from "../Runtype.ts"
 import String from "../String.ts"
 import Symbol from "../Symbol.ts"
 import Template from "../Template.ts"
@@ -21,12 +22,11 @@ import Undefined from "../Undefined.ts"
 import Union from "../Union.ts"
 import Unknown from "../Unknown.ts"
 import Void from "../Void.ts"
-import type Reflect from "../utils/Reflect.ts"
 import { assert } from "@std/assert"
 
 class TestClass {}
 
-const cases: [Reflect, string][] = [
+const cases: [Runtype.Core, string][] = [
 	[Unknown, "unknown"],
 	[Never, "never"],
 	[Undefined, "undefined"],
@@ -140,7 +140,7 @@ const cases: [Reflect, string][] = [
 
 Deno.test("show", async t => {
 	for (const [T, expected] of cases) {
-		const s = show(T)
+		const s = show(T as Runtype)
 		await t.step(`${s} === ${expected}`, async t => {
 			assert(s === expected)
 			assert(T.toString() === `Runtype<${s}>`)

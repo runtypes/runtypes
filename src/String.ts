@@ -1,21 +1,18 @@
-import type Runtype from "./Runtype.ts"
-import { create } from "./Runtype.ts"
-import type Reflect from "./utils/Reflect.ts"
+import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface String extends Runtype<string> {
+interface String extends Runtype.Common<string> {
 	tag: "string"
 }
-
-const self = { tag: "string" } as unknown as Reflect
 
 /**
  * Validates that a value is a string.
  */
-const String = create<String>(
-	value => (typeof value === "string" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value)),
-	self,
+const String = Runtype.create<String>(
+	(value, innerValidate, self) =>
+		typeof value === "string" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
+	{ tag: "string" },
 )
 
 export default String

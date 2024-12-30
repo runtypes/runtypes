@@ -1,6 +1,6 @@
 /* eslint-disable import/exports-last */
 /* eslint-disable import/no-named-export */
-import { type RuntypeBase } from "../Runtype.ts"
+import type Runtype from "../Runtype.ts"
 import ValidationError from "../result/ValidationError.ts"
 import FAILURE from "../utils-internal/FAILURE.ts"
 
@@ -60,7 +60,7 @@ const getValidParameterIndices = (target: any, propertyKey: PropKey, runtypeCoun
  * }
  * ```
  */
-export function checked(...runtypes: RuntypeBase[]) {
+export function checked(...runtypes: Runtype.Core[]) {
 	if (runtypes.length === 0) {
 		throw new Error("No runtype provided to `@checked`. Please remove the decorator.")
 	}

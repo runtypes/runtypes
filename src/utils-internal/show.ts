@@ -1,5 +1,6 @@
 import enumerableKeysOf from "./enumerableKeysOf.ts"
-import type Reflect from "../utils/Reflect.ts"
+import type Optional from "../Optional.ts"
+import type Runtype from "../Runtype.ts"
 
 /**
  * Return the display string for the stringified version of a type, e.g.
@@ -10,25 +11,29 @@ import type Reflect from "../utils/Reflect.ts"
  * - `Union(Literal("foo"), Number)` -> `` "foo" | `${number}` ``
  */
 const showStringified =
-	(circular: Set<Reflect>) =>
-	(refl: Reflect): string => {
-		switch (refl.tag) {
+	(circular: Set<Runtype.Core>) =>
+	(runtype: Runtype): string => {
+		switch (runtype.tag) {
 			case "literal":
-				return `"${String(refl.value)}"`
+				return `"${globalThis.String(runtype.value)}"`
 			case "string":
 				return "string"
 			case "brand":
-				return refl.brand
+				return runtype.brand
 			case "constraint":
-				return refl.name || showStringified(circular)(refl.underlying)
+				return runtype.name || showStringified(circular)(runtype.underlying as Runtype)
 			case "union":
-				return refl.alternatives.map(showStringified(circular)).join(" | ")
+				return runtype.alternatives
+					.map(alternative => showStringified(circular)(alternative as Runtype))
+					.join(" | ")
 			case "intersect":
-				return refl.intersectees.map(showStringified(circular)).join(" & ")
+				return runtype.intersectees
+					.map(alternative => showStringified(circular)(alternative as Runtype))
+					.join(" & ")
 			default:
 				break
 		}
-		return `\`\${${show(false, circular)(refl)}}\``
+		return `\`\${${show(false, circular)(runtype)}}\``
 	}
 
 /**
@@ -41,75 +46,76 @@ const showStringified =
  * - `Union(Literal(42), Number)` -> `${"42" | number}`
  */
 const showEmbedded =
-	(circular: Set<Reflect>) =>
-	(refl: Reflect): string => {
-		switch (refl.tag) {
+	(circular: Set<Runtype.Core>) =>
+	(runtype: Runtype): string => {
+		switch (runtype.tag) {
 			case "literal":
-				return String(refl.value)
+				return String(runtype.value)
 			case "brand":
-				return `\${${refl.brand}}`
+				return `\${${runtype.brand}}`
 			case "constraint":
-				return refl.name ? `\${${refl.name}}` : showEmbedded(circular)(refl.underlying)
+				return runtype.name
+					? `\${${runtype.name}}`
+					: showEmbedded(circular)(runtype.underlying as Runtype)
 			case "union":
-				if (refl.alternatives.length === 1) {
-					const inner = refl.alternatives[0]!
-					return showEmbedded(circular)(inner.reflect)
+				if (runtype.alternatives.length === 1) {
+					const inner = runtype.alternatives[0]!
+					return showEmbedded(circular)(inner as Runtype)
 				}
 				break
 			case "intersect":
-				if (refl.intersectees.length === 1) {
-					const inner = refl.intersectees[0]!
-					return showEmbedded(circular)(inner.reflect)
+				if (runtype.intersectees.length === 1) {
+					const inner = runtype.intersectees[0]!
+					return showEmbedded(circular)(inner as Runtype)
 				}
 				break
 			default:
 				break
 		}
-		return `\${${show(false, circular)(refl)}}`
+		return `\${${show(false, circular)(runtype)}}`
 	}
 
 const show =
-	(needsParens: boolean, circular: Set<Reflect>) =>
-	(refl: Reflect): string => {
+	(needsParens: boolean, circular: Set<Runtype.Core>) =>
+	(runtype: Runtype): string => {
 		const parenthesize = (s: string) => (needsParens ? `(${s})` : s)
 
-		if (circular.has(refl)) return parenthesize(`CIRCULAR ${refl.tag}`)
-		else circular.add(refl)
+		if (circular.has(runtype)) return parenthesize(`CIRCULAR ${runtype.tag}`)
+		else circular.add(runtype)
 
 		try {
-			switch (refl.tag) {
+			switch (runtype.tag) {
 				// Primitive types
 				case "unknown":
 				case "never":
-				case "void":
 				case "boolean":
 				case "number":
 				case "bigint":
 				case "string":
 				case "symbol":
 				case "function":
-					return refl.tag
+					return runtype.tag
 				case "literal": {
-					const { value } = refl
+					const { value } = runtype
 					return typeof value === "string" ? `"${value}"` : String(value)
 				}
 
 				// Complex types
 				case "template": {
-					if (refl.strings.length === 0) return '""'
-					else if (refl.strings.length === 1) return `"${refl.strings[0]}"`
-					else if (refl.strings.length === 2) {
-						if (refl.strings.every(string => string === "")) {
-							const runtype = refl.runtypes[0]!
-							return showStringified(circular)(runtype.reflect)
+					if (runtype.strings.length === 0) return '""'
+					else if (runtype.strings.length === 1) return `"${runtype.strings[0]}"`
+					else if (runtype.strings.length === 2) {
+						if (runtype.strings.every(string => string === "")) {
+							const r = runtype.runtypes[0]!
+							return showStringified(circular)(r as Runtype)
 						}
 					}
 					let backtick = false
-					const inner = refl.strings.reduce((inner, string, i) => {
+					const inner = runtype.strings.reduce((inner, string, i) => {
 						const prefix = inner + string
-						const runtype = refl.runtypes[i]
-						if (runtype) {
-							const suffix = showEmbedded(circular)(runtype.reflect)
+						const r = runtype.runtypes[i]
+						if (r) {
+							const suffix = showEmbedded(circular)(r as Runtype)
 							if (!backtick && suffix.startsWith("$")) backtick = true
 							return prefix + suffix
 						} else return prefix
@@ -117,47 +123,56 @@ const show =
 					return backtick ? `\`${inner}\`` : `"${inner}"`
 				}
 				case "array":
-					return `${show(true, circular)(refl.element)}[]`
+					return `${show(true, circular)(runtype.element as Runtype)}[]`
 				case "record":
-					return `{ [_: ${refl.key}]: ${show(false, circular)(refl.value)} }`
+					return `{ [_: ${show(false, circular)(runtype.key as Runtype)}]: ${show(false, circular)(runtype.value as Runtype)} }`
+				case "dictionary":
+					return `{ [_: ${runtype.key}]: ${show(false, circular)(runtype.value as Runtype)} }`
 				case "object": {
-					const keys = enumerableKeysOf(refl.fields)
+					const keys = enumerableKeysOf(runtype.fields)
 					return keys.length
 						? `{ ${keys
 								.map(
 									key =>
-										`${key.toString()}${optionalTag(refl, key)}: ${
-											refl.fields[key]!.tag === "optional"
-												? show(false, circular)(refl.fields[key]!.underlying)
-												: show(false, circular)(refl.fields[key]!)
+										`${key.toString()}${optionalTag(runtype, key)}: ${
+											runtype.fields[key]!.tag === "optional"
+												? show(
+														false,
+														circular,
+													)((runtype.fields[key]! as Optional).underlying as Runtype)
+												: show(false, circular)(runtype.fields[key]! as Runtype)
 										};`,
 								)
 								.join(" ")} }`
 						: "{}"
 				}
 				case "tuple":
-					return `[${refl.components.map(show(false, circular)).join(", ")}]`
+					return `[${runtype.components.map(component => show(false, circular)(component as Runtype)).join(", ")}]`
 				case "union":
-					return parenthesize(`${refl.alternatives.map(show(true, circular)).join(" | ")}`)
+					return parenthesize(
+						`${runtype.alternatives.map(alternative => show(true, circular)(alternative as Runtype)).join(" | ")}`,
+					)
 				case "intersect":
-					return parenthesize(`${refl.intersectees.map(show(true, circular)).join(" & ")}`)
+					return parenthesize(
+						`${runtype.intersectees.map(alternative => show(true, circular)(alternative as Runtype)).join(" & ")}`,
+					)
 				case "optional":
-					return show(needsParens, circular)(refl.underlying) + " | undefined"
+					return show(needsParens, circular)(runtype.underlying as Runtype) + " | undefined"
 				case "constraint":
-					return refl.name || show(needsParens, circular)(refl.underlying)
+					return runtype.name || show(needsParens, circular)(runtype.underlying as Runtype)
 				case "instanceof":
-					return (refl.ctor as any).name
+					return (runtype.ctor as any).name
 				case "brand":
-					return show(needsParens, circular)(refl.entity)
+					return show(needsParens, circular)(runtype.entity as Runtype)
 			}
 		} finally {
-			circular.delete(refl)
+			circular.delete(runtype)
 		}
 	}
 
 const optionalTag = (
-	{ fields }: { fields: { [_: string | number | symbol]: Reflect } },
+	{ fields }: { fields: { [_: string | number | symbol]: Runtype.Core } },
 	key: string | number | symbol,
 ): string => (fields[key]!.tag === "optional" ? "?" : "")
 
-export default show(false, new Set<Reflect>())
+export default show(false, new Set<Runtype.Core>())

@@ -1,4 +1,5 @@
-import { type Static, type RuntypeBase } from "../Runtype.ts"
+import type Runtype from "../Runtype.ts"
+import { type Static } from "../Runtype.ts"
 
 const match =
 	<A extends [PairCase<any, any>, ...PairCase<any, any>[]]>(
@@ -16,24 +17,24 @@ const match =
 		throw new Error("No alternatives were matched")
 	}
 
-type PairCase<A extends RuntypeBase, Z> = [A, Case<A, Z>]
+type PairCase<A extends Runtype.Core, Z> = [A, Case<A, Z>]
 
-type Match<A extends readonly [RuntypeBase, ...RuntypeBase[]]> = {
-	<Z>(...a: { [K in keyof A]: A[K] extends RuntypeBase ? Case<A[K], Z> : never }): Matcher<A, Z>
-}
+type Match<A extends readonly [Runtype.Core, ...Runtype.Core[]]> = <Z>(
+	...cases: { [K in keyof A]: A[K] extends Runtype.Core<any> ? Case<A[K], Z> : never }
+) => Matcher<A, Z>
 
-type Case<T extends RuntypeBase, Result> = (v: Static<T>) => Result
+type Case<R extends Runtype.Core, Result> = (v: Static<R>) => Result
 
-type Matcher<A extends readonly [RuntypeBase, ...RuntypeBase[]], Z> = (
+type Matcher<A extends readonly [Runtype.Core, ...Runtype.Core[]], Z> = (
 	x: {
-		[K in keyof A]: A[K] extends RuntypeBase<infer Type> ? Type : unknown
+		[K in keyof A]: A[K] extends Runtype.Core<infer T> ? T : unknown
 	}[number],
 ) => Z
 
-const when = <A extends RuntypeBase<any>, B>(
-	runtype: A,
-	transformer: (value: Static<A>) => B,
-): PairCase<A, B> => [runtype, transformer]
+const when = <R extends Runtype.Core<any>, B>(
+	runtype: R,
+	transformer: (value: Static<R>) => B,
+): PairCase<R, B> => [runtype, transformer]
 
 export default match
 // eslint-disable-next-line import/no-named-export

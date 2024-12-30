@@ -1,17 +1,18 @@
-import { type Static, type RuntypeBase } from "../Runtype.ts"
+import type Runtype from "../Runtype.ts"
+import { type Static } from "../Runtype.ts"
 import ValidationError from "../result/ValidationError.ts"
 import FAILURE from "../utils-internal/FAILURE.ts"
 
-type AsyncContract<A extends readonly RuntypeBase[], R extends RuntypeBase> = {
+type AsyncContract<A extends readonly Runtype.Core[], R extends Runtype.Core> = {
 	enforce(
 		f: (
 			...args: {
-				[K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown
+				[K in keyof A]: A[K] extends Runtype.Core ? Static<A[K]> : unknown
 			} & ArrayLike<unknown>
 		) => Promise<Static<R>>,
 	): (
 		...args: {
-			[K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown
+			[K in keyof A]: A[K] extends Runtype.Core ? Static<A[K]> : unknown
 		} & ArrayLike<unknown>
 	) => Promise<Static<R>>
 }
@@ -20,10 +21,10 @@ const AsyncContract: {
 	/**
 	 * Create a function contract.
 	 */
-	<A extends readonly RuntypeBase[], R extends RuntypeBase>(
+	<A extends readonly Runtype.Core[], R extends Runtype.Core>(
 		...runtypes: [...A, R]
 	): AsyncContract<A, R>
-} = <A extends readonly RuntypeBase[], R extends RuntypeBase>(
+} = <A extends readonly Runtype.Core[], R extends Runtype.Core>(
 	...runtypes: [...A, R]
 ): AsyncContract<A, R> => {
 	const lastIndex = runtypes.length - 1
@@ -34,13 +35,13 @@ const AsyncContract: {
 			(
 				f: (
 					...args: {
-						[K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown
+						[K in keyof A]: A[K] extends Runtype.Core ? Static<A[K]> : unknown
 					}
 				) => Promise<Static<R>>,
 			) =>
 			(
 				...args: {
-					[K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : unknown
+					[K in keyof A]: A[K] extends Runtype.Core ? Static<A[K]> : unknown
 				}
 			): Promise<Static<R>> => {
 				if (args.length < argRuntypes.length) {
@@ -55,7 +56,7 @@ const AsyncContract: {
 					const failure = FAILURE.RETURN_INCORRECT(message)
 					throw new ValidationError(failure)
 				}
-				return returnedPromise.then(returnRuntype.check)
+				return returnedPromise.then(returnRuntype.check) as Promise<Static<R>>
 			},
 	}
 }

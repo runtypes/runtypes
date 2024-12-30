@@ -1,17 +1,13 @@
-import type Runtype from "./Runtype.ts"
-import { create } from "./Runtype.ts"
-import type Reflect from "./utils/Reflect.ts"
+import Runtype from "./Runtype.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Unknown extends Runtype<unknown> {
+interface Unknown extends Runtype.Common<unknown> {
 	tag: "unknown"
 }
-
-const self = { tag: "unknown" } as unknown as Reflect
 
 /**
  * Validates anything, but provides no new type information about it.
  */
-const Unknown = create<Unknown>(value => SUCCESS(value), self)
+const Unknown = Runtype.create<Unknown>(value => SUCCESS(value), { tag: "unknown" })
 
 export default Unknown
