@@ -52,6 +52,7 @@
 		"import/first": "warn",
 		"import/exports-last": "warn",
 		"import/no-anonymous-default-export": "warn",
+		"import/no-named-export": "warn",
 		"import/newline-after-import": "warn",
 		"import/order": [
 			"warn",
@@ -61,8 +62,16 @@
 				"newlines-between": "never"
 			}
 		],
+		"import/no-unused-modules": [
+			"warn",
+			{
+				"unusedExports": true,
+				"missingExports": true,
+				"files": ["src/**/*.ts"],
+				"ignoreExports": ["src/**/*.test.ts"]
+			}
+		],
 		"sort-exports/sort-exports": ["warn", { "sortDir": "asc", "sortExportKindFirst": "value" }],
-		"import/no-named-export": "warn",
 		"unused-imports/no-unused-imports": "warn",
 		"consistent-default-export-name/default-export-match-filename": "warn",
 		"consistent-default-export-name/default-import-match-filename": "warn"
