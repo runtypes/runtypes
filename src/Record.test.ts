@@ -3,7 +3,7 @@ import Optional from "./Optional.ts"
 import Record from "./Record.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
-import { assert } from "assert/mod.ts"
+import { assert } from "@std/assert"
 
 Deno.test("record", async t => {
 	await t.step("works with optional properties", async t => {

@@ -6,8 +6,8 @@ import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
-import { assert, assertObjectMatch } from "assert/mod.ts"
-import outdent from "x/outdent@v0.8/mod.ts"
+import { assert, assertObjectMatch } from "@std/assert"
+import outdent from "x/outdent@v0.8.0/mod.ts"
 
 const ThreeOrString = Union(Literal(3), String)
 

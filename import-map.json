@@ -1,6 +1,6 @@
 {
 	"imports": {
-		"assert/": "https://jsr.io/@std/assert/1.0.10/",
+		"@std/assert": "https://esm.sh/jsr/@std/assert@1.0.10",
 		"x/": "https://deno.land/x/"
 	}
 }
