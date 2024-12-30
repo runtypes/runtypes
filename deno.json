@@ -1,16 +1,10 @@
 {
+	"lock": false,
 	"compilerOptions": {
 		"strict": true,
-		"alwaysStrict": true,
 		"exactOptionalPropertyTypes": true,
 		"noUncheckedIndexedAccess": true,
 		"experimentalDecorators": true
 	},
-	"importMap": "import-map.json",
-	"fmt": {
-		"options": {
-			"semiColons": false,
-			"useTabs": true
-		}
-	}
+	"importMap": "import-map.json"
 }
