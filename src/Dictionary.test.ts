@@ -3,7 +3,7 @@ import Literal from "./Literal.ts"
 import Optional from "./Optional.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
-import { assert } from "std/assert/mod.ts"
+import { assert } from "assert/mod.ts"
 
 Deno.test("dictionary", async t => {
 	await t.step("works with optional properties", async t => {

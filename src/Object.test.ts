@@ -4,7 +4,7 @@ import Object from "./Object.ts"
 import Optional from "./Optional.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
-import { assert, assertEquals } from "std/assert/mod.ts"
+import { assert, assertEquals } from "assert/mod.ts"
 
 Deno.test("object", async t => {
 	const CrewMember = Object({

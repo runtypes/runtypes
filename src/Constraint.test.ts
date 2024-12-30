@@ -1,5 +1,5 @@
 import Unknown from "./Unknown.ts"
-import { assert } from "std/assert/mod.ts"
+import { assert } from "assert/mod.ts"
 
 Deno.test("Constraint", async () => {
 	const YourRuntype = Unknown.withConstraint(x => x === true, { name: "YourRuntype" })

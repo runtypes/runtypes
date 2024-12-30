@@ -5,7 +5,7 @@ import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Template from "./Template.ts"
 import Union from "./Union.ts"
-import { assert, assertEquals, assertThrows } from "std/assert/mod.ts"
+import { assert, assertEquals, assertThrows } from "assert/mod.ts"
 
 Deno.test("template", async t => {
 	await t.step("validates", async t => {
