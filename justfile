@@ -7,12 +7,12 @@ setup:
 	corepack enable
 	pnpm install
 
-test:
-	deno test --coverage=coverage --allow-net --allow-read 'src/**/*.test.ts'
+test *ARGS='src/**/*.test.ts src/*.test.ts':
+	deno test --coverage=coverage --allow-net --allow-read {{ARGS}}
 	deno coverage coverage
 
-ci:
-	deno test --coverage=coverage --allow-net --allow-read 'src/**/*.test.ts'
+ci *ARGS='src/**/*.test.ts src/*.test.ts':
+	deno test --coverage=coverage --allow-net --allow-read {{ARGS}}
 	deno coverage --lcov coverage > coverage/coverage.lcov
 
 build:

@@ -2,8 +2,9 @@ import Constraint from "./Constraint.ts"
 import type Optional from "./Optional.ts"
 import Record from "./Record.ts"
 import type Runtype from "./Runtype.ts"
-import { type RuntypeBase, type Static } from "./Runtype.ts"
+import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
+import show from "./utils-internal/show.ts"
 
 type DictionaryKeyType = string | number | symbol
 type StringLiteralFor<K extends DictionaryKeyType> = K extends string
@@ -13,13 +14,17 @@ type StringLiteralFor<K extends DictionaryKeyType> = K extends string
 		: K extends symbol
 			? "symbol"
 			: never
-type DictionaryKeyRuntype = RuntypeBase<string | number | symbol>
+type DictionaryKeyRuntype = Runtype.Core<DictionaryKeyType>
 
 const NumberKey = Constraint(String, s => !isNaN(+s), { name: "number" })
 
-interface Dictionary<V extends RuntypeBase, K extends DictionaryKeyType>
-	extends Runtype<V extends Optional<any> ? { [_ in K]?: Static<V> } : { [_ in K]: Static<V> }> {
-	tag: "record"
+interface Dictionary<
+	V extends Runtype.Core = Runtype.Core,
+	K extends DictionaryKeyType = DictionaryKeyType,
+> extends Runtype.Common<
+		V extends Optional<any> ? { [_ in K]?: Static<V> } : { [_ in K]: Static<V> }
+	> {
+	tag: "dictionary"
 	key: StringLiteralFor<K>
 	value: V
 }
@@ -34,7 +39,7 @@ const Dictionary: {
 	 * @param [key] - A `Runtype` for key.
 	 * @deprecated Use `Record` instead.
 	 */
-	<V extends RuntypeBase, K extends DictionaryKeyRuntype>(
+	<V extends Runtype.Core, K extends DictionaryKeyRuntype>(
 		value: V,
 		key?: K,
 	): Dictionary<V, Static<K>>
@@ -46,7 +51,7 @@ const Dictionary: {
 	 * @param [key] - A string representing a type for key.
 	 * @deprecated Use `Record` instead.
 	 */
-	<V extends RuntypeBase>(value: V, key: "string"): Dictionary<V, string>
+	<V extends Runtype.Core>(value: V, key: "string"): Dictionary<V, string>
 
 	/**
 	 * Construct a runtype for arbitrary dictionaries.
@@ -55,8 +60,8 @@ const Dictionary: {
 	 * @param [key] - A string representing a type for key.
 	 * @deprecated Use `Record` instead.
 	 */
-	<V extends RuntypeBase>(value: V, key: "number"): Dictionary<V, number>
-} = <V extends RuntypeBase, K extends DictionaryKeyRuntype | "string" | "number">(
+	<V extends Runtype.Core>(value: V, key: "number"): Dictionary<V, number>
+} = <V extends Runtype.Core, K extends DictionaryKeyRuntype | "string" | "number">(
 	value: V,
 	key?: K,
 ) => {
@@ -67,8 +72,11 @@ const Dictionary: {
 				? String
 				: key === "number"
 					? NumberKey
-					: (key as Exclude<K, string>)
-	return Record(keyRuntype, value) as Dictionary<V, K extends DictionaryKeyRuntype ? Static<K> : K>
+					: (key as Exclude<K, string | number>)
+	return Record(keyRuntype, value).with({
+		tag: "dictionary",
+		key: show(keyRuntype as Runtype) as any,
+	}) as Dictionary<V, K extends DictionaryKeyRuntype ? Static<K> : K>
 }
 
 export default Dictionary

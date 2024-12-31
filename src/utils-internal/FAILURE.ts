@@ -1,8 +1,8 @@
 import show from "./show.ts"
 import typeOf from "./typeOf.ts"
+import type Runtype from "../Runtype.ts"
 import Failcode from "../result/Failcode.ts"
 import type Failure from "../result/Failure.ts"
-import type Reflect from "../utils/Reflect.ts"
 
 const FAILURE = globalThis.Object.assign(
 	(code: Failcode, message: string, details?: Failure.Details): Failure => ({
@@ -12,9 +12,9 @@ const FAILURE = globalThis.Object.assign(
 		...(details ? { details } : {}),
 	}),
 	{
-		TYPE_INCORRECT: (self: Reflect, value: unknown) => {
+		TYPE_INCORRECT: (self: Runtype.Core, value: unknown) => {
 			const message = `Expected ${
-				self.tag === "template" ? `string ${show(self)}` : show(self)
+				self.tag === "template" ? `string ${show(self as Runtype)}` : show(self as Runtype)
 			}, but was ${typeOf(value)}`
 			return FAILURE(Failcode.TYPE_INCORRECT, message)
 		},
@@ -24,15 +24,15 @@ const FAILURE = globalThis.Object.assign(
 				`Expected ${name} ${String(expected)}, but was ${String(received)}`,
 			)
 		},
-		KEY_INCORRECT: (self: Reflect, expected: Reflect, value: unknown) => {
+		KEY_INCORRECT: (self: Runtype.Core, expected: Runtype.Core, value: unknown) => {
 			return FAILURE(
 				Failcode.KEY_INCORRECT,
-				`Expected ${show(self)} key to be ${show(expected)}, but was ${typeOf(value)}`,
+				`Expected ${show(self as Runtype)} key to be ${show(expected as Runtype)}, but was ${typeOf(value)}`,
 			)
 		},
-		CONTENT_INCORRECT: (self: Reflect, details: Failure.Details) => {
+		CONTENT_INCORRECT: (self: Runtype.Core, details: Failure.Details) => {
 			const formattedDetails = JSON.stringify(details, null, "\t").replace(/^ *null,\n/gm, "")
-			const message = `Validation failed:\n${formattedDetails}.\nObject should match ${show(self)}`
+			const message = `Validation failed:\n${formattedDetails}.\nObject should match ${show(self as Runtype)}`
 			return FAILURE(Failcode.CONTENT_INCORRECT, message, details)
 		},
 		ARGUMENT_INCORRECT: (message: string) => {
@@ -41,12 +41,15 @@ const FAILURE = globalThis.Object.assign(
 		RETURN_INCORRECT: (message: string) => {
 			return FAILURE(Failcode.RETURN_INCORRECT, message)
 		},
-		CONSTRAINT_FAILED: (self: Reflect, message?: string) => {
+		CONSTRAINT_FAILED: (self: Runtype.Core, message?: string) => {
 			const info = message ? `: ${message}` : ""
-			return FAILURE(Failcode.CONSTRAINT_FAILED, `Failed constraint check for ${show(self)}${info}`)
+			return FAILURE(
+				Failcode.CONSTRAINT_FAILED,
+				`Failed constraint check for ${show(self as Runtype)}${info}`,
+			)
 		},
-		PROPERTY_MISSING: (self: Reflect) => {
-			const message = `Expected ${show(self)}, but was missing`
+		PROPERTY_MISSING: (self: Runtype.Core) => {
+			const message = `Expected ${show(self as Runtype)}, but was missing`
 			return FAILURE(Failcode.PROPERTY_MISSING, message)
 		},
 		PROPERTY_PRESENT: (value: unknown) => {

@@ -1,16 +1,16 @@
-import { type RuntypeBase, create } from "./Runtype.ts"
+import Runtype from "./Runtype.ts"
 
 /**
  * Construct a possibly-recursive runtype.
  */
-const Lazy = <A extends RuntypeBase>(delayed: () => A) => {
+const Lazy = <R extends Runtype.Core>(delayed: () => R) => {
 	const self = {
 		get tag() {
-			return getWrapped().reflect.tag
+			return getWrapped().tag
 		},
 	}
 
-	let cached: A | undefined = undefined
+	let cached: R | undefined = undefined
 	const getWrapped = () => {
 		if (!cached) {
 			cached = delayed()
@@ -25,9 +25,7 @@ const Lazy = <A extends RuntypeBase>(delayed: () => A) => {
 		return cached
 	}
 
-	return create<A>(x => {
-		return getWrapped().validate(x)
-	}, self)
+	return Runtype.create<R>(x => getWrapped().validate(x), self as R)
 }
 
 export default Lazy

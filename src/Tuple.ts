@@ -1,9 +1,7 @@
-import type Runtype from "./Runtype.ts"
-import { type RuntypeBase, type Static } from "./Runtype.ts"
-import { create } from "./Runtype.ts"
+import Runtype from "./Runtype.ts"
+import { type Static } from "./Runtype.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
-import type Reflect from "./utils/Reflect.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
@@ -17,27 +15,26 @@ type ToReadonlyImpl<A extends readonly unknown[], B extends readonly unknown[]> 
 	: B
 type ToReadonly<A extends readonly unknown[]> = ToReadonlyImpl<A, readonly []>
 
-interface TupleReadonly<A extends readonly RuntypeBase[]>
-	extends Runtype<ToReadonly<{ [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : never }>> {
+interface TupleReadonly<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
+	extends Runtype.Common<
+		ToReadonly<{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : never }>
+	> {
 	tag: "tuple"
-	components: A
+	components: R
 }
 
-interface Tuple<A extends readonly RuntypeBase[]>
-	extends Runtype<{ [K in keyof A]: A[K] extends RuntypeBase ? Static<A[K]> : never }> {
+interface Tuple<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
+	extends Runtype.Common<{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : never }> {
 	tag: "tuple"
-	components: A
-
-	asReadonly(): TupleReadonly<A>
+	components: R
 }
 
 /**
  * Construct a tuple runtype from runtypes for each of its elements.
  */
-const Tuple = <T extends readonly RuntypeBase[]>(...components: T): Tuple<T> => {
-	const self = { tag: "tuple", components } as unknown as Reflect
-	return withExtraModifierFuncs(
-		create<Tuple<T>>((x, innerValidate) => {
+const Tuple = <T extends readonly Runtype.Core[]>(...components: T) =>
+	Runtype.create<Tuple<T>>(
+		(x, innerValidate, self) => {
 			if (!Array.isArray(x)) return FAILURE.TYPE_INCORRECT(self, x)
 
 			if (x.length !== components.length)
@@ -61,13 +58,8 @@ const Tuple = <T extends readonly RuntypeBase[]>(...components: T): Tuple<T> => 
 
 			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
 			else return SUCCESS(x as Static<Tuple<T>>)
-		}, self),
-	)
-}
-
-const withExtraModifierFuncs = <A extends readonly RuntypeBase[]>(A: any): Tuple<A> => {
-	A.asReadonly = () => A
-	return A
-}
+		},
+		{ tag: "tuple", components },
+	).with(self => ({ asReadonly: () => self as unknown as TupleReadonly<T> }))
 
 export default Tuple

@@ -1,12 +1,11 @@
 import Array from "./Array.ts"
 import BigInt from "./BigInt.ts"
 import Boolean from "./Boolean.ts"
-import type Brand from "./Brand.ts"
 import Constraint from "./Constraint.ts"
 import Dictionary from "./Dictionary.ts"
 import Function from "./Function.ts"
 import Guard from "./Guard.ts"
-import InstanceOf, { type Constructor } from "./InstanceOf.ts"
+import InstanceOf from "./InstanceOf.ts"
 import Intersect from "./Intersect.ts"
 import Lazy from "./Lazy.ts"
 import Literal from "./Literal.ts"
@@ -17,7 +16,7 @@ import Number from "./Number.ts"
 import Object from "./Object.ts"
 import Optional from "./Optional.ts"
 import type Runtype from "./Runtype.ts"
-import { type RuntypeBase, type Static } from "./Runtype.ts"
+import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import { default as Sym } from "./Symbol.ts"
 import Template from "./Template.ts"
@@ -30,7 +29,6 @@ import Failcode from "./result/Failcode.ts"
 import type Failure from "./result/Failure.ts"
 import ValidationError from "./result/ValidationError.ts"
 import Contract from "./utils/Contract.ts"
-import type Reflect from "./utils/Reflect.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 import { assert, assertEquals, assertThrows, fail } from "@std/assert"
 import outdent from "x/outdent@v0.8.0/mod.ts"
@@ -40,34 +38,38 @@ const object1 = Object({ Boolean, Number })
 const union1 = Union(Literal(3), String, boolTuple, object1)
 
 type Person = { name: string; likes: Person[] }
-const Person: Runtype<Person> = Lazy(() => Object({ name: String, likes: Array(Person) }))
+const Person: Runtype.Common<Person> = Lazy(() => Object({ name: String, likes: Array(Person) }))
 const narcissist: Person = { name: "Narcissus", likes: [] }
 narcissist.likes = [narcissist]
 
 type GraphNode = GraphNode[] // graph nodes are just arrays of their neighbors
-const GraphNode: Runtype<GraphNode> = Lazy(() => Array(GraphNode))
+const GraphNode: Runtype.Common<GraphNode> = Lazy(() => Array(GraphNode))
 type Graph = GraphNode[]
-const Graph: Runtype<Graph> = Array(GraphNode)
+const Graph: Runtype.Common<Graph> = Array(GraphNode)
 const nodeA: GraphNode = []
 const nodeB: GraphNode = [nodeA]
 nodeA.push(nodeB)
 const barbell: Graph = [nodeA, nodeB]
 
 type BarbellBall = [BarbellBall]
-const BarbellBall: Runtype<BarbellBall> = Lazy(() => Tuple(BarbellBall))
+const BarbellBall: Runtype.Common<BarbellBall> = Lazy(() => Tuple(BarbellBall))
 
 type SRDict = { [_: string]: SRDict }
-const SRDict: Runtype<SRDict> = Lazy(() => Dictionary(SRDict))
+const SRDict: Runtype.Common<SRDict> = Lazy(() => Dictionary(SRDict))
 const srDict: SRDict = {}
 srDict["self"] = srDict
 
 type Hand = { left: Hand } | { right: Hand }
-const Hand: Runtype<Hand> = Lazy(() => Union(Object({ left: Hand }), Object({ right: Hand })))
+const Hand: Runtype.Common<Hand> = Lazy(() =>
+	Union(Object({ left: Hand }), Object({ right: Hand })),
+)
 const leftHand: Hand = { left: undefined as unknown as Hand }
 const rightHand: Hand = { right: leftHand }
 leftHand.left = rightHand
 
-const Ambi: Runtype<Ambi> = Lazy(() => Intersect(Object({ left: Ambi }), Object({ right: Ambi })))
+const Ambi: Runtype.Common<Ambi> = Lazy(() =>
+	Intersect(Object({ left: Ambi }), Object({ right: Ambi })),
+)
 type Ambi = { left: Ambi; right: Ambi }
 const ambi: Ambi = { left: undefined as unknown as Ambi, right: undefined as unknown as Ambi }
 ambi.left = ambi
@@ -162,9 +164,7 @@ const runtypes = {
 	),
 	GuardChangeTypeAndName: Guard(
 		(o): o is SomeClass => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
-		{
-			name: "SomeClass",
-		},
+		{ name: "SomeClass" },
 	),
 	DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
 	OptionalBoolean: Optional(Boolean),
@@ -850,13 +850,13 @@ Deno.test("reflection", async t => {
 
 	await t.step("string dictionary", async t => {
 		const Rec = Dictionary(Unknown)
-		expectLiteralField(Rec, "tag", "record")
+		expectLiteralField(Rec, "tag", "dictionary")
 		expectLiteralField(Rec, "key", "string")
 	})
 
 	await t.step("number dictionary", async t => {
 		const Rec = Dictionary(Unknown, "number")
-		expectLiteralField(Rec, "tag", "record")
+		expectLiteralField(Rec, "tag", "dictionary")
 		expectLiteralField(Rec, "key", "number")
 	})
 
@@ -931,7 +931,7 @@ Deno.test("reflection", async t => {
 	await t.step("instanceof", async t => {
 		class Test {}
 		expectLiteralField(InstanceOf(Test), "tag", "instanceof")
-		expectLiteralField(Dictionary(Array(InstanceOf(Test))), "tag", "record")
+		expectLiteralField(Dictionary(Array(InstanceOf(Test))), "tag", "dictionary")
 	})
 
 	await t.step("brand", async t => {
@@ -962,106 +962,24 @@ Deno.test("change static type with Constraint", async t => {
 	})
 })
 
-// Static tests of reflection
-// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-;(
-	X:
-		| Unknown
-		| Never
-		| Void
-		| Boolean
-		| Number
-		| BigInt
-		| String
-		| Sym
-		| Literal<boolean | number | string>
-		| Array<Reflect>
-		| Object<{ [_ in string]: Reflect }>
-		| Tuple<[Reflect, Reflect]>
-		| Union<[Reflect, Reflect]>
-		| Intersect<[Reflect, Reflect]>
-		| Optional<Reflect>
-		| Function
-		| Constraint<Reflect>
-		| InstanceOf<Constructor<never>>
-		| Brand<string, Reflect>,
-): Reflect => {
-	const check = <A>(X: Runtype<A>): A => X.check({})
-	switch (X.tag) {
-		case "unknown":
-			check<unknown>(X)
-			break
-		case "never":
-			check<never>(X)
-			break
-		case "boolean":
-			check<boolean>(X)
-			break
-		case "number":
-			check<number>(X)
-			break
-		case "bigint":
-			check<bigint>(X)
-			break
-		case "string":
-			check<string>(X)
-			break
-		case "symbol":
-			check<symbol>(X)
-			break
-		case "literal":
-			check<typeof X.value>(X)
-			break
-		case "array":
-			check<ReadonlyArray<Static<typeof X.element>>>(X)
-			break
-		case "object":
-			check<{ readonly [K in keyof typeof X.fields]: Static<(typeof X.fields)[K]> }>(X)
-			break
-		case "tuple":
-			check<[Static<(typeof X.components)[0]>, Static<(typeof X.components)[1]>]>(X)
-			break
-		case "union":
-			check<Static<(typeof X.alternatives)[0]> | Static<(typeof X.alternatives)[1]>>(X)
-			break
-		case "intersect":
-			check<Static<(typeof X.intersectees)[0]> & Static<(typeof X.intersectees)[1]>>(X)
-			break
-		case "function":
-			check<(...args: never[]) => unknown>(X)
-			break
-		case "constraint":
-			check<Static<typeof X.underlying>>(X)
-			break
-		case "instanceof":
-			check<typeof X.ctor>(X)
-			break
-		case "brand":
-			check<Static<typeof X.entity>>(X)
-			break
-	}
-
-	return X
-}
-
 const expectLiteralField = <O, K extends keyof O, V extends O[K]>(o: O, k: K, v: V) => {
 	assert(o[k] === v)
 }
 
-const assertAccepts = (value: unknown, runtype: RuntypeBase<unknown>) => {
+const assertAccepts = (value: unknown, runtype: Runtype.Core) => {
 	const result = runtype.validate(value)
 	if (result.success === false) fail(result.message)
 }
 
-const assertRejects = (value: unknown, runtype: RuntypeBase<unknown>) => {
+const assertRejects = (value: unknown, runtype: Runtype.Core) => {
 	const result = runtype.validate(value)
 	if (result.success === true)
 		fail("value passed validation even though await it was not expected to")
 }
 
-const assertRuntypeThrows = <A>(
+const assertRuntypeThrows = (
 	value: unknown,
-	runtype: RuntypeBase<A>,
+	runtype: Runtype.Core,
 	failcode: Failcode,
 	errorMessage: string,
 	errorDetails?: Failure.Details,

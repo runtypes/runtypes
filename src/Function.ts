@@ -1,24 +1,20 @@
-import type Runtype from "./Runtype.ts"
-import { create } from "./Runtype.ts"
-import type Reflect from "./utils/Reflect.ts"
+import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Function extends Runtype<(...args: never[]) => unknown> {
+interface Function extends Runtype.Common<(...args: never[]) => unknown> {
 	tag: "function"
 }
-
-const self = { tag: "function" } as unknown as Reflect
 
 /**
  * Construct a runtype for functions.
  */
-const Function = create<Function>(
-	value =>
+const Function = Runtype.create<Function>(
+	(value, innerValidate, self) =>
 		typeof value === "function"
 			? SUCCESS(value as (...args: never[]) => unknown)
 			: FAILURE.TYPE_INCORRECT(self, value),
-	self,
+	{ tag: "function" },
 )
 
 export default Function

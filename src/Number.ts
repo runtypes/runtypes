@@ -1,21 +1,18 @@
-import type Runtype from "./Runtype.ts"
-import { create } from "./Runtype.ts"
-import type Reflect from "./utils/Reflect.ts"
+import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Number extends Runtype<number> {
+interface Number extends Runtype.Common<number> {
 	tag: "number"
 }
-
-const self = { tag: "number" } as unknown as Reflect
 
 /**
  * Validates that a value is a number.
  */
-const Number = create<Number>(
-	value => (typeof value === "number" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value)),
-	self,
+const Number = Runtype.create<Number>(
+	(value, innerValidate, self) =>
+		typeof value === "number" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
+	{ tag: "number" },
 )
 
 export default Number
