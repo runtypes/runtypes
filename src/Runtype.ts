@@ -4,7 +4,6 @@ import type BigInt from "./BigInt.ts"
 import type Boolean from "./Boolean.ts"
 import Brand from "./Brand.ts"
 import Constraint from "./Constraint.ts"
-import type Dictionary from "./Dictionary.ts"
 import type Function from "./Function.ts"
 import type InstanceOf from "./InstanceOf.ts"
 import Intersect from "./Intersect.ts"
@@ -221,7 +220,6 @@ type Runtype =
 	| Boolean
 	| Brand
 	| Constraint
-	| Dictionary
 	| Function
 	| InstanceOf
 	| Intersect
