@@ -126,8 +126,6 @@ const show =
 					return `${show(true, circular)(runtype.element as Runtype)}[]`
 				case "record":
 					return `{ [_: ${show(false, circular)(runtype.key as Runtype)}]: ${show(false, circular)(runtype.value as Runtype)} }`
-				case "dictionary":
-					return `{ [_: ${runtype.key}]: ${show(false, circular)(runtype.value as Runtype)} }`
 				case "object": {
 					const keys = enumerableKeysOf(runtype.fields)
 					return keys.length

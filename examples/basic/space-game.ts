@@ -6,7 +6,7 @@ import {
 	Array,
 	Tuple,
 	Object,
-	Dictionary,
+	Record,
 	Union,
 	type Static,
 } from "../../src/index.ts"
@@ -74,7 +74,7 @@ type Ship = Static<typeof Ship> /* = {
 	crew: CrewMember[];
 }*/
 
-const Fleet = Dictionary(Ship, "number")
+const Fleet = Record(Number, Ship)
 type Fleet = Static<typeof Fleet> // = { [_: number]: Ship }
 
 const SpaceObject = Union(Asteroid, Planet, Ship)

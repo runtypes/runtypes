@@ -2,7 +2,6 @@ import show from "./show.ts"
 import Array from "../Array.ts"
 import BigInt from "../BigInt.ts"
 import Boolean from "../Boolean.ts"
-import Dictionary from "../Dictionary.ts"
 import Function from "../Function.ts"
 import InstanceOf from "../InstanceOf.ts"
 import Intersect from "../Intersect.ts"
@@ -13,6 +12,7 @@ import Null from "../Null.ts"
 import Number from "../Number.ts"
 import Object from "../Object.ts"
 import Optional from "../Optional.ts"
+import Record from "../Record.ts"
 import type Runtype from "../Runtype.ts"
 import String from "../String.ts"
 import Symbol from "../Symbol.ts"
@@ -102,10 +102,9 @@ const cases: [Runtype.Core, string][] = [
 	],
 	[Array(String), "string[]"],
 	[Array(String).asReadonly(), "string[]"],
-	[Dictionary(Array(Boolean)), "{ [_: string]: boolean[] }"],
-	[Dictionary(Array(Boolean), Symbol), "{ [_: symbol]: boolean[] }"],
-	[Dictionary(Array(Boolean), "string"), "{ [_: string]: boolean[] }"],
-	[Dictionary(Array(Boolean), "number"), "{ [_: number]: boolean[] }"],
+	[Record(String, Array(Boolean)), "{ [_: string]: boolean[] }"],
+	[Record(Symbol, Array(Boolean)), "{ [_: symbol]: boolean[] }"],
+	[Record(Number, Array(Boolean)), "{ [_: number]: boolean[] }"],
 	[Object({}), "{}"],
 	[Object({}).asReadonly(), "{}"],
 	[InstanceOf(TestClass), "TestClass"],

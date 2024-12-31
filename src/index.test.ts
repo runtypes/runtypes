@@ -2,7 +2,6 @@ import Array from "./Array.ts"
 import BigInt from "./BigInt.ts"
 import Boolean from "./Boolean.ts"
 import Constraint from "./Constraint.ts"
-import Dictionary from "./Dictionary.ts"
 import Function from "./Function.ts"
 import Guard from "./Guard.ts"
 import InstanceOf from "./InstanceOf.ts"
@@ -15,6 +14,7 @@ import Nullish from "./Nullish.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
 import Optional from "./Optional.ts"
+import Record from "./Record.ts"
 import type Runtype from "./Runtype.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
@@ -55,7 +55,7 @@ type BarbellBall = [BarbellBall]
 const BarbellBall: Runtype.Common<BarbellBall> = Lazy(() => Tuple(BarbellBall))
 
 type SRDict = { [_: string]: SRDict }
-const SRDict: Runtype.Common<SRDict> = Lazy(() => Dictionary(SRDict))
+const SRDict: Runtype.Common<SRDict> = Lazy(() => Record(String, SRDict))
 const srDict: SRDict = {}
 srDict["self"] = srDict
 
@@ -147,10 +147,10 @@ const runtypes = {
 		x => x.length > 3 || `Length array is not greater 3`,
 		{ args: { tag: "length", min: 3 } },
 	),
-	Dictionary: Dictionary(String),
-	NumberDictionary: Dictionary(String, "number"),
-	UnionDictionary: Dictionary(String, Union(Literal("a"), Literal("b"), Literal(3))),
-	DictionaryOfArrays: Dictionary(Array(Boolean)),
+	Record: Record(String, String),
+	NumberRecord: Record(Number, String),
+	UnionRecord: Record(Union(Literal("a"), Literal("b"), Literal(3)), String),
+	RecordOfArrays: Record(String, Array(Boolean)),
 	InstanceOfSomeClass: InstanceOf(SomeClass),
 	InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
 	CustomGuardConstraint: Unknown.withGuard(SomeClassV2.isSomeClass),
@@ -166,7 +166,7 @@ const runtypes = {
 		(o): o is SomeClass => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
 		{ name: "SomeClass" },
 	),
-	DictionaryOfArraysOfSomeClass: Dictionary(Array(InstanceOf(SomeClass))),
+	RecordOfArraysOfSomeClass: Record(String, Array(InstanceOf(SomeClass))),
 	OptionalBoolean: Optional(Boolean),
 	OptionalProperty: Object({ foo: String, bar: Optional(Number) }),
 	UnionProperty: Object({ foo: String, bar: Union(Number, Undefined) }),
@@ -187,7 +187,7 @@ const runtypeNames = globalThis.Object.keys(runtypes) as RuntypeName[]
 
 class Foo {
 	x!: "blah"
-} // Should not be recognized as a Dictionary
+} // Should not be recognized as a Record
 
 const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	{ value: undefined, passes: ["Undefined", "Void", "OptionalBoolean", "Nullish"] },
@@ -228,14 +228,14 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 		value: { name: "Jimmy", likes: [{ name: "Peter", likes: [] }] },
 		passes: ["Person"],
 	},
-	{ value: { a: "1", b: "2", 3: "4" }, passes: ["Dictionary", "UnionDictionary"] },
-	{ value: { "1": "foo", "2": "bar", 3: "baz" }, passes: ["Dictionary", "NumberDictionary"] },
-	{ value: ["1", "2"], passes: ["ArrayString", "NumberDictionary"] },
+	{ value: { a: "1", b: "2", 3: "4" }, passes: ["Record", "UnionRecord"] },
+	{ value: { "1": "foo", "2": "bar", 3: "baz" }, passes: ["Record", "NumberRecord"] },
+	{ value: ["1", "2"], passes: ["ArrayString", "NumberRecord"] },
 	{ value: ["1", 2], passes: [] },
 	{ value: [{ name: "Jimmy", likes: [{ name: "Peter", likes: [] }] }], passes: ["ArrayPerson"] },
 	{ value: [{ name: null, likes: [] }], passes: [] },
-	{ value: { 1: "1", 2: "2" }, passes: ["Dictionary", "NumberDictionary"] },
-	{ value: { a: [], b: [true, false] }, passes: ["DictionaryOfArrays"] },
+	{ value: { 1: "1", 2: "2" }, passes: ["Record", "NumberRecord"] },
+	{ value: { a: [], b: [true, false] }, passes: ["RecordOfArrays"] },
 	{ value: new Foo(), passes: [] },
 	{ value: [1, 2, 4], passes: ["ArrayNumber", "ReadonlyNumberArray"] },
 	{ value: { Boolean: true, Number: "5" }, passes: [] },
@@ -263,10 +263,10 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 			"GuardChangeTypeAndName",
 		],
 	},
-	{ value: { xxx: [new SomeClass(55)] }, passes: ["DictionaryOfArraysOfSomeClass"] },
+	{ value: { xxx: [new SomeClass(55)] }, passes: ["RecordOfArraysOfSomeClass"] },
 	{
 		value: { foo: "hello" },
-		passes: ["OptionalProperty", "Dictionary"],
+		passes: ["OptionalProperty", "Record"],
 	},
 	{
 		value: { foo: "hello", bar: undefined },
@@ -506,34 +506,34 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("dictionary", async t => {
+	await t.step("record", async t => {
 		assertRuntypeThrows(
 			null,
-			Dictionary(String),
+			Record(String, String),
 			Failcode.TYPE_INCORRECT,
 			"Expected { [_: string]: string }, but was null",
 		)
 	})
 
-	await t.step("dictionary invalid type", async t => {
+	await t.step("record invalid type", async t => {
 		assertRuntypeThrows(
 			undefined,
-			Dictionary(Object({ name: String })),
+			Record(String, Object({ name: String })),
 			Failcode.TYPE_INCORRECT,
 			"Expected { [_: string]: { name: string; } }, but was undefined",
 		)
 		assertRuntypeThrows(
 			1,
-			Dictionary(Object({ name: String })),
+			Record(String, Object({ name: String })),
 			Failcode.TYPE_INCORRECT,
 			"Expected { [_: string]: { name: string; } }, but was number",
 		)
 	})
 
-	await t.step("dictionary complex", async t => {
+	await t.step("record complex", async t => {
 		assertRuntypeThrows(
 			{ foo: { name: false } },
-			Dictionary(Object({ name: String })),
+			Record(String, Object({ name: String })),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -548,10 +548,10 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("string dictionary", async t => {
+	await t.step("string record", async t => {
 		assertRuntypeThrows(
 			{ foo: "bar", test: true },
-			Dictionary(String),
+			Record(String, String),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -564,10 +564,10 @@ Deno.test("check errors", async t => {
 		)
 	})
 
-	await t.step("number dictionary", async t => {
+	await t.step("number record", async t => {
 		assertRuntypeThrows(
 			{ 1: "bar", 2: 20 },
-			Dictionary(String, "number"),
+			Record(Number, String),
 			Failcode.CONTENT_INCORRECT,
 			outdent`
 				Validation failed:
@@ -848,16 +848,14 @@ Deno.test("reflection", async t => {
 		)
 	})
 
-	await t.step("string dictionary", async t => {
-		const Rec = Dictionary(Unknown)
-		expectLiteralField(Rec, "tag", "dictionary")
-		expectLiteralField(Rec, "key", "string")
+	await t.step("string record", async t => {
+		const Rec = Record(String, Unknown)
+		expectLiteralField(Rec, "tag", "record")
 	})
 
-	await t.step("number dictionary", async t => {
-		const Rec = Dictionary(Unknown, "number")
-		expectLiteralField(Rec, "tag", "dictionary")
-		expectLiteralField(Rec, "key", "number")
+	await t.step("number record", async t => {
+		const Rec = Record(Number, Unknown)
+		expectLiteralField(Rec, "tag", "record")
 	})
 
 	await t.step("object", async t => {
@@ -931,7 +929,7 @@ Deno.test("reflection", async t => {
 	await t.step("instanceof", async t => {
 		class Test {}
 		expectLiteralField(InstanceOf(Test), "tag", "instanceof")
-		expectLiteralField(Dictionary(Array(InstanceOf(Test))), "tag", "dictionary")
+		expectLiteralField(Record(String, Array(InstanceOf(Test))), "tag", "record")
 	})
 
 	await t.step("brand", async t => {
