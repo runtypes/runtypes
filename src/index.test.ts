@@ -3,7 +3,6 @@ import BigInt from "./BigInt.ts"
 import Boolean from "./Boolean.ts"
 import Constraint from "./Constraint.ts"
 import Function from "./Function.ts"
-import Guard from "./Guard.ts"
 import InstanceOf from "./InstanceOf.ts"
 import Intersect from "./Intersect.ts"
 import Lazy from "./Lazy.ts"
@@ -154,7 +153,7 @@ const runtypes = {
 	InstanceOfSomeClass: InstanceOf(SomeClass),
 	InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
 	CustomGuardConstraint: Unknown.withGuard(SomeClassV2.isSomeClass),
-	CustomGuardType: Guard(SomeClassV2.isSomeClass),
+	CustomGuardType: Unknown.withGuard(SomeClassV2.isSomeClass),
 	ChangeType: Unknown.withConstraint<SomeClass>(SomeClassV2.isSomeClass),
 	ChangeTypeAndName: Unknown.withConstraint<SomeClass>(
 		o => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
@@ -162,7 +161,7 @@ const runtypes = {
 			name: "SomeClass",
 		},
 	),
-	GuardChangeTypeAndName: Guard(
+	GuardChangeTypeAndName: Unknown.withGuard(
 		(o): o is SomeClass => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
 		{ name: "SomeClass" },
 	),
