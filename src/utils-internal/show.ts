@@ -21,7 +21,7 @@ const showStringified =
 			case "brand":
 				return runtype.brand
 			case "constraint":
-				return runtype.name || showStringified(circular)(runtype.underlying as Runtype)
+				return showStringified(circular)(runtype.underlying as Runtype)
 			case "union":
 				return runtype.alternatives
 					.map(alternative => showStringified(circular)(alternative as Runtype))
@@ -54,9 +54,7 @@ const showEmbedded =
 			case "brand":
 				return `\${${runtype.brand}}`
 			case "constraint":
-				return runtype.name
-					? `\${${runtype.name}}`
-					: showEmbedded(circular)(runtype.underlying as Runtype)
+				return showEmbedded(circular)(runtype.underlying as Runtype)
 			case "union":
 				if (runtype.alternatives.length === 1) {
 					const inner = runtype.alternatives[0]!
@@ -157,7 +155,7 @@ const show =
 				case "optional":
 					return show(needsParens, circular)(runtype.underlying as Runtype) + " | undefined"
 				case "constraint":
-					return runtype.name || show(needsParens, circular)(runtype.underlying as Runtype)
+					return show(needsParens, circular)(runtype.underlying as Runtype)
 				case "instanceof":
 					return (runtype.ctor as any).name
 				case "brand":

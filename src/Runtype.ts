@@ -90,14 +90,10 @@ namespace Runtype {
 				and: <R extends Runtype.Core>(other: R) => Intersect(self, other),
 				optional: () => Optional(self),
 				nullable: () => Union(self, Literal(null)),
-				withConstraint: <K = unknown>(
-					constraint: (x: Static<R>) => boolean | string,
-					options?: { name?: string; args?: K },
-				) => Constraint(self, constraint, options),
-				withGuard: <U extends Static<R>, K = unknown>(
-					guard: (x: Static<R>) => x is U,
-					options?: { name?: string; args?: K },
-				) => Constraint(self, guard, options),
+				withConstraint: (constraint: (x: Static<R>) => boolean | string) =>
+					Constraint(self, constraint),
+				withGuard: <U extends Static<R>>(guard: (x: Static<R>) => x is U) =>
+					Constraint(self, guard),
 				withBrand: <B extends string>(brand: B) => Brand(brand, self),
 			},
 			{ configurable: true, enumerable: true, writable: true },
@@ -145,10 +141,7 @@ namespace Runtype {
 		 * constrained runtype, which is helpful in reflection or diagnostic
 		 * use-cases.
 		 */
-		withConstraint: <K = unknown>(
-			constraint: (x: T) => boolean | string,
-			options?: { name?: string; args?: K },
-		) => Constraint<this, T, K>
+		withConstraint: (constraint: (x: T) => boolean | string) => Constraint<this, T>
 
 		/**
 		 * Helper function to convert an underlying Runtype into another static type
@@ -165,10 +158,7 @@ namespace Runtype {
 		 * constrained runtype, which is helpful in reflection or diagnostic
 		 * use-cases.
 		 */
-		withGuard: <U extends T, K = unknown>(
-			guard: (x: T) => x is U,
-			options?: { name?: string; args?: K },
-		) => Constraint<this, U, K>
+		withGuard: <U extends T>(guard: (x: T) => x is U) => Constraint<this, U>
 
 		/**
 		 * Adds a brand to the type.

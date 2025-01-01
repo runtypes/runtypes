@@ -124,9 +124,7 @@ const runtypes = {
 	template3b: Template`${Literal("4")}${Literal("2")}`,
 	template3c: Template("4", "2"),
 	template3d: Template`42`,
-	template4: Template`Must be ${Constraint(String, s => s === s.toLowerCase(), {
-		name: "LowercaseString",
-	})}`,
+	template4: Template`Must be ${Constraint(String, s => s === s.toLowerCase())}`,
 	Sym,
 	SymForRuntypes: Sym("runtypes"),
 	symbolArray: Array(Sym),
@@ -141,10 +139,9 @@ const runtypes = {
 	ArrayString: Array(String),
 	ArrayNumber: Array(Number),
 	ArrayPerson: Array(Person),
-	CustomArray: Array(Number).withConstraint(x => x.length > 3, { args: { tag: "length", min: 3 } }),
+	CustomArray: Array(Number).withConstraint(x => x.length > 3),
 	CustomArrayWithMessage: Array(Number).withConstraint(
 		x => x.length > 3 || `Length array is not greater 3`,
-		{ args: { tag: "length", min: 3 } },
 	),
 	Record: Record(String, String),
 	NumberRecord: Record(Number, String),
@@ -152,19 +149,8 @@ const runtypes = {
 	RecordOfArrays: Record(String, Array(Boolean)),
 	InstanceOfSomeClass: InstanceOf(SomeClass),
 	InstanceOfSomeOtherClass: InstanceOf(SomeOtherClass),
-	CustomGuardConstraint: Unknown.withGuard(SomeClassV2.isSomeClass),
-	CustomGuardType: Unknown.withGuard(SomeClassV2.isSomeClass),
-	ChangeType: Unknown.withConstraint<SomeClass>(SomeClassV2.isSomeClass),
-	ChangeTypeAndName: Unknown.withConstraint<SomeClass>(
-		o => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
-		{
-			name: "SomeClass",
-		},
-	),
-	GuardChangeTypeAndName: Unknown.withGuard(
-		(o): o is SomeClass => hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG,
-		{ name: "SomeClass" },
-	),
+	Guard: Unknown.withGuard(SomeClassV2.isSomeClass),
+	Constraint: Unknown.withConstraint(SomeClassV2.isSomeClass),
 	RecordOfArraysOfSomeClass: Record(String, Array(InstanceOf(SomeClass))),
 	OptionalBoolean: Optional(Boolean),
 	OptionalProperty: Object({ foo: String, bar: Optional(Number) }),
@@ -244,23 +230,11 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	},
 	{
 		value: new SomeClassV1(42),
-		passes: [
-			"CustomGuardType",
-			"CustomGuardConstraint",
-			"ChangeType",
-			"ChangeTypeAndName",
-			"GuardChangeTypeAndName",
-		],
+		passes: ["Guard", "Constraint"],
 	},
 	{
 		value: new SomeClassV2(42),
-		passes: [
-			"CustomGuardType",
-			"CustomGuardConstraint",
-			"ChangeType",
-			"ChangeTypeAndName",
-			"GuardChangeTypeAndName",
-		],
+		passes: ["Guard", "Constraint"],
 	},
 	{ value: { xxx: [new SomeClass(55)] }, passes: ["RecordOfArraysOfSomeClass"] },
 	{
@@ -719,9 +693,7 @@ Deno.test("check errors", async t => {
 	await t.step("constraint standard message", async t => {
 		assertRuntypeThrows(
 			new SomeClass(1),
-			Unknown.withConstraint<SomeClass>(o => hasKey("n", o) && typeof o.n === "number" && o.n > 3, {
-				name: "SomeClass",
-			}),
+			Unknown.withConstraint(o => hasKey("n", o) && typeof o.n === "number" && o.n > 3),
 			Failcode.CONSTRAINT_FAILED,
 			"Failed constraint check for SomeClass",
 		)
@@ -730,11 +702,8 @@ Deno.test("check errors", async t => {
 	await t.step("constraint custom message", async t => {
 		assertRuntypeThrows(
 			new SomeClass(1),
-			Unknown.withConstraint<SomeClass>(
-				o => (hasKey("n", o) && typeof o.n === "number" && o.n > 3 ? true : "n must be 3+"),
-				{
-					name: "SomeClass",
-				},
+			Unknown.withConstraint(o =>
+				hasKey("n", o) && typeof o.n === "number" && o.n > 3 ? true : "n must be 3+",
 			),
 			Failcode.CONSTRAINT_FAILED,
 			"Failed constraint check for SomeClass: n must be 3+",
@@ -919,10 +888,9 @@ Deno.test("reflection", async t => {
 	})
 
 	await t.step("constraint", async t => {
-		const C = Number.withConstraint(n => n > 0, { name: "PositiveNumber" })
+		const C = Number.withConstraint(n => n > 0)
 		expectLiteralField(C, "tag", "constraint")
 		expectLiteralField(C.underlying, "tag", "number")
-		expectLiteralField(C, "name", "PositiveNumber")
 	})
 
 	await t.step("instanceof", async t => {
@@ -940,9 +908,7 @@ Deno.test("reflection", async t => {
 
 Deno.test("change static type with Constraint", async t => {
 	const test = (value: SomeClassV1): SomeClassV2 => {
-		const C = Unknown.withConstraint<SomeClassV2>(SomeClassV2.isSomeClass, {
-			name: "SomeClass",
-		})
+		const C = Unknown.withConstraint(SomeClassV2.isSomeClass)
 
 		if (C.guard(value)) {
 			return value

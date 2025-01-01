@@ -51,7 +51,7 @@ Deno.test("template", async t => {
 			Number,
 			" ",
 			Union(Template(Boolean, " "), Literal("")),
-			String.withConstraint(s => s.toLowerCase() === "dogs", { name: '"dogs"' }),
+			String.withConstraint(s => s.toLowerCase() === "dogs"),
 		)
 		type DogCount = Static<typeof DogCount>
 		DogCount.check("101 dogs")
