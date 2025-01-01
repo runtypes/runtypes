@@ -4,26 +4,18 @@ import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Constraint<
-	R extends Runtype.Core = Runtype.Core,
-	U extends Static<R> = Static<R>,
-	K = unknown,
-> extends Runtype.Common<U> {
+interface Constraint<R extends Runtype.Core = Runtype.Core, U extends Static<R> = Static<R>>
+	extends Runtype.Common<U> {
 	tag: "constraint"
 	underlying: R
 	constraint: <S extends Runtype.Core<Static<R>>>(x: Static<S>) => boolean | string
-	name?: string
-	args?: K
 }
 
-const Constraint = <R extends Runtype.Core, U extends Static<R>, K = unknown>(
+const Constraint = <R extends Runtype.Core, U extends Static<R>>(
 	underlying: R,
 	constraint: (x: Static<R>) => boolean | string,
-	options?: { name?: string; args?: K },
-) => {
-	const name = options && options.name
-	const args = options && options.args
-	return Runtype.create<Constraint<R, U, K>>(
+) =>
+	Runtype.create<Constraint<R, U>>(
 		(value, innerValidate, self) => {
 			const result = underlying.validate(value) as Result<Static<R>>
 
@@ -34,14 +26,7 @@ const Constraint = <R extends Runtype.Core, U extends Static<R>, K = unknown>(
 			else if (!message) return FAILURE.CONSTRAINT_FAILED(self)
 			return SUCCESS(result.value as U)
 		},
-		{
-			tag: "constraint",
-			underlying,
-			constraint,
-			...(name !== undefined ? { name } : {}),
-			...(args !== undefined ? { args } : {}),
-		},
+		{ tag: "constraint", underlying, constraint },
 	)
-}
 
 export default Constraint
