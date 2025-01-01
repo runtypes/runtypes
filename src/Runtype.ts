@@ -70,6 +70,7 @@ namespace Runtype {
 					else throw new ValidationError(result)
 				},
 				guard: (x: unknown): x is Static<R> => self.validate(x).success,
+				assert: (x: unknown): asserts x is Static<R> => void self.check(x),
 				with: <P extends object>(extension: P | ((self: R) => P)): typeof self & P => {
 					const base: typeof self & P =
 						typeof self === "function"
@@ -91,9 +92,17 @@ namespace Runtype {
 				optional: () => Optional(self),
 				nullable: () => Union(self, Literal(null)),
 				withConstraint: (constraint: (x: Static<R>) => boolean | string) =>
-					Constraint(self, constraint),
+					Constraint(self, x => {
+						const message = constraint(x)
+						if (typeof message === "string") throw message
+						else if (!message) throw undefined
+					}),
 				withGuard: <U extends Static<R>>(guard: (x: Static<R>) => x is U) =>
-					Constraint(self, guard),
+					Constraint(self, x => {
+						if (!guard(x)) throw undefined
+					}),
+				withAssertion: <U extends Static<R>>(assert: (x: Static<R>) => asserts x is U) =>
+					Constraint(self, assert),
 				withBrand: <B extends string>(brand: B) => Brand(brand, self),
 			},
 			{ configurable: true, enumerable: true, writable: true },
@@ -159,6 +168,8 @@ namespace Runtype {
 		 * use-cases.
 		 */
 		withGuard: <U extends T>(guard: (x: T) => x is U) => Constraint<this, U>
+
+		withAssertion: <U extends T>(assert: (x: T) => asserts x is U) => Constraint<this, U>
 
 		/**
 		 * Adds a brand to the type.
