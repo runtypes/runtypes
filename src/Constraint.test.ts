@@ -6,7 +6,11 @@ import { assert } from "@std/assert"
 Deno.test("Constraint", async t => {
 	await t.step("withConstraint", async t => {
 		const True = Literal(true)
-		const YourRuntype = Unknown.withConstraint(True.guard)
+		const YourRuntype = Unknown.withConstraint<true>(True.guard)
+		type YourRuntype = Static<typeof YourRuntype>
+		const x: YourRuntype = true
+		// @ts-expect-error: should fail
+		const y: YourRuntype = false
 		assert(YourRuntype.guard(true))
 		assert(!YourRuntype.guard(false))
 	})
