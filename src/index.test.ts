@@ -1,7 +1,6 @@
 import Array from "./Array.ts"
 import BigInt from "./BigInt.ts"
 import Boolean from "./Boolean.ts"
-import Constraint from "./Constraint.ts"
 import Function from "./Function.ts"
 import InstanceOf from "./InstanceOf.ts"
 import Intersect from "./Intersect.ts"
@@ -124,7 +123,7 @@ const runtypes = {
 	template3b: Template`${Literal("4")}${Literal("2")}`,
 	template3c: Template("4", "2"),
 	template3d: Template`42`,
-	template4: Template`Must be ${Constraint(String, s => s === s.toLowerCase())}`,
+	template4: Template`Must be ${String.withConstraint(s => s === s.toLowerCase())}`,
 	Sym,
 	SymForRuntypes: Sym("runtypes"),
 	symbolArray: Array(Sym),
