@@ -84,6 +84,10 @@ const cases: [Runtype.Core, string][] = [
 		'`${"foo" | "bar"}${qux}`',
 	],
 	[
+		Template(Union(Literal("foo"), Literal("bar"), Literal("baz").withBrand("qux"))),
+		'"foo" | "bar" | qux',
+	],
+	[
 		Template(
 			"foo",
 			Literal("baz")
@@ -105,6 +109,7 @@ const cases: [Runtype.Core, string][] = [
 	[Record(String, Array(Boolean)), "{ [_: string]: boolean[] }"],
 	[Record(Symbol, Array(Boolean)), "{ [_: symbol]: boolean[] }"],
 	[Record(Number, Array(Boolean)), "{ [_: number]: boolean[] }"],
+	[Record(String.withBrand("Key"), Array(Boolean)), "{ [_: Key]: boolean[] }"],
 	[Object({}), "{}"],
 	[Object({}).asReadonly(), "{}"],
 	[InstanceOf(TestClass), "TestClass"],
@@ -128,8 +133,8 @@ const cases: [Runtype.Core, string][] = [
 	[Function, "function"],
 	[Lazy(() => Boolean), "boolean"],
 	[Number.withConstraint(x => x > 3), "number"],
-	[Number.withBrand("someNumber"), "number"],
-	[Number.withBrand("someNumber").withConstraint(x => x > 3), "number"],
+	[Number.withBrand("someNumber"), "someNumber"],
+	[Number.withBrand("someNumber").withConstraint(x => x > 3), "someNumber"],
 
 	// Parenthesization
 	[Boolean.and(Number.or(String)), "boolean & (number | string)"],
