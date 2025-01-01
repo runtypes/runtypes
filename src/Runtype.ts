@@ -190,7 +190,7 @@ namespace Runtype {
 		assert: (x: unknown) => asserts x is T
 
 		/**
-		 * Defines additional properties on this Runtype. Useful when you want to provide related values, such as the default value and utility functions.
+		 * Returns a clone of this runtype with additional properties. Useful when you want to provide related values, such as the default value and utility functions.
 		 */
 		with: <P extends object>(extension: P | ((self: this) => P)) => this & P
 	}
