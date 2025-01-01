@@ -337,6 +337,18 @@ Template(UpperCaseString, LowerCaseString) // DON'T DO THIS!
 
 The only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraints, which must be hardly done. Actually `Template` treats `String` runtypes as the simplest `RegExp` pattern `.*` and the “greedy” strategy is always used, that is, the above runtype won't work expectedly because the entire pattern is just `^(.*)(.*)$` and the first `.*` always wins. You have to avoid using `Constraint` this way, and instead manually parse it using a single `Constraint` which covers the entire string.
 
+## Variadic tuples
+
+You can spread a `Tuple` or an `Array` within arguments of `Tuple`.
+
+```typescript
+const T = Tuple(Literal(0), ...Tuple(Literal(1), Literal(2)), Literal(3))
+type T = Static<typeof T> // [0, 1, 2, 3]
+
+const U = Tuple(Literal(0), ...Array(Literal(1)), Literal(2))
+type U = Static<typeof U> // [0, ...1[], 2]
+```
+
 ## `instanceof` wrapper
 
 If you have access to the class that you want to test values with the `instanceof` operator, then the `InstanceOf` runtype is exactly what you're looking for. Usage is straightforward:

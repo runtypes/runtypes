@@ -13,6 +13,7 @@ import type Number from "./Number.ts"
 import type Object from "./Object.ts"
 import Optional from "./Optional.ts"
 import type Record from "./Record.ts"
+import type Spread from "./Spread.ts"
 import type String from "./String.ts"
 import type Symbol from "./Symbol.ts"
 import type Template from "./Template.ts"
@@ -33,19 +34,11 @@ const RuntypeSymbol: unique symbol = globalThis.Symbol.for("runtypes/Runtype") a
 type Static<R extends { readonly [RuntypeSymbol]: unknown }> = R[typeof RuntypeSymbol]
 
 namespace Runtype {
-	/** @internal */
-	// eslint-disable-next-line import/no-named-export
-	export const create = <
-		R extends Runtype.Core &
-			(
-				| globalThis.Function // eslint-disable-line @typescript-eslint/no-unsafe-function-type
-				| object
-			) = never,
-	>(
+	export const create = <R extends Runtype.Core = never>(
 		validate: (x: unknown, innerValidate: InnerValidate, self: R) => Result<Static<R>>,
-		base: { [K in keyof R as K extends Exclude<keyof Runtype.Common, "tag"> ? never : K]: R[K] },
+		base: Base<R>,
 	): R => {
-		const self = base as R & Runtype.Common<Static<R>>
+		const self = base as Base<R> & R & Runtype.Common<Static<R>>
 
 		defineProperties(
 			self,
@@ -111,9 +104,18 @@ namespace Runtype {
 		return self as R
 	}
 
+	/** @internal */
 	// eslint-disable-next-line import/no-named-export
 	export const isRuntype = (x: unknown): x is Runtype.Core<unknown> =>
 		isObject(x) && globalThis.Object.hasOwn(x, RuntypeSymbol)
+
+	// eslint-disable-next-line import/no-named-export
+	export type Base<R> = {
+		[K in keyof R as K extends Exclude<keyof Runtype.Common, "tag"> ? never : K]: R[K]
+	} & (
+		| globalThis.Function // eslint-disable-line @typescript-eslint/no-unsafe-function-type
+		| object
+	)
 
 	// eslint-disable-next-line import/no-named-export
 	export interface Common<T = unknown> extends Core<T> {
@@ -194,6 +196,8 @@ namespace Runtype {
 		 */
 		with: <P extends object>(extension: P | ((self: this) => P)) => this & P
 	}
+
+	export type Spreadable = Runtype.Core<readonly unknown[]> & Iterable<Spread<Spreadable>>
 }
 
 type Runtype =

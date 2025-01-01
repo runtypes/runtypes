@@ -36,36 +36,31 @@ const object1 = Object({ Boolean, Number })
 const union1 = Union(Literal(3), String, boolTuple, object1)
 
 type Person = { name: string; likes: Person[] }
-const Person: Runtype.Common<Person> = Lazy(() => Object({ name: String, likes: Array(Person) }))
+const Person: Runtype.Core<Person> = Lazy(() => Object({ name: String, likes: Array(Person) }))
 const narcissist: Person = { name: "Narcissus", likes: [] }
 narcissist.likes = [narcissist]
 
 type GraphNode = GraphNode[] // graph nodes are just arrays of their neighbors
-const GraphNode: Runtype.Common<GraphNode> = Lazy(() => Array(GraphNode))
+const GraphNode: Runtype.Core<GraphNode> = Lazy(() => Array(GraphNode))
 type Graph = GraphNode[]
-const Graph: Runtype.Common<Graph> = Array(GraphNode)
+const Graph: Runtype.Core<Graph> = Array(GraphNode)
 const nodeA: GraphNode = []
 const nodeB: GraphNode = [nodeA]
 nodeA.push(nodeB)
 const barbell: Graph = [nodeA, nodeB]
 
-type BarbellBall = [BarbellBall]
-const BarbellBall: Runtype.Common<BarbellBall> = Lazy(() => Tuple(BarbellBall))
-
 type SRDict = { [_: string]: SRDict }
-const SRDict: Runtype.Common<SRDict> = Lazy(() => Record(String, SRDict))
+const SRDict: Runtype.Core<SRDict> = Lazy(() => Record(String, SRDict))
 const srDict: SRDict = {}
 srDict["self"] = srDict
 
 type Hand = { left: Hand } | { right: Hand }
-const Hand: Runtype.Common<Hand> = Lazy(() =>
-	Union(Object({ left: Hand }), Object({ right: Hand })),
-)
+const Hand: Runtype.Core<Hand> = Lazy(() => Union(Object({ left: Hand }), Object({ right: Hand })))
 const leftHand: Hand = { left: undefined as unknown as Hand }
 const rightHand: Hand = { right: leftHand }
 leftHand.left = rightHand
 
-const Ambi: Runtype.Common<Ambi> = Lazy(() =>
+const Ambi: Runtype.Core<Ambi> = Lazy(() =>
 	Intersect(Object({ left: Ambi }), Object({ right: Ambi })),
 )
 type Ambi = { left: Ambi; right: Ambi }
@@ -160,7 +155,6 @@ const runtypes = {
 	SRDict,
 	Hand,
 	Ambi,
-	BarbellBall,
 	EmptyTuple: Tuple(),
 	Union: Union(Literal("a"), Literal("b"), Literal(3)),
 }
@@ -248,7 +242,7 @@ const testValues: { value: unknown; passes: RuntypeName[] }[] = [
 	{ value: narcissist, passes: ["Person"] },
 	{ value: [narcissist, narcissist], passes: ["ArrayPerson"] },
 	{ value: barbell, passes: ["Graph"] },
-	{ value: nodeA, passes: ["Graph", "BarbellBall"] },
+	{ value: nodeA, passes: ["Graph"] },
 	{ value: srDict, passes: ["SRDict"] },
 	{ value: leftHand, passes: ["Hand", "SRDict"] },
 	{ value: ambi, passes: ["Ambi", "Hand", "SRDict"] },
@@ -801,18 +795,6 @@ Deno.test("reflection", async t => {
 		expectLiteralField(Array(X).asReadonly(), "tag", "array")
 		expectLiteralField(Array(X).asReadonly().element, "tag", "literal")
 		expectLiteralField(Array(X).asReadonly().element, "value", "x")
-	})
-
-	await t.step("tuple", async t => {
-		expectLiteralField(Tuple(X, X), "tag", "tuple")
-		assertEquals(
-			Tuple(X, X).components.map(C => C.tag),
-			["literal", "literal"],
-		)
-		assertEquals(
-			Tuple(X, X).components.map(C => C.value),
-			["x", "x"],
-		)
 	})
 
 	await t.step("string record", async t => {

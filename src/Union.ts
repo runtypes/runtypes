@@ -2,9 +2,11 @@ import { type LiteralBase } from "./Literal.ts"
 import type Object from "./Object.ts"
 import Runtype from "./Runtype.ts"
 import { type Static } from "./Runtype.ts"
+import Spread from "./Spread.ts"
 import type Result from "./result/Result.ts"
 import { type Match } from "./utils/match.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
+import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 
@@ -15,13 +17,28 @@ interface Union<
 	> {
 	tag: "union"
 	alternatives: R
+	[Symbol.iterator]: R["length"] extends 1
+		? R[0] extends Runtype.Spreadable
+			? HasSymbolIterator<R[0]> extends true
+				? () => Iterator<Spread<R[0]>>
+				: never
+			: never
+		: never
 }
 
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-const Union = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(...alternatives: R) =>
-	Runtype.create<Union<R>>(
+const Union = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(...alternatives: R) => {
+	const base = {
+		tag: "union",
+		alternatives,
+		*[Symbol.iterator]() {
+			yield Spread(base as any)
+		},
+	} as Runtype.Base<Union<R>>
+
+	return Runtype.create<Union<R>>(
 		(
 			value,
 			innerValidate,
@@ -88,7 +105,7 @@ const Union = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(...alternat
 
 			return FAILURE.TYPE_INCORRECT(self, value)
 		},
-		{ tag: "union", alternatives } as Union<R>,
+		base,
 	).with({
 		match: ((...cases: any[]) =>
 			(x: any) => {
@@ -100,5 +117,6 @@ const Union = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(...alternat
 				}
 			}) as Match<R>,
 	})
+}
 
 export default Union
