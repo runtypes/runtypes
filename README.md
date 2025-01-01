@@ -104,7 +104,7 @@ Now if we are given a putative `SpaceObject` we can validate it like so:
 
 ```ts
 // spaceObject: SpaceObject
-const spaceObject = SpaceObject.check(obj)
+const spaceObject = SpaceObject.check(value)
 ```
 
 If the object doesn't conform to the type specification, `check` will throw an exception.
@@ -122,21 +122,19 @@ If you want to inform your users about the validation error, it's strongly disco
 
 ## Static type inference
 
-In TypeScript, the inferred type of `Asteroid` in the above example is
+The inferred type of `Asteroid` in the above example is a subtype of
 
 ```ts
-Runtype<{
+Runtype.Common<{
 	type: "asteroid"
 	location: [number, number, number]
 	mass: number
 }>
 ```
 
-That is, it's a `Runtype<Asteroid>`, and you could annotate it as such. But we don't really have to define the `Asteroid` type in TypeScript at all now, because the inferred type is correct. Defining each of your types twice, once at the type level and then again at the value level, is a pain and not very [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself). Fortunately you can define a static `Asteroid` type which is an alias to the `Runtype`-derived type like so:
+That is, it's a `Runtype.Common<Asteroid>`, and you could annotate it as such. But we don't really have to define the `Asteroid` type at all now, because the inferred type is correct. Defining each of your types twice, once at the type level and then again at the value level, is a pain and not very [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself). Fortunately you can define a static `Asteroid` type which is an alias to the `Runtype`-derived type like so:
 
 ```ts
-import { Static } from "runtypes"
-
 type Asteroid = Static<typeof Asteroid>
 ```
 
@@ -152,15 +150,15 @@ type Asteroid = {
 
 ## Guard function
 
-Runtypes provides a guard function as the `guard` method:
+Runtypes provide a guard function as the `guard` method:
 
 ```ts
-const disembark = (obj: unknown) => {
-	if (SpaceObject.guard(obj)) {
-		// obj: SpaceObject
-		if (obj.type === "ship") {
-			// obj: Ship
-			obj.crew = []
+const disembark = (value: unknown) => {
+	if (SpaceObject.guard(value)) {
+		// value: SpaceObject
+		if (value.type === "ship") {
+			// value: Ship
+			value.crew = []
 		}
 	}
 }
@@ -168,16 +166,16 @@ const disembark = (obj: unknown) => {
 
 ## Assertion function
 
-Runtypes provides an assertion function as the `assert` method:
+Runtypes provide an assertion function as the `assert` method:
 
 ```ts
-const disembark = (obj: unknown) => {
+const disembark = (value: unknown) => {
 	try {
-		SpaceObject.assert(obj)
-		// obj: SpaceObject
-		if (obj.type === "ship") {
-			// obj: Ship
-			obj.crew = []
+		SpaceObject.assert(value)
+		// value: SpaceObject
+		if (value.type === "ship") {
+			// value: Ship
+			value.crew = []
 		}
 	} catch (error) {}
 }
