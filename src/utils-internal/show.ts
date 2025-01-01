@@ -159,7 +159,7 @@ const show =
 				case "instanceof":
 					return (runtype.ctor as any).name
 				case "brand":
-					return show(needsParens, circular)(runtype.entity as Runtype)
+					return runtype.brand
 			}
 		} finally {
 			circular.delete(runtype)
