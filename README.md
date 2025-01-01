@@ -210,52 +210,45 @@ const makeANumber = match(
 Beyond mere type checking, we can add arbitrary runtime constraints to a `Runtype`:
 
 ```ts
-const Positive = Number.withConstraint(n => n > 0)
-
-Positive.check(-3) // Throws error: Failed constraint check
+const PositiveNumber = Number.withConstraint(n => n > 0)
+PositiveNumber.check(-3) // Throws error: Failed constraint check
 ```
 
 You can provide more descriptive error messages for failed constraints by returning a string instead of `false`:
 
 ```ts
-const Positive = Number.withConstraint(n => n > 0 || `${n} is not positive`)
-
-Positive.check(-3) // Throws error: -3 is not positive
+const PositiveNumber = Number.withConstraint(n => n > 0 || `${n} is not positive`)
+PositiveNumber.check(-3) // Throws error: -3 is not positive
 ```
 
-You can set a custom name for your runtype, which will be used in default error messages and reflection, by using the `name` prop on the optional `options` parameter:
+### Narrowing the static type
+
+Constraint checking narrows down the original type to a subtype of it. This should be reflected on the static type. You can pass the desired type as the type argument:
 
 ```typescript
-const C = Number.withConstraint(n => n > 0, { name: "PositiveNumber" })
+const TheAnswer = Literal(42)
+const WithConstraint = Number.withConstraint<42>(TheAnswer.guard)
+type WithConstraint = Static<typeof WithConstraint> // = 42
 ```
 
-To change the type, there are two ways to do it: passing a type guard function to a new `Runtype.withGuard()` method, or using the familiar `Runtype.withConstraint()` method. (Both methods also accept an `options` parameter to optionally set the name.)
-
-Using a type guard function is the easiest option to change the static type, because TS will infer the desired type from the return type of the guard function.
+Alternatively, you can directly wire up the TypeScript's own facility to narrow down types: guard functions and assertion functions. There're corresponding methods on a runtype, so choose the most concise one:
 
 ```typescript
-// use Buffer.isBuffer, which is typed as: isBuffer(obj: any): obj is Buffer;
-const B = Unknown.withGuard(Buffer.isBuffer)
-type T = Static<typeof B> // T is Buffer
+const WithGuard = Number.withGuard(TheAnswer.guard)
+type WithGuard = Static<typeof WithGuard> // = 42
+const WithAssertion = Number.withAssertion(TheAnswer.assert)
+type WithAssertion = Static<typeof WithAssertion> // = 42
 ```
 
-However, if you want to return a custom error message from your constraint function, you can't do this with a type guard because these functions can only return boolean values. Instead, you can roll your own constraint function and use the `withConstraint<T>()` method. Remember to specify the type parameter for the `Constraint` because it can't be inferred from your check function!
+If you want to provide custom error messages while narrowing static types, you can throw `string` or `Error` from a constraint, guard, or assertion function. Actually, returning a string from a function passed to `withConstraint` is supported by this exception handling internally.
+
+Too often there might be cases you can't express desired types exactly in TypeScript, such as the type for positive numbers. In such cases you should at least express them as branded types.
 
 ```typescript
-const check = (o: unknown) => Buffer.isBuffer(o) || "Dude, not a Buffer!"
-const B = Unknown.withConstraint<Buffer>(check)
-type T = Static<typeof B> // T will have type of `Buffer`
+const PositiveNumber = Number.withConstraint(n => n > 0).withBrand("PositiveNumber")
 ```
 
-One important choice when changing `Constraint` static types is choosing the correct underlying type. The implementation of `Constraint` will validate the underlying type _before_ running your constraint function. So it's important to use a lowest-common-denominator type that will pass validation for all expected inputs of your constraint function or type guard. If there's no obvious lowest-common-denominator type, you can always use `Unknown` as the underlying type, as shown in the `Buffer` examples above.
-
-Speaking of base types, if you're using a type guard function and your base type is `Unknown`, then there's a convenience runtype `Guard` available, which is a shorthand for `Unknown.withGuard`.
-
-```typescript
-// use Buffer.isBuffer, which is typed as: isBuffer(obj: any): obj is Buffer;
-const B = Guard(Buffer.isBuffer)
-type T = Static<typeof B> // T will have type of `Buffer`
-```
+`withBrand` modifier is also useful when you want to give your runtype a custom name, which will be used in error messages.
 
 ## Template literals
 
@@ -316,10 +309,10 @@ Trivial items such as bare literals, `Literal`s, and single-element `Union`s and
 A `Template` internally constructs a `RegExp` to parse strings. This can lead to a problem if it contains multiple non-literal runtypes:
 
 ```ts
-const UpperCaseString = Constraint(String, s => s === s.toUpperCase(), {
+const UpperCaseString = String.withConstraint(s => s === s.toUpperCase(), {
 	name: "UpperCaseString",
 })
-const LowerCaseString = Constraint(String, s => s === s.toLowerCase(), {
+const LowerCaseString = String.withConstraint(s => s === s.toLowerCase(), {
 	name: "LowerCaseString",
 })
 Template(UpperCaseString, LowerCaseString)

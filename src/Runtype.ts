@@ -91,14 +91,14 @@ namespace Runtype {
 				and: <R extends Runtype.Core>(other: R) => Intersect(self, other),
 				optional: () => Optional(self),
 				nullable: () => Union(self, Literal(null)),
-				withConstraint: (constraint: (x: Static<R>) => boolean | string) =>
-					Constraint(self, x => {
+				withConstraint: <U extends Static<R>>(constraint: (x: Static<R>) => boolean | string) =>
+					Constraint(self, (x): asserts x is U => {
 						const message = constraint(x)
 						if (typeof message === "string") throw message
 						else if (!message) throw undefined
 					}),
 				withGuard: <U extends Static<R>>(guard: (x: Static<R>) => x is U) =>
-					Constraint(self, x => {
+					Constraint(self, (x): asserts x is U => {
 						if (!guard(x)) throw undefined
 					}),
 				withAssertion: <U extends Static<R>>(assert: (x: Static<R>) => asserts x is U) =>
@@ -138,37 +138,18 @@ namespace Runtype {
 		nullable: () => Union<[this, Literal<null>]>
 
 		/**
-		 * Use an arbitrary constraint function to validate a runtype, and optionally
-		 * to change its name and/or its static type.
-		 *
-		 * @template T - Optionally override the static type of the resulting runtype
-		 * @param {(x: Static<this>) => boolean | string} constraint - Custom function
-		 * that returns `true` if the constraint is satisfied, `false` or a custom
-		 * error message if not.
-		 * @param [options]
-		 * @param {string} [options.name] - allows setting the name of this
-		 * constrained runtype, which is helpful in reflection or diagnostic
-		 * use-cases.
+		 * Use a constraint function to add additional constraints to this runtype, and manually converts a static type of this runtype into another via the type argument if passed.
 		 */
-		withConstraint: (constraint: (x: T) => boolean | string) => Constraint<this, T>
+		withConstraint: <U extends T>(constraint: (x: T) => boolean | string) => Constraint<this, U>
 
 		/**
-		 * Helper function to convert an underlying Runtype into another static type
-		 * via a type guard function.  The static type of the runtype is inferred from
-		 * the type of the guard function.
-		 *
-		 * @template T - Typically inferred from the return type of the type guard
-		 * function, so usually not needed to specify manually.
-		 * @param {(x: Static<this>) => x is T} guard - Type guard function (see
-		 * https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards)
-		 *
-		 * @param [options]
-		 * @param {string} [options.name] - allows setting the name of this
-		 * constrained runtype, which is helpful in reflection or diagnostic
-		 * use-cases.
+		 * Use a guard function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
 		 */
 		withGuard: <U extends T>(guard: (x: T) => x is U) => Constraint<this, U>
 
+		/**
+		 * Use an assertion function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
+		 */
 		withAssertion: <U extends T>(assert: (x: T) => asserts x is U) => Constraint<this, U>
 
 		/**
