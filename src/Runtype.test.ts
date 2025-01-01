@@ -1,5 +1,5 @@
 import Number from "./Number.ts"
-import Runtype from "./Runtype.ts"
+import Runtype, { type Static } from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import { assert, assertEquals, assertFalse, assertNotEquals } from "@std/assert"
@@ -38,6 +38,18 @@ Deno.test("Runtype", async t => {
 		assertEquals(R.method, method)
 		assert(R.guard(42))
 		assertFalse(R.guard(24))
+	})
+	await t.step("practical `with`", async t => {
+		const Seconds = Number.withBrand("Seconds").with({
+			toMilliseconds: (seconds: Seconds) => (seconds * 1000) as Milliseconds,
+		})
+		type Seconds = Static<typeof Seconds>
+		const Milliseconds = Number.withBrand("Milliseconds").with({
+			toSeconds: (milliseconds: Milliseconds) => (milliseconds / 1000) as Seconds,
+		})
+		type Milliseconds = Static<typeof Milliseconds>
+		assertEquals<Seconds>(Milliseconds.toSeconds(1000 as Milliseconds), 1 as Seconds)
+		assertEquals<Milliseconds>(Seconds.toMilliseconds(1 as Seconds), 1000 as Milliseconds)
 	})
 	await t.step("and", async t => {
 		const base = { tag: "R" }
