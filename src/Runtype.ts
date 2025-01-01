@@ -1,3 +1,4 @@
+/* eslint-disable sort-exports/sort-exports */
 /* eslint-disable import/no-named-export */
 import type Array from "./Array.ts"
 import type BigInt from "./BigInt.ts"
@@ -34,7 +35,7 @@ type Static<R extends { readonly [RuntypeSymbol]: unknown }> = R[typeof RuntypeS
 
 namespace Runtype {
 	/** @internal */
-	// eslint-disable-next-line import/no-named-export
+
 	export const create = <
 		R extends Runtype.Core &
 			(
@@ -111,11 +112,9 @@ namespace Runtype {
 		return self as R
 	}
 
-	// eslint-disable-next-line import/no-named-export
 	export const isRuntype = (x: unknown): x is Runtype.Core<unknown> =>
 		isObject(x) && globalThis.Object.hasOwn(x, RuntypeSymbol)
 
-	// eslint-disable-next-line import/no-named-export
 	export interface Common<T = unknown> extends Core<T> {
 		/**
 		 * Union this Runtype with another.
@@ -262,5 +261,4 @@ const createVisitedState = (): VisitedState => {
 }
 
 export default Runtype
-// eslint-disable-next-line import/no-named-export, sort-exports/sort-exports
 export { type Static }
