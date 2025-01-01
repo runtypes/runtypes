@@ -2,7 +2,7 @@
 
 # Runtypes
 
-[![License](https://img.shields.io/github/license/runtypes/runtypes?color=%231e2327)](LICENSE) [![Coverage Status](https://coveralls.io/repos/github/runtypes/runtypes/badge.svg?branch=master)](https://coveralls.io/github/pelotom/runtypes?branch=master)
+[![License](https://img.shields.io/github/license/runtypes/runtypes?color=%231e2327)](LICENSE) [![Coverage Status](https://coveralls.io/repos/github/runtypes/runtypes/badge.svg?branch=master)](https://coveralls.io/github/runtypes/runtypes?branch=master)
 
 Safely bring untyped data into the fold.
 
@@ -115,7 +115,7 @@ When it fails to validate, your runtype emits a `ValidationError` object that co
 
 - `name`: Always `"ValidationError"`
 - `message`: A `string` that summarizes the problem overall
-- `code`: A [`Failcode`](https://github.com/pelotom/runtypes/blob/dcd4fe0d0bd0fc9c3ec445bda30586f3e6acc71c/src/result.ts#L12-L33) that categorizes the problem
+- `code`: A [`Failcode`](src/result/Failcode.ts) that categorizes the problem
 - `details`: An object that describes which property was invalid precisely; only for complex runtypes (e.g. `Object`, `Array`, and the like)
 
 If you want to inform your users about the validation error, it's strongly discouraged to rely on the format of `message` property in your code, as it may change across minor versions for readability thoughts. Instead of parsing `message`, you should use `code` and/or `details` property to programmatically inspect the validation error, and handle other stuff such as i18n.
@@ -150,12 +150,12 @@ type Asteroid = {
 }
 ```
 
-## Type guards
+## Guard function
 
-In addition to providing a `check` method, runtypes can be used as [type guards](https://basarat.gitbook.io/typescript/type-system/typeguard):
+Runtypes provides a guard function as the `guard` method:
 
 ```ts
-function disembark(obj: {}) {
+const disembark = (obj: unknown) => {
 	if (SpaceObject.guard(obj)) {
 		// obj: SpaceObject
 		if (obj.type === "ship") {
@@ -165,6 +165,25 @@ function disembark(obj: {}) {
 	}
 }
 ```
+
+## Assertion function
+
+Runtypes provides an assertion function as the `assert` method:
+
+```ts
+const disembark = (obj: unknown) => {
+	try {
+		SpaceObject.assert(obj)
+		// obj: SpaceObject
+		if (obj.type === "ship") {
+			// obj: Ship
+			obj.crew = []
+		}
+	} catch (error) {}
+}
+```
+
+This might be uncomfortable that TypeScript requires you to manually write the type annotation for your runtype.
 
 ## Pattern matching
 
@@ -228,16 +247,16 @@ Constraint checking narrows down the original type to a subtype of it. This shou
 ```typescript
 const TheAnswer = Literal(42)
 const WithConstraint = Number.withConstraint<42>(TheAnswer.guard)
-type WithConstraint = Static<typeof WithConstraint> // = 42
+type WithConstraint = Static<typeof WithConstraint> // 42
 ```
 
 Alternatively, you can directly wire up the TypeScript's own facility to narrow down types: guard functions and assertion functions. There're corresponding methods on a runtype, so choose the most concise one:
 
 ```typescript
 const WithGuard = Number.withGuard(TheAnswer.guard)
-type WithGuard = Static<typeof WithGuard> // = 42
+type WithGuard = Static<typeof WithGuard> // 42
 const WithAssertion = Number.withAssertion(TheAnswer.assert)
-type WithAssertion = Static<typeof WithAssertion> // = 42
+type WithAssertion = Static<typeof WithAssertion> // 42
 ```
 
 If you want to provide custom error messages while narrowing static types, you can throw `string` or `Error` from a constraint, guard, or assertion function. Actually, returning a string from a function passed to `withConstraint` is supported by this exception handling internally.
@@ -263,7 +282,7 @@ const T = Template`foo${Literal("bar")}baz`
 But then the type inference won't work:
 
 ```ts
-type T = Static<typeof T> // inferred as string
+type T = Static<typeof T> // string
 ```
 
 Because TS doesn't provide the exact string literal type information (`["foo", "baz"]` in this case) to the underlying function. See the issue [microsoft/TypeScript#33304](https://github.com/microsoft/TypeScript/issues/33304), especially this comment [microsoft/TypeScript#33304 (comment)](https://github.com/microsoft/TypeScript/issues/33304#issuecomment-697977783) we hope to be implemented.
@@ -272,14 +291,14 @@ If you want the type inference rather than the tagged syntax, you have to manual
 
 ```ts
 const T = Template(["foo", "baz"] as const, Literal("bar"))
-type T = Static<typeof T> // inferred as "foobarbaz"
+type T = Static<typeof T> // "foobarbaz"
 ```
 
 As a convenient solution for this, it also supports another style of passing arguments:
 
 ```ts
 const T = Template("foo", Literal("bar"), "baz")
-type T = Static<typeof T> // inferred as "foobarbaz"
+type T = Static<typeof T> // "foobarbaz"
 ```
 
 You can pass various things to the `Template` constructor, as long as they are assignable to `string | number | bigint | boolean | null | undefined` and the corresponding `Runtype`s:
@@ -315,7 +334,7 @@ const UpperCaseString = String.withConstraint(s => s === s.toUpperCase(), {
 const LowerCaseString = String.withConstraint(s => s === s.toLowerCase(), {
 	name: "LowerCaseString",
 })
-Template(UpperCaseString, LowerCaseString)
+Template(UpperCaseString, LowerCaseString) // DON'T DO THIS!
 ```
 
 The only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraints, which must be hardly done. Actually `Template` treats `String` runtypes as the simplest `RegExp` pattern `.*` and the “greedy” strategy is always used, that is, the above runtype won't work expectedly because the entire pattern is just `^(.*)(.*)$` and the first `.*` always wins. You have to avoid using `Constraint` this way, and instead manually parse it using a single `Constraint` which covers the entire string.
@@ -487,6 +506,37 @@ const WrongMember = CrewMember.extend({
 	rank: Literal("wrong"),
 	// Type '"wrong"' is not assignable to type '"captain" | "first mate" | "officer" | "ensign"'.
 })
+```
+
+## Adding additional properties
+
+You may want to provide additional properties along with your runtype, such as the default value and utility functions. This can be easily achieved by the `with` method.
+
+```typescript
+const Seconds = Number.withBrand("Seconds").with({
+	toMilliseconds: (seconds: Seconds) => (seconds * 1000) as Milliseconds,
+})
+type Seconds = Static<typeof Seconds>
+
+const Milliseconds = Number.withBrand("Milliseconds").with({
+	toSeconds: (milliseconds: Milliseconds) => (milliseconds / 1000) as Seconds,
+})
+type Milliseconds = Static<typeof Milliseconds>
+```
+
+Sometimes defining additional properties requires access to the original runtype itself statically or dynamically:
+
+```typescript
+// Bummer, this won't work because of the circular reference.
+const pH = Number.withBrand("pH").with({ default: 7 as pH })
+type pH = Static<typeof pH>
+```
+
+In such cases, you have to receive the original runtype by passing a function instead:
+
+```typescript
+const pH = Number.withBrand("pH").with(self => ({ default: 7 as Static<typeof self> }))
+type pH = Static<typeof pH>
 ```
 
 ## Related libraries
