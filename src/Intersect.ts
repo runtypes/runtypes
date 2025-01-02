@@ -1,5 +1,7 @@
 import Runtype from "./Runtype.ts"
 import { type Static } from "./Runtype.ts"
+import Spread from "./Spread.ts"
+import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 interface Intersect<
@@ -15,21 +17,34 @@ interface Intersect<
 	> {
 	tag: "intersect"
 	intersectees: R
+	[Symbol.iterator]: R["length"] extends 1
+		? R[0] extends Runtype.Spreadable
+			? HasSymbolIterator<R[0]> extends true
+				? () => Iterator<Spread<R[0]>>
+				: never
+			: never
+		: never
 }
 
 /**
  * Construct an intersection runtype from runtypes for its alternatives.
  */
-const Intersect = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(...intersectees: R) =>
-	Runtype.create<Intersect<R>>(
-		(value, innerValidate) => {
-			for (const runtype of intersectees) {
-				const result = innerValidate(runtype, value)
-				if (!result.success) return result
-			}
-			return SUCCESS(value as Static<Intersect<R>>)
+const Intersect = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(...intersectees: R) => {
+	const base = {
+		tag: "intersect",
+		intersectees,
+		*[Symbol.iterator]() {
+			yield Spread(base as any)
 		},
-		{ tag: "intersect", intersectees },
-	)
+	} as Runtype.Base<Intersect<R>>
+
+	return Runtype.create<Intersect<R>>((value, innerValidate) => {
+		for (const runtype of intersectees) {
+			const result = innerValidate(runtype, value)
+			if (!result.success) return result
+		}
+		return SUCCESS(value as Static<Intersect<R>>)
+	}, base)
+}
 
 export default Intersect

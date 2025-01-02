@@ -143,14 +143,29 @@ const show =
 						: "{}"
 				}
 				case "tuple":
-					return `[${runtype.components.map(component => show(false, circular)(component as Runtype)).join(", ")}]`
+					return !Array.isArray(runtype.components) &&
+						runtype.components.leading.length === 0 &&
+						runtype.components.trailing.length === 0
+						? show(false, circular)(runtype.components.rest as Runtype)
+						: `[${(Array.isArray(runtype.components)
+								? runtype.components.map(component => show(false, circular)(component as Runtype))
+								: [
+										...runtype.components.leading.map(component =>
+											show(false, circular)(component as Runtype),
+										),
+										`...${show(true, circular)(runtype.components.rest as Runtype)}`,
+										...runtype.components.trailing.map(component =>
+											show(false, circular)(component as Runtype),
+										),
+									]
+							).join(", ")}]`
 				case "union":
 					return parenthesize(
 						`${runtype.alternatives.map(alternative => show(true, circular)(alternative as Runtype)).join(" | ")}`,
 					)
 				case "intersect":
 					return parenthesize(
-						`${runtype.intersectees.map(alternative => show(true, circular)(alternative as Runtype)).join(" & ")}`,
+						`${runtype.intersectees.map(intersectee => show(true, circular)(intersectee as Runtype)).join(" & ")}`,
 					)
 				case "optional":
 					return show(needsParens, circular)(runtype.underlying as Runtype) + " | undefined"
