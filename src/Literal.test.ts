@@ -1,4 +1,4 @@
-import Literal from "./Literal.js"
+import Literal from "./Literal.ts"
 import { assert, assertObjectMatch } from "@std/assert"
 
 Deno.test("Literal", async t => {
