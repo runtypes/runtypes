@@ -16,8 +16,8 @@ interface Literal<T extends LiteralBase = LiteralBase> extends Runtype.Common<T>
 const literal = (value: unknown): string =>
 	Array.isArray(value)
 		? globalThis.String(value.map(literal))
-		: value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === null
-			? '[object null]'
+		: value !== null && typeof value === "object"
+			? "[object Object]"
 			: typeof value === "bigint"
 				? globalThis.String(value) + "n"
 				: globalThis.String(value)
