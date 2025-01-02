@@ -43,6 +43,7 @@ interface ObjectReadonly<
 > extends Runtype.Common<ObjectStaticReadonly<O>> {
 	tag: "object"
 	fields: O
+	isExact: boolean
 }
 
 interface Object<
@@ -52,6 +53,7 @@ interface Object<
 > extends Runtype.Common<ObjectStatic<O>> {
 	tag: "object"
 	fields: O
+	isExact: boolean
 }
 
 const isOptional = (value: Runtype.Core | Optional): value is Optional => value.tag === "optional"
@@ -85,9 +87,12 @@ const Object = <O extends { [_: string | number | symbol]: Runtype.Core | Option
 							else results[key] = FAILURE.PROPERTY_MISSING(runtype)
 						}
 					} else if (xHasKey) {
-						// TODO: exact object validation
 						const value = x[key]
-						results[key] = SUCCESS(value)
+						if (self.isExact) {
+							results[key] = FAILURE.PROPERTY_PRESENT(value)
+						} else {
+							results[key] = SUCCESS(value)
+						}
 					} else {
 						throw new Error("impossible")
 					}
@@ -107,81 +112,96 @@ const Object = <O extends { [_: string | number | symbol]: Runtype.Core | Option
 			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
 			else return SUCCESS(x as ObjectStatic<O>)
 		},
-		{ tag: "object", fields },
-	).with({
-		asPartial: () =>
-			Object(
-				globalThis.Object.fromEntries(
-					globalThis.Object.entries(fields).map(([key, value]) => [
-						key,
-						Optional(value as Runtype.Core),
-					]),
-				),
-			),
+		{ tag: "object", fields, isExact: false },
+	).with(
+		self =>
+			({
+				asPartial: () =>
+					Object(
+						globalThis.Object.fromEntries(
+							globalThis.Object.entries(fields).map(([key, value]) => [
+								key,
+								Optional(value as Runtype.Core),
+							]),
+						),
+					),
 
-		asReadonly: () => Object(fields),
+				asReadonly: () => Object(fields),
 
-		pick: <K extends keyof O>(
-			...keys: K[] extends (keyof O)[] ? K[] : never[]
-		): Object<Pick<O, K>> => {
-			const result: any = {}
-			keys.forEach(key => {
-				result[key] = fields[key]
-			})
-			return Object(result)
-		},
+				pick: <K extends keyof O>(
+					...keys: K[] extends (keyof O)[] ? K[] : never[]
+				): Object<Pick<O, K>> => {
+					const result: any = {}
+					keys.forEach(key => {
+						result[key] = fields[key]
+					})
+					return Object(result)
+				},
 
-		omit: <K extends keyof O>(
-			...keys: K[] extends (keyof O)[] ? K[] : never[]
-		): Object<Omit<O, K>> => {
-			const result: any = {}
-			const existingKeys = enumerableKeysOf(fields)
-			existingKeys.forEach(key => {
-				if (!(keys as (string | symbol)[]).includes(key)) result[key] = fields[key]
-			})
-			return Object(result) as Object<Omit<O, K>>
-		},
+				omit: <K extends keyof O>(
+					...keys: K[] extends (keyof O)[] ? K[] : never[]
+				): Object<Omit<O, K>> => {
+					const result: any = {}
+					const existingKeys = enumerableKeysOf(fields)
+					existingKeys.forEach(key => {
+						if (!(keys as (string | symbol)[]).includes(key)) result[key] = fields[key]
+					})
+					return Object(result) as Object<Omit<O, K>>
+				},
 
-		extend: (extension: any): any => Object(globalThis.Object.assign({}, fields, extension)),
-	} as unknown as {
-		asPartial(): Object<{
-			[K in keyof O]: O[K] extends Optional
-				? O[K]
-				: O[K] extends Runtype.Core
-					? Optional<O[K]>
-					: never
-		}>
-		asReadonly(): ObjectReadonly<O>
+				extend: (extension: any): any => Object(globalThis.Object.assign({}, fields, extension)),
 
-		pick<K extends keyof O>(...keys: K[] extends (keyof O)[] ? K[] : never[]): Object<Pick<O, K>>
-		omit<K extends keyof O>(...keys: K[] extends (keyof O)[] ? K[] : never[]): Object<Omit<O, K>>
-
-		extend<P extends { [_: string | number | symbol]: Runtype.Core | Optional }>(fields: {
-			[K in keyof P]: K extends keyof O
-				? O[K] extends Optional<infer OK>
-					? P[K] extends Optional<infer PK>
-						? Static<PK> extends Static<OK>
-							? P[K]
-							: Runtype.Core<Static<OK>> | Optional<Runtype.Core<Static<OK>>>
-						: P[K] extends Runtype.Core
-							? P[K] extends OK
-								? P[K]
-								: Runtype.Core<Static<OK>> | Optional<Runtype.Core<Static<OK>>>
+				exact: () => {
+					const cloned = self.clone()
+					cloned.isExact = true
+					return cloned
+				},
+			}) as unknown as {
+				asPartial(): Object<{
+					[K in keyof O]: O[K] extends Optional
+						? O[K]
+						: O[K] extends Runtype.Core
+							? Optional<O[K]>
 							: never
-					: O[K] extends Runtype.Core
-						? P[K] extends Optional
-							? Runtype.Core<Static<O[K]>>
-							: P[K] extends Runtype.Core
-								? Static<P[K]> extends Static<O[K]>
+				}>
+				asReadonly(): ObjectReadonly<O>
+
+				pick<K extends keyof O>(
+					...keys: K[] extends (keyof O)[] ? K[] : never[]
+				): Object<Pick<O, K>>
+				omit<K extends keyof O>(
+					...keys: K[] extends (keyof O)[] ? K[] : never[]
+				): Object<Omit<O, K>>
+
+				extend<P extends { [_: string | number | symbol]: Runtype.Core | Optional }>(fields: {
+					[K in keyof P]: K extends keyof O
+						? O[K] extends Optional<infer OK>
+							? P[K] extends Optional<infer PK>
+								? Static<PK> extends Static<OK>
 									? P[K]
-									: Runtype.Core<Static<O[K]>>
+									: Runtype.Core<Static<OK>> | Optional<Runtype.Core<Static<OK>>>
+								: P[K] extends Runtype.Core
+									? P[K] extends OK
+										? P[K]
+										: Runtype.Core<Static<OK>> | Optional<Runtype.Core<Static<OK>>>
+									: never
+							: O[K] extends Runtype.Core
+								? P[K] extends Optional
+									? Runtype.Core<Static<O[K]>>
+									: P[K] extends Runtype.Core
+										? Static<P[K]> extends Static<O[K]>
+											? P[K]
+											: Runtype.Core<Static<O[K]>>
+										: never
 								: never
-						: never
-				: P[K]
-		}): Object<{
-			[K in keyof (O & P)]: K extends keyof P ? P[K] : K extends keyof O ? O[K] : never
-		}>
-	})
+						: P[K]
+				}): Object<{
+					[K in keyof (O & P)]: K extends keyof P ? P[K] : K extends keyof O ? O[K] : never
+				}>
+
+				exact(): Object<O>
+			},
+	)
 }
 
 export default Object

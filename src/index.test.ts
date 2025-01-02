@@ -28,6 +28,7 @@ import type Failure from "./result/Failure.ts"
 import ValidationError from "./result/ValidationError.ts"
 import Contract from "./utils/Contract.ts"
 import hasKey from "./utils-internal/hasKey.ts"
+import isObject from "./utils-internal/isObject.ts"
 import { assert, assertEquals, assertThrows, fail } from "@std/assert"
 import outdent from "x/outdent@v0.8.0/mod.ts"
 
@@ -79,13 +80,13 @@ class SomeClassV1 {
 	constructor(public n: number) {}
 	public _someClassTag = SOMECLASS_TAG
 	public static isSomeClass = (o: unknown): o is SomeClassV1 =>
-		hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
+		isObject(o) && hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
 }
 class SomeClassV2 {
 	constructor(public n: number) {}
 	public _someClassTag = SOMECLASS_TAG
 	public static isSomeClass = (o: unknown): o is SomeClassV2 =>
-		hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
+		isObject(o) && hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
 }
 
 const runtypes = {
@@ -685,7 +686,9 @@ Deno.test("check errors", async t => {
 	await t.step("constraint standard message", async t => {
 		assertRuntypeThrows(
 			new SomeClass(1),
-			Unknown.withConstraint(o => hasKey("n", o) && typeof o.n === "number" && o.n > 3),
+			Unknown.withConstraint(
+				o => isObject(o) && hasKey("n", o) && typeof o.n === "number" && o.n > 3,
+			),
 			Failcode.CONSTRAINT_FAILED,
 			"Failed constraint check for SomeClass",
 		)
@@ -695,7 +698,7 @@ Deno.test("check errors", async t => {
 		assertRuntypeThrows(
 			new SomeClass(1),
 			Unknown.withConstraint(o =>
-				hasKey("n", o) && typeof o.n === "number" && o.n > 3 ? true : "n must be 3+",
+				isObject(o) && hasKey("n", o) && typeof o.n === "number" && o.n > 3 ? true : "n must be 3+",
 			),
 			Failcode.CONSTRAINT_FAILED,
 			"Failed constraint check for SomeClass: n must be 3+",
