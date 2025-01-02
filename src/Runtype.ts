@@ -111,11 +111,9 @@ namespace Runtype {
 	}
 
 	/** @internal */
-	// eslint-disable-next-line import/no-named-export
 	export const isRuntype = (x: unknown): x is Runtype.Core<unknown> =>
 		isObject(x) && globalThis.Object.hasOwn(x, RuntypeSymbol)
 
-	// eslint-disable-next-line import/no-named-export
 	export type Base<R> = {
 		[K in keyof R as K extends Exclude<keyof Runtype.Common, "tag"> ? never : K]: R[K]
 	} & (
@@ -123,7 +121,6 @@ namespace Runtype {
 		| object
 	)
 
-	// eslint-disable-next-line import/no-named-export
 	export interface Common<T = unknown> extends Core<T> {
 		/**
 		 * Returns a clone of this runtype with additional properties. Useful when you want to provide related values, such as the default value and utility functions.
@@ -131,7 +128,7 @@ namespace Runtype {
 		with: <P extends object>(extension: P | ((self: this) => P)) => this & P
 
 		/**
-		 * Creates a new runtype that behaves the same as this runtype.
+		 * Creates a shallow clone of this runtype.
 		 */
 		clone: () => this
 

@@ -2,7 +2,15 @@ import Number from "./Number.ts"
 import Runtype, { type Static } from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
-import { assert, assertEquals, assertFalse, assertNotEquals } from "@std/assert"
+import {
+	assert,
+	assertEquals,
+	assertExists,
+	assertFalse,
+	assertNotEquals,
+	assertNotStrictEquals,
+	assertStrictEquals,
+} from "@std/assert"
 
 Deno.test("Runtype", async t => {
 	await t.step("base object", async t => {
@@ -27,7 +35,7 @@ Deno.test("Runtype", async t => {
 		assert(R.guard(42))
 		assertFalse(R.guard(24))
 	})
-	await t.step("`with`", async t => {
+	await t.step("with", async t => {
 		const method = () => 42 as const
 		const base = { tag: "R" }
 		const R = Runtype.create<Runtype.Common<42>>(
@@ -39,7 +47,20 @@ Deno.test("Runtype", async t => {
 		assert(R.guard(42))
 		assertFalse(R.guard(24))
 	})
-	await t.step("practical `with`", async t => {
+	await t.step("clone", async t => {
+		const method = () => 42 as const
+		const base = { tag: "R" }
+		const R = Runtype.create<Runtype.Common<42>>(
+			value => (value === 42 ? SUCCESS(value) : FAILURE.VALUE_INCORRECT("number", 42, value)),
+			base,
+		).with({ method })
+		const S = R.clone()
+		assertNotStrictEquals(R, S)
+		assertExists(R.method)
+		assertExists(S.method)
+		assertStrictEquals(R.method, S.method)
+	})
+	await t.step("practical with", async t => {
 		const Seconds = Number.withBrand("Seconds").with({
 			toMilliseconds: (seconds: Seconds) => (seconds * 1000) as Milliseconds,
 		})
