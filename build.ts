@@ -1,5 +1,6 @@
-import packageBuildJson from "./package.build.json" assert { type: "json" }
-import { build, emptyDir } from "jsr:@deno/dnt@^0.41.3"
+/* eslint-disable import/no-unused-modules */
+import packageBuildJson from "./package.build.json" with { type: "json" }
+import { build, emptyDir } from "jsr:@deno/dnt@0.41.3"
 
 await emptyDir("./lib")
 
@@ -14,6 +15,7 @@ await build({
 	packageManager: "pnpm",
 	typeCheck: false,
 	test: false,
+	skipSourceOutput: true,
 })
 
 // post build steps
