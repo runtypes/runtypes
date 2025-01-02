@@ -146,7 +146,6 @@ const runtypes = {
 	Guard: Unknown.withGuard(SomeClassV2.isSomeClass),
 	Constraint: Unknown.withConstraint(SomeClassV2.isSomeClass),
 	RecordOfArraysOfSomeClass: Record(String, Array(InstanceOf(SomeClass))),
-	OptionalBoolean: Optional(Boolean),
 	OptionalProperty: Object({ foo: String, bar: Optional(Number) }),
 	UnionProperty: Object({ foo: String, bar: Union(Number, Undefined) }),
 	ReadonlyNumberArray: Array(Number).asReadonly(),
@@ -168,10 +167,10 @@ class Foo {
 } // Should not be recognized as a Record
 
 const testValues: { value: unknown; passes: RuntypeName[] }[] = [
-	{ value: undefined, passes: ["Undefined", "Void", "OptionalBoolean", "Nullish"] },
+	{ value: undefined, passes: ["Undefined", "Void", "Nullish"] },
 	{ value: null, passes: ["Null", "Void", "nullable", "Nullish"] },
-	{ value: true, passes: ["Boolean", "true", "OptionalBoolean", "nullable"] },
-	{ value: false, passes: ["Boolean", "false", "OptionalBoolean"] },
+	{ value: true, passes: ["Boolean", "true", "nullable"] },
+	{ value: false, passes: ["Boolean", "false"] },
 	{ value: 3, passes: ["Number", "brandedNumber", 3, "union1", "Union"] },
 	{
 		value: 42,
@@ -847,15 +846,6 @@ Deno.test("reflection", async t => {
 			["object", "object"],
 		)
 		I.check(i)
-	})
-
-	await t.step("optional", async t => {
-		const OptionalNumber = Optional(Number)
-		expectLiteralField(OptionalNumber, "tag", "optional")
-		expectLiteralField(OptionalNumber.underlying, "tag", "number")
-		const OptionalNumberShorthand = Number.optional()
-		expectLiteralField(OptionalNumberShorthand, "tag", "optional")
-		expectLiteralField(OptionalNumberShorthand.underlying, "tag", "number")
 	})
 
 	await t.step("function", async t => {
