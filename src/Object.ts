@@ -59,13 +59,13 @@ const isOptional = (value: Runtype.Core | Optional): value is Optional => value.
 /**
  * Construct an object runtype from runtypes for its values.
  */
-
-const Object = <O extends { [_: string | number | symbol]: Runtype.Core | Optional }>(fields: O) =>
-	Runtype.create<Object<O>>(
+const Object = <O extends { [_: string | number | symbol]: Runtype.Core | Optional }>(
+	fields: O,
+) => {
+	const keysOfFields = enumerableKeysOf(fields)
+	return Runtype.create<Object<O>>(
 		(x, innerValidate, self) => {
 			if (x === null || x === undefined) return FAILURE.TYPE_INCORRECT(self, x)
-
-			const keysOfFields = enumerableKeysOf(fields)
 			if (keysOfFields.length !== 0 && typeof x !== "object") return FAILURE.TYPE_INCORRECT(self, x)
 
 			const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])]
@@ -182,5 +182,6 @@ const Object = <O extends { [_: string | number | symbol]: Runtype.Core | Option
 			[K in keyof (O & P)]: K extends keyof P ? P[K] : K extends keyof O ? O[K] : never
 		}>
 	})
+}
 
 export default Object
