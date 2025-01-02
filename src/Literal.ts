@@ -13,15 +13,14 @@ interface Literal<T extends LiteralBase = LiteralBase> extends Runtype.Common<T>
 	value: T
 }
 
-/**
- * Be aware of an Array of Symbols `[Symbol()]` which would throw "TypeError: Cannot convert a Symbol value to a string"
- */
-const literal = (value: unknown) =>
+const literal = (value: unknown): string =>
 	Array.isArray(value)
-		? globalThis.String(value.map(globalThis.String))
-		: typeof value === "bigint"
-			? globalThis.String(value) + "n"
-			: globalThis.String(value)
+		? globalThis.String(value.map(literal))
+		: value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === null
+			? '[object null]'
+			: typeof value === "bigint"
+				? globalThis.String(value) + "n"
+				: globalThis.String(value)
 
 /**
  * Construct a runtype for a type literal.
