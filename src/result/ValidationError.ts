@@ -2,7 +2,7 @@ import type Failcode from "./Failcode.ts"
 import type Failure from "./Failure.ts"
 
 class ValidationError extends Error {
-	public name: string = "ValidationError"
+	public override name: string = "ValidationError"
 	public code: Failcode
 	public details?: Failure.Details
 
