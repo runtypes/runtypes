@@ -84,6 +84,8 @@ namespace Runtype {
 				and: <R extends Runtype.Core>(other: R) => Intersect(self, other),
 				optional: () => Optional(self),
 				nullable: () => Union(self, Literal(null)),
+				undefinedable: () => Union(self, Literal(undefined)),
+				nullishable: () => Union(self, Literal(null), Literal(undefined)),
 				withConstraint: <U extends Static<R>>(constraint: (x: Static<R>) => boolean | string) =>
 					Constraint(self, (x): asserts x is U => {
 						const message = constraint(x)
@@ -130,14 +132,26 @@ namespace Runtype {
 		and: <R extends Runtype.Core>(other: R) => Intersect<[this, R]>
 
 		/**
-		 * Optionalize this Runtype.
+		 * Optionalize this property.
+		 *
+		 * Note that `Optional` is not a runtype, but just a contextual modifier which is only meaningful when defining the content of `Object`. If you want to allow the validated value to be `undefined`, use `undefinedable` method.
 		 */
 		optional: () => Optional<this>
 
 		/**
-		 * Union this Runtype with `Null`.
+		 * Union this runtype with `Null`.
 		 */
 		nullable: () => Union<[this, Literal<null>]>
+
+		/**
+		 * Union this runtype with `Undefined`.
+		 */
+		undefinedable: () => Union<[this, Literal<undefined>]>
+
+		/**
+		 * Union this runtype with `Null` and `Undefined`.
+		 */
+		nullishable: () => Union<[this, Literal<null>, Literal<undefined>]>
 
 		/**
 		 * Use a constraint function to add additional constraints to this runtype, and manually converts a static type of this runtype into another via the type argument if passed.
@@ -213,7 +227,6 @@ type Runtype =
 	| Never
 	| Number
 	| Object
-	| Optional
 	| Record
 	| String
 	| Symbol

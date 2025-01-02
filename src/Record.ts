@@ -64,10 +64,7 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 						results[key] = FAILURE.KEY_INCORRECT(self, keyRuntype, keyInterop)
 					} else {
 						const value = (x as { [key in typeof key]: unknown })[key]
-						const runtype =
-							valueRuntype.tag === "optional"
-								? (valueRuntype as unknown as Optional<Runtype.Core>).underlying
-								: valueRuntype
+						const runtype = valueRuntype
 						results[key] = innerValidate(runtype, value)
 					}
 					return results

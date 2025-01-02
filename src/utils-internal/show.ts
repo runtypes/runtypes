@@ -167,8 +167,6 @@ const show =
 					return parenthesize(
 						`${runtype.intersectees.map(intersectee => show(true, circular)(intersectee as Runtype)).join(" & ")}`,
 					)
-				case "optional":
-					return show(needsParens, circular)(runtype.underlying as Runtype) + " | undefined"
 				case "constraint":
 					return show(needsParens, circular)(runtype.underlying as Runtype)
 				case "instanceof":
@@ -182,8 +180,8 @@ const show =
 	}
 
 const optionalTag = (
-	{ fields }: { fields: { [_: string | number | symbol]: Runtype.Core } },
+	{ fields }: { fields: { [_: string | number | symbol]: Runtype.Core | Optional } },
 	key: string | number | symbol,
-): string => (fields[key]!.tag === "optional" ? "?" : "")
+): "?" | "" => (fields[key]!.tag === "optional" ? "?" : "")
 
 export default show(false, new Set<Runtype.Core>())

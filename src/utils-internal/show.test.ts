@@ -132,7 +132,6 @@ const cases: [Runtype.Core, string][] = [
 	[Tuple(Boolean, ...Array(Boolean), Boolean), "[boolean, ...boolean[], boolean]"],
 	[Union(Boolean, Number), "boolean | number"],
 	[Intersect(Boolean, Number), "boolean & number"],
-	[Optional(Number), "number | undefined"],
 	[Function, "function"],
 	[Lazy(() => Boolean), "boolean"],
 	[Number.withConstraint(x => x > 3), "number"],

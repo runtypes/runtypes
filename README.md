@@ -404,61 +404,17 @@ signIn(password, username)
 signIn("someone@example.com", "12345678")
 ```
 
-## Optional values
+## Optional properties
 
-Runtypes can be used to represent a variable that may be undefined.
-
-```ts
-// For variables that might be `string | undefined`
-Union(String, Undefined)
-String.or(Undefined) // shorthand syntax for the above
-Optional(String) // equivalent to the above two when used outside of `Object`
-String.optional() // shorthand syntax for the above
-```
-
-The last syntax is not any shorter than writing `Optional(String)`, but if you use scoped import i.e. `import * as rt from 'runtypes'`, it would be handy to write `rt.String.optional()` rather than `rt.Optional(rt.String)`.
-
-If an `Object` may or may not have some properties, we can declare the optional properties using `Object({ x: Optional(String) })`. Optional properties validate successfully if they are absent or of type specified inner.
+An `Object` runtype should be able to express optional properties. There's a modifier to do that: `.optional()`.
 
 ```ts
-// Using `Ship` from above
-const RegisteredShip = Ship.and(
-	Object({
-		// All registered ships must have this flag
-		isRegistered: Literal(true),
-
-		// We may or may not know the ship's classification
-		shipClass: Optional(Union(Literal("military"), Literal("civilian"))),
-
-		// We may not know the ship's rank (so we allow it to be absent via `Optional`),
-		// we may also know that a civilian ship doesn't have a rank (e.g. null)
-		rank: Optional(Rank.or(Null)),
-	}),
-)
+Object({ x: Number.optional() })
 ```
 
-There's a difference between `Union(String, Undefined)` and `Optional(String)` iff they are used within an `Object`; the former means "_**it must be present**, and must be `string` or `undefined`_", while the latter means "_**it can be present or absent**, but must be `string` if present_".
+You must be aware of the difference between `Object({ x: Union(String, Undefined) })` and `Object({ x: String.optional() })`; the former means “_**`x` must be present**, and must be `string` or `undefined`_”, while the latter means “_**`x` can be present or absent**, but must be `string` if present_”.
 
-Note that `null` is a quite different thing than `undefined` in JS and TS, so `Optional` doesn't take care of it. If your `Object` has properties which can be `null`, then use the `Null` runtype explicitly.
-
-```ts
-const MilitaryShip = Ship.and(
-	Object({
-		shipClass: Literal("military"),
-
-		// Can be present or absent, but must be `number` or `null` if present.
-		lastDeployedTimestamp: Number.or(Null).optional(),
-	}),
-)
-```
-
-You can save an import by using `nullable` shorthand instead. All three below are equivalent things.
-
-```ts
-Union(Number, Null)
-Number.or(Null)
-Number.nullable()
-```
+It's strongly discouraged to disable [`"exactOptionalPropertyTypes"`](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) in the tsconfig; if you do so, the correspondence between runtypes and the inferred static types get lost. We can't respect tsconfig at runtime, so `runtypes` always conform the behavior `"exactOptionalPropertyTypes": true`, in favor of the expressiveness.
 
 ## Readonly objects and arrays
 

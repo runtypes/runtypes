@@ -4,6 +4,7 @@ import Object from "./Object.ts"
 import Optional from "./Optional.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
+import Undefined from "./Undefined.ts"
 import { assert, assertEquals } from "@std/assert"
 
 Deno.test("object", async t => {
@@ -68,6 +69,7 @@ Deno.test("object", async t => {
 				"sides",
 			])
 		})
+
 		await t.step("overwrites with a narrower type", async t => {
 			// @ts-expect-error: This should fail.
 			const WrongPetMember = CrewMember.extend({ name: Optional(String) })
@@ -78,5 +80,40 @@ Deno.test("object", async t => {
 			assert(PetMember.guard(petMember))
 			assert(!PetMember.guard(anotherMember))
 		})
+
+		await t.step("base optional", async t => {
+			const O = Object({ optional: String.optional() })
+			const P = O.extend({ optional: String })
+			const Q = O.extend({ optional: Literal("optional") })
+			const R = O.extend({ optional: Literal("optional").optional() })
+			// @ts-expect-error: should fail
+			const S = O.extend({ optional: Number.optional() })
+			const T = O.extend({ optional: String.optional() })
+			// @ts-expect-error: should fail
+			const U = O.extend({ optional: Undefined })
+			const V = O.extend({ unrelated: Undefined })
+		})
+
+		await t.step("base required", async t => {
+			const O = Object({ optional: String })
+			// @ts-expect-error: should fail
+			const P = O.extend({ optional: String.optional() })
+			const Q = O.extend({ optional: Literal("optional") })
+			// @ts-expect-error: should fail
+			const R = O.extend({ optional: Literal("optional").optional() })
+			// @ts-expect-error: should fail
+			const S = O.extend({ optional: Number.optional() })
+			const T = O.extend({ optional: String })
+			// @ts-expect-error: should fail
+			const U = O.extend({ optional: Undefined })
+			const V = O.extend({ unrelated: Undefined })
+		})
+	})
+
+	await t.step("optional", async t => {
+		const O = Object({ optional: String.optional() })
+		assert(O.guard({ optional: "optional" }))
+		assert(O.guard({}))
+		assert(!O.guard({ optional: undefined }))
 	})
 })
