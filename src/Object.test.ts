@@ -7,7 +7,7 @@ import String from "./String.ts"
 import Undefined from "./Undefined.ts"
 import { assert, assertEquals, assertNotStrictEquals } from "@std/assert"
 
-Deno.test("object", async t => {
+Deno.test("Object", async t => {
 	const CrewMember = Object({
 		name: String,
 		rank: String,
@@ -95,18 +95,33 @@ Deno.test("object", async t => {
 		})
 
 		await t.step("base required", async t => {
-			const O = Object({ optional: String })
+			const O = Object({ required: String })
 			// @ts-expect-error: should fail
-			const P = O.extend({ optional: String.optional() })
-			const Q = O.extend({ optional: Literal("optional") })
+			const P = O.extend({ required: String.optional() })
+			const Q = O.extend({ required: Literal("optional") })
 			// @ts-expect-error: should fail
-			const R = O.extend({ optional: Literal("optional").optional() })
+			const R = O.extend({ required: Literal("optional").optional() })
 			// @ts-expect-error: should fail
-			const S = O.extend({ optional: Number.optional() })
-			const T = O.extend({ optional: String })
+			const S = O.extend({ required: Number })
+			const T = O.extend({ required: String })
 			// @ts-expect-error: should fail
-			const U = O.extend({ optional: Undefined })
+			const U = O.extend({ required: Undefined })
 			const V = O.extend({ unrelated: Undefined })
+		})
+
+		await t.step("generic", async t => {
+			const NamedBook = Object({
+				name: String,
+				title: String,
+			})
+			const extendWithId = <O extends { name: String }>(r: Object.WithUtilities<O>) =>
+				r.omit("name").extend({
+					// @ts-expect-error: TODO: solve this
+					id: String,
+				})
+			const Book = extendWithId(NamedBook)
+			type Book = Static<typeof Book>
+			const book: Book = { title: "hello", id: "world" }
 		})
 	})
 
