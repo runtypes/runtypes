@@ -65,7 +65,16 @@ namespace Runtype {
 				guard: (x: unknown): x is Static<R> => self.validate(x).success,
 				assert: (x: unknown): asserts x is Static<R> => void self.check(x),
 				with: <P extends object>(extension: P | ((self: R) => P)): typeof self & P => {
-					const base: typeof self & P =
+					const base = self.clone() as typeof self & P
+					const properties = typeof extension === "function" ? extension(self) : extension
+					globalThis.Object.defineProperties(
+						base,
+						globalThis.Object.getOwnPropertyDescriptors(properties),
+					)
+					return base
+				},
+				clone: () => {
+					const base: typeof self =
 						typeof self === "function"
 							? self.bind(undefined)
 							: globalThis.Object.create(globalThis.Object.getPrototypeOf(self))
@@ -73,12 +82,7 @@ namespace Runtype {
 						base,
 						globalThis.Object.getOwnPropertyDescriptors(self),
 					)
-					const properties = typeof extension === "function" ? extension(self) : extension
-					globalThis.Object.defineProperties(
-						base,
-						globalThis.Object.getOwnPropertyDescriptors(properties),
-					)
-					return base
+					return Runtype.create(validate, base)
 				},
 				or: <R extends Runtype.Core>(other: R) => Union(self, other),
 				and: <R extends Runtype.Core>(other: R) => Intersect(self, other),
@@ -121,6 +125,16 @@ namespace Runtype {
 
 	// eslint-disable-next-line import/no-named-export
 	export interface Common<T = unknown> extends Core<T> {
+		/**
+		 * Returns a clone of this runtype with additional properties. Useful when you want to provide related values, such as the default value and utility functions.
+		 */
+		with: <P extends object>(extension: P | ((self: this) => P)) => this & P
+
+		/**
+		 * Creates a new runtype that behaves the same as this runtype.
+		 */
+		clone: () => this
+
 		/**
 		 * Union this Runtype with another.
 		 */
@@ -204,11 +218,6 @@ namespace Runtype {
 		 * not conform to the runtype, throws an exception.
 		 */
 		assert: (x: unknown) => asserts x is T
-
-		/**
-		 * Returns a clone of this runtype with additional properties. Useful when you want to provide related values, such as the default value and utility functions.
-		 */
-		with: <P extends object>(extension: P | ((self: this) => P)) => this & P
 	}
 
 	export type Spreadable = Runtype.Core<readonly unknown[]> & Iterable<Spread<Spreadable>>
