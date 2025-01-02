@@ -12,6 +12,5 @@
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"deno.enable": true,
 	"deno.lint": false,
-	"deno.unstable": false,
 	"eslint.useFlatConfig": false
 }
