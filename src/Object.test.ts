@@ -5,7 +5,7 @@ import Optional from "./Optional.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Undefined from "./Undefined.ts"
-import { assert, assertEquals } from "@std/assert"
+import { assert, assertEquals, assertNotStrictEquals } from "@std/assert"
 
 Deno.test("object", async t => {
 	const CrewMember = Object({
@@ -115,5 +115,17 @@ Deno.test("object", async t => {
 		assert(O.guard({ optional: "optional" }))
 		assert(O.guard({}))
 		assert(!O.guard({ optional: undefined }))
+	})
+
+	await t.step("exact", async t => {
+		const O = Object({ x: String })
+		assert(!O.isExact)
+		const P = O.exact()
+		assert(P.isExact)
+		assertNotStrictEquals(O, P)
+		assert(O.guard({ x: "hello" }))
+		assert(O.guard({ x: "hello", y: "world" }))
+		assert(P.guard({ x: "hello" }))
+		assert(!P.guard({ x: "hello", y: "world" }))
 	})
 })
