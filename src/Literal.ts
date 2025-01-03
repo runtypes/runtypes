@@ -21,12 +21,23 @@ const literal = (value: unknown): string =>
 			: globalThis.String(value)
 
 /**
+ * <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness#same-value-zero_equality>
+ */
+const sameValueZero = (x: unknown, y: unknown) => {
+	if (typeof x === "number" && typeof y === "number") {
+		// x and y are equal (may be -0 and 0) or they are both NaN
+		return x === y || (x !== x && y !== y)
+	}
+	return x === y
+}
+
+/**
  * Construct a runtype for a type literal.
  */
 const Literal = <T extends LiteralBase>(value: T) =>
 	Runtype.create<Literal<T>>(
 		x =>
-			(x === value
+			(sameValueZero(x, value)
 				? SUCCESS(x as T)
 				: FAILURE.VALUE_INCORRECT(
 						"literal",

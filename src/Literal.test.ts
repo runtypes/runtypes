@@ -20,12 +20,14 @@ Deno.test("Literal", async t => {
 	await t.step('validates `"Hello, World!"`', async t => {
 		assert(Literal("Hello, World!").guard("Hello, World!"))
 	})
-	await t.step("invalidates `NaN` because JavaScript", async t => {
-		assertObjectMatch(Literal(NaN).validate(NaN), {
-			success: false,
-			code: "VALUE_INCORRECT",
-			message: "Expected literal `NaN`, but was `NaN`",
-		})
+	await t.step("validates `NaN`", async t => {
+		assert(Literal(NaN).guard(NaN))
+	})
+	await t.step("validates `-0` as `0`", async t => {
+		assert(Literal(-0).guard(0))
+	})
+	await t.step("validates `+0` as `-0`", async t => {
+		assert(Literal(+0).guard(-0))
 	})
 	await t.step("invalidates object", async t => {
 		assertObjectMatch(Literal(null).validate({ key: "value" }), {
