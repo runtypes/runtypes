@@ -406,7 +406,7 @@ signIn("someone@example.com", "12345678")
 
 ## Optional properties
 
-An `Object` runtype should be able to express optional properties. There's a modifier to do that: `.optional()`.
+`Object` runtypes should be able to express optional properties. There's a modifier to do that: `.optional()`.
 
 ```ts
 Object({ x: Number.optional() })
@@ -415,6 +415,36 @@ Object({ x: Number.optional() })
 You must be aware of the difference between `Object({ x: Union(String, Undefined) })` and `Object({ x: String.optional() })`; the former means “_**`x` must be present**, and must be `string` or `undefined`_”, while the latter means “_**`x` can be present or absent**, but must be `string` if present_”.
 
 It's strongly discouraged to disable [`"exactOptionalPropertyTypes"`](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) in the tsconfig; if you do so, the correspondence between runtypes and the inferred static types get lost. We can't respect tsconfig at runtime, so `runtypes` always conform the behavior `"exactOptionalPropertyTypes": true`, in favor of the expressiveness.
+
+## Exact object validation
+
+`Object` has a modifier to perform exact object validation: `.exact()`.
+
+```typescript
+const O = Object({ x: Number }).exact()
+O.guard({ x: 42 }) // true
+O.guard({ x: 42, y: 24 }) // false
+```
+
+Note that [TypeScript doesn't have exact types](https://github.com/microsoft/TypeScript/issues/12936) at the moment, so it's recommended to wrap your exact `Object` runtype within a `Brand` to at least prevent the unexpected behavior of the inferred static type:
+
+```typescript
+const x0 = { x: 42 }
+const x1 = { x: 42, y: 24 }
+
+const O = Object({ x: Number }).exact()
+type O = Static<typeof O>
+const o0: O = x0
+const o1: O = x1 // You would not want this to be possible.
+globalThis.Object.hasOwn(o1, "y") // true
+
+const P = O.withBrand("P")
+type P = Static<typeof P>
+const p0: P = P.check(x0) // Branded types require explicit assertion.
+const p1: P = P.check(x1) // So this won't accidentally pass at runtime.
+```
+
+You should beware that `Object` validation only respects **enumerable own** keys; thus if you want to completely eliminate extra properties that may be non-enumerable or inherited, pick up the properties you want into a new object with `null` prototype.
 
 ## Readonly objects and arrays
 
