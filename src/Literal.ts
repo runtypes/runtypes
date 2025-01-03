@@ -14,13 +14,11 @@ interface Literal<T extends LiteralBase = LiteralBase> extends Runtype.Common<T>
 }
 
 const literal = (value: unknown): string =>
-	Array.isArray(value)
-		? globalThis.String(value.map(literal))
-		: value !== null && typeof value === "object"
-			? "[object Object]"
-			: typeof value === "bigint"
-				? globalThis.String(value) + "n"
-				: globalThis.String(value)
+	value !== null && typeof value === "object"
+		? "[object Object]"
+		: typeof value === "bigint"
+			? globalThis.String(value) + "n"
+			: globalThis.String(value)
 
 /**
  * Construct a runtype for a type literal.

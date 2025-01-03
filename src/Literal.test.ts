@@ -47,7 +47,7 @@ Deno.test("Literal", async t => {
 		assertObjectMatch(Literal(null).validate(value), {
 			success: false,
 			code: "VALUE_INCORRECT",
-			message: "Expected literal `null`, but was `[object Object],[object Object]`",
+			message: "Expected literal `null`, but was `[object Object]`",
 		})
 	})
 	await t.step("invalidates symbol", async t => {
@@ -61,7 +61,7 @@ Deno.test("Literal", async t => {
 		assertObjectMatch(Literal(null).validate([Symbol("example"), Symbol()]), {
 			success: false,
 			code: "VALUE_INCORRECT",
-			message: "Expected literal `null`, but was `Symbol(example),Symbol()`",
+			message: "Expected literal `null`, but was `[object Object]`",
 		})
 	})
 })
