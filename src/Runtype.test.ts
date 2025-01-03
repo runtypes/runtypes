@@ -1,5 +1,7 @@
 import Number from "./Number.ts"
+import Object from "./Object.ts"
 import Runtype, { type Static } from "./Runtype.ts"
+import String from "./String.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import {
@@ -24,7 +26,7 @@ Deno.test("Runtype", async t => {
 		assertFalse(R.guard(24))
 	})
 	await t.step("base function", async t => {
-		const base = Object.assign(() => 42, { tag: "R" })
+		const base = globalThis.Object.assign(() => 42, { tag: "R" })
 		const R = Runtype.create<Runtype.Common<42> & (() => 42)>(
 			value => (value === 42 ? SUCCESS(value) : FAILURE.VALUE_INCORRECT("number", 42, value)),
 			base,
@@ -89,5 +91,21 @@ Deno.test("Runtype", async t => {
 			.with({ hello: "hello" })
 			.withConstraint(() => true)
 		assert(R.guard(42))
+	})
+
+	await t.step("Exact", async t => {
+		type Specification = {
+			foo: string
+			bar?: string
+		}
+		const Correct = Object({
+			foo: String,
+			bar: String.optional(),
+		}).conform<Specification>()
+		// @ts-expect-error: should fail
+		const Wrong = Object({
+			foo: String,
+			bar: String,
+		}).conform<Specification>()
 	})
 })

@@ -27,6 +27,9 @@ import isObject from "./utils-internal/isObject.ts"
 import show from "./utils-internal/show.ts"
 
 const RuntypeSymbol: unique symbol = globalThis.Symbol.for("runtypes/Runtype") as any
+const RuntypeConformance: unique symbol = globalThis.Symbol.for(
+	"runtypes/RuntypeConformance",
+) as any
 
 /**
  * Obtains the static type associated with a Runtype.
@@ -103,6 +106,7 @@ namespace Runtype {
 				withAssertion: <U extends Static<R>>(assert: (x: Static<R>) => asserts x is U) =>
 					Constraint(self, assert),
 				withBrand: <B extends string>(brand: B) => Brand(brand, self),
+				conform: () => self,
 			},
 			{ configurable: true, enumerable: true, writable: true },
 		)
@@ -121,7 +125,7 @@ namespace Runtype {
 		| object
 	)
 
-	export interface Common<T = unknown> extends Core<T> {
+	export interface Common<T = unknown> extends Core<T>, Conformance<T> {
 		/**
 		 * Returns a clone of this runtype with additional properties. Useful when you want to provide related values, such as the default value and utility functions.
 		 */
@@ -183,6 +187,17 @@ namespace Runtype {
 		 * Adds a brand to the type.
 		 */
 		withBrand: <B extends string>(brand: B) => Brand<B, this>
+
+		/**
+		 * Statically ensures this runtype is defined for exactly `U`, not for a subtype of `U`.
+		 */
+		conform<U>(this: Conform<U>): Conform<U> & this
+	}
+
+	type Conform<T> = Runtype.Core<T> & Conformance<T>
+
+	type Conformance<T> = {
+		/** @internal */ readonly [RuntypeConformance]: (StaticTypeOfThis: T) => T
 	}
 
 	/**

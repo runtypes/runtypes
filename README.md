@@ -148,6 +148,38 @@ type Asteroid = {
 }
 ```
 
+## Conforming to predefined static type
+
+Instead of getting it to be inferred, you should be able to create a runtype that corresponds to a static type predefined somewhere. In such case you can statically ensure that your runtype conforms to the specification, by using `.conform<T>()`:
+
+```typescript
+type Specification = {
+	foo: string
+	bar?: string
+}
+const Correct = Object({
+	foo: String,
+	bar: String.optional(),
+}).conform<Specification>()
+// @ts-expect-error: should fail
+const Wrong = Object({
+	foo: String,
+	bar: String,
+}).conform<Specification>()
+```
+
+The error message on the wrong definition might be verbose like below, but you'll eventually find it contains where is the wrong piece if you scroll down the wall of text.
+
+```plaintext
+The 'this' context of type 'WithUtilities<{ foo: String; bar: String; }>' is not assignable to method's 'this' of type 'Conform<Specification>'.
+	Type 'WithUtilities<{ foo: String; bar: String; }>' is not assignable to type 'Conformance<Specification>'.
+		Types of property '[RuntypeConformance]' are incompatible.
+			Type '(StaticTypeOfThis: { foo: string; bar: string; }) => { foo: string; bar: string; }' is not assignable to type '(StaticTypeOfThis: Specification) => Specification'.
+				Types of parameters 'StaticTypeOfThis' and 'StaticTypeOfThis' are incompatible.
+					Type 'Specification' is not assignable to type '{ foo: string; bar: string; }'.
+						Property 'bar' is optional in type 'Specification' but required in type '{ foo: string; bar: string; }'.
+```
+
 ## Guard function
 
 Runtypes provide a guard function as the `guard` method:
