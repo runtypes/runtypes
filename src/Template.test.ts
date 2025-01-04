@@ -53,15 +53,18 @@ Deno.test("template", async t => {
 			Union(Template(Boolean, " "), Literal("")),
 			String.withConstraint(s => s.toLowerCase() === "dogs"),
 		)
+
 		type DogCount = Static<typeof DogCount>
 		DogCount.check("101 dogs")
 		DogCount.check("101 Dogs")
+		// @ts-expect-error: should fail
 		assertThrows(() => DogCount.check("101dogs"))
 		DogCount.check("101 false dogs")
 		assertThrows(() => DogCount.check("101 cats"))
 	})
 	await t.step("emits TYPE_INCORRECT for values other than string", async t => {
 		const Dog = Template("foo")
+		// @ts-expect-error: should fail
 		assertEquals(Dog.validate(42), {
 			code: "TYPE_INCORRECT",
 			message: 'Expected string "foo", but was number',

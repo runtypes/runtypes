@@ -9,6 +9,7 @@ Deno.test("Number", async t => {
 		assert(Number.guard(NaN))
 	})
 	await t.step('invalidates `"Hello, World!"`', async t => {
+		// @ts-expect-error: should fail
 		assert(!Number.guard("Hello, World!"))
 	})
 })

@@ -78,7 +78,7 @@ const show =
 	(runtype: Runtype): string => {
 		const parenthesize = (s: string) => (needsParens ? `(${s})` : s)
 
-		if (circular.has(runtype)) return parenthesize(`CIRCULAR ${runtype.tag}`)
+		if (circular.has(runtype as Runtype)) return parenthesize(`CIRCULAR ${runtype.tag}`)
 		else circular.add(runtype)
 
 		try {

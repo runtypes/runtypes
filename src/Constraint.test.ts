@@ -12,6 +12,7 @@ Deno.test("Constraint", async t => {
 		// @ts-expect-error: should fail
 		const y: YourRuntype = false
 		assert(YourRuntype.guard(true))
+		// @ts-expect-error: should fail
 		assert(!YourRuntype.guard(false))
 	})
 	await t.step("withGuard", async t => {
@@ -22,6 +23,7 @@ Deno.test("Constraint", async t => {
 		// @ts-expect-error: should fail
 		const y: YourRuntype = false
 		assert(YourRuntype.guard(true))
+		// @ts-expect-error: should fail
 		assert(!YourRuntype.guard(false))
 	})
 	await t.step("withAssertion", async t => {
@@ -32,6 +34,7 @@ Deno.test("Constraint", async t => {
 		// @ts-expect-error: should fail
 		const y: YourRuntype = false
 		assert(YourRuntype.guard(true))
+		// @ts-expect-error: should fail
 		assert(!YourRuntype.guard(false))
 	})
 })
