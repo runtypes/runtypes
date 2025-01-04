@@ -30,6 +30,7 @@ Deno.test("Literal", async t => {
 		assert(Literal(+0).guard(-0))
 	})
 	await t.step("invalidates object", async t => {
+		// @ts-expect-error: should fail
 		assertObjectMatch(Literal(null).validate({ key: "value" }), {
 			success: false,
 			code: "VALUE_INCORRECT",
@@ -46,6 +47,7 @@ Deno.test("Literal", async t => {
 	await t.step("invalidates null prototype objects", async t => {
 		const value = [Object.assign(Object.create(null), { key: "value " }), Object.create(null)]
 
+		// @ts-expect-error: should fail
 		assertObjectMatch(Literal(null).validate(value), {
 			success: false,
 			code: "VALUE_INCORRECT",
@@ -53,6 +55,7 @@ Deno.test("Literal", async t => {
 		})
 	})
 	await t.step("invalidates symbol", async t => {
+		// @ts-expect-error: should fail
 		assertObjectMatch(Literal(null).validate(Symbol()), {
 			success: false,
 			code: "VALUE_INCORRECT",
@@ -60,6 +63,7 @@ Deno.test("Literal", async t => {
 		})
 	})
 	await t.step("invalidates symbols", async t => {
+		// @ts-expect-error: should fail
 		assertObjectMatch(Literal(null).validate([Symbol("example"), Symbol()]), {
 			success: false,
 			code: "VALUE_INCORRECT",

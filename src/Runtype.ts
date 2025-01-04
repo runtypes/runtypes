@@ -203,7 +203,7 @@ namespace Runtype {
 	/**
 	 * A runtype determines at runtime whether a value conforms to a type specification.
 	 */
-	export interface Core<T = unknown> {
+	export interface Core<T = any> {
 		/** @internal */ readonly [RuntypeSymbol]: T
 
 		tag: string
@@ -212,25 +212,28 @@ namespace Runtype {
 		 * Validates that a value conforms to this type, and returns a result indicating
 		 * success or failure (does not throw).
 		 */
-		validate: (x: unknown) => Result<T>
+		validate: <U = T>(x: Maybe<T, U>) => Result<T & U>
 
 		/**
 		 * A type guard for this runtype.
 		 */
-		guard: (x: unknown) => x is T
+		guard: <U = T>(x: Maybe<T, U>) => x is T & U
 
 		/**
 		 * Verifies that a value conforms to this runtype. If so, returns the same value,
 		 * statically typed. Otherwise throws an exception.
 		 */
-		check: (x: unknown) => T
+		check: <U = T>(x: Maybe<T, U>) => T & U
 
 		/**
 		 * Verifies that a value conforms to this runtype. When given a value that does
 		 * not conform to the runtype, throws an exception.
 		 */
-		assert: (x: unknown) => asserts x is T
+		assert: <U = T>(x: Maybe<T, U>) => asserts x is T & U
 	}
+
+	// Special-casing when `T = never`, as it breaks expected assignability everywhere.
+	type Maybe<T, U> = [T] extends [never] ? unknown : [T & U] extends [never] ? T : U
 
 	export type Spreadable = Runtype.Core<readonly unknown[]> & Iterable<Spread<Spreadable>>
 }

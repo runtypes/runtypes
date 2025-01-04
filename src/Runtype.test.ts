@@ -23,6 +23,7 @@ Deno.test("Runtype", async t => {
 		)
 		assertEquals(base, R)
 		assert(R.guard(42))
+		// @ts-expect-error: should fail
 		assertFalse(R.guard(24))
 	})
 	await t.step("base function", async t => {
@@ -35,6 +36,7 @@ Deno.test("Runtype", async t => {
 		assertEquals(base, R)
 		assertEquals(R(), 42)
 		assert(R.guard(42))
+		// @ts-expect-error: should fail
 		assertFalse(R.guard(24))
 	})
 	await t.step("with", async t => {
@@ -47,6 +49,7 @@ Deno.test("Runtype", async t => {
 		assertNotEquals(base, R)
 		assertEquals(R.method, method)
 		assert(R.guard(42))
+		// @ts-expect-error: should fail
 		assertFalse(R.guard(24))
 	})
 	await t.step("clone", async t => {
