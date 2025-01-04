@@ -40,7 +40,7 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 	const keyRuntype = key
 	const valueRuntype = value
 	return Runtype.create<Record<K, V>>(
-		(x, innerValidate, self) => {
+		(x, innerValidate, self, parsing) => {
 			if (x === null || x === undefined || typeof x !== "object")
 				return FAILURE.TYPE_INCORRECT(self, x)
 
@@ -65,7 +65,7 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 					} else {
 						const value = (x as { [key in typeof key]: unknown })[key]
 						const runtype = valueRuntype
-						results[key] = innerValidate(runtype, value)
+						results[key] = innerValidate(runtype, value, parsing)
 					}
 					return results
 				},

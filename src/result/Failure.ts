@@ -33,6 +33,11 @@ type Failure = {
 	 * A detailed object enumerating where the validation failed exactly.
 	 */
 	details?: Failure.Details
+
+	/**
+	 * A value thrown by the parser function.
+	 */
+	thrown?: unknown
 }
 
 export default Failure
