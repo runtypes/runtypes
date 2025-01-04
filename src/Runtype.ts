@@ -203,7 +203,7 @@ namespace Runtype {
 	/**
 	 * A runtype determines at runtime whether a value conforms to a type specification.
 	 */
-	export interface Core<T = any> {
+	export interface Core<T = unknown> {
 		/** @internal */ readonly [RuntypeSymbol]: T
 
 		tag: string
