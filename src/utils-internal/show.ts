@@ -146,7 +146,7 @@ const show =
 					return !Array.isArray(runtype.components) &&
 						runtype.components.leading.length === 0 &&
 						runtype.components.trailing.length === 0
-						? show(false, circular)(runtype.components.rest as Runtype)
+						? show(needsParens, circular)(runtype.components.rest as Runtype)
 						: `[${(Array.isArray(runtype.components)
 								? runtype.components.map(component => show(false, circular)(component as Runtype))
 								: [
@@ -173,6 +173,8 @@ const show =
 					return (runtype.ctor as any).name
 				case "brand":
 					return runtype.brand
+				case "parser":
+					return show(needsParens, circular)(runtype.underlying as Runtype)
 			}
 		} finally {
 			circular.delete(runtype)

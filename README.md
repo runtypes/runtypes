@@ -468,7 +468,7 @@ const O = Object({ x: Number }).exact()
 type O = Static<typeof O>
 const o0: O = x0
 const o1: O = x1 // You would not want this to be possible.
-globalThis.Object.hasOwn(o1, "y") // true
+globalThis.Object.hasOwn(o1, "y") === true
 
 const P = O.withBrand("P")
 type P = Static<typeof P>
@@ -476,7 +476,69 @@ const p0: P = P.check(x0) // Branded types require explicit assertion.
 const p1: P = P.check(x1) // So this won't accidentally pass at runtime.
 ```
 
-You should beware that `Object` validation only respects **enumerable own** keys; thus if you want to completely eliminate extra properties that may be non-enumerable or inherited, pick up the properties you want into a new object with `null` prototype.
+You should beware that `Object` validation only respects **enumerable own** keys; thus if you want to completely eliminate extra properties that may be non-enumerable or inherited, use `parse` method.
+
+## Parsing after validation
+
+Every runtype has the `withParser` and `parse` methods that offer the functionality to transform validated values automatically.
+
+```typescript
+const O = Object({ x: String.withParser(parseInt).default(42) })
+type OStatic = Static<typeof O> // { x: string }
+type OParsed = Parsed<typeof O> // { x: number }
+O.parse({ x: "42" }).x === 42
+```
+
+The `.default(...)` modifier works the same as `.optional()` for mere validation, but for parsing, it works as falling back to the value if the property was absent.
+
+```typescript
+O.parse({}).x === 42
+```
+
+Extraneous properties are not copied to the resulting value.
+
+```typescript
+"y" in O.parse({ y: "extra" }) === false
+```
+
+While `parse` returns a new value, traditional validation methods such as `check` don't change their semantics even with parsers.
+
+```typescript
+const o: OStatic = { x: "42" }
+o === O.check(o)
+```
+
+### Semantics in complex runtypes
+
+In an `Object`, an `Array`, and a `Tuple`, `Parser`s will work just as you'd expect.
+
+In a `Template`, parsing can work like this:
+
+```typescript
+const TrueToFalse = Literal("true").withParser(() => "false" as const)
+const Value = Template("value: ", TrueToFalse)
+Value.parse("value: true") === "value: false"
+```
+
+In a `Union`, the first succeeding runtype returns a value and further alternatives are not executed at all:
+
+```typescript
+const Flip = Union(
+	Boolean.withParser(b => !b),
+	Boolean.withParser(b => !!b),
+)
+Flip.parse(true) === false
+```
+
+In an `Intersect`, the last runtype returns a value and preceding intersectees are executed but results are just discarded:
+
+```typescript
+const Flip = Intersect(
+	Boolean.withParser(b => !b),
+	Boolean.withParser(b => !!b),
+)
+Flip.parse(true) === true
+```
 
 ## Readonly objects and arrays
 

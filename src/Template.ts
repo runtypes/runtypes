@@ -2,8 +2,7 @@ import type Intersect from "./Intersect.ts"
 import type Literal from "./Literal.ts"
 import { type LiteralBase } from "./Literal.ts"
 import { literal } from "./Literal.ts"
-import Runtype from "./Runtype.ts"
-import { type Static } from "./Runtype.ts"
+import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import type Union from "./Union.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
@@ -12,9 +11,9 @@ import escapeRegExp from "./utils-internal/escapeRegExp.ts"
 import show from "./utils-internal/show.ts"
 import typeOf from "./utils-internal/typeOf.ts"
 
-type InnerValidate = <R extends Runtype.Core<T>, T>(runtype: R, value: unknown) => Result<T>
+type InnerValidate = <T>(runtype: Runtype.Core, value: unknown, parsing: boolean) => Result<T>
 
-type TemplateLiteralType<
+type TemplateParsed<
 	A extends readonly LiteralBase[],
 	B extends readonly Runtype.Core<LiteralBase>[],
 > = A extends readonly [infer carA, ...infer cdrA]
@@ -23,7 +22,24 @@ type TemplateLiteralType<
 			? carB extends Runtype.Core<LiteralBase>
 				? cdrA extends readonly LiteralBase[]
 					? cdrB extends readonly Runtype.Core<LiteralBase>[]
-						? `${carA}${Static<carB>}${TemplateLiteralType<cdrA, cdrB>}`
+						? `${carA}${Parsed<carB>}${TemplateParsed<cdrA, cdrB>}`
+						: `${carA}${Parsed<carB>}`
+					: `${carA}${Parsed<carB>}`
+				: `${carA}`
+			: `${carA}`
+		: ""
+	: ""
+
+type TemplateStatic<
+	A extends readonly LiteralBase[],
+	B extends readonly Runtype.Core<LiteralBase>[],
+> = A extends readonly [infer carA, ...infer cdrA]
+	? carA extends LiteralBase
+		? B extends readonly [infer carB, ...infer cdrB]
+			? carB extends Runtype.Core<LiteralBase>
+				? cdrA extends readonly LiteralBase[]
+					? cdrB extends readonly Runtype.Core<LiteralBase>[]
+						? `${carA}${Static<carB>}${TemplateStatic<cdrA, cdrB>}`
 						: `${carA}${Static<carB>}`
 					: `${carA}${Static<carB>}`
 				: `${carA}`
@@ -34,7 +50,10 @@ type TemplateLiteralType<
 interface Template<
 	A extends readonly [string, ...string[]] = readonly [string, ...string[]],
 	B extends readonly Runtype.Core<LiteralBase>[] = readonly Runtype.Core<LiteralBase>[],
-> extends Runtype.Common<A extends TemplateStringsArray ? string : TemplateLiteralType<A, B>> {
+> extends Runtype.Common<
+		A extends TemplateStringsArray ? string : TemplateStatic<A, B>,
+		A extends TemplateStringsArray ? string : TemplateParsed<A, B>
+	> {
 	tag: "template"
 	strings: A
 	runtypes: B
@@ -248,30 +267,33 @@ const getReviversFor = (runtype: Runtype): Revivers => {
 
 /** Recursively map corresponding reviver and  */
 const reviveValidate =
-	(runtype: Runtype, innerValidate: InnerValidate) =>
+	(runtype: Runtype, innerValidate: InnerValidate, parsing: boolean) =>
 	(value: string): Result<unknown> => {
 		const revivers = getReviversFor(runtype)
 		if (Array.isArray(revivers)) {
 			switch (runtype.tag) {
 				case "union":
 					for (const alternative of runtype.alternatives) {
-						const validated = reviveValidate(alternative as Runtype, innerValidate)(value)
+						const validated = reviveValidate(alternative as Runtype, innerValidate, parsing)(value)
 						if (validated.success) return validated
 					}
 					return FAILURE.TYPE_INCORRECT(runtype, value)
-				case "intersect":
+				case "intersect": {
+					let parsed: any = undefined
 					for (const intersectee of runtype.intersectees) {
-						const validated = reviveValidate(intersectee as Runtype, innerValidate)(value)
+						const validated = reviveValidate(intersectee as Runtype, innerValidate, parsing)(value)
 						if (!validated.success) return validated
+						parsed = validated.value
 					}
-					return SUCCESS(value)
+					return SUCCESS(parsing ? parsed : value)
+				}
 				default:
 					/* istanbul ignore next */
 					throw Error("impossible")
 			}
 		} else {
 			const reviver = revivers
-			const validated = innerValidate(runtype, reviver(value))
+			const validated = innerValidate(runtype, reviver(value), parsing)
 			if (!validated.success && validated.code === "VALUE_INCORRECT" && runtype.tag === "literal")
 				// TODO: Temporary fix to show unrevived value in message; needs refactor
 				return FAILURE.VALUE_INCORRECT(
@@ -314,11 +336,11 @@ const createRegExpForTemplate = <
 	A extends readonly [string, ...string[]],
 	B extends readonly Runtype.Core<LiteralBase>[],
 >(
-	runtype: Template<A, B>,
+	template: Template<A, B>,
 ) => {
-	const pattern = runtype.strings.map(escapeRegExp).reduce((pattern, string, i) => {
+	const pattern = template.strings.map(escapeRegExp).reduce((pattern, string, i) => {
 		const prefix = pattern + string
-		const r = runtype.runtypes[i]
+		const r = template.runtypes[i]
 		if (r) return prefix + `(${getRegExpPatternFor(r as Runtype)})`
 		else return prefix
 	}, "")
@@ -425,23 +447,35 @@ const Template: {
 					: never
 				: never
 	>(
-		(value, innerValidate, self) => {
+		(value, innerValidate, self, parsing) => {
 			const regexp = createRegExpForTemplate(self as any)
 
-			const test = (value: string, innerValidate: InnerValidate): Result<string> => {
+			const test = (
+				value: string,
+				innerValidate: InnerValidate,
+				parsing: boolean,
+			): Result<string> => {
 				const matches = value.match(regexp)
 				if (matches) {
 					const values = matches.slice(1)
-					for (let i = 0; i < runtypes.length; i++) {
-						const runtype = runtypes[i]!
-						const value = values[i]!
-						const validated = reviveValidate(
-							runtype as Runtype,
-							innerValidate,
-						)(value) as Result<string>
-						if (!validated.success) return validated
+					let parsed: string = ""
+					for (let i = 0; i < strings.length; i++) {
+						const string = strings[i]!
+						const runtype = runtypes[i]
+						if (runtype) {
+							const value = values[i]!
+							const validated = reviveValidate(
+								runtype as Runtype,
+								innerValidate,
+								parsing,
+							)(value) as Result<string>
+							if (!validated.success) return validated
+							parsed += string + validated.value
+						} else {
+							parsed += string
+						}
 					}
-					return SUCCESS(value)
+					return SUCCESS(parsing ? parsed : value)
 				} else {
 					return FAILURE.VALUE_INCORRECT(
 						"string",
@@ -453,18 +487,17 @@ const Template: {
 
 			if (typeof value !== "string") return FAILURE.TYPE_INCORRECT(self, value)
 			else {
-				const validated = test(value, innerValidate)
-				if (!validated.success) {
-					const result = FAILURE.VALUE_INCORRECT(
-						"string",
-						`${show(self as unknown as Runtype)}`,
-						`"${value}"`,
-					)
-					if (result.message !== validated.message)
-						// TODO: Should use `details` here, but it needs unionizing `string` anew to the definition of `Details`, which is a breaking change
-						result.message += ` (inner: ${validated.message})`
-					return result
-				} else return SUCCESS(value)
+				const validated = test(value, innerValidate, parsing)
+				if (validated.success) return validated
+				const result = FAILURE.VALUE_INCORRECT(
+					"string",
+					`${show(self as unknown as Runtype)}`,
+					`"${value}"`,
+				)
+				if (result.message !== validated.message)
+					// TODO: Should use `details` here, but it needs unionizing `string` anew to the definition of `Details`, which is a breaking change
+					result.message += ` (inner: ${validated.message})`
+				return result
 			}
 		},
 		{ tag: "template", strings, runtypes } as any,

@@ -1,8 +1,10 @@
 import type Runtype from "./Runtype.ts"
+import { type Parsed } from "./Runtype.ts"
 
-interface Optional<R extends Runtype.Core = Runtype.Core> {
+interface Optional<R extends Runtype.Core = Runtype.Core, D extends Parsed<R> = Parsed<R>> {
 	tag: "optional"
 	underlying: R
+	defaultValue?: D
 }
 
 /**
@@ -13,9 +15,15 @@ interface Optional<R extends Runtype.Core = Runtype.Core> {
  * const O = Static<typeof O> // { x?: number }
  * ```
  */
-const Optional = <R extends Runtype.Core>(runtype: R): Optional<R> => ({
+const Optional: {
+	<R extends Runtype.Core>(underlying: R): Optional<R>
+	<R extends Runtype.Core>(underlying: R, defaultValue: Parsed<R>): Optional<R, Parsed<R>>
+} = <R extends Runtype.Core>(
+	...args: [underlying: R, defaultValue?: Parsed<R>]
+): Optional<R, Parsed<R>> => ({
 	tag: "optional",
-	underlying: runtype,
+	underlying: args[0],
+	...(args.length === 2 ? { defaultValue: args[1] } : {}),
 })
 
 export default Optional

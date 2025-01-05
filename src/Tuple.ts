@@ -1,5 +1,4 @@
-import Runtype from "./Runtype.ts"
-import { type Static } from "./Runtype.ts"
+import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
@@ -8,6 +7,29 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import show from "./utils-internal/show.ts"
 import unwrapTrivial from "./utils-internal/unwrapTrivial.ts"
+
+type TupleParsedImpl<
+	L extends readonly unknown[],
+	C extends readonly unknown[],
+	R extends readonly unknown[],
+> = C extends [infer T, ...infer C]
+	? T extends Runtype.Core
+		? TupleParsedImpl<[...L, Parsed<T>], C, R>
+		: T extends Spread<infer T>
+			? TupleParsedImpl<[...L, ...Parsed<T>], C, R>
+			: never
+	: C extends [...infer C, infer T]
+		? T extends Runtype.Core
+			? TupleParsedImpl<L, C, [Parsed<T>, ...R]>
+			: T extends Spread<infer T>
+				? TupleParsedImpl<L, C, [...Parsed<T>, ...R]>
+				: never
+		: C["length"] extends 0
+			? [...L, ...R]
+			: C extends readonly Spread<infer T>[]
+				? [...L, ...Parsed<T>, ...R]
+				: never
+type TupleParsed<R extends readonly (Runtype.Core | Spread)[]> = TupleParsedImpl<[], R, []>
 
 type TupleStaticImpl<
 	L extends readonly unknown[],
@@ -42,7 +64,7 @@ type ToReadonly<A extends readonly unknown[]> = ToReadonlyImpl<A, readonly []>
 
 interface TupleReadonly<
 	R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype.Core | Spread)[],
-> extends Runtype.Common<ToReadonly<TupleStatic<R>>>,
+> extends Runtype.Common<ToReadonly<TupleStatic<R>>, ToReadonly<TupleParsed<R>>>,
 		Iterable<Spread<TupleReadonly<R>>> {
 	tag: "tuple"
 	readonly components:
@@ -55,7 +77,7 @@ interface TupleReadonly<
 }
 
 interface Tuple<R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype.Core | Spread)[]>
-	extends Runtype.Common<TupleStatic<R>>,
+	extends Runtype.Common<TupleStatic<R>, TupleParsed<R>>,
 		Iterable<Spread<Tuple<R>>> {
 	tag: "tuple"
 	readonly components:
@@ -133,7 +155,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		},
 	} as Runtype.Base<Tuple<R>>
 
-	return Runtype.create<Tuple<R>>((x, innerValidate, self) => {
+	return Runtype.create<Tuple<R>>((x, innerValidate, self, parsing) => {
 		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT(self, x)
 
 		if (globalThis.Array.isArray(self.components)) {
@@ -155,7 +177,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		if (globalThis.Array.isArray(self.components)) {
 			for (const component of self.components) {
 				const value = values.shift()
-				const result = innerValidate(component, value)
+				const result = innerValidate(component, value, parsing)
 				results.push(result)
 			}
 		} else {
@@ -164,17 +186,20 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 			const resultsTrailing: Result<unknown>[] = []
 			for (const component of self.components.leading) {
 				const value = values.shift()
-				const result = innerValidate(component, value)
+				const result = innerValidate(component, value, parsing)
 				resultsLeading.push(result)
 			}
 			for (const component of self.components.trailing.toReversed()) {
 				const value = values.pop()
-				const result = innerValidate(component, value)
+				const result = innerValidate(component, value, parsing)
 				resultsTrailing.unshift(result)
 			}
-			resultRest = innerValidate(self.components.rest, values)
+			resultRest = innerValidate(self.components.rest, values, parsing)
 			results = [...resultsLeading, resultRest, ...resultsTrailing]
 		}
+		const originalOrParsed: any = parsing
+			? results.map(result => (result.success ? result.value : undefined))
+			: x
 
 		const details = results.reduce<
 			globalThis.Record<
@@ -187,7 +212,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		}, [])
 
 		if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
-		else return SUCCESS(x as Static<Tuple<R>>)
+		else return SUCCESS(originalOrParsed)
 	}, base).with(self => ({ asReadonly: () => self as unknown as TupleReadonly<R> }))
 }
 

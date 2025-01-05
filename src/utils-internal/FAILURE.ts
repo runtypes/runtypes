@@ -60,6 +60,11 @@ const FAILURE = globalThis.Object.assign(
 			const message = `Expected nothing, but was ${typeOf(value)}`
 			return FAILURE(Failcode.NOTHING_EXPECTED, message)
 		},
+		PARSING_FAILED: (thrown: unknown) => {
+			const info = thrown instanceof Error ? thrown.message : undefined
+			const message = "Parsing failed" + (info ? ": " + info : "")
+			return FAILURE(Failcode.PARSING_FAILED, message)
+		},
 	},
 )
 

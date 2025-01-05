@@ -1,5 +1,4 @@
-import Runtype from "./Runtype.ts"
-import { type Static } from "./Runtype.ts"
+import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
@@ -9,14 +8,14 @@ import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import isNumberLikeKey from "./utils-internal/isNumberLikeKey.ts"
 
 interface ArrayReadonly<R extends Runtype.Core = Runtype.Core>
-	extends Runtype.Common<readonly Static<R>[]>,
+	extends Runtype.Common<readonly Static<R>[], readonly Parsed<R>[]>,
 		Iterable<Spread<ArrayReadonly<R>>> {
 	tag: "array"
 	element: R
 }
 
 interface Array<R extends Runtype.Core = Runtype.Core>
-	extends Runtype.Common<Static<R>[]>,
+	extends Runtype.Common<Static<R>[], Parsed<R>[]>,
 		Iterable<Spread<Array<R>>> {
 	tag: "array"
 	element: R
@@ -33,25 +32,26 @@ const Array = <R extends Runtype.Core>(element: R) => {
 			yield Spread(base as Array<R>)
 		},
 	} as Runtype.Base<Array<R>>
-	return Runtype.create<Array<R>>((x, innerValidate, self) => {
+	return Runtype.create<Array<R>>((x, innerValidate, self, parsing) => {
 		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT(self, x)
 
 		const keys = enumerableKeysOf(x).filter(isNumberLikeKey)
-		const results: Result<unknown>[] = keys.map(key => innerValidate(element, x[key]))
-		const details = keys.reduce<
-			globalThis.Record<
-				number,
-				{ [key: number]: string | Failure.Details } & (string | Failure.Details)
-			>
-		>((details, key) => {
+		const results: Result<unknown>[] = keys.map(key => innerValidate(element, x[key], parsing))
+		const originalOrParsed: any = parsing
+			? results.map(result => (result.success ? result.value : undefined))
+			: x
+		const details: globalThis.Record<
+			number,
+			{ [key: number]: string | Failure.Details } & (string | Failure.Details)
+		> = {}
+		for (const key of keys) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const result = results[key]!
 			if (!result.success) details[key] = result.details || result.message
-			return details
-		}, {})
+		}
 
 		if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
-		else return SUCCESS(x)
+		else return SUCCESS(originalOrParsed)
 	}, base).with(self => ({ asReadonly: () => self as unknown as ArrayReadonly<R> }))
 }
 

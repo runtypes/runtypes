@@ -12,6 +12,7 @@ import type Never from "./Never.ts"
 import type Number from "./Number.ts"
 import type Object from "./Object.ts"
 import Optional from "./Optional.ts"
+import Parser from "./Parser.ts"
 import type Record from "./Record.ts"
 import type Spread from "./Spread.ts"
 import type String from "./String.ts"
@@ -34,11 +35,18 @@ const RuntypeConformance: unique symbol = globalThis.Symbol.for(
 /**
  * Obtains the static type associated with a Runtype.
  */
-type Static<R extends { readonly [RuntypeSymbol]: unknown }> = R[typeof RuntypeSymbol]
+type Static<R extends { readonly [RuntypeSymbol]: [unknown, unknown] }> = R[typeof RuntypeSymbol][0]
+
+type Parsed<R extends { readonly [RuntypeSymbol]: [unknown, unknown] }> = R[typeof RuntypeSymbol][1]
 
 namespace Runtype {
 	export const create = <R extends Runtype.Core = never>(
-		validate: (x: unknown, innerValidate: InnerValidate, self: R) => Result<Static<R>>,
+		validate: (
+			x: unknown,
+			innerValidate: InnerValidate,
+			self: R,
+			parsing: boolean,
+		) => Result<Static<R> | Parsed<R>>,
 		base: Base<R>,
 	): R => {
 		const self = base as Base<R> & R & Runtype.Common<Static<R>>
@@ -46,9 +54,11 @@ namespace Runtype {
 		defineProperties(
 			self,
 			{
-				[RuntypeSymbol]: (value: unknown, visited: VisitedState) => {
-					if (visited.has(value, self)) return SUCCESS(value) as Result<Static<R>>
-					return validate(value, createInnerValidate(visited), self)
+				[RuntypeSymbol]: {
+					validate: (value: unknown, visited: VisitedState, parsing: boolean) => {
+						if (visited.has(value, self)) return SUCCESS(value) as Result<Static<R>>
+						return validate(value, createInnerValidate(visited), self, parsing)
+					},
 				},
 				toString: (): string => `Runtype<${show(self as Runtype)}>`,
 			},
@@ -59,7 +69,7 @@ namespace Runtype {
 			self,
 			{
 				validate: (x: unknown): Result<Static<R>> =>
-					(self[RuntypeSymbol] as any)(x, createVisitedState()),
+					(self[RuntypeSymbol] as any).validate(x, createVisitedState(), false),
 				check: (x: unknown): Static<R> => {
 					const result: Result<unknown> = self.validate(x)
 					if (result.success) return result.value as Static<R>
@@ -67,6 +77,15 @@ namespace Runtype {
 				},
 				guard: (x: unknown): x is Static<R> => self.validate(x).success,
 				assert: (x: unknown): asserts x is Static<R> => void self.check(x),
+				parse: (x: unknown): Parsed<R> => {
+					const result: Result<unknown> = (self[RuntypeSymbol] as any).validate(
+						x,
+						createVisitedState(),
+						true,
+					)
+					if (result.success) return result.value as Static<R>
+					else throw new ValidationError(result)
+				},
 				with: <P extends object>(extension: P | ((self: R) => P)): typeof self & P => {
 					const base = self.clone() as typeof self & P
 					const properties = typeof extension === "function" ? extension(self) : extension
@@ -90,6 +109,7 @@ namespace Runtype {
 				or: <R extends Runtype.Core>(other: R) => Union(self, other),
 				and: <R extends Runtype.Core>(other: R) => Intersect(self, other),
 				optional: () => Optional(self),
+				default: <Y extends Parsed<R>>(value: Y) => Optional(self, value),
 				nullable: () => Union(self, Literal(null)),
 				undefinedable: () => Union(self, Literal(undefined)),
 				nullishable: () => Union(self, Literal(null), Literal(undefined)),
@@ -106,6 +126,7 @@ namespace Runtype {
 				withAssertion: <U extends Static<R>>(assert: (x: Static<R>) => asserts x is U) =>
 					Constraint(self, assert),
 				withBrand: <B extends string>(brand: B) => Brand(brand, self),
+				withParser: <Y>(parser: (value: Parsed<R>) => Y) => Parser(self, parser),
 				conform: () => self,
 			},
 			{ configurable: true, enumerable: true, writable: true },
@@ -115,7 +136,7 @@ namespace Runtype {
 	}
 
 	/** @internal */
-	export const isRuntype = (x: unknown): x is Runtype.Core<unknown> =>
+	export const isRuntype = (x: unknown): x is Runtype =>
 		isObject(x) && globalThis.Object.hasOwn(x, RuntypeSymbol)
 
 	export type Base<R> = {
@@ -125,7 +146,7 @@ namespace Runtype {
 		| object
 	)
 
-	export interface Common<T = unknown> extends Core<T>, Conformance<T> {
+	export interface Common<T = unknown, X = T> extends Core<T, X>, Conformance<T, X> {
 		/**
 		 * Returns a clone of this runtype with additional properties. Useful when you want to provide related values, such as the default value and utility functions.
 		 */
@@ -137,49 +158,54 @@ namespace Runtype {
 		clone: () => this
 
 		/**
-		 * Union this Runtype with another.
+		 * Unions this Runtype with another.
 		 */
 		or: <R extends Runtype.Core>(other: R) => Union<[this, R]>
 
 		/**
-		 * Intersect this Runtype with another.
+		 * Intersects this Runtype with another.
 		 */
 		and: <R extends Runtype.Core>(other: R) => Intersect<[this, R]>
 
 		/**
-		 * Optionalize this property.
+		 * Optionalizes this property.
 		 *
 		 * Note that `Optional` is not a runtype, but just a contextual modifier which is only meaningful when defining the content of `Object`. If you want to allow the validated value to be `undefined`, use `undefinedable` method.
 		 */
-		optional: () => Optional<this>
+		optional: () => Optional<this, never>
 
 		/**
-		 * Union this runtype with `Null`.
+		 * Optionalizes this property, defaulting to the given value if this property was absent; only meaningful for parsing.
+		 */
+		default: <Y extends X>(value: Y) => Optional<this, Y>
+
+		/**
+		 * Unions this runtype with `Null`.
 		 */
 		nullable: () => Union<[this, Literal<null>]>
 
 		/**
-		 * Union this runtype with `Undefined`.
+		 * Unions this runtype with `Undefined`.
 		 */
 		undefinedable: () => Union<[this, Literal<undefined>]>
 
 		/**
-		 * Union this runtype with `Null` and `Undefined`.
+		 * Unions this runtype with `Null` and `Undefined`.
 		 */
 		nullishable: () => Union<[this, Literal<null>, Literal<undefined>]>
 
 		/**
-		 * Use a constraint function to add additional constraints to this runtype, and manually converts a static type of this runtype into another via the type argument if passed.
+		 * Uses a constraint function to add additional constraints to this runtype, and manually converts a static type of this runtype into another via the type argument if passed.
 		 */
 		withConstraint: <U extends T>(constraint: (x: T) => boolean | string) => Constraint<this, U>
 
 		/**
-		 * Use a guard function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
+		 * Uses a guard function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
 		 */
 		withGuard: <U extends T>(guard: (x: T) => x is U) => Constraint<this, U>
 
 		/**
-		 * Use an assertion function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
+		 * Uses an assertion function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
 		 */
 		withAssertion: <U extends T>(assert: (x: T) => asserts x is U) => Constraint<this, U>
 
@@ -189,47 +215,57 @@ namespace Runtype {
 		withBrand: <B extends string>(brand: B) => Brand<B, this>
 
 		/**
-		 * Statically ensures this runtype is defined for exactly `U`, not for a subtype of `U`.
+		 * Chains custom parser after this runtype. Only works in the `parse` method.
 		 */
-		conform<U>(this: Conform<U>): Conform<U> & this
+		withParser: <Y>(parser: (value: X) => Y) => Parser<this, Y>
+
+		/**
+		 * Statically ensures this runtype is defined for exactly `T`, not for a subtype of `T`. `X` is for the parsed type.
+		 */
+		conform<T, X = T>(this: Conform<T, X>): Conform<T, X> & this
 	}
 
-	type Conform<T> = Runtype.Core<T> & Conformance<T>
+	type Conform<T, X> = Runtype.Core<T, X> & Conformance<T, X>
 
-	type Conformance<T> = {
-		/** @internal */ readonly [RuntypeConformance]: (StaticTypeOfThis: T) => T
+	type Conformance<T, X> = {
+		/** @internal */ readonly [RuntypeConformance]: [
+			(StaticTypeOfThis: T) => T,
+			(ParsedTypeOfThis: X) => X,
+		]
 	}
 
 	/**
 	 * A runtype determines at runtime whether a value conforms to a type specification.
 	 */
-	export interface Core<T = any> {
-		/** @internal */ readonly [RuntypeSymbol]: T
+	export interface Core<T = any, X = T> {
+		/** @internal */ readonly [RuntypeSymbol]: [T, X]
 
 		tag: string
 
 		/**
-		 * Validates that a value conforms to this type, and returns a result indicating
-		 * success or failure (does not throw).
+		 * Validates that a value conforms to this runtype, returning a detailed information of success or failure. Does not throw on failure.
 		 */
 		validate: <U = T>(x: Maybe<T, U>) => Result<T & U>
 
 		/**
-		 * A type guard for this runtype.
+		 * Validates that a value conforms to this runtype, returning a `boolean` that represents success (`true`) or failure (`false`). Does not throw on failure.
 		 */
 		guard: <U = T>(x: Maybe<T, U>) => x is T & U
 
 		/**
-		 * Verifies that a value conforms to this runtype. If so, returns the same value,
-		 * statically typed. Otherwise throws an exception.
+		 * Validates that a value conforms to this runtype, returning the original value, statically typed. Throws `ValidationError` on failure.
 		 */
 		check: <U = T>(x: Maybe<T, U>) => T & U
 
 		/**
-		 * Verifies that a value conforms to this runtype. When given a value that does
-		 * not conform to the runtype, throws an exception.
+		 * Validates that a value conforms to this runtype. Throws `ValidationError` on failure.
 		 */
 		assert: <U = T>(x: Maybe<T, U>) => asserts x is T & U
+
+		/**
+		 * Validates that a value conforms to this runtype and returns another value transformed by functions passed to `withParser`. Throws `ValidationError` on failure. Does not modify the original value.
+		 */
+		parse: <U = T>(x: Maybe<T, U>) => X
 	}
 
 	// Special-casing when `T = never`, as it breaks expected assignability everywhere.
@@ -251,6 +287,7 @@ type Runtype =
 	| Never
 	| Number
 	| Object
+	| Parser
 	| Record
 	| String
 	| Symbol
@@ -273,12 +310,12 @@ const defineProperties = (
 	}
 }
 
-type InnerValidate = <R extends Runtype.Core>(runtype: R, value: unknown) => Result<Static<R>>
+type InnerValidate = <T>(runtype: Runtype.Core, value: unknown, parsing: boolean) => Result<T>
 
 const createInnerValidate =
 	(visited: VisitedState): InnerValidate =>
-	<R extends Runtype.Core>(runtype: R, value: unknown): Result<Static<R>> =>
-		(runtype[RuntypeSymbol] as any)(value, visited)
+	(runtype, value, parsing) =>
+		(runtype[RuntypeSymbol] as any).validate(value, visited, parsing)
 
 type VisitedState = {
 	has: (candidate: unknown, runtype: Runtype.Core) => boolean
@@ -304,4 +341,4 @@ const createVisitedState = (): VisitedState => {
 
 export default Runtype
 // eslint-disable-next-line import/no-named-export, sort-exports/sort-exports
-export { type Static }
+export type { Static, Parsed }

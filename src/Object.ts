@@ -1,6 +1,5 @@
 import Optional from "./Optional.ts"
-import Runtype from "./Runtype.ts"
-import { type Static } from "./Runtype.ts"
+import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
@@ -36,14 +35,35 @@ type ObjectStatic<O extends Object.Fields> = {
 	? { [K in keyof P]: P[K] }
 	: never
 
+type ObjectParsedReadonly<O extends Object.Fields> = {
+	[K in FilterRequiredKeys<O>]: O[K] extends Runtype.Core ? Parsed<O[K]> : never
+} & {
+	[K in FilterOptionalKeys<O>]?: O[K] extends Runtype.Core
+		? Exclude<Parsed<O[K]>, undefined>
+		: never
+} extends infer P
+	? { readonly [K in keyof P]: P[K] }
+	: never
+
+type ObjectParsed<O extends Object.Fields> = {
+	[K in FilterRequiredKeys<O>]: O[K] extends Runtype.Core ? Parsed<O[K]> : never
+} & {
+	[K in FilterOptionalKeys<O>]?: O[K] extends Optional<infer OK>
+		? Exclude<Parsed<OK>, undefined>
+		: never
+} extends infer P
+	? { [K in keyof P]: P[K] }
+	: never
+
 interface ObjectReadonly<O extends Object.Fields = Object.Fields>
-	extends Runtype.Common<ObjectStaticReadonly<O>> {
+	extends Runtype.Common<ObjectStaticReadonly<O>, ObjectParsedReadonly<O>> {
 	tag: "object"
 	fields: O
 	isExact: boolean
 }
 
-interface Object<O extends Object.Fields = Object.Fields> extends Runtype.Common<ObjectStatic<O>> {
+interface Object<O extends Object.Fields = Object.Fields>
+	extends Runtype.Common<ObjectStatic<O>, ObjectParsed<O>> {
 	tag: "object"
 	fields: O
 	isExact: boolean
@@ -107,53 +127,62 @@ const isOptional = (value: Runtype.Core | Optional): value is Optional => value.
  */
 const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => {
 	return Runtype.create<Object<O>>(
-		(x, innerValidate, self) => {
+		(x, innerValidate, self, parsing) => {
 			if (x === null || x === undefined) return FAILURE.TYPE_INCORRECT(self, x)
 
 			const keysOfFields = enumerableKeysOf(self.fields)
 			if (keysOfFields.length !== 0 && typeof x !== "object") return FAILURE.TYPE_INCORRECT(self, x)
 
 			const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])]
-			const results = keys.reduce<{ [key in string | number | symbol]: Result<unknown> }>(
-				(results, key) => {
-					const fieldsHasKey = hasKey(key, self.fields)
-					const xHasKey = hasKey(key, x)
-					if (fieldsHasKey) {
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						const runtype = self.fields[key]!
-						if (xHasKey) {
-							const value = x[key]
-							if (isOptional(runtype)) results[key] = innerValidate(runtype.underlying, value)
-							else results[key] = innerValidate(runtype, value)
-						} else {
-							if (isOptional(runtype)) results[key] = SUCCESS(undefined)
-							else results[key] = FAILURE.PROPERTY_MISSING(runtype)
-						}
-					} else if (xHasKey) {
+			const results: { [key in string | number | symbol]: Result<unknown> } = {}
+			const parsed: any = {}
+			for (const key of keys) {
+				const fieldsHasKey = hasKey(key, self.fields)
+				const xHasKey = hasKey(key, x)
+				if (fieldsHasKey) {
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					const runtype = self.fields[key]!
+					if (xHasKey) {
 						const value = x[key]
-						if (self.isExact) {
-							results[key] = FAILURE.PROPERTY_PRESENT(value)
+						if (isOptional(runtype)) {
+							results[key] = innerValidate(runtype.underlying, value, parsing)
 						} else {
-							results[key] = SUCCESS(value)
+							results[key] = innerValidate(runtype, value, parsing)
 						}
+						if (results[key].success) parsed[key] = results[key].value
 					} else {
-						throw new Error("impossible")
+						if (isOptional(runtype)) {
+							if ("defaultValue" in runtype) {
+								results[key] = SUCCESS(runtype.defaultValue)
+								parsed[key] = runtype.defaultValue
+							} else {
+								results[key] = SUCCESS(undefined)
+							}
+						} else {
+							results[key] = FAILURE.PROPERTY_MISSING(runtype)
+						}
 					}
-					return results
-				},
-				{},
-			)
+				} else if (xHasKey) {
+					const value = x[key]
+					if (self.isExact) {
+						results[key] = FAILURE.PROPERTY_PRESENT(value)
+					} else {
+						results[key] = SUCCESS(value)
+					}
+				} else {
+					throw new Error("impossible")
+				}
+			}
 
-			const details = keys.reduce<{
-				[key in string | number | symbol]: string | Failure.Details
-			}>((details, key) => {
+			const details: { [key in string | number | symbol]: string | Failure.Details } = {}
+			for (const key of keys) {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const result = results[key]!
 				if (!result.success) details[key] = result.details || result.message
-				return details
-			}, {})
+			}
 
 			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
-			else return SUCCESS(x as ObjectStatic<O>)
+			else return SUCCESS(parsing ? (parsed as ObjectParsed<O>) : (x as ObjectStatic<O>))
 		},
 		{ tag: "object", fields, isExact: false } as Runtype.Base<Object<O>>,
 	).with(

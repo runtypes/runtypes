@@ -23,6 +23,8 @@ const Failcode = {
 	PROPERTY_PRESENT: "PROPERTY_PRESENT",
 	/** The value must not be present but present. */
 	NOTHING_EXPECTED: "NOTHING_EXPECTED",
+	/** The value can't be parsed. */
+	PARSING_FAILED: "PARSING_FAILED",
 } as const
 
 export default Failcode
