@@ -144,9 +144,7 @@ const flattenInnerRuntypes = (
 				break
 			}
 			case "union": {
-				const union = runtypes[i] as Union<
-					readonly [Runtype.Core<unknown>, ...Runtype.Core<unknown>[]]
-				>
+				const union = runtypes[i] as Union
 				if (union.alternatives.length === 1) {
 					try {
 						const literal = getInnerLiteral(union)
@@ -164,9 +162,7 @@ const flattenInnerRuntypes = (
 				}
 			}
 			case "intersect": {
-				const intersect = runtypes[i] as Intersect<
-					readonly [Runtype.Core<unknown>, ...Runtype.Core<unknown>[]]
-				>
+				const intersect = runtypes[i] as Intersect
 				if (intersect.intersectees.length === 1) {
 					try {
 						const literal = getInnerLiteral(intersect)

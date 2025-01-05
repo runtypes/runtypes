@@ -19,13 +19,13 @@ const match =
 
 type PairCase<A extends Runtype.Core, Z> = [A, Case<A, Z>]
 
-type Match<A extends readonly [Runtype.Core, ...Runtype.Core[]]> = <Z>(
+type Match<A extends readonly Runtype.Core[]> = <Z>(
 	...cases: { [K in keyof A]: A[K] extends Runtype.Core<any> ? Case<A[K], Z> : never }
 ) => Matcher<A, Z>
 
 type Case<R extends Runtype.Core, Result> = (v: Static<R>) => Result
 
-type Matcher<A extends readonly [Runtype.Core, ...Runtype.Core[]], Z> = (
+type Matcher<A extends readonly Runtype.Core[], Z> = (
 	x: {
 		[K in keyof A]: A[K] extends Runtype.Core<infer T> ? T : unknown
 	}[number],
