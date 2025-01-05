@@ -177,7 +177,7 @@ namespace Runtype {
 		/**
 		 * Optionalizes this property, defaulting to the given value if this property was absent; only meaningful for parsing.
 		 */
-		default: <Y extends X>(value: Y) => Optional<this, Y>
+		default: <X = never>(value: X) => Optional<this, X>
 
 		/**
 		 * Unions this runtype with `Null`.

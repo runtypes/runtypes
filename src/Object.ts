@@ -7,50 +7,66 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 
-type FilterOptionalKeys<T> = {
+type OptionalKeysStatic<T> = {
 	[K in keyof T]: T[K] extends Optional ? K : never
 }[keyof T]
 
-type FilterRequiredKeys<T> = {
+type RequiredKeysStatic<T> = {
 	[K in keyof T]: T[K] extends Optional ? never : K
 }[keyof T]
 
+type OptionalKeysParsed<T> = {
+	[K in keyof T]: T[K] extends Optional<any, infer X> ? ([X] extends [never] ? K : never) : never
+}[keyof T]
+
+type RequiredKeysParsed<T> = {
+	[K in keyof T]: T[K] extends Optional<any, infer X> ? ([X] extends [never] ? never : K) : K
+}[keyof T]
+
+type RequiredValuesStatic<T> = T extends Runtype.Core ? Static<T> : never
+
+type OptionalValuesStatic<T> = T extends Optional<infer OK> ? Static<OK> : never
+
+type RequiredValuesParsed<T> =
+	T extends Optional<infer OK, infer X>
+		? [X] extends [never]
+			? never
+			: Parsed<OK> | X
+		: T extends Runtype.Core
+			? Parsed<T>
+			: never
+
+type OptionalValuesParsed<T> =
+	T extends Optional<infer OK, infer X> ? ([X] extends [never] ? Parsed<OK> : never) : never
+
 type ObjectStaticReadonly<O extends Object.Fields> = {
-	[K in FilterRequiredKeys<O>]: O[K] extends Runtype.Core ? Static<O[K]> : never
+	[K in RequiredKeysStatic<O>]: RequiredValuesStatic<O[K]>
 } & {
-	[K in FilterOptionalKeys<O>]?: O[K] extends Runtype.Core
-		? Exclude<Static<O[K]>, undefined>
-		: never
+	[K in OptionalKeysStatic<O>]?: OptionalValuesStatic<O[K]>
 } extends infer P
 	? { readonly [K in keyof P]: P[K] }
 	: never
 
 type ObjectStatic<O extends Object.Fields> = {
-	[K in FilterRequiredKeys<O>]: O[K] extends Runtype.Core ? Static<O[K]> : never
+	[K in RequiredKeysStatic<O>]: RequiredValuesStatic<O[K]>
 } & {
-	[K in FilterOptionalKeys<O>]?: O[K] extends Optional<infer OK>
-		? Exclude<Static<OK>, undefined>
-		: never
+	[K in OptionalKeysStatic<O>]?: OptionalValuesStatic<O[K]>
 } extends infer P
 	? { [K in keyof P]: P[K] }
 	: never
 
 type ObjectParsedReadonly<O extends Object.Fields> = {
-	[K in FilterRequiredKeys<O>]: O[K] extends Runtype.Core ? Parsed<O[K]> : never
+	[K in RequiredKeysParsed<O>]: RequiredValuesParsed<O[K]>
 } & {
-	[K in FilterOptionalKeys<O>]?: O[K] extends Runtype.Core
-		? Exclude<Parsed<O[K]>, undefined>
-		: never
+	[K in OptionalKeysParsed<O>]?: OptionalValuesParsed<O[K]>
 } extends infer P
 	? { readonly [K in keyof P]: P[K] }
 	: never
 
 type ObjectParsed<O extends Object.Fields> = {
-	[K in FilterRequiredKeys<O>]: O[K] extends Runtype.Core ? Parsed<O[K]> : never
+	[K in RequiredKeysParsed<O>]: RequiredValuesParsed<O[K]>
 } & {
-	[K in FilterOptionalKeys<O>]?: O[K] extends Optional<infer OK>
-		? Exclude<Parsed<OK>, undefined>
-		: never
+	[K in OptionalKeysParsed<O>]?: OptionalValuesParsed<O[K]>
 } extends infer P
 	? { [K in keyof P]: P[K] }
 	: never
