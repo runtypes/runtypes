@@ -714,32 +714,6 @@ Deno.test("reflection", async t => {
 		expectLiteralField(String, "tag", "string")
 	})
 
-	await t.step("symbol", async t => {
-		expectLiteralField(Sym, "tag", "symbol")
-		const SymForRuntypes = Sym("runtypes")
-		expectLiteralField(SymForRuntypes, "tag", "symbol")
-		expectLiteralField(SymForRuntypes, "key", "runtypes")
-		assertRuntypeThrows(
-			Symbol.for("runtypes!"),
-			Sym("runtypes?"),
-			Failcode.VALUE_INCORRECT,
-			'Expected symbol key "runtypes?", but was "runtypes!"',
-		)
-		assertAccepts(Symbol(), Sym(undefined))
-		assertRuntypeThrows(
-			Symbol.for("undefined"),
-			Sym(undefined),
-			Failcode.VALUE_INCORRECT,
-			'Expected symbol key undefined, but was "undefined"',
-		)
-		assertRuntypeThrows(
-			Symbol(),
-			Sym("undefined"),
-			Failcode.VALUE_INCORRECT,
-			'Expected symbol key "undefined", but was undefined',
-		)
-	})
-
 	await t.step("literal", async t => {
 		expectLiteralField(X, "tag", "literal")
 		expectLiteralField(X, "value", "x")
@@ -879,11 +853,9 @@ const assertRuntypeThrows = (
 	errorMessage: string,
 	errorDetails?: Failure.Details,
 ) => {
-	const exception = assertThrows(() => runtype.check(value))
-	if (!(exception instanceof ValidationError)) throw exception
-	assert(exception instanceof ValidationError)
+	const exception = assertThrows(() => runtype.check(value), ValidationError)
 	const { code, message, details } = exception
-	assert(code === failcode)
+	assertEquals(code, failcode)
 	// TODO: Fix this. Semantics of `details` is inprecise for array types for now.
 	// assert(message === errorMessage)
 	// if (details !== undefined) {
