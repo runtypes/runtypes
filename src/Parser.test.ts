@@ -2,6 +2,7 @@ import Array from "./Array.ts"
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
+import { type Parsed, type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Template from "./Template.ts"
 import Tuple from "./Tuple.ts"
@@ -47,8 +48,14 @@ Deno.test("Parser", async t => {
 			})
 
 			await t.step("with optional properties with default values", async t => {
-				const O = Object({ date: DateStringFromNumber.default("N/A") })
-				assertEquals(O.parse({}), { date: "N/A" })
+				const O = Object({ x: String.withParser(() => 42 as const).default(0 as const) })
+				type OStatic = Static<typeof O>
+				type OParsed = Parsed<typeof O>
+				assertEquals(O.parse({ x: "42" }).x, 42)
+				assertEquals(O.parse({}).x, 0)
+				const oStatic: OStatic = { x: "hello" }
+				const oParsed0: OParsed = { x: 0 }
+				const oParsed42: OParsed = { x: 42 }
 			})
 
 			await t.step("while filtering out extraneous properties", async t => {
