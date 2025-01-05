@@ -2,6 +2,7 @@ import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Record from "./Record.ts"
 import { type Static } from "./Runtype.ts"
+import String from "./String.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
 import { assertEquals } from "@std/assert"
@@ -30,5 +31,11 @@ Deno.test("Record", async t => {
 				b: "Expected number, but was missing",
 			},
 		})
+	})
+	await t.step("should work with certain edge case number keys", async t => {
+		const D = Record(Number, String)
+		type D = Static<typeof D>
+		const d: D = { [globalThis.Number.MAX_VALUE]: "foo" }
+		assertEquals(D.validate(d), { success: true, value: d })
 	})
 })
