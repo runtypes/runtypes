@@ -160,7 +160,7 @@ namespace Runtype {
 		/**
 		 * Unions this Runtype with another.
 		 */
-		or: <R extends Runtype.Core>(other: R) => Union<[this, R]>
+		or: <R extends Runtype.Core>(other: R) => Union.WithUtilities<[this, R]>
 
 		/**
 		 * Intersects this Runtype with another.
@@ -182,17 +182,17 @@ namespace Runtype {
 		/**
 		 * Unions this runtype with `Null`.
 		 */
-		nullable: () => Union<[this, Literal<null>]>
+		nullable: () => Union.WithUtilities<[this, Literal<null>]>
 
 		/**
 		 * Unions this runtype with `Undefined`.
 		 */
-		undefinedable: () => Union<[this, Literal<undefined>]>
+		undefinedable: () => Union.WithUtilities<[this, Literal<undefined>]>
 
 		/**
 		 * Unions this runtype with `Null` and `Undefined`.
 		 */
-		nullishable: () => Union<[this, Literal<null>, Literal<undefined>]>
+		nullishable: () => Union.WithUtilities<[this, Literal<null>, Literal<undefined>]>
 
 		/**
 		 * Uses a constraint function to add additional constraints to this runtype, and manually converts a static type of this runtype into another via the type argument if passed.
