@@ -26,10 +26,23 @@ interface Union<
 		: never
 }
 
+namespace Union {
+	// eslint-disable-next-line import/no-named-export
+	export type Utilities<R extends readonly [Runtype.Core, ...Runtype.Core[]]> = {
+		match: Match<R>
+	}
+
+	// eslint-disable-next-line import/no-named-export
+	export type WithUtilities<R extends readonly [Runtype.Core, ...Runtype.Core[]]> = Union<R> &
+		Utilities<R>
+}
+
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-const Union = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(...alternatives: R) => {
+const Union = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(
+	...alternatives: R
+): Union.WithUtilities<R> => {
 	const base = {
 		tag: "union",
 		alternatives,
