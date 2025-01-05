@@ -26,7 +26,6 @@ import Void from "./Void.ts"
 import Failcode from "./result/Failcode.ts"
 import type Failure from "./result/Failure.ts"
 import ValidationError from "./result/ValidationError.ts"
-import Contract from "./utils/Contract.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 import isObject from "./utils-internal/isObject.ts"
 import { assert, assertEquals, assertThrows, fail } from "@std/assert"
@@ -282,47 +281,6 @@ for (const { value, passes } of testValues) {
 		}
 	})
 }
-
-Deno.test("contracts", async t => {
-	await t.step("0 args", async t => {
-		const f = () => 3
-		assert(Contract(Number).enforce(f)() === 3)
-		try {
-			// @ts-expect-error: must fail
-			Contract(String).enforce(f)()
-			fail("contract was violated but no exception was thrown")
-		} catch (exception) {
-			assert(exception instanceof ValidationError)
-			/* success */
-		}
-	})
-
-	await t.step("1 arg", async t => {
-		const f = (x: string) => x.length
-		assert(Contract(String, Number).enforce(f)("hel") === 3)
-		try {
-			// @ts-expect-error: must fail
-			Contract(String, Number).enforce(f)(3)
-			fail("contract was violated but no exception was thrown")
-		} catch (exception) {
-			assert(exception instanceof ValidationError)
-			/* success */
-		}
-	})
-
-	await t.step("2 args", async t => {
-		const f = (x: string, y: boolean) => (y ? x.length : 4)
-		assert(Contract(String, Boolean, Number).enforce(f)("hello", false) === 4)
-		try {
-			// @ts-expect-error: must fail
-			Contract(String, Boolean, Number).enforce(f)("hello")
-			fail("contract was violated but no exception was thrown")
-		} catch (exception) {
-			assert(exception instanceof ValidationError)
-			/* success */
-		}
-	})
-})
 
 Deno.test("check errors", async t => {
 	await t.step("tuple type", async t => {

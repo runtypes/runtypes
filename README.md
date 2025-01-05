@@ -391,24 +391,6 @@ const ObjectIdChecker = InstanceOf(ObjectId);
 ObjectIdChecker.check(value);
 ```
 
-## Function contracts
-
-Runtypes along with constraint checking are a natural fit for enforcing function contracts. You can construct a contract from `Runtype`s for the parameters and return type of the function:
-
-```ts
-const divide = Contract(
-	// Parameters:
-	Number,
-	Number.withConstraint(n => n !== 0 || "division by zero"),
-	// Return type:
-	Number,
-).enforce((n, m) => n / m)
-
-divide(10, 2) // 5
-
-divide(10, 0) // Throws error: division by zero
-```
-
 ## Branded types
 
 Branded types is a way to emphasize the uniqueness of a type. This is useful [until we have nominal types](https://github.com/microsoft/TypeScript/pull/33038):
@@ -419,7 +401,10 @@ const Password = String.withBrand("Password").withConstraint(
 	str => str.length >= 8 || "Too short password",
 )
 
-const signIn = Contract(Username, Password, Unknown).enforce((username, password) => {
+const signIn = Contract({
+	receives: Tuple(Username, Password),
+	returns: Unknown,
+}).enforce((username, password) => {
 	/*...*/
 })
 
@@ -625,8 +610,40 @@ type pH = Static<typeof pH>
 In such cases, you have to receive the original runtype by passing a function instead:
 
 ```typescript
-const pH = Number.withBrand("pH").with(self => ({ default: 7 as Static<typeof self> }))
+const pH = Number.withBrand("pH").with(self => ({
+	default: 7 as Static<typeof self>,
+}))
 type pH = Static<typeof pH>
+```
+
+## Function contracts
+
+Runtypes along with constraint checking are a natural fit for enforcing function contracts. You can construct a contract from runtypes for the parameters and return type of the function:
+
+```ts
+const divide = Contract({
+	// This must be a runtype for arrays, just like annotating a rest parameter in TS.
+	receives: Tuple(
+		Number,
+		Number.withConstraint(n => n !== 0 || "division by zero"),
+	),
+	returns: Number,
+}).enforce((n, m) => n / m)
+
+divide(10, 2) // 5
+
+divide(10, 0) // Throws error: division by zero
+```
+
+Contracts can work with `Parser` runtypes:
+
+```typescript
+const ParseInt = String.withParser(parseInt)
+const contractedFunction = Contract({
+	receives: Array(ParseInt),
+	returns: Array(ParseInt),
+}).enforce((...args) => args.map(globalThis.String))
+contractedFunction("42", "24") // [42, 24]
 ```
 
 ## Related libraries
