@@ -9,9 +9,8 @@ import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 
-interface Union<
-	R extends readonly [Runtype.Core, ...Runtype.Core[]] = readonly [Runtype.Core, ...Runtype.Core[]],
-> extends Runtype.Common<
+interface Union<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
+	extends Runtype.Common<
 		{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number],
 		{ [K in keyof R]: R[K] extends Runtype.Core ? Parsed<R[K]> : unknown }[number]
 	> {
@@ -28,21 +27,18 @@ interface Union<
 
 namespace Union {
 	// eslint-disable-next-line import/no-named-export
-	export type Utilities<R extends readonly [Runtype.Core, ...Runtype.Core[]]> = {
+	export type Utilities<R extends readonly Runtype.Core[]> = {
 		match: Match<R>
 	}
 
 	// eslint-disable-next-line import/no-named-export
-	export type WithUtilities<R extends readonly [Runtype.Core, ...Runtype.Core[]]> = Union<R> &
-		Utilities<R>
+	export type WithUtilities<R extends readonly Runtype.Core[]> = Union<R> & Utilities<R>
 }
 
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-const Union = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(
-	...alternatives: R
-): Union.WithUtilities<R> => {
+const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.WithUtilities<R> => {
 	const base = {
 		tag: "union",
 		alternatives,
@@ -58,6 +54,8 @@ const Union = <R extends readonly [Runtype.Core, ...Runtype.Core[]]>(
 			self,
 			parsing,
 		): Result<{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number]> => {
+			if (self.alternatives.length === 0) return FAILURE.NOTHING_EXPECTED(value)
+
 			if (typeof value !== "object" || value === null) {
 				for (const alternative of self.alternatives) {
 					const result = innerValidate(alternative, value, parsing)

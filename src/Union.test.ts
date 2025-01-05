@@ -1,12 +1,12 @@
 import InstanceOf from "./InstanceOf.ts"
-import Literal, { type LiteralBase } from "./Literal.ts"
+import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
-import { assert, assertObjectMatch } from "@std/assert"
+import { assert, assertEquals, assertObjectMatch } from "@std/assert"
 import outdent from "x/outdent@v0.8.0/mod.ts"
 
 const ThreeOrString = Union(Literal(3), String)
@@ -15,17 +15,7 @@ Deno.test("union", async t => {
 	await t.step("mapped literals", async t => {
 		await t.step("works with its static types", async t => {
 			const values = ["Unknown", "Online", "Offline"] as const
-			type ElementOf<T extends readonly unknown[]> = T extends readonly (infer E)[] ? E : never
-			type LiteralOf<T extends readonly unknown[]> = {
-				[K in keyof T]: T[K] extends ElementOf<T>
-					? T[K] extends LiteralBase
-						? Literal<T[K]>
-						: never
-					: never
-			}
-			type L = LiteralOf<typeof values>
-			const literals = values.map(Literal) as unknown as L
-			const Values = Union<L>(...literals)
+			const Values = Union(...values.map(Literal))
 			type Values = Static<typeof Values>
 			const v: Values = "Online"
 			Values.check(v)
@@ -114,6 +104,15 @@ Deno.test("union", async t => {
 			const Shape = Union(Square, Rectangle, InstanceOf(Date))
 
 			assert(!("key" in Shape.validate({ kind: "square", size: new Date() })))
+		})
+	})
+
+	await t.step("should never validate with the empty union", async t => {
+		const ShouldNever = Union()
+		assertEquals(ShouldNever.validate(true), {
+			success: false,
+			code: Failcode.NOTHING_EXPECTED,
+			message: "Expected nothing, but was boolean",
 		})
 	})
 })
