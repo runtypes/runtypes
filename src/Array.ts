@@ -40,14 +40,11 @@ const Array = <R extends Runtype.Core>(element: R) => {
 		const originalOrParsed: any = parsing
 			? results.map(result => (result.success ? result.value : undefined))
 			: x
-		const details: globalThis.Record<
-			number,
-			{ [key: number]: string | Failure.Details } & (string | Failure.Details)
-		> = {}
+		const details: globalThis.Record<number, Failure> = {}
 		for (const key of keys) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const result = results[key]!
-			if (!result.success) details[key] = result.details || result.message
+			if (!result.success) details[key] = result
 		}
 
 		if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)

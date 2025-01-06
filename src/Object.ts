@@ -190,11 +190,11 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 				}
 			}
 
-			const details: { [key in string | number | symbol]: string | Failure.Details } = {}
+			const details: Failure.Details = {}
 			for (const key of keys) {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const result = results[key]!
-				if (!result.success) details[key] = result.details || result.message
+				if (!result.success) details[key] = result
 			}
 
 			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)

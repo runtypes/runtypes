@@ -104,11 +104,13 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 				}
 			}
 
-			const details: Failure.Details = []
-			for (const alternative of self.alternatives) {
+			const details: Failure.Details = {}
+			for (let i = 0; i < self.alternatives.length; i++) {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				const alternative = self.alternatives[i]!
 				const result = innerValidate(alternative, value, parsing)
 				if (result.success) return SUCCESS(parsing ? result.value : value)
-				details.push(result.details ?? result.message)
+				details[i] = result
 			}
 			return FAILURE.TYPE_INCORRECT(self, value, details)
 		},

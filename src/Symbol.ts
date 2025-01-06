@@ -19,7 +19,6 @@ const SymbolFor = <K extends string | undefined>(key: K) =>
 			if (typeof value !== "symbol") return FAILURE.TYPE_INCORRECT(self, value)
 			else {
 				const keyForValue = globalThis.Symbol.keyFor(value)
-				console.log(keyForValue, self.key)
 				if (keyForValue !== self.key)
 					if (self.key === undefined) {
 						return FAILURE.VALUE_INCORRECT("unique", "symbol", `for ${quoteIfPresent(keyForValue)}`)

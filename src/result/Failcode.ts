@@ -1,7 +1,7 @@
 /**
  * A predefined error code indicating what type of failure has occured.
  */
-type Failcode = (typeof Failcode)[keyof typeof Failcode]
+type Failcode = keyof typeof Failcode
 const Failcode = {
 	/** The type of the received primitive value is incompatible with expected one. */
 	TYPE_INCORRECT: "TYPE_INCORRECT",

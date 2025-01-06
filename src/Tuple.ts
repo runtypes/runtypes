@@ -201,15 +201,12 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 			? results.map(result => (result.success ? result.value : undefined))
 			: x
 
-		const details = results.reduce<
-			globalThis.Record<
-				number,
-				{ [key: number]: string | Failure.Details } & (string | Failure.Details)
-			>
-		>((details, result, i) => {
-			if (!result.success) details[i] = result.details || result.message
-			return details
-		}, [])
+		const details: Failure.Details = {}
+		for (let i = 0; i < results.length; i++) {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const result = results[i]!
+			if (!result.success) details[i] = result
+		}
 
 		if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
 		else return SUCCESS(originalOrParsed)

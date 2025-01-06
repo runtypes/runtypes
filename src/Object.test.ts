@@ -1,3 +1,4 @@
+import Array from "./Array.ts"
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
@@ -5,6 +6,7 @@ import Optional from "./Optional.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Undefined from "./Undefined.ts"
+import Failcode from "./result/Failcode.ts"
 import { assert, assertEquals, assertNotStrictEquals } from "@std/assert"
 
 Deno.test("Object", async t => {
@@ -142,5 +144,148 @@ Deno.test("Object", async t => {
 		assert(O.guard({ x: "hello", y: "world" }))
 		assert(P.guard({ x: "hello" }))
 		assert(!P.guard({ x: "hello", y: "world" }))
+	})
+
+	await t.step("object", async t => {
+		assertEquals(Object({ name: String, age: Number }).validate({ name: "Jack", age: "10" }), {
+			success: false,
+			code: Failcode.CONTENT_INCORRECT,
+			message: "Expected { name: string; age: number; }, but was incompatible",
+			details: {
+				age: {
+					success: false,
+					code: Failcode.TYPE_INCORRECT,
+					message: "Expected number, but was string",
+				},
+			},
+		})
+	})
+
+	await t.step("object for null prototype", () =>
+		assert(
+			Object({ name: String, age: Number }).validate(
+				globalThis.Object.assign(globalThis.Object.create(null), { name: "Jack", age: 10 }),
+			),
+		),
+	)
+
+	await t.step("object missing keys", async t => {
+		assertEquals(Object({ name: String, age: Number }).validate({ name: "Jack" }), {
+			success: false,
+			code: Failcode.CONTENT_INCORRECT,
+			message: "Expected { name: string; age: number; }, but was incompatible",
+			details: {
+				age: {
+					success: false,
+					code: Failcode.PROPERTY_MISSING,
+					message: "Expected number, but was missing",
+				},
+			},
+		})
+	})
+
+	await t.step("object complex", async t => {
+		assertEquals(
+			Object({ name: String, age: Number, likes: Array(Object({ title: String })) }).validate({
+				name: "Jack",
+				age: 10,
+				likes: [{ title: false }],
+			}),
+			{
+				success: false,
+				code: Failcode.CONTENT_INCORRECT,
+				message:
+					"Expected { name: string; age: number; likes: { title: string; }[]; }, but was incompatible",
+				details: {
+					likes: {
+						success: false,
+						code: Failcode.CONTENT_INCORRECT,
+						message: "Expected { title: string; }[], but was incompatible",
+						details: {
+							0: {
+								success: false,
+								code: Failcode.CONTENT_INCORRECT,
+								message: "Expected { title: string; }, but was incompatible",
+								details: {
+									title: {
+										success: false,
+										code: Failcode.TYPE_INCORRECT,
+										message: "Expected string, but was boolean",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		)
+	})
+
+	await t.step("readonly object", async t => {
+		assertEquals(
+			Object({ name: String, age: Number }).asReadonly().validate({ name: "Jack", age: "10" }),
+			{
+				success: false,
+				code: Failcode.CONTENT_INCORRECT,
+				message: "Expected { name: string; age: number; }, but was incompatible",
+				details: {
+					age: {
+						success: false,
+						code: Failcode.TYPE_INCORRECT,
+						message: "Expected number, but was string",
+					},
+				},
+			},
+		)
+	})
+
+	await t.step("readonly object missing keys", async t => {
+		assertEquals(Object({ name: String, age: Number }).asReadonly().validate({ name: "Jack" }), {
+			success: false,
+			code: Failcode.CONTENT_INCORRECT,
+			message: "Expected { name: string; age: number; }, but was incompatible",
+			details: {
+				age: {
+					success: false,
+					code: Failcode.PROPERTY_MISSING,
+					message: "Expected number, but was missing",
+				},
+			},
+		})
+	})
+
+	await t.step("readonly object complex", async t => {
+		assertEquals(
+			Object({ name: String, age: Number, likes: Array(Object({ title: String }).asReadonly()) })
+				.asReadonly()
+				.validate({ name: "Jack", age: 10, likes: [{ title: false }] }),
+			{
+				success: false,
+				code: Failcode.CONTENT_INCORRECT,
+				message:
+					"Expected { name: string; age: number; likes: { title: string; }[]; }, but was incompatible",
+				details: {
+					likes: {
+						success: false,
+						code: Failcode.CONTENT_INCORRECT,
+						message: "Expected { title: string; }[], but was incompatible",
+						details: {
+							0: {
+								success: false,
+								code: Failcode.CONTENT_INCORRECT,
+								message: "Expected { title: string; }, but was incompatible",
+								details: {
+									title: {
+										success: false,
+										code: Failcode.TYPE_INCORRECT,
+										message: "Expected string, but was boolean",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		)
 	})
 })

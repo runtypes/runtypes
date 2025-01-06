@@ -7,8 +7,7 @@ import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
-import { assert, assertEquals, assertObjectMatch } from "@std/assert"
-import outdent from "x/outdent@v0.8.0/mod.ts"
+import { assert, assertEquals } from "@std/assert"
 
 const ThreeOrString = Union(Literal(3), String)
 
@@ -42,47 +41,49 @@ Deno.test("union", async t => {
 
 			const Shape = Union(Square, Rectangle, Circle)
 
-			assertObjectMatch(Shape.validate({ kind: "square", size: new Date() }), {
+			assertEquals(Shape.validate({ kind: "square", size: new Date() }), {
 				success: false,
 				code: Failcode.CONTENT_INCORRECT,
-				message: outdent`
-					Validation failed:
-					{
-						"size": "Expected number, but was Date"
-					}.
-					Object should match { kind: "square"; size: number; }
-				`,
-				details: { size: "Expected number, but was Date" },
-			})
-
-			assertObjectMatch(Shape.validate({ kind: "rectangle", size: new Date() }), {
-				success: false,
-				code: Failcode.CONTENT_INCORRECT,
-				message: outdent`
-					Validation failed:
-					{
-						"width": "Expected number, but was missing",
-						"height": "Expected number, but was missing"
-					}.
-					Object should match { kind: "rectangle"; width: number; height: number; }
-				`,
+				message: 'Expected { kind: "square"; size: number; }, but was incompatible',
 				details: {
-					width: "Expected number, but was missing",
-					height: "Expected number, but was missing",
+					size: {
+						success: false,
+						code: Failcode.TYPE_INCORRECT,
+						message: "Expected number, but was Date",
+					},
 				},
 			})
 
-			assertObjectMatch(Shape.validate({ kind: "circle", size: new Date() }), {
+			assertEquals(Shape.validate({ kind: "rectangle", size: new Date() }), {
 				success: false,
 				code: Failcode.CONTENT_INCORRECT,
-				message: outdent`
-					Validation failed:
-					{
-						"radius": "Expected number, but was missing"
-					}.
-					Object should match { kind: "circle"; radius: number; }
-				`,
-				details: { radius: "Expected number, but was missing" },
+				message:
+					'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+				details: {
+					width: {
+						success: false,
+						code: Failcode.PROPERTY_MISSING,
+						message: "Expected number, but was missing",
+					},
+					height: {
+						success: false,
+						code: Failcode.PROPERTY_MISSING,
+						message: "Expected number, but was missing",
+					},
+				},
+			})
+
+			assertEquals(Shape.validate({ kind: "circle", size: new Date() }), {
+				success: false,
+				code: Failcode.CONTENT_INCORRECT,
+				message: 'Expected { kind: "circle"; radius: number; }, but was incompatible',
+				details: {
+					radius: {
+						success: false,
+						code: Failcode.PROPERTY_MISSING,
+						message: "Expected number, but was missing",
+					},
+				},
 			})
 
 			assert(!("key" in Shape.validate({ kind: "other", size: new Date() })))
@@ -133,15 +134,63 @@ Deno.test("union", async t => {
 			code: Failcode.TYPE_INCORRECT,
 			message:
 				'Expected { type: "A" | "B"; foobar: { foo: "bar"; }; } | { type: "C"; foobar: { foo: "bar"; }; }, but was incompatible',
-			details: [
-				{
-					foobar: { foo: 'Expected "bar", but was missing' },
-					type: ["Expected literal `A`, but was `C`", "Expected literal `B`, but was `C`"],
+			details: {
+				0: {
+					success: false,
+					code: Failcode.CONTENT_INCORRECT,
+					message: 'Expected { type: "A" | "B"; foobar: { foo: "bar"; }; }, but was incompatible',
+					details: {
+						foobar: {
+							success: false,
+							code: Failcode.CONTENT_INCORRECT,
+							message: 'Expected { foo: "bar"; }, but was incompatible',
+							details: {
+								foo: {
+									success: false,
+									code: Failcode.PROPERTY_MISSING,
+									message: 'Expected "bar", but was missing',
+								},
+							},
+						},
+						type: {
+							success: false,
+							code: Failcode.TYPE_INCORRECT,
+							message: 'Expected "A" | "B", but was incompatible',
+							details: {
+								0: {
+									success: false,
+									code: Failcode.VALUE_INCORRECT,
+									message: "Expected literal `A`, but was `C`",
+								},
+								1: {
+									success: false,
+									code: Failcode.VALUE_INCORRECT,
+									message: "Expected literal `B`, but was `C`",
+								},
+							},
+						},
+					},
 				},
-				{
-					foobar: { foo: 'Expected "bar", but was missing' },
+				1: {
+					success: false,
+					code: Failcode.CONTENT_INCORRECT,
+					message: 'Expected { type: "C"; foobar: { foo: "bar"; }; }, but was incompatible',
+					details: {
+						foobar: {
+							success: false,
+							code: Failcode.CONTENT_INCORRECT,
+							message: 'Expected { foo: "bar"; }, but was incompatible',
+							details: {
+								foo: {
+									success: false,
+									code: Failcode.PROPERTY_MISSING,
+									message: 'Expected "bar", but was missing',
+								},
+							},
+						},
+					},
 				},
-			],
+			},
 		})
 	})
 
@@ -154,10 +203,32 @@ Deno.test("union", async t => {
 			success: false,
 			code: "TYPE_INCORRECT",
 			message: "Expected { size: number; } | { size: number; }, but was incompatible",
-			details: [
-				{ size: "Expected number, but was object" },
-				{ size: "Expected number, but was object" },
-			],
+			details: {
+				0: {
+					success: false,
+					code: Failcode.CONTENT_INCORRECT,
+					message: "Expected { size: number; }, but was incompatible",
+					details: {
+						size: {
+							success: false,
+							code: Failcode.TYPE_INCORRECT,
+							message: "Expected number, but was object",
+						},
+					},
+				},
+				1: {
+					success: false,
+					code: Failcode.CONTENT_INCORRECT,
+					message: "Expected { size: number; }, but was incompatible",
+					details: {
+						size: {
+							success: false,
+							code: Failcode.TYPE_INCORRECT,
+							message: "Expected number, but was object",
+						},
+					},
+				},
+			},
 		})
 	})
 
@@ -174,52 +245,79 @@ Deno.test("union", async t => {
 			code: Failcode.TYPE_INCORRECT,
 			message:
 				'Expected { foo: "bar"; } | ({ foo: "bar"; } & { bar: "foo"; }) | ({ foo: "bar"; } & { foobar: "foobar"; }), but was incompatible',
-			details: [
-				{ foo: 'Expected "bar", but was missing' },
-				{ foo: 'Expected "bar", but was missing' },
-				{ foobar: 'Expected "foobar", but was missing' },
-			],
+			details: {
+				0: {
+					success: false,
+					code: Failcode.CONTENT_INCORRECT,
+					message: 'Expected { foo: "bar"; }, but was incompatible',
+					details: {
+						foo: {
+							success: false,
+							code: Failcode.PROPERTY_MISSING,
+							message: 'Expected "bar", but was missing',
+						},
+					},
+				},
+				1: {
+					success: false,
+					code: Failcode.CONTENT_INCORRECT,
+					message: 'Expected { foo: "bar"; }, but was incompatible',
+					details: {
+						foo: {
+							success: false,
+							code: Failcode.PROPERTY_MISSING,
+							message: 'Expected "bar", but was missing',
+						},
+					},
+				},
+				2: {
+					success: false,
+					code: Failcode.CONTENT_INCORRECT,
+					message: 'Expected { foobar: "foobar"; }, but was incompatible',
+					details: {
+						foobar: {
+							success: false,
+							code: Failcode.PROPERTY_MISSING,
+							message: 'Expected "foobar", but was missing',
+						},
+					},
+				},
+			},
 		})
 		assertEquals(A.validate(input), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
-			message: outdent`
-				Validation failed:
-				{
-					"foo": "Expected \\"bar\\", but was missing"
-				}.
-				Object should match { foo: "bar"; }
-			`,
+			message: 'Expected { foo: "bar"; }, but was incompatible',
 			details: {
-				foo: 'Expected "bar", but was missing',
+				foo: {
+					success: false,
+					code: Failcode.PROPERTY_MISSING,
+					message: 'Expected "bar", but was missing',
+				},
 			},
 		})
 		assertEquals(B.validate(input), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
-			message: outdent`
-				Validation failed:
-				{
-					"foo": "Expected \\"bar\\", but was missing"
-				}.
-				Object should match { foo: "bar"; }
-			`,
+			message: 'Expected { foo: "bar"; }, but was incompatible',
 			details: {
-				foo: 'Expected "bar", but was missing',
+				foo: {
+					success: false,
+					code: Failcode.PROPERTY_MISSING,
+					message: 'Expected "bar", but was missing',
+				},
 			},
 		})
 		assertEquals(C.validate(input), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
-			message: outdent`
-				Validation failed:
-				{
-					"foo": "Expected \\"bar\\", but was missing"
-				}.
-				Object should match { foo: "bar"; }
-			`,
+			message: 'Expected { foo: "bar"; }, but was incompatible',
 			details: {
-				foo: 'Expected "bar", but was missing',
+				foo: {
+					success: false,
+					code: Failcode.PROPERTY_MISSING,
+					message: 'Expected "bar", but was missing',
+				},
 			},
 		})
 	})
@@ -234,7 +332,18 @@ Deno.test("union", async t => {
 				success: false,
 				code: Failcode.TYPE_INCORRECT,
 				message: "Expected number | string, but was incompatible",
-				details: ["Expected number, but was boolean", "Expected string, but was boolean"],
+				details: {
+					0: {
+						success: false,
+						code: Failcode.TYPE_INCORRECT,
+						message: "Expected number, but was boolean",
+					},
+					1: {
+						success: false,
+						code: Failcode.TYPE_INCORRECT,
+						message: "Expected string, but was boolean",
+					},
+				},
 			},
 		)
 	})
@@ -244,7 +353,18 @@ Deno.test("union", async t => {
 			success: false,
 			code: Failcode.TYPE_INCORRECT,
 			message: "Expected number | string, but was incompatible",
-			details: ["Expected number, but was object", "Expected string, but was object"],
+			details: {
+				0: {
+					success: false,
+					code: Failcode.TYPE_INCORRECT,
+					message: "Expected number, but was object",
+				},
+				1: {
+					success: false,
+					code: Failcode.TYPE_INCORRECT,
+					message: "Expected string, but was object",
+				},
+			},
 		})
 	})
 })
