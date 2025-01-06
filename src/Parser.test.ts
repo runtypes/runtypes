@@ -1,4 +1,6 @@
 import Array from "./Array.ts"
+import Boolean from "./Boolean.ts"
+import Intersect from "./Intersect.ts"
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
@@ -6,6 +8,7 @@ import { type Parsed, type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Template from "./Template.ts"
 import Tuple from "./Tuple.ts"
+import Union from "./Union.ts"
 import { assert, assertEquals, assertThrows } from "@std/assert"
 
 Deno.test("Parser", async t => {
@@ -90,6 +93,19 @@ Deno.test("Parser", async t => {
 			assertEquals(ParseIntAndRadix16.parse("42"), "2a")
 			const Radix16AndParseInt = Radix16StringOfParsedInt.and(ParseInt)
 			assertEquals(Radix16AndParseInt.parse("42"), 42)
+		})
+
+		await t.step("`Boolean`s", async t => {
+			const Flip = Union(
+				Boolean.withParser(b => !b),
+				Boolean.withParser(b => !!b),
+			)
+			assertEquals(Flip.parse(true), false)
+			const FlipFlip = Intersect(
+				Boolean.withParser(b => !b),
+				Boolean.withParser(b => !!b),
+			)
+			assertEquals(FlipFlip.parse(true), true)
 		})
 
 		await t.step("`Template` transparently", async t => {

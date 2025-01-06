@@ -1,6 +1,6 @@
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
-import { type Failure } from "./index.ts"
+import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import { type Match } from "./utils/match.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
@@ -24,12 +24,12 @@ interface Union<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 }
 
 namespace Union {
-	// eslint-disable-next-line import/no-named-export
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 	export type Utilities<R extends readonly Runtype.Core[]> = {
 		match: Match<R>
 	}
 
-	// eslint-disable-next-line import/no-named-export
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 	export type WithUtilities<R extends readonly Runtype.Core[]> = Union<R> & Utilities<R>
 }
 

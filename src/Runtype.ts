@@ -54,20 +54,18 @@ namespace Runtype {
 		defineProperties(
 			self,
 			{
-				[RuntypeSymbol]: {
-					validate: (value: unknown, visited: VisitedState, parsing: boolean) => {
-						if (isObject(value)) {
-							const memo = visited.memo(value, self, null)
-							if (memo) return memo
-							else if (memo === undefined) {
-								const result = validate(value, createInnerValidate(visited), self, parsing)
-								visited.memo(value, self, result)
-								return result
-							} else return SUCCESS(value)
-						} else {
-							return validate(value, createInnerValidate(visited), self, parsing)
-						}
-					},
+				[RuntypeSymbol]: (value: unknown, visited: VisitedState, parsing: boolean) => {
+					if (isObject(value)) {
+						const memo = visited.memo(value, self, null)
+						if (memo) return memo
+						else if (memo === undefined) {
+							const result = validate(value, createInnerValidate(visited), self, parsing)
+							visited.memo(value, self, result)
+							return result
+						} else return SUCCESS(value)
+					} else {
+						return validate(value, createInnerValidate(visited), self, parsing)
+					}
 				},
 				toString: (): string => `Runtype<${show(self as Runtype)}>`,
 			},
@@ -78,7 +76,7 @@ namespace Runtype {
 			self,
 			{
 				validate: (x: unknown): Result<Static<R>> =>
-					(self[RuntypeSymbol] as any).validate(x, createVisitedState(), false),
+					(self[RuntypeSymbol] as any)(x, createVisitedState(), false),
 				check: (x: unknown): Static<R> => {
 					const result: Result<unknown> = self.validate(x)
 					if (result.success) return result.value as Static<R>
@@ -87,7 +85,7 @@ namespace Runtype {
 				guard: (x: unknown): x is Static<R> => self.validate(x).success,
 				assert: (x: unknown): asserts x is Static<R> => void self.check(x),
 				parse: (x: unknown): Parsed<R> => {
-					const result: Result<unknown> = (self[RuntypeSymbol] as any).validate(
+					const result: Result<unknown> = (self[RuntypeSymbol] as any)(
 						x,
 						createVisitedState(),
 						true,
@@ -324,7 +322,7 @@ type InnerValidate = <T>(runtype: Runtype.Core, value: unknown, parsing: boolean
 const createInnerValidate =
 	(visited: VisitedState): InnerValidate =>
 	(runtype, value, parsing) =>
-		(runtype[RuntypeSymbol] as any).validate(value, visited, parsing)
+		(runtype[RuntypeSymbol] as any)(value, visited, parsing)
 
 type VisitedState = {
 	memo: (
