@@ -3,9 +3,6 @@
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
 		"ecmaVersion": "latest",
-		"ecmaFeatures": {
-			"jsx": true
-		},
 		"project": "deno.json",
 		"sourceType": "module"
 	},
@@ -67,7 +64,7 @@
 			{
 				"unusedExports": true,
 				"missingExports": true,
-				"files": ["src/**/*.ts"],
+				"src": ["src/**/*.ts"],
 				"ignoreExports": ["src/**/*.test.ts"]
 			}
 		],
