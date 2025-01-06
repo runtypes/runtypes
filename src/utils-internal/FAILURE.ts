@@ -12,11 +12,11 @@ const FAILURE = globalThis.Object.assign(
 		...(details ? { details } : {}),
 	}),
 	{
-		TYPE_INCORRECT: (self: Runtype.Core, value: unknown) => {
+		TYPE_INCORRECT: (self: Runtype.Core, value: unknown, details?: Failure.Details) => {
 			const message = `Expected ${
 				self.tag === "template" ? `string ${show(self as Runtype)}` : show(self as Runtype)
-			}, but was ${typeOf(value)}`
-			return FAILURE(Failcode.TYPE_INCORRECT, message)
+			}, but was ${details ? "incompatible" : typeOf(value)}`
+			return FAILURE(Failcode.TYPE_INCORRECT, message, details)
 		},
 		VALUE_INCORRECT: (name: string, expected: unknown, received: unknown) => {
 			return FAILURE(

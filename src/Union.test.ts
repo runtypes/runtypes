@@ -132,7 +132,16 @@ Deno.test("union", async t => {
 			success: false,
 			code: Failcode.TYPE_INCORRECT,
 			message:
-				'Expected { type: "A" | "B"; foobar: { foo: "bar"; }; } | { type: "C"; foobar: { foo: "bar"; }; }, but was object',
+				'Expected { type: "A" | "B"; foobar: { foo: "bar"; }; } | { type: "C"; foobar: { foo: "bar"; }; }, but was incompatible',
+			details: [
+				{
+					foobar: { foo: 'Expected "bar", but was missing' },
+					type: ["Expected literal `A`, but was `C`", "Expected literal `B`, but was `C`"],
+				},
+				{
+					foobar: { foo: 'Expected "bar", but was missing' },
+				},
+			],
 		})
 	})
 
@@ -144,7 +153,11 @@ Deno.test("union", async t => {
 		assertEquals(result, {
 			success: false,
 			code: "TYPE_INCORRECT",
-			message: "Expected { size: number; } | { size: number; }, but was object",
+			message: "Expected { size: number; } | { size: number; }, but was incompatible",
+			details: [
+				{ size: "Expected number, but was object" },
+				{ size: "Expected number, but was object" },
+			],
 		})
 	})
 
@@ -160,7 +173,12 @@ Deno.test("union", async t => {
 			success: false,
 			code: Failcode.TYPE_INCORRECT,
 			message:
-				'Expected { foo: "bar"; } | ({ foo: "bar"; } & { bar: "foo"; }) | ({ foo: "bar"; } & { foobar: "foobar"; }), but was object',
+				'Expected { foo: "bar"; } | ({ foo: "bar"; } & { bar: "foo"; }) | ({ foo: "bar"; } & { foobar: "foobar"; }), but was incompatible',
+			details: [
+				{ foo: 'Expected "bar", but was missing' },
+				{ foo: 'Expected "bar", but was missing' },
+				{ foobar: 'Expected "foobar", but was missing' },
+			],
 		})
 		assertEquals(A.validate(input), {
 			success: false,
@@ -203,6 +221,30 @@ Deno.test("union", async t => {
 			details: {
 				foo: 'Expected "bar", but was missing',
 			},
+		})
+	})
+
+	await t.step("should report details #0", async t => {
+		assertEquals(
+			Union(Number, String).validate(
+				// @ts-expect-error: should fail
+				false,
+			),
+			{
+				success: false,
+				code: Failcode.TYPE_INCORRECT,
+				message: "Expected number | string, but was incompatible",
+				details: ["Expected number, but was boolean", "Expected string, but was boolean"],
+			},
+		)
+	})
+
+	await t.step("should report details #1", async t => {
+		assertEquals(Union(Number, String).validate(globalThis.Object.create(null)), {
+			success: false,
+			code: Failcode.TYPE_INCORRECT,
+			message: "Expected number | string, but was incompatible",
+			details: ["Expected number, but was object", "Expected string, but was object"],
 		})
 	})
 })

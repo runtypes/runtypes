@@ -662,24 +662,6 @@ Deno.test("check errors", async t => {
 			"Failed constraint check for SomeClass: n must be 3+",
 		)
 	})
-
-	await t.step("union", async t => {
-		assertRuntypeThrows(
-			false,
-			Union(Number, String),
-			Failcode.TYPE_INCORRECT,
-			"Expected number | string, but was boolean",
-		)
-	})
-
-	await t.step("union for null prototype", async t => {
-		assertRuntypeThrows(
-			globalThis.Object.assign(globalThis.Object.create(null)),
-			Union(Number, String),
-			Failcode.TYPE_INCORRECT,
-			"Expected number | string, but was object",
-		)
-	})
 })
 
 Deno.test("reflection", async t => {
