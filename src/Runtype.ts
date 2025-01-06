@@ -40,6 +40,7 @@ type Static<R extends { readonly [RuntypeSymbol]: [unknown, unknown] }> = R[type
 type Parsed<R extends { readonly [RuntypeSymbol]: [unknown, unknown] }> = R[typeof RuntypeSymbol][1]
 
 namespace Runtype {
+	// eslint-disable-next-line import/no-unused-modules
 	export const create = <R extends Runtype.Core = never>(
 		validate: (
 			x: unknown,
@@ -143,9 +144,11 @@ namespace Runtype {
 	}
 
 	/** @internal */
+	// eslint-disable-next-line import/no-unused-modules
 	export const isRuntype = (x: unknown): x is Runtype =>
 		isObject(x) && globalThis.Object.hasOwn(x, RuntypeSymbol)
 
+	// eslint-disable-next-line import/no-unused-modules
 	export type Base<R> = {
 		[K in keyof R as K extends Exclude<keyof Runtype.Common, "tag"> ? never : K]: R[K]
 	} & (
@@ -153,6 +156,7 @@ namespace Runtype {
 		| object
 	)
 
+	// eslint-disable-next-line import/no-unused-modules
 	export interface Common<T = unknown, X = T> extends Core<T, X>, Conformance<T, X> {
 		/**
 		 * Returns a clone of this runtype with additional properties. Useful when you want to provide related values, such as the default value and utility functions.
@@ -244,6 +248,7 @@ namespace Runtype {
 	/**
 	 * A runtype determines at runtime whether a value conforms to a type specification.
 	 */
+	// eslint-disable-next-line import/no-unused-modules
 	export interface Core<T = any, X = T> {
 		/** @internal */ readonly [RuntypeSymbol]: [T, X]
 
@@ -278,6 +283,7 @@ namespace Runtype {
 	// Special-casing when `T = never`, as it breaks expected assignability everywhere.
 	type Maybe<T, U> = [T] extends [never] ? unknown : [T & U] extends [never] ? T : U
 
+	// eslint-disable-next-line import/no-unused-modules
 	export type Spreadable = Runtype.Core<readonly unknown[]> & Iterable<Spread<Spreadable>>
 }
 
