@@ -2,6 +2,7 @@ import { type LiteralBase } from "./Literal.ts"
 import type Object from "./Object.ts"
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
+import { type Failure } from "./index.ts"
 import type Result from "./result/Result.ts"
 import { type Match } from "./utils/match.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
@@ -103,11 +104,13 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 				}
 			}
 
+			const details: Failure.Details = []
 			for (const alternative of self.alternatives) {
 				const result = innerValidate(alternative, value, parsing)
-				if (result.success) return SUCCESS(result.value)
+				if (result.success) return SUCCESS(parsing ? result.value : value)
+				details.push(result.details ?? result.message)
 			}
-			return FAILURE.TYPE_INCORRECT(self, value)
+			return FAILURE.TYPE_INCORRECT(self, value, details)
 		},
 		base,
 	).with(self => ({
