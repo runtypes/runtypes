@@ -1,7 +1,6 @@
 import Runtype from "./Runtype.ts"
 import { type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
-import type Result from "./result/Result.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 
 declare const RuntypeName: unique symbol
@@ -38,7 +37,7 @@ const Brand = <B extends string, R extends Runtype.Core>(brand: B, entity: R) =>
 		},
 	} as Runtype.Base<Brand<B, R>>
 	return Runtype.create<Brand<B, R>>(
-		value => entity.validate(value) as Result<Static<Brand<B, R>>>,
+		(value, innerValidate, self, parsing) => innerValidate(self.entity, value, parsing),
 		base,
 	)
 }
