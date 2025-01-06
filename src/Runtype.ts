@@ -56,8 +56,17 @@ namespace Runtype {
 			{
 				[RuntypeSymbol]: {
 					validate: (value: unknown, visited: VisitedState, parsing: boolean) => {
-						if (visited.has(value, self)) return SUCCESS(value) as Result<Static<R>>
-						return validate(value, createInnerValidate(visited), self, parsing)
+						if (isObject(value)) {
+							const memo = visited.memo(value, self, null)
+							if (memo) return memo
+							else if (memo === undefined) {
+								const result = validate(value, createInnerValidate(visited), self, parsing)
+								visited.memo(value, self, result)
+								return result
+							} else return SUCCESS(value)
+						} else {
+							return validate(value, createInnerValidate(visited), self, parsing)
+						}
 					},
 				},
 				toString: (): string => `Runtype<${show(self as Runtype)}>`,
@@ -318,25 +327,29 @@ const createInnerValidate =
 		(runtype[RuntypeSymbol] as any).validate(value, visited, parsing)
 
 type VisitedState = {
-	has: (candidate: unknown, runtype: Runtype.Core) => boolean
+	memo: (
+		candidate: object,
+		runtype: Runtype.Core,
+		result: Result<any> | null,
+	) => Result<any> | null | undefined
 }
 
 const createVisitedState = (): VisitedState => {
-	const members = new WeakMap<object, WeakSet<Runtype.Core>>()
+	const map = new WeakMap<object, WeakMap<Runtype.Core, Result<any> | null>>()
 
-	const add = (candidate: unknown, runtype: Runtype.Core) => {
-		if (!isObject(candidate)) return
-		members.set(candidate, (members.get(candidate) ?? new WeakSet()).add(runtype))
+	const memo = (
+		candidate: object,
+		runtype: Runtype.Core,
+		result: Result<any> | null,
+	): Result<any> | null | undefined => {
+		const inner = map.get(candidate) ?? new WeakMap()
+		map.set(candidate, inner)
+		const memo = inner.get(runtype)
+		inner.set(runtype, result)
+		return memo
 	}
 
-	const has = (candidate: unknown, runtype: Runtype.Core) => {
-		if (!isObject(candidate)) return false
-		const value = members.get(candidate)?.has(runtype) ?? false
-		add(candidate, runtype)
-		return value
-	}
-
-	return { has }
+	return { memo }
 }
 
 export default Runtype
