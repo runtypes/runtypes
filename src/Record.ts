@@ -101,10 +101,10 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 				}
 			}
 
-			const details: { [key in RecordKeyStatic]: string | Failure.Details } = {}
+			const details: Failure.Details = {}
 			for (const key of keys) {
 				const result = results[key]!
-				if (!result.success) details[key] = result.details || result.message
+				if (!result.success) details[key] = result
 			}
 
 			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)

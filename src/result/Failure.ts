@@ -4,10 +4,8 @@ import type Failcode from "./Failcode.ts"
  * A detailed object enumerating where the validation failed exactly.
  */
 namespace Failure {
-	// eslint-disable-next-line import/no-named-export
-	export type Details =
-		| (string | Details)[]
-		| { [key in string | number | symbol]: string | Details }
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
+	export type Details = { [key in string | number | symbol]: Failure }
 }
 
 /**

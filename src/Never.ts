@@ -8,6 +8,6 @@ interface Never extends Runtype.Common<never> {
 /**
  * Validates nothing (unknown fails).
  */
-const Never = Runtype.create<Never>(FAILURE.NOTHING_EXPECTED, { tag: "never" })
+const Never = Runtype.create<Never>(value => FAILURE.NOTHING_EXPECTED(value), { tag: "never" })
 
 export default Never

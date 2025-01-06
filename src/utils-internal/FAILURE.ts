@@ -31,8 +31,7 @@ const FAILURE = globalThis.Object.assign(
 			)
 		},
 		CONTENT_INCORRECT: (self: Runtype.Core, details: Failure.Details) => {
-			const formattedDetails = JSON.stringify(details, null, "\t").replace(/^ *null,\n/gm, "")
-			const message = `Validation failed:\n${formattedDetails}.\nObject should match ${show(self as Runtype)}`
+			const message = `Expected ${show(self as Runtype)}, but was incompatible`
 			return FAILURE(Failcode.CONTENT_INCORRECT, message, details)
 		},
 		ARGUMENT_INCORRECT: (message: string) => {

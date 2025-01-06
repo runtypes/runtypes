@@ -1,6 +1,6 @@
-import Runtype from "./Runtype.ts"
-import { type Static } from "./Runtype.ts"
+import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
+import type Result from "./result/Result.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 
 declare const RuntypeName: unique symbol
@@ -15,7 +15,8 @@ interface Brand<B extends string = string, R extends Runtype.Core = Runtype.Core
 	extends Runtype.Common<
 		// TODO: replace it by nominal type when it has been released
 		// https://github.com/microsoft/TypeScript/pull/33038
-		Static<R> & RuntypeBrand<B>
+		Static<R> & RuntypeBrand<B>,
+		Parsed<R> & RuntypeBrand<B>
 	> {
 	tag: "brand"
 	brand: B
@@ -36,10 +37,12 @@ const Brand = <B extends string, R extends Runtype.Core>(brand: B, entity: R) =>
 			yield Spread(base as any)
 		},
 	} as Runtype.Base<Brand<B, R>>
-	return Runtype.create<Brand<B, R>>(
-		(value, innerValidate, self, parsing) => innerValidate(self.entity, value, parsing),
-		base,
-	)
+	return Runtype.create<Brand<B, R>>((value, innerValidate, self, parsing): Result<any> => {
+		const result = innerValidate(self.entity, value, parsing)
+		if (result.success) return result
+		// TODO: use brand string in error messages
+		return result
+	}, base)
 }
 
 export default Brand

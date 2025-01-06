@@ -49,6 +49,7 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 			if (!result.success) return result
 			else parsed = result.value
 		}
+		// TODO: more detailed errors
 		return SUCCESS(parsed)
 	}, base)
 }

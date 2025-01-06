@@ -1,5 +1,4 @@
 import Runtype from "./Runtype.ts"
-import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
@@ -37,13 +36,9 @@ const sameValueZero = (x: unknown, y: unknown) => {
 const Literal = <T extends LiteralBase>(value: T) =>
 	Runtype.create<Literal<T>>(
 		x =>
-			(sameValueZero(x, value)
+			sameValueZero(x, value)
 				? SUCCESS(x as T)
-				: FAILURE.VALUE_INCORRECT(
-						"literal",
-						`\`${literal(value)}\``,
-						`\`${literal(x)}\``,
-					)) as Result<T>,
+				: FAILURE.VALUE_INCORRECT("literal", `\`${literal(value)}\``, `\`${literal(x)}\``),
 		{ tag: "literal", value },
 	)
 
