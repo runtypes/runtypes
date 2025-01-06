@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-export */
 import { String, type Static, Object, Array, type Runtype } from "../../src/index.ts"
 
-export const ArrayNonEmpty = <T extends Runtype>(element: T) =>
+export const ArrayNonEmpty = <T extends Runtype.Core>(element: T) =>
 	Array(element).withConstraint(a => 0 < a.length || "array must not be empty")
 
 export const ID = String.withBrand("ID")
