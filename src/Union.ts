@@ -8,6 +8,7 @@ import FAILURE from "./utils-internal/FAILURE.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import hasKey from "./utils-internal/hasKey.ts"
+import isObject from "./utils-internal/isObject.ts"
 
 interface Union<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 	extends Runtype.Common<
@@ -56,62 +57,56 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 		): Result<{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number]> => {
 			if (self.alternatives.length === 0) return FAILURE.NOTHING_EXPECTED(value)
 
-			if (typeof value !== "object" || value === null) {
+			// Special-casing for discriminated unions.
+			if (isObject(value)) {
+				const commonLiteralFields: { [K: string]: LiteralBase[] } = {}
 				for (const alternative of self.alternatives) {
-					const result = innerValidate(alternative, value, parsing)
-					if (result.success) return SUCCESS(result.value)
-				}
-				return FAILURE.TYPE_INCORRECT(self, value)
-			}
-
-			const commonLiteralFields: { [K: string]: LiteralBase[] } = {}
-			for (const alternative of self.alternatives) {
-				if (alternative.tag === "object") {
-					for (const fieldName in (alternative as Object<any>).fields) {
-						const field = (alternative as Object<any>).fields[fieldName]!
-						if (field.tag === "literal") {
-							if (commonLiteralFields[fieldName]) {
-								if (commonLiteralFields[fieldName]!.every(value => value !== field.value)) {
-									commonLiteralFields[fieldName]!.push(field.value)
-								}
-							} else {
-								commonLiteralFields[fieldName] = [field.value]
-							}
-						}
-					}
-				}
-			}
-
-			for (const fieldName in commonLiteralFields) {
-				if (commonLiteralFields[fieldName]!.length === self.alternatives.length) {
-					for (const alternative of self.alternatives) {
-						if (alternative.tag === "object") {
+					if (alternative.tag === "object") {
+						for (const fieldName in (alternative as Object<any>).fields) {
 							const field = (alternative as Object<any>).fields[fieldName]!
-							if (
-								field.tag === "literal" &&
-								hasKey(fieldName, value) &&
-								value[fieldName] === field.value
-							) {
-								return innerValidate(
-									alternative as Runtype.Core<
-										{
-											[K in keyof R]: R[K] extends Runtype.Core<unknown> ? Static<R[K]> : unknown
-										}[number]
-									>,
-									value,
-									parsing,
-								)
+							if (field.tag === "literal") {
+								if (commonLiteralFields[fieldName]) {
+									if (commonLiteralFields[fieldName]!.every(value => value !== field.value)) {
+										commonLiteralFields[fieldName]!.push(field.value)
+									}
+								} else {
+									commonLiteralFields[fieldName] = [field.value]
+								}
+							}
+						}
+					}
+				}
+
+				for (const fieldName in commonLiteralFields) {
+					if (commonLiteralFields[fieldName]!.length === self.alternatives.length) {
+						for (const alternative of self.alternatives) {
+							if (alternative.tag === "object") {
+								const field = (alternative as Object<any>).fields[fieldName]!
+								if (
+									field.tag === "literal" &&
+									hasKey(fieldName, value) &&
+									value[fieldName] === field.value
+								) {
+									return innerValidate(
+										alternative as Runtype.Core<
+											{
+												[K in keyof R]: R[K] extends Runtype.Core<unknown> ? Static<R[K]> : unknown
+											}[number]
+										>,
+										value,
+										parsing,
+									)
+								}
 							}
 						}
 					}
 				}
 			}
 
-			for (const targetType of self.alternatives) {
-				const result = innerValidate(targetType, value, parsing)
+			for (const alternative of self.alternatives) {
+				const result = innerValidate(alternative, value, parsing)
 				if (result.success) return SUCCESS(result.value)
 			}
-
 			return FAILURE.TYPE_INCORRECT(self, value)
 		},
 		base,
