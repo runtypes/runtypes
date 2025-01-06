@@ -518,11 +518,11 @@ Flip.parse(true) === false
 In an `Intersect`, the last runtype returns a value and preceding intersectees are executed but results are just discarded:
 
 ```typescript
-const Flip = Intersect(
+const FlipFlip = Intersect(
 	Boolean.withParser(b => !b),
 	Boolean.withParser(b => !!b),
 )
-Flip.parse(true) === true
+FlipFlip.parse(true) === true
 ```
 
 ## Readonly objects and arrays

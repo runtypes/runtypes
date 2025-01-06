@@ -17,8 +17,8 @@ const Parser = <R extends Runtype.Core, X>(underlying: R, parser: (value: Static
 		(x, innerValidate, self, parsing) => {
 			try {
 				const result = innerValidate(self.underlying, x, parsing)
-				if (!parsing) return result
 				if (!result.success) return result
+				if (!parsing) return result
 				return SUCCESS(self.parser(result.value))
 			} catch (error) {
 				return FAILURE.PARSING_FAILED(error)

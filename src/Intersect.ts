@@ -1,7 +1,10 @@
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
+import type Failure from "./result/Failure.ts"
+import FAILURE from "./utils-internal/FAILURE.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 
 interface Intersect<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 	extends Runtype.Common<
@@ -43,14 +46,17 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 
 	return Runtype.create<Intersect<R>>((value, innerValidate, self, parsing) => {
 		if (self.intersectees.length === 0) return SUCCESS(value)
+		const details: Failure.Details = {}
 		let parsed: any = undefined
-		for (const runtype of self.intersectees) {
-			const result = innerValidate(runtype, value, parsing)
-			if (!result.success) return result
+		for (let i = 0; i < self.intersectees.length; i++) {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const intersectee = self.intersectees[i]!
+			const result = innerValidate(intersectee, value, parsing)
+			if (!result.success) details[i] = result
 			else parsed = result.value
 		}
-		// TODO: more detailed errors
-		return SUCCESS(parsed)
+		if (enumerableKeysOf(details).length !== 0) return FAILURE.TYPE_INCORRECT(self, value, details)
+		return SUCCESS(parsing ? parsed : value)
 	}, base)
 }
 
