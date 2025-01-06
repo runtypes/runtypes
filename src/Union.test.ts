@@ -42,51 +42,257 @@ Deno.test("union", async t => {
 			const Shape = Union(Square, Rectangle, Circle)
 
 			assertEquals(Shape.validate({ kind: "square", size: new Date() }), {
-				success: false,
-				code: Failcode.CONTENT_INCORRECT,
-				message: 'Expected { kind: "square"; size: number; }, but was incompatible',
+				code: Failcode.TYPE_INCORRECT,
 				details: {
-					size: {
+					"0": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							size: {
+								code: Failcode.TYPE_INCORRECT,
+								message: "Expected number, but was Date",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "square"; size: number; }, but was incompatible',
 						success: false,
-						code: Failcode.TYPE_INCORRECT,
-						message: "Expected number, but was Date",
+					},
+					"1": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							height: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+							kind: {
+								code: Failcode.VALUE_INCORRECT,
+								message: "Expected literal `rectangle`, but was `square`",
+								success: false,
+							},
+							width: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message:
+							'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+						success: false,
+					},
+					"2": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							kind: {
+								code: Failcode.VALUE_INCORRECT,
+								message: "Expected literal `circle`, but was `square`",
+								success: false,
+							},
+							radius: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "circle"; radius: number; }, but was incompatible',
+						success: false,
 					},
 				},
+				message:
+					'Expected { kind: "square"; size: number; } | { kind: "rectangle"; width: number; height: number; } | { kind: "circle"; radius: number; }, but was incompatible',
+				success: false,
 			})
 
 			assertEquals(Shape.validate({ kind: "rectangle", size: new Date() }), {
-				success: false,
-				code: Failcode.CONTENT_INCORRECT,
-				message:
-					'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+				code: Failcode.TYPE_INCORRECT,
 				details: {
-					width: {
+					"0": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							kind: {
+								code: Failcode.VALUE_INCORRECT,
+								message: "Expected literal `square`, but was `rectangle`",
+								success: false,
+							},
+							size: {
+								code: Failcode.TYPE_INCORRECT,
+								message: "Expected number, but was Date",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "square"; size: number; }, but was incompatible',
 						success: false,
-						code: Failcode.PROPERTY_MISSING,
-						message: "Expected number, but was missing",
 					},
-					height: {
+					"1": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							height: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+							width: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message:
+							'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
 						success: false,
-						code: Failcode.PROPERTY_MISSING,
-						message: "Expected number, but was missing",
+					},
+					"2": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							kind: {
+								code: Failcode.VALUE_INCORRECT,
+								message: "Expected literal `circle`, but was `rectangle`",
+								success: false,
+							},
+							radius: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "circle"; radius: number; }, but was incompatible',
+						success: false,
 					},
 				},
+				message:
+					'Expected { kind: "square"; size: number; } | { kind: "rectangle"; width: number; height: number; } | { kind: "circle"; radius: number; }, but was incompatible',
+				success: false,
 			})
 
 			assertEquals(Shape.validate({ kind: "circle", size: new Date() }), {
-				success: false,
-				code: Failcode.CONTENT_INCORRECT,
-				message: 'Expected { kind: "circle"; radius: number; }, but was incompatible',
+				code: Failcode.TYPE_INCORRECT,
 				details: {
-					radius: {
+					"0": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							kind: {
+								code: Failcode.VALUE_INCORRECT,
+								message: "Expected literal `square`, but was `circle`",
+								success: false,
+							},
+							size: {
+								code: Failcode.TYPE_INCORRECT,
+								message: "Expected number, but was Date",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "square"; size: number; }, but was incompatible',
 						success: false,
-						code: Failcode.PROPERTY_MISSING,
-						message: "Expected number, but was missing",
+					},
+					"1": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							height: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+							kind: {
+								code: Failcode.VALUE_INCORRECT,
+								message: "Expected literal `rectangle`, but was `circle`",
+								success: false,
+							},
+							width: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message:
+							'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+						success: false,
+					},
+					"2": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							radius: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "circle"; radius: number; }, but was incompatible',
+						success: false,
 					},
 				},
+				message:
+					'Expected { kind: "square"; size: number; } | { kind: "rectangle"; width: number; height: number; } | { kind: "circle"; radius: number; }, but was incompatible',
+				success: false,
 			})
 
-			assert(!("key" in Shape.validate({ kind: "other", size: new Date() })))
+			assertEquals(
+				Shape.validate({ kind: "other", size: new Date() }),
+
+				{
+					code: Failcode.TYPE_INCORRECT,
+					details: {
+						"0": {
+							code: Failcode.CONTENT_INCORRECT,
+							details: {
+								kind: {
+									code: Failcode.VALUE_INCORRECT,
+									message: "Expected literal `square`, but was `other`",
+									success: false,
+								},
+								size: {
+									code: Failcode.TYPE_INCORRECT,
+									message: "Expected number, but was Date",
+									success: false,
+								},
+							},
+							message: 'Expected { kind: "square"; size: number; }, but was incompatible',
+							success: false,
+						},
+						"1": {
+							code: Failcode.CONTENT_INCORRECT,
+							details: {
+								height: {
+									code: Failcode.PROPERTY_MISSING,
+									message: "Expected number, but was missing",
+									success: false,
+								},
+								kind: {
+									code: Failcode.VALUE_INCORRECT,
+									message: "Expected literal `rectangle`, but was `other`",
+									success: false,
+								},
+								width: {
+									code: Failcode.PROPERTY_MISSING,
+									message: "Expected number, but was missing",
+									success: false,
+								},
+							},
+							message:
+								'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+							success: false,
+						},
+						"2": {
+							code: Failcode.CONTENT_INCORRECT,
+							details: {
+								kind: {
+									code: Failcode.VALUE_INCORRECT,
+									message: "Expected literal `circle`, but was `other`",
+									success: false,
+								},
+								radius: {
+									code: Failcode.PROPERTY_MISSING,
+									message: "Expected number, but was missing",
+									success: false,
+								},
+							},
+							message: 'Expected { kind: "circle"; radius: number; }, but was incompatible',
+							success: false,
+						},
+					},
+					message:
+						'Expected { kind: "square"; size: number; } | { kind: "rectangle"; width: number; height: number; } | { kind: "circle"; radius: number; }, but was incompatible',
+					success: false,
+				},
+			)
 		})
 
 		await t.step("should not pick alternative if the discriminant is not unique", async t => {
@@ -96,7 +302,61 @@ Deno.test("union", async t => {
 
 			const Shape = Union(Square, Rectangle, CircularSquare)
 
-			assert(!("key" in Shape.validate({ kind: "square", size: new Date() })))
+			assertEquals(Shape.validate({ kind: "square", size: new Date() }), {
+				code: Failcode.TYPE_INCORRECT,
+				details: {
+					"0": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							size: {
+								code: Failcode.TYPE_INCORRECT,
+								message: "Expected number, but was Date",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "square"; size: number; }, but was incompatible',
+						success: false,
+					},
+					"1": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							height: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+							kind: {
+								code: Failcode.VALUE_INCORRECT,
+								message: "Expected literal `rectangle`, but was `square`",
+								success: false,
+							},
+							width: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message:
+							'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+						success: false,
+					},
+					"2": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							radius: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "square"; radius: number; }, but was incompatible',
+						success: false,
+					},
+				},
+				message:
+					'Expected { kind: "square"; size: number; } | { kind: "rectangle"; width: number; height: number; } | { kind: "square"; radius: number; }, but was incompatible',
+				success: false,
+			})
 		})
 
 		await t.step("should not pick alternative if not all types are objects", async t => {
@@ -105,7 +365,54 @@ Deno.test("union", async t => {
 
 			const Shape = Union(Square, Rectangle, InstanceOf(Date))
 
-			assert(!("key" in Shape.validate({ kind: "square", size: new Date() })))
+			assertEquals(Shape.validate({ kind: "square", size: new Date() }), {
+				code: Failcode.TYPE_INCORRECT,
+				details: {
+					"0": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							size: {
+								code: Failcode.TYPE_INCORRECT,
+								message: "Expected number, but was Date",
+								success: false,
+							},
+						},
+						message: 'Expected { kind: "square"; size: number; }, but was incompatible',
+						success: false,
+					},
+					"1": {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							height: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+							kind: {
+								code: Failcode.VALUE_INCORRECT,
+								message: "Expected literal `rectangle`, but was `square`",
+								success: false,
+							},
+							width: {
+								code: Failcode.PROPERTY_MISSING,
+								message: "Expected number, but was missing",
+								success: false,
+							},
+						},
+						message:
+							'Expected { kind: "rectangle"; width: number; height: number; }, but was incompatible',
+						success: false,
+					},
+					"2": {
+						code: Failcode.TYPE_INCORRECT,
+						message: "Expected Date, but was object",
+						success: false,
+					},
+				},
+				message:
+					'Expected { kind: "square"; size: number; } | { kind: "rectangle"; width: number; height: number; } | Date, but was incompatible',
+				success: false,
+			})
 		})
 	})
 
@@ -201,7 +508,7 @@ Deno.test("union", async t => {
 		const result = Shape.validate({ size: {} })
 		assertEquals(result, {
 			success: false,
-			code: "TYPE_INCORRECT",
+			code: Failcode.TYPE_INCORRECT,
 			message: "Expected { size: number; } | { size: number; }, but was incompatible",
 			details: {
 				0: {
