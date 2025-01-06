@@ -1,4 +1,5 @@
 import InstanceOf from "./InstanceOf.ts"
+import Intersect from "./Intersect.ts"
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
@@ -113,6 +114,95 @@ Deno.test("union", async t => {
 			success: false,
 			code: Failcode.NOTHING_EXPECTED,
 			message: "Expected nothing, but was boolean",
+		})
+	})
+
+	await t.step("should validate when the discriminant is a union", async t => {
+		const FooBar = Object({ foo: Literal("bar") })
+		const AB = Object({ type: Union(Literal("A"), Literal("B")), foobar: FooBar })
+		const C = Object({ type: Literal("C"), foobar: FooBar })
+		const ABC = Union(AB, C)
+		type ABC = Static<typeof ABC>
+		const input: ABC = {
+			type: "C",
+			// @ts-expect-error: should fail
+			foobar: {},
+		}
+		assertEquals(ABC.validate(input), {
+			success: false,
+			code: Failcode.TYPE_INCORRECT,
+			message:
+				'Expected { type: "A" | "B"; foobar: { foo: "bar"; }; } | { type: "C"; foobar: { foo: "bar"; }; }, but was object',
+		})
+	})
+
+	await t.step("should validate with union of the same runtype", async t => {
+		const This = Object({ size: Number })
+		const That = Object({ size: Number })
+		const Shape = Union(This, That)
+		const result = Shape.validate({ size: {} })
+		assertEquals(result, {
+			success: false,
+			code: "TYPE_INCORRECT",
+			message: "Expected { size: number; } | { size: number; }, but was object",
+		})
+	})
+
+	await t.step("should validate with `Intersect`", async t => {
+		const A = Object({ foo: Literal("bar") })
+		const B = Intersect(A, Object({ bar: Literal("foo") }))
+		const C = Intersect(A, Object({ foobar: Literal("foobar") }))
+		const ABC = Union(A, B, C)
+		type ABCType = Static<typeof ABC>
+		// @ts-expect-error: should fail
+		const input: ABCType = { bar: "foo" }
+		assertEquals(ABC.validate(input), {
+			success: false,
+			code: Failcode.TYPE_INCORRECT,
+			message:
+				'Expected { foo: "bar"; } | ({ foo: "bar"; } & { bar: "foo"; }) | ({ foo: "bar"; } & { foobar: "foobar"; }), but was object',
+		})
+		assertEquals(A.validate(input), {
+			success: false,
+			code: Failcode.CONTENT_INCORRECT,
+			message: outdent`
+				Validation failed:
+				{
+					"foo": "Expected \\"bar\\", but was missing"
+				}.
+				Object should match { foo: "bar"; }
+			`,
+			details: {
+				foo: 'Expected "bar", but was missing',
+			},
+		})
+		assertEquals(B.validate(input), {
+			success: false,
+			code: Failcode.CONTENT_INCORRECT,
+			message: outdent`
+				Validation failed:
+				{
+					"foo": "Expected \\"bar\\", but was missing"
+				}.
+				Object should match { foo: "bar"; }
+			`,
+			details: {
+				foo: 'Expected "bar", but was missing',
+			},
+		})
+		assertEquals(C.validate(input), {
+			success: false,
+			code: Failcode.CONTENT_INCORRECT,
+			message: outdent`
+				Validation failed:
+				{
+					"foo": "Expected \\"bar\\", but was missing"
+				}.
+				Object should match { foo: "bar"; }
+			`,
+			details: {
+				foo: 'Expected "bar", but was missing',
+			},
 		})
 	})
 })
