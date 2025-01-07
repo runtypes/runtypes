@@ -11,7 +11,9 @@ interface String extends Runtype.Common<string> {
  */
 const String = Runtype.create<String>(
 	({ value, self }) =>
-		typeof value === "string" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
+		typeof value === "string"
+			? SUCCESS(value)
+			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
 	{ tag: "string" },
 )
 

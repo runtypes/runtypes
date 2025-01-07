@@ -1,3 +1,4 @@
+import Never from "./Never.ts"
 import Optional from "./Optional.ts"
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import type Failure from "./result/Failure.ts"
@@ -144,10 +145,12 @@ const isOptional = (value: Runtype.Core | Optional): value is Optional => value.
 const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => {
 	return Runtype.create<Object<O>>(
 		({ value: x, innerValidate, self, parsing }) => {
-			if (x === null || x === undefined) return FAILURE.TYPE_INCORRECT(self, x)
+			if (x === null || x === undefined)
+				return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
 
 			const keysOfFields = enumerableKeysOf(self.fields)
-			if (keysOfFields.length !== 0 && typeof x !== "object") return FAILURE.TYPE_INCORRECT(self, x)
+			if (keysOfFields.length !== 0 && typeof x !== "object")
+				return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
 
 			const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])]
 			const results: { [key in string | number | symbol]: Result<unknown> } = {}
@@ -175,13 +178,13 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 								results[key] = SUCCESS(undefined)
 							}
 						} else {
-							results[key] = FAILURE.PROPERTY_MISSING(runtype)
+							results[key] = FAILURE.PROPERTY_MISSING({ expected: runtype })
 						}
 					}
 				} else if (xHasKey) {
 					const value = x[key]
 					if (self.isExact) {
-						results[key] = FAILURE.PROPERTY_PRESENT(value)
+						results[key] = FAILURE.PROPERTY_PRESENT({ expected: Never, received: value })
 					} else {
 						results[key] = SUCCESS(value)
 					}
@@ -197,7 +200,8 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 				if (!result.success) details[key] = result
 			}
 
-			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
+			if (enumerableKeysOf(details).length !== 0)
+				return FAILURE.CONTENT_INCORRECT({ expected: self, received: x, details })
 			else return SUCCESS(parsing ? (parsed as ObjectParsed<O>) : (x as ObjectStatic<O>))
 		},
 		{ tag: "object", fields, isExact: false } as Runtype.Base<Object<O>>,

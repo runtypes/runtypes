@@ -21,7 +21,7 @@ const Parser = <R extends Runtype.Core, X>(underlying: R, parser: (value: Static
 				if (!parsing) return result
 				return SUCCESS(self.parser(result.value))
 			} catch (error) {
-				return FAILURE.PARSING_FAILED(error)
+				return FAILURE.PARSING_FAILED({ expected: self, received: value, thrown: error })
 			}
 		},
 		{ tag: "parser", underlying, parser },

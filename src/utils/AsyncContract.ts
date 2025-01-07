@@ -1,3 +1,4 @@
+import InstanceOf from "../InstanceOf.ts"
 import type Runtype from "../Runtype.ts"
 import { type Static, type Parsed } from "../Runtype.ts"
 import ValidationError from "../result/ValidationError.ts"
@@ -44,20 +45,53 @@ const parseReceived = <O extends Options, F extends AsyncFunction>(
 	received: readonly unknown[],
 	receives: O["receives"],
 ): EnforcedParametersParsed<O, F> => {
-	return (receives ? receives.parse(received) : received) as EnforcedParametersParsed<O, F>
+	if (!receives) return received as EnforcedParametersParsed<O, F>
+	try {
+		return receives.parse(received) as EnforcedParametersParsed<O, F>
+	} catch (error) {
+		if (error instanceof ValidationError) {
+			const failure = FAILURE.ARGUMENTS_INCORRECT({
+				expected: receives,
+				received,
+				inner: error.failure,
+			})
+			throw new ValidationError(failure)
+		} else throw error
+	}
 }
 
+const InstanceOfPromise: InstanceOf<Promise<unknown>> = InstanceOf(Promise)
+
 const parseReturned = async <O extends Options, F extends AsyncFunction>(
-	returned: Promise<unknown>,
+	returned: unknown,
 	returns: O["returns"],
 ): Promise<EnforcedReturnTypeParsed<O, F>> => {
-	if (!(returned instanceof Promise)) {
-		const message = `Expected function to return a promise, but instead got ${returned}`
-		const failure = FAILURE.RETURN_INCORRECT(message)
-		throw new ValidationError(failure)
+	try {
+		InstanceOfPromise.assert(returned)
+	} catch (error) {
+		if (error instanceof ValidationError) {
+			const failure = FAILURE.RETURN_INCORRECT({
+				expected: InstanceOfPromise,
+				received: returned,
+				inner: error.failure,
+			})
+			throw new ValidationError(failure)
+		}
 	}
 	const awaited = await returned
-	return (returns ? returns.parse(awaited) : awaited) as EnforcedReturnTypeParsed<O, F>
+	if (!returns) return awaited as EnforcedReturnTypeParsed<O, F>
+	try {
+		return returns.parse(awaited) as EnforcedReturnTypeParsed<O, F>
+	} catch (error) {
+		if (error instanceof ValidationError) {
+			const failure = FAILURE.RESOLVE_INCORRECT({
+				expected: returns,
+				received: awaited,
+				inner: error.failure,
+			})
+			throw new ValidationError(failure)
+		} else throw error
+	}
 }
 
 /**

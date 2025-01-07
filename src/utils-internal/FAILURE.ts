@@ -1,70 +1,89 @@
-import show from "./show.ts"
-import typeOf from "./typeOf.ts"
+import type Literal from "../Literal.ts"
+import { literal } from "../Literal.ts"
 import type Runtype from "../Runtype.ts"
+import { type Static } from "../Runtype.ts"
 import Failcode from "../result/Failcode.ts"
 import type Failure from "../result/Failure.ts"
+import show from "../utils-internal/show.ts"
+import typeOf from "../utils-internal/typeOf.ts"
 
-const FAILURE = globalThis.Object.assign(
-	(code: Failcode, message: string, details?: Failure.Details): Failure => ({
-		success: false,
-		code,
-		message,
-		...(details ? { details } : {}),
-	}),
+type FailureInitializer<C extends Failcode> = Failure & { code: C } extends infer F
+	? {
+			[K in keyof F as K extends "expected" ? K : never]: Runtype.Core
+		} & {
+			[K in keyof F as K extends "success" | "message" | "code" | "expected" ? never : K]: F[K]
+		} extends infer T
+		? { [K in keyof T]: T[K] }
+		: never
+	: never
+
+const FAILURE: {
+	[C in Failcode]: (failure: FailureInitializer<C>) => Failure & { code: C }
+} = new Proxy<any>(
+	{},
 	{
-		TYPE_INCORRECT: (self: Runtype.Core, value: unknown, details?: Failure.Details) => {
-			const message = `Expected ${
-				self.tag === "template" ? `string ${show(self as Runtype)}` : show(self as Runtype)
-			}, but was ${details ? "incompatible" : typeOf(value)}`
-			return FAILURE(Failcode.TYPE_INCORRECT, message, details)
-		},
-		VALUE_INCORRECT: (name: string, expected: unknown, received: unknown) => {
-			return FAILURE(
-				Failcode.VALUE_INCORRECT,
-				`Expected ${name} ${String(expected)}, but was ${String(received)}`,
-			)
-		},
-		KEY_INCORRECT: (self: Runtype.Core, expected: Runtype.Core, value: unknown) => {
-			return FAILURE(
-				Failcode.KEY_INCORRECT,
-				`Expected ${show(self as Runtype)} key to be ${show(expected as Runtype)}, but was ${typeOf(value)}`,
-			)
-		},
-		CONTENT_INCORRECT: (self: Runtype.Core, details: Failure.Details) => {
-			const message = `Expected ${show(self as Runtype)}, but was incompatible`
-			return FAILURE(Failcode.CONTENT_INCORRECT, message, details)
-		},
-		ARGUMENT_INCORRECT: (message: string) => {
-			return FAILURE(Failcode.ARGUMENT_INCORRECT, message)
-		},
-		RETURN_INCORRECT: (message: string) => {
-			return FAILURE(Failcode.RETURN_INCORRECT, message)
-		},
-		CONSTRAINT_FAILED: (self: Runtype.Core, message?: string) => {
-			const info = message ? `: ${message}` : ""
-			return FAILURE(
-				Failcode.CONSTRAINT_FAILED,
-				`Failed constraint check for ${show(self as Runtype)}${info}`,
-			)
-		},
-		PROPERTY_MISSING: (self: Runtype.Core) => {
-			const message = `Expected ${show(self as Runtype)}, but was missing`
-			return FAILURE(Failcode.PROPERTY_MISSING, message)
-		},
-		PROPERTY_PRESENT: (value: unknown) => {
-			const message = `Expected nothing, but was ${typeOf(value)}`
-			return FAILURE(Failcode.PROPERTY_PRESENT, message)
-		},
-		NOTHING_EXPECTED: (value: unknown) => {
-			const message = `Expected nothing, but was ${typeOf(value)}`
-			return FAILURE(Failcode.NOTHING_EXPECTED, message)
-		},
-		PARSING_FAILED: (thrown: unknown) => {
-			const info = thrown instanceof Error ? thrown.message : undefined
-			const message = "Parsing failed" + (info ? ": " + info : "")
-			return FAILURE(Failcode.PARSING_FAILED, message)
+		get: (target, key, receiver) => {
+			if (key in Failcode)
+				return <C extends Failcode>(failure: FailureInitializer<C>) => {
+					const content = {
+						success: false,
+						message: undefined,
+						code: key,
+						...failure,
+					} as unknown as Failure & { code: C }
+					content.message = toMessage(content)
+					return content
+				}
+			else return Reflect.get(target, key, receiver)
 		},
 	},
 )
+
+const toMessage = (failure: Failure): string => {
+	switch (failure.code) {
+		case Failcode.TYPE_INCORRECT:
+			return `Expected ${show(failure.expected)}, but was ${"details" in failure ? "incompatible" : typeOf(failure.received)}`
+		case Failcode.VALUE_INCORRECT:
+			switch (failure.expected.tag) {
+				case "symbol": {
+					const expected = failure.expected.key
+					const received = globalThis.Symbol.keyFor(failure.received as symbol)
+					return `Expected ${expected === undefined ? "unique symbol" : `symbol for key "${expected}"`}, but was ${received === undefined ? "unique" : `for "${received}"`}`
+				}
+				default:
+					return `Expected ${show(failure.expected)}, but was ${literal(failure.received as Static<Literal>)}`
+			}
+		case Failcode.KEY_INCORRECT:
+			return `Expected key to be ${show(failure.expected)}, but was ${"details" in failure ? "incompatible" : literal(failure.received as Static<Literal>)}`
+		case Failcode.CONTENT_INCORRECT:
+			return `Expected ${show(failure.expected)}, but was incompatible`
+		case Failcode.ARGUMENTS_INCORRECT:
+			return `Received unexpected arguments: ${failure.inner.message}`
+		case Failcode.RETURN_INCORRECT:
+			return `Returned unexpected value: ${failure.inner.message}`
+		case Failcode.RESOLVE_INCORRECT:
+			return `Resolved unexpected value: ${failure.inner.message}`
+		case Failcode.CONSTRAINT_FAILED:
+			return (
+				`Constraint failed` +
+				(failure.thrown
+					? `: ${failure.thrown instanceof Error ? failure.thrown.message : failure.thrown}`
+					: "")
+			)
+		case Failcode.PROPERTY_MISSING:
+			return `Expected ${show(failure.expected)}, but was missing`
+		case Failcode.PROPERTY_PRESENT:
+			return `Expected nothing, but was ${typeOf(failure.received)}`
+		case Failcode.NOTHING_EXPECTED:
+			return `Expected nothing, but was ${typeOf(failure.received)}`
+		case Failcode.PARSING_FAILED:
+			return (
+				`Parsing failed` +
+				("thrown" in failure
+					? `: ${failure.thrown instanceof Error ? failure.thrown.message : failure.thrown}`
+					: "")
+			)
+	}
+}
 
 export default FAILURE

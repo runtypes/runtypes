@@ -9,7 +9,16 @@ import String from "./String.ts"
 import Template from "./Template.ts"
 import Tuple from "./Tuple.ts"
 import Union from "./Union.ts"
-import { assert, assertEquals, assertThrows } from "@std/assert"
+import Unknown from "./Unknown.ts"
+import Failcode from "./result/Failcode.ts"
+import ValidationError from "./result/ValidationError.ts"
+import {
+	assert,
+	assertEquals,
+	assertInstanceOf,
+	assertObjectMatch,
+	assertThrows,
+} from "@std/assert"
 
 Deno.test("Parser", async t => {
 	const ParseInt = String.withParser(parseInt)
@@ -112,6 +121,21 @@ Deno.test("Parser", async t => {
 			const TrueToFalse = Literal("true").withParser(() => "false" as const)
 			const Value = Template("value: ", TrueToFalse)
 			assertEquals(Value.parse("value: true"), "value: false")
+		})
+	})
+
+	await t.step("should fail whem thrown", async t => {
+		const Fail = Unknown.withParser(() => {
+			throw "error"
+		})
+		const error = assertThrows(() => Fail.parse(true))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Parsing failed: error",
+			failure: {
+				code: Failcode.PARSING_FAILED,
+				thrown: "error",
+			},
 		})
 	})
 })

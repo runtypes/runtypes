@@ -2,8 +2,10 @@ import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
+import type Success from "./result/Success.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import show from "./utils-internal/show.ts"
 import unwrapTrivial from "./utils-internal/unwrapTrivial.ts"
@@ -98,6 +100,7 @@ const isSpread = (component: Runtype.Core | Spread): component is Spread =>
 const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) => {
 	const base = {
 		tag: "tuple",
+		// TODO: unuse getter
 		get components() {
 			// Flatten `Spread<Tuple>`.
 			const componentsFlattened: (Runtype.Core | Spread)[] = [...components]
@@ -150,26 +153,25 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 
 			return rest ? { leading, rest, trailing } : leading
 		},
-		*[Symbol.iterator]() {
-			yield Spread(base as Tuple<R>)
-		},
 	} as Runtype.Base<Tuple<R>>
 
 	return Runtype.create<Tuple<R>>(({ value: x, innerValidate, self, parsing }) => {
-		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT(self, x)
+		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
 
 		if (globalThis.Array.isArray(self.components)) {
 			if (x.length !== self.components.length)
-				return FAILURE.CONSTRAINT_FAILED(
-					self,
-					`Expected length ${self.components.length}, but was ${x.length}`,
-				)
+				return FAILURE.CONSTRAINT_FAILED({
+					expected: self,
+					received: x,
+					thrown: `Expected length ${self.components.length}, but was ${x.length}`,
+				})
 		} else {
 			if (x.length < self.components.leading.length + self.components.trailing.length)
-				return FAILURE.CONSTRAINT_FAILED(
-					self,
-					`Expected length >= ${self.components.leading.length + self.components.trailing.length}, but was ${x.length}`,
-				)
+				return FAILURE.CONSTRAINT_FAILED({
+					expected: self,
+					received: x,
+					thrown: `Expected length >= ${self.components.leading.length + self.components.trailing.length}, but was ${x.length}`,
+				})
 		}
 
 		const values: unknown[] = [...x]
@@ -197,9 +199,6 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 			resultRest = innerValidate(self.components.rest, values, parsing)
 			results = [...resultsLeading, resultRest, ...resultsTrailing]
 		}
-		const originalOrParsed: any = parsing
-			? results.map(result => (result.success ? result.value : undefined))
-			: x
 
 		const details: Failure.Details = {}
 		for (let i = 0; i < results.length; i++) {
@@ -208,9 +207,13 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 			if (!result.success) details[i] = result
 		}
 
-		if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
-		else return SUCCESS(originalOrParsed)
-	}, base).with(self => ({ asReadonly: () => self as unknown as TupleReadonly<R> }))
+		if (enumerableKeysOf(details).length !== 0)
+			return FAILURE.CONTENT_INCORRECT({ expected: self, received: x, details })
+		else
+			return SUCCESS(parsing ? (results as Success<any>[]).map(result => result.value) : x) as any
+	}, Spread.asSpreadable(base)).with(self =>
+		defineIntrinsics({}, { asReadonly: () => self as unknown as TupleReadonly<R> }),
+	)
 }
 
 export default Tuple

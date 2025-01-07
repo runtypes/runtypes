@@ -5,18 +5,18 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 /**
  * The super type of all literal types.
  */
-type LiteralBase = undefined | null | boolean | number | bigint | string
+type LiteralStatic = undefined | null | boolean | number | bigint | string
 
-interface Literal<T extends LiteralBase = LiteralBase> extends Runtype.Common<T> {
+interface Literal<T extends LiteralStatic = LiteralStatic> extends Runtype.Common<T> {
 	tag: "literal"
 	value: T
 }
 
-const literal = (value: unknown): string =>
-	value !== null && typeof value === "object"
-		? "[object Object]"
-		: typeof value === "bigint"
-			? globalThis.String(value) + "n"
+const literal = (value: LiteralStatic): string =>
+	typeof value === "bigint"
+		? globalThis.String(value) + "n"
+		: typeof value === "string"
+			? `"${globalThis.String(value)}"`
 			: globalThis.String(value)
 
 /**
@@ -33,15 +33,17 @@ const sameValueZero = (x: unknown, y: unknown) => {
 /**
  * Construct a runtype for a type literal.
  */
-const Literal = <T extends LiteralBase>(value: T) =>
+const Literal = <T extends LiteralStatic>(value: T) =>
 	Runtype.create<Literal<T>>(
-		({ value: x }) =>
+		({ value: x, self }) =>
 			sameValueZero(x, value)
 				? SUCCESS(x as T)
-				: FAILURE.VALUE_INCORRECT("literal", `\`${literal(value)}\``, `\`${literal(x)}\``),
+				: typeof x !== typeof value || value === null
+					? FAILURE.TYPE_INCORRECT({ expected: self, received: x })
+					: FAILURE.VALUE_INCORRECT({ expected: self, received: x }),
 		{ tag: "literal", value },
 	)
 
 export default Literal
 // eslint-disable-next-line import/no-named-export
-export { type LiteralBase, literal }
+export { type LiteralStatic, literal }

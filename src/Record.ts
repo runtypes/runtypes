@@ -1,3 +1,4 @@
+import Literal from "./Literal.ts"
 import type Optional from "./Optional.ts"
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import type Failure from "./result/Failure.ts"
@@ -71,33 +72,50 @@ const extractLiteralKeys = (runtype: RecordKeyRuntype) => {
 const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, value: V) => {
 	const keyRuntype = key
 	const valueRuntype = value
+
+	const testKey = (key: string | number | symbol): Failure | undefined => {
+		// We should provide interoperability with `number` and `string` here, as a user would expect JavaScript engines to convert numeric keys to string keys automatically. So, if the key can be interpreted as a decimal number, then test it against a `Number` OR `String` runtype.
+		if (typeof key === "number" || isNumberLikeKey(key)) {
+			const keyInterop = globalThis.Number(key)
+			const result = keyRuntype.inspect(keyInterop)
+			if (!result.success) {
+				const result = keyRuntype.inspect(key)
+				if (!result.success) return result
+			}
+		} else {
+			const result = keyRuntype.inspect(key)
+			if (!result.success) return result
+		}
+		return undefined
+	}
+
 	return Runtype.create<Record<K, V>>(
 		({ value: x, innerValidate, self, parsing }) => {
 			if (x === null || x === undefined || typeof x !== "object")
-				return FAILURE.TYPE_INCORRECT(self, x)
+				return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
 
 			if (globalThis.Object.getPrototypeOf(x) !== globalThis.Object.prototype)
-				if (!Array.isArray(x) || keyRuntype.tag === "string") return FAILURE.TYPE_INCORRECT(self, x)
+				if (!Array.isArray(x) || keyRuntype.tag === "string")
+					return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
 
 			const keys = [...new Set([...extractLiteralKeys(key), ...enumerableKeysOf(x)])]
 			const results: { [key in RecordKeyStatic]: Result<unknown> } = {}
 			for (const key of keys) {
 				const xHasKey = hasKey(key, x)
 				if (xHasKey) {
-					// We should provide interoperability with `number` and `string` here, as a user would expect JavaScript engines to convert numeric keys to string keys automatically. So, if the key can be interpreted as a decimal number, then test it against a `Number` OR `String` runtype.
-					const isNumberLike = typeof key === "number" || isNumberLikeKey(key)
-					const keyInterop = isNumberLike ? globalThis.Number(key) : key
-					if (
-						isNumberLike
-							? !keyRuntype.guard(keyInterop) && !keyRuntype.guard(key)
-							: !keyRuntype.guard(keyInterop)
-					) {
-						results[key] = FAILURE.KEY_INCORRECT(self, keyRuntype, keyInterop)
+					const failure = testKey(key)
+					if (failure) {
+						results[key] = FAILURE.KEY_INCORRECT({
+							expected: keyRuntype,
+							received: key,
+							inner: failure,
+						})
 					} else {
 						results[key] = innerValidate(valueRuntype, x[key], parsing)
 					}
 				} else {
-					results[key] = FAILURE.PROPERTY_MISSING(value)
+					// TODO: symbols
+					results[key] = FAILURE.PROPERTY_MISSING({ expected: Literal(key as any) })
 				}
 			}
 
@@ -107,7 +125,8 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 				if (!result.success) details[key] = result
 			}
 
-			if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
+			if (enumerableKeysOf(details).length !== 0)
+				return FAILURE.CONTENT_INCORRECT({ expected: self, received: x, details })
 			else return SUCCESS(x as Static<Record<K, V>>)
 		},
 		{ tag: "record", key, value },

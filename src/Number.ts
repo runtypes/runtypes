@@ -11,7 +11,9 @@ interface Number extends Runtype.Common<number> {
  */
 const Number = Runtype.create<Number>(
 	({ value, self }) =>
-		typeof value === "number" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
+		typeof value === "number"
+			? SUCCESS(value)
+			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
 	{ tag: "number" },
 )
 

@@ -22,9 +22,7 @@ const Constraint = <R extends Runtype.Core, T extends Parsed<R>>(
 				constraint(result.value)
 				return SUCCESS(parsing ? result.value : value)
 			} catch (error) {
-				if (typeof error === "string") return FAILURE.CONSTRAINT_FAILED(self, error)
-				else if (error instanceof Error) return FAILURE.CONSTRAINT_FAILED(self, error.message)
-				return FAILURE.CONSTRAINT_FAILED(self)
+				return FAILURE.CONSTRAINT_FAILED({ expected: self, received: value, thrown: error })
 			}
 		},
 		{ tag: "constraint", underlying, constraint },

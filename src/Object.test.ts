@@ -7,7 +7,15 @@ import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Undefined from "./Undefined.ts"
 import Failcode from "./result/Failcode.ts"
-import { assert, assertEquals, assertNotStrictEquals } from "@std/assert"
+import ValidationError from "./result/ValidationError.ts"
+import {
+	assert,
+	assertObjectMatch,
+	assertNotStrictEquals,
+	assertEquals,
+	assertThrows,
+	assertInstanceOf,
+} from "@std/assert"
 
 Deno.test("Object", async t => {
 	const CrewMember = Object({
@@ -147,15 +155,18 @@ Deno.test("Object", async t => {
 	})
 
 	await t.step("object", async t => {
-		assertEquals(Object({ name: String, age: Number }).inspect({ name: "Jack", age: "10" }), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() =>
+			Object({ name: String, age: Number }).check({ name: "Jack", age: "10" }),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
 			message: "Expected { name: string; age: number; }, but was incompatible",
-			details: {
-				age: {
-					success: false,
-					code: Failcode.TYPE_INCORRECT,
-					message: "Expected number, but was string",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					age: {
+						code: Failcode.TYPE_INCORRECT,
+					},
 				},
 			},
 		})
@@ -163,54 +174,51 @@ Deno.test("Object", async t => {
 
 	await t.step("object for null prototype", () =>
 		assert(
-			Object({ name: String, age: Number }).inspect(
+			Object({ name: String, age: Number }).guard(
 				globalThis.Object.assign(globalThis.Object.create(null), { name: "Jack", age: 10 }),
 			),
 		),
 	)
 
 	await t.step("object missing keys", async t => {
-		assertEquals(Object({ name: String, age: Number }).inspect({ name: "Jack" }), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() => Object({ name: String, age: Number }).check({ name: "Jack" }))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
 			message: "Expected { name: string; age: number; }, but was incompatible",
-			details: {
-				age: {
-					success: false,
-					code: Failcode.PROPERTY_MISSING,
-					message: "Expected number, but was missing",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					age: {
+						code: Failcode.PROPERTY_MISSING,
+					},
 				},
 			},
 		})
 	})
 
 	await t.step("object complex", async t => {
-		assertEquals(
-			Object({ name: String, age: Number, likes: Array(Object({ title: String })) }).inspect({
+		const error = assertThrows(() =>
+			Object({ name: String, age: Number, likes: Array(Object({ title: String })) }).check({
 				name: "Jack",
 				age: 10,
 				likes: [{ title: false }],
 			}),
-			{
-				success: false,
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message:
+				"Expected { name: string; age: number; likes: { title: string; }[]; }, but was incompatible",
+			failure: {
 				code: Failcode.CONTENT_INCORRECT,
-				message:
-					"Expected { name: string; age: number; likes: { title: string; }[]; }, but was incompatible",
 				details: {
 					likes: {
-						success: false,
 						code: Failcode.CONTENT_INCORRECT,
-						message: "Expected { title: string; }[], but was incompatible",
 						details: {
 							0: {
-								success: false,
 								code: Failcode.CONTENT_INCORRECT,
-								message: "Expected { title: string; }, but was incompatible",
 								details: {
 									title: {
-										success: false,
 										code: Failcode.TYPE_INCORRECT,
-										message: "Expected string, but was boolean",
 									},
 								},
 							},
@@ -218,67 +226,66 @@ Deno.test("Object", async t => {
 					},
 				},
 			},
-		)
+		})
 	})
 
 	await t.step("readonly object", async t => {
-		assertEquals(
-			Object({ name: String, age: Number }).asReadonly().inspect({ name: "Jack", age: "10" }),
-			{
-				success: false,
+		const error = assertThrows(() =>
+			Object({ name: String, age: Number }).asReadonly().check({ name: "Jack", age: "10" }),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Expected { name: string; age: number; }, but was incompatible",
+			failure: {
 				code: Failcode.CONTENT_INCORRECT,
-				message: "Expected { name: string; age: number; }, but was incompatible",
 				details: {
 					age: {
-						success: false,
 						code: Failcode.TYPE_INCORRECT,
-						message: "Expected number, but was string",
 					},
 				},
 			},
-		)
+		})
 	})
 
 	await t.step("readonly object missing keys", async t => {
-		assertEquals(Object({ name: String, age: Number }).asReadonly().inspect({ name: "Jack" }), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() =>
+			Object({ name: String, age: Number }).asReadonly().check({ name: "Jack" }),
+		)
+		assert(error)
+		assertObjectMatch(error, {
 			message: "Expected { name: string; age: number; }, but was incompatible",
-			details: {
-				age: {
-					success: false,
-					code: Failcode.PROPERTY_MISSING,
-					message: "Expected number, but was missing",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					age: {
+						code: Failcode.PROPERTY_MISSING,
+					},
 				},
 			},
 		})
 	})
 
 	await t.step("readonly object complex", async t => {
-		assertEquals(
+		const error = assertThrows(() =>
 			Object({ name: String, age: Number, likes: Array(Object({ title: String }).asReadonly()) })
 				.asReadonly()
-				.inspect({ name: "Jack", age: 10, likes: [{ title: false }] }),
-			{
-				success: false,
+				.check({ name: "Jack", age: 10, likes: [{ title: false }] }),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message:
+				"Expected { name: string; age: number; likes: { title: string; }[]; }, but was incompatible",
+			failure: {
 				code: Failcode.CONTENT_INCORRECT,
-				message:
-					"Expected { name: string; age: number; likes: { title: string; }[]; }, but was incompatible",
 				details: {
 					likes: {
-						success: false,
 						code: Failcode.CONTENT_INCORRECT,
-						message: "Expected { title: string; }[], but was incompatible",
 						details: {
 							0: {
-								success: false,
 								code: Failcode.CONTENT_INCORRECT,
-								message: "Expected { title: string; }, but was incompatible",
 								details: {
 									title: {
-										success: false,
 										code: Failcode.TYPE_INCORRECT,
-										message: "Expected string, but was boolean",
 									},
 								},
 							},
@@ -286,6 +293,6 @@ Deno.test("Object", async t => {
 					},
 				},
 			},
-		)
+		})
 	})
 })
