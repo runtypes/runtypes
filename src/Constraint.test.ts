@@ -1,5 +1,6 @@
 import Literal from "./Literal.ts"
-import { type Static } from "./Runtype.ts"
+import { type Parsed, type Static } from "./Runtype.ts"
+import String from "./String.ts"
 import Unknown from "./Unknown.ts"
 import Failcode from "./result/Failcode.ts"
 import hasKey from "./utils-internal/hasKey.ts"
@@ -74,5 +75,57 @@ Deno.test("Constraint", async t => {
 				message: "Failed constraint check for unknown: n must be > 3",
 			},
 		)
+	})
+
+	await t.step("with 1 parser before", async t => {
+		const T = String.withParser(parseInt).withGuard(
+			(x): x is 42 => typeof x === "number" && x === 42,
+		)
+		type TStatic = Static<typeof T>
+		type TParsed = Parsed<typeof T>
+		const x: TStatic = "42"
+		const y: TParsed = 42
+		assert(T.guard("42"))
+		assert(
+			!T.guard(
+				// @ts-expect-error: should fail
+				42,
+			),
+		)
+		assertEquals(T.parse("42"), 42)
+	})
+	await t.step("with 2 parsers before", async t => {
+		const T = String.withParser(parseInt)
+			.withParser(globalThis.String)
+			.withGuard((x): x is "42" => typeof x === "string" && x === "42")
+		type TStatic = Static<typeof T>
+		type TParsed = Parsed<typeof T>
+		const x: TStatic = "42"
+		const y: TParsed = "42"
+		assert(T.guard("42"))
+		assert(
+			!T.guard(
+				// @ts-expect-error: should fail
+				42,
+			),
+		)
+		assertEquals(T.parse("42"), "42")
+	})
+	await t.step("with 1 parser before and 1 parser after", async t => {
+		const T = String.withParser(parseInt)
+			.withGuard((x): x is 42 => typeof x === "number" && x === 42)
+			.withParser(x => `${x}` as const)
+		type TStatic = Static<typeof T>
+		type TParsed = Parsed<typeof T>
+		const x: TStatic = "42"
+		const y: TParsed = "42"
+		assert(T.guard("42"))
+		assert(
+			!T.guard(
+				// @ts-expect-error: should fail
+				42,
+			),
+		)
+		assertEquals(T.parse("42"), "42")
 	})
 })
