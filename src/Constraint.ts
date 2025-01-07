@@ -16,12 +16,12 @@ const Constraint = <R extends Runtype.Core, U extends Static<R>>(
 	constraint: (x: Static<R>) => asserts x is U,
 ) =>
 	Runtype.create<Constraint<R, U>>(
-		(value, innerValidate, self) => {
-			const result = underlying.validate(value) as Result<Static<R>>
+		({ value, innerValidate, self, parsing }): Result<any> => {
+			const result = innerValidate(self.underlying, value, parsing)
 			if (!result.success) return result
 			try {
 				constraint(result.value)
-				return SUCCESS(result.value)
+				return SUCCESS(parsing ? result.value : value)
 			} catch (error) {
 				if (typeof error === "string") return FAILURE.CONSTRAINT_FAILED(self, error)
 				else if (error instanceof Error) return FAILURE.CONSTRAINT_FAILED(self, error.message)

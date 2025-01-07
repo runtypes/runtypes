@@ -10,7 +10,7 @@ interface BigInt extends Runtype.Common<bigint> {
  * Validates that a value is a bigint.
  */
 const BigInt = Runtype.create<BigInt>(
-	(value, innerValidate, self) =>
+	({ value, self }) =>
 		typeof value === "bigint" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
 	{ tag: "bigint" },
 )

@@ -44,7 +44,7 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 		},
 	} as Runtype.Base<Intersect<R>>
 
-	return Runtype.create<Intersect<R>>((value, innerValidate, self, parsing) => {
+	return Runtype.create<Intersect<R>>(({ value, innerValidate, self, parsing }) => {
 		if (self.intersectees.length === 0) return SUCCESS(value)
 		const details: Failure.Details = {}
 		let parsed: any = undefined

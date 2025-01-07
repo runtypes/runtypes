@@ -155,7 +155,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		},
 	} as Runtype.Base<Tuple<R>>
 
-	return Runtype.create<Tuple<R>>((x, innerValidate, self, parsing) => {
+	return Runtype.create<Tuple<R>>(({ value: x, innerValidate, self, parsing }) => {
 		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT(self, x)
 
 		if (globalThis.Array.isArray(self.components)) {

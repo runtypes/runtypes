@@ -10,7 +10,7 @@ interface Number extends Runtype.Common<number> {
  * Validates that a value is a number.
  */
 const Number = Runtype.create<Number>(
-	(value, innerValidate, self) =>
+	({ value, self }) =>
 		typeof value === "number" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
 	{ tag: "number" },
 )

@@ -14,9 +14,9 @@ interface Parser<R extends Runtype.Core = Runtype.Core, X = Static<R>>
  */
 const Parser = <R extends Runtype.Core, X>(underlying: R, parser: (value: Static<R>) => X) =>
 	Runtype.create<Parser<R, X>>(
-		(x, innerValidate, self, parsing) => {
+		({ value, innerValidate, self, parsing }) => {
 			try {
-				const result = innerValidate(self.underlying, x, parsing)
+				const result = innerValidate(self.underlying, value, parsing)
 				if (!result.success) return result
 				if (!parsing) return result
 				return SUCCESS(self.parser(result.value))

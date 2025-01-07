@@ -443,7 +443,7 @@ const Template: {
 					: never
 				: never
 	>(
-		(value, innerValidate, self, parsing) => {
+		({ value, innerValidate, self, parsing }) => {
 			const regexp = createRegExpForTemplate(self as any)
 
 			const test = (

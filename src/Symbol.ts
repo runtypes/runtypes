@@ -15,7 +15,7 @@ interface Symbol<K extends string | undefined = undefined> extends Runtype.Commo
 
 const SymbolFor = <K extends string | undefined>(key: K) =>
 	Runtype.create<Symbol<K>>(
-		(value, innerValidate, self) => {
+		({ value, self }) => {
 			if (typeof value !== "symbol") return FAILURE.TYPE_INCORRECT(self, value)
 			else {
 				const keyForValue = globalThis.Symbol.keyFor(value)
@@ -39,7 +39,7 @@ const SymbolFor = <K extends string | undefined>(key: K) =>
  * Validates that a value is a symbol, regardless of whether it is keyed or not.
  */
 const Symbol = Runtype.create<Symbol>(
-	(value, innerValidate, self) =>
+	({ value, self }) =>
 		typeof value === "symbol" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
 	globalThis.Object.assign(SymbolFor, { tag: "symbol" as const, key: undefined }),
 )

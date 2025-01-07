@@ -10,7 +10,7 @@ interface Function extends Runtype.Common<(...args: never[]) => unknown> {
  * Construct a runtype for functions.
  */
 const Function = Runtype.create<Function>(
-	(value, innerValidate, self) =>
+	({ value, self }) =>
 		typeof value === "function"
 			? SUCCESS(value as (...args: never[]) => unknown)
 			: FAILURE.TYPE_INCORRECT(self, value),

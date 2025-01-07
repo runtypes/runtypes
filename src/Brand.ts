@@ -37,7 +37,7 @@ const Brand = <B extends string, R extends Runtype.Core>(brand: B, entity: R) =>
 			yield Spread(base as any)
 		},
 	} as Runtype.Base<Brand<B, R>>
-	return Runtype.create<Brand<B, R>>((value, innerValidate, self, parsing): Result<any> => {
+	return Runtype.create<Brand<B, R>>(({ value, innerValidate, self, parsing }): Result<any> => {
 		const result = innerValidate(self.entity, value, parsing)
 		if (result.success) return result
 		// TODO: use brand string in error messages
