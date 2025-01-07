@@ -10,7 +10,7 @@ interface Boolean extends Runtype.Common<boolean> {
  * Validates that a value is a boolean.
  */
 const Boolean = Runtype.create<Boolean>(
-	(value, innerValidate, self) =>
+	({ value, self }) =>
 		typeof value === "boolean" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
 	{ tag: "boolean" },
 )

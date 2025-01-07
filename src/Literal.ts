@@ -35,7 +35,7 @@ const sameValueZero = (x: unknown, y: unknown) => {
  */
 const Literal = <T extends LiteralBase>(value: T) =>
 	Runtype.create<Literal<T>>(
-		x =>
+		({ value: x }) =>
 			sameValueZero(x, value)
 				? SUCCESS(x as T)
 				: FAILURE.VALUE_INCORRECT("literal", `\`${literal(value)}\``, `\`${literal(x)}\``),

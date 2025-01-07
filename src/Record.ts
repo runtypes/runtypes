@@ -72,7 +72,7 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 	const keyRuntype = key
 	const valueRuntype = value
 	return Runtype.create<Record<K, V>>(
-		(x, innerValidate, self, parsing) => {
+		({ value: x, innerValidate, self, parsing }) => {
 			if (x === null || x === undefined || typeof x !== "object")
 				return FAILURE.TYPE_INCORRECT(self, x)
 

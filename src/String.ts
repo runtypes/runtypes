@@ -10,7 +10,7 @@ interface String extends Runtype.Common<string> {
  * Validates that a value is a string.
  */
 const String = Runtype.create<String>(
-	(value, innerValidate, self) =>
+	({ value, self }) =>
 		typeof value === "string" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
 	{ tag: "string" },
 )

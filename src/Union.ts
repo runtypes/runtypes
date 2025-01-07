@@ -46,12 +46,12 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 	} as Runtype.Base<Union<R>>
 
 	return Runtype.create<Union<R>>(
-		(
+		({
 			value,
 			innerValidate,
 			self,
 			parsing,
-		): Result<{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number]> => {
+		}): Result<{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number]> => {
 			if (self.alternatives.length === 0) return FAILURE.NOTHING_EXPECTED(value)
 			const details: Failure.Details = {}
 			for (let i = 0; i < self.alternatives.length; i++) {

@@ -13,7 +13,7 @@ interface InstanceOf<V = unknown> extends Runtype.Common<V> {
 
 const InstanceOf = <V>(ctor: Constructor<V>) =>
 	Runtype.create<InstanceOf<V>>(
-		(value, innerValidate, self) =>
+		({ value, self }) =>
 			value instanceof ctor ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
 		{ tag: "instanceof", ctor },
 	)

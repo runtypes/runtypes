@@ -42,12 +42,12 @@ type Parsed<R extends { readonly [RuntypeSymbol]: [unknown, unknown] }> = R[type
 namespace Runtype {
 	// eslint-disable-next-line import/no-unused-modules
 	export const create = <R extends Runtype.Core = never>(
-		validate: (
-			x: unknown,
-			innerValidate: InnerValidate,
-			self: R,
-			parsing: boolean,
-		) => Result<Static<R> | Parsed<R>>,
+		validate: (context: {
+			value: unknown
+			innerValidate: InnerValidate
+			self: R
+			parsing: boolean
+		}) => Result<Static<R> | Parsed<R>>,
 		base: Base<R>,
 	): R => {
 		const self = base as Base<R> & R & Runtype.Common<Static<R>>
@@ -60,12 +60,14 @@ namespace Runtype {
 						const memo = visited.memo(value, self, null)
 						if (memo) return memo
 						else if (memo === undefined) {
-							const result = validate(value, createInnerValidate(visited), self, parsing)
+							const innerValidate = createInnerValidate(visited)
+							const result = validate({ value, innerValidate, self, parsing })
 							visited.memo(value, self, result)
 							return result
 						} else return SUCCESS(value)
 					} else {
-						return validate(value, createInnerValidate(visited), self, parsing)
+						const innerValidate = createInnerValidate(visited)
+						return validate({ value, innerValidate, self, parsing })
 					}
 				},
 				toString: (): string => `Runtype<${show(self as Runtype)}>`,

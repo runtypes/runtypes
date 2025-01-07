@@ -143,7 +143,7 @@ const isOptional = (value: Runtype.Core | Optional): value is Optional => value.
  */
 const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => {
 	return Runtype.create<Object<O>>(
-		(x, innerValidate, self, parsing) => {
+		({ value: x, innerValidate, self, parsing }) => {
 			if (x === null || x === undefined) return FAILURE.TYPE_INCORRECT(self, x)
 
 			const keysOfFields = enumerableKeysOf(self.fields)

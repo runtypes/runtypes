@@ -32,14 +32,14 @@ const Array = <R extends Runtype.Core>(element: R) => {
 			yield Spread(base as Array<R>)
 		},
 	} as Runtype.Base<Array<R>>
-	return Runtype.create<Array<R>>((x, innerValidate, self, parsing) => {
-		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT(self, x)
+	return Runtype.create<Array<R>>(({ value, innerValidate, self, parsing }) => {
+		if (!globalThis.Array.isArray(value)) return FAILURE.TYPE_INCORRECT(self, value)
 
-		const keys = enumerableKeysOf(x).filter(isNumberLikeKey)
-		const results: Result<unknown>[] = keys.map(key => innerValidate(element, x[key], parsing))
+		const keys = enumerableKeysOf(value).filter(isNumberLikeKey)
+		const results: Result<unknown>[] = keys.map(key => innerValidate(element, value[key], parsing))
 		const originalOrParsed: any = parsing
 			? results.map(result => (result.success ? result.value : undefined))
-			: x
+			: value
 		const details: globalThis.Record<number, Failure> = {}
 		for (const key of keys) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
