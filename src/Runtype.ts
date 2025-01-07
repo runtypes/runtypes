@@ -209,17 +209,17 @@ namespace Runtype {
 		/**
 		 * Uses a constraint function to add additional constraints to this runtype, and manually converts a static type of this runtype into another via the type argument if passed.
 		 */
-		withConstraint: <U extends T>(constraint: (x: T) => boolean | string) => Constraint<this, U>
+		withConstraint: <Y extends X>(constraint: (x: X) => boolean | string) => Constraint<this, Y>
 
 		/**
 		 * Uses a guard function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
 		 */
-		withGuard: <U extends T>(guard: (x: T) => x is U) => Constraint<this, U>
+		withGuard: <Y extends X>(guard: (x: X) => x is Y) => Constraint<this, Y>
 
 		/**
 		 * Uses an assertion function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
 		 */
-		withAssertion: <U extends T>(assert: (x: T) => asserts x is U) => Constraint<this, U>
+		withAssertion: <Y extends X>(assert: (x: X) => asserts x is Y) => Constraint<this, Y>
 
 		/**
 		 * Adds a brand to the type.
