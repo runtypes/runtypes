@@ -16,7 +16,7 @@ Deno.test("Array", async t => {
 	})
 
 	await t.step("array", async t => {
-		assertEquals(Array(Number).validate([0, 2, "test"]), {
+		assertEquals(Array(Number).inspect([0, 2, "test"]), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected number[], but was incompatible",
@@ -31,7 +31,7 @@ Deno.test("Array", async t => {
 	})
 
 	await t.step("array nested", async t => {
-		assertEquals(Array(Object({ name: String })).validate([{ name: "Foo" }, { name: false }]), {
+		assertEquals(Array(Object({ name: String })).inspect([{ name: "Foo" }, { name: false }]), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected { name: string; }[], but was incompatible",
@@ -53,7 +53,7 @@ Deno.test("Array", async t => {
 	})
 
 	await t.step("array null", async t => {
-		assertEquals(Array(Object({ name: String })).validate([{ name: "Foo" }, null]), {
+		assertEquals(Array(Object({ name: String })).inspect([{ name: "Foo" }, null]), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected { name: string; }[], but was incompatible",
@@ -68,7 +68,7 @@ Deno.test("Array", async t => {
 	})
 
 	await t.step("readonly array", async t => {
-		assertEquals(Array(Number).asReadonly().validate([0, 2, "test"]), {
+		assertEquals(Array(Number).asReadonly().inspect([0, 2, "test"]), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected number[], but was incompatible",
@@ -86,7 +86,7 @@ Deno.test("Array", async t => {
 		assertEquals(
 			Array(Object({ name: String }))
 				.asReadonly()
-				.validate([{ name: "Foo" }, { name: false }]),
+				.inspect([{ name: "Foo" }, { name: false }]),
 			{
 				success: false,
 				code: Failcode.CONTENT_INCORRECT,
@@ -113,7 +113,7 @@ Deno.test("Array", async t => {
 		assertEquals(
 			Array(Object({ name: String }))
 				.asReadonly()
-				.validate([{ name: "Foo" }, null]),
+				.inspect([{ name: "Foo" }, null]),
 			{
 				success: false,
 				code: Failcode.CONTENT_INCORRECT,

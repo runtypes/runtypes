@@ -30,7 +30,7 @@ Deno.test("Tuple", async t => {
 	})
 
 	await t.step("tuple type", async t => {
-		assertEquals(Tuple(Number, String, Boolean).validate([false, "0", true]), {
+		assertEquals(Tuple(Number, String, Boolean).inspect([false, "0", true]), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected [number, string, boolean], but was incompatible",
@@ -45,7 +45,7 @@ Deno.test("Tuple", async t => {
 	})
 
 	await t.step("tuple length", async t => {
-		assertEquals(Tuple(Number, String, Boolean).validate([0, "0"]), {
+		assertEquals(Tuple(Number, String, Boolean).inspect([0, "0"]), {
 			success: false,
 			code: Failcode.CONSTRAINT_FAILED,
 			message:
@@ -54,7 +54,7 @@ Deno.test("Tuple", async t => {
 	})
 
 	await t.step("tuple nested", async t => {
-		assertEquals(Tuple(Number, Object({ name: String })).validate([0, { name: 0 }]), {
+		assertEquals(Tuple(Number, Object({ name: String })).inspect([0, { name: 0 }]), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected [number, { name: string; }], but was incompatible",

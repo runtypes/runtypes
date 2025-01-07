@@ -49,7 +49,7 @@ Deno.test("Constraint", async t => {
 				o => isObject(o) && hasKey("n", o) && typeof o.n === "number" && o.n > 3,
 			)
 				.withBrand("{ n: > 3 }")
-				.validate({ n: 0 }),
+				.inspect({ n: 0 }),
 			{
 				success: false,
 				code: Failcode.CONSTRAINT_FAILED,
@@ -66,7 +66,7 @@ Deno.test("Constraint", async t => {
 					(isObject(o) && hasKey("n", o) && typeof o.n === "number" && o.n > 3) || "n must be > 3",
 			)
 				.withBrand("{ n: > 3 }")
-				.validate({ n: 0 }),
+				.inspect({ n: 0 }),
 			{
 				success: false,
 				code: Failcode.CONSTRAINT_FAILED,

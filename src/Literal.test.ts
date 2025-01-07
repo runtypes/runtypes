@@ -31,14 +31,14 @@ Deno.test("Literal", async t => {
 	})
 	await t.step("invalidates object", async t => {
 		// @ts-expect-error: should fail
-		assertObjectMatch(Literal(null).validate({ key: "value" }), {
+		assertObjectMatch(Literal(null).inspect({ key: "value" }), {
 			success: false,
 			code: "VALUE_INCORRECT",
 			message: "Expected literal `null`, but was `[object Object]`",
 		})
 	})
 	await t.step("invalidates null prototype object", async t => {
-		assertObjectMatch(Literal(null).validate(Object.create(null)), {
+		assertObjectMatch(Literal(null).inspect(Object.create(null)), {
 			success: false,
 			code: "VALUE_INCORRECT",
 			message: "Expected literal `null`, but was `[object Object]`",
@@ -48,7 +48,7 @@ Deno.test("Literal", async t => {
 		const value = [Object.assign(Object.create(null), { key: "value " }), Object.create(null)]
 
 		// @ts-expect-error: should fail
-		assertObjectMatch(Literal(null).validate(value), {
+		assertObjectMatch(Literal(null).inspect(value), {
 			success: false,
 			code: "VALUE_INCORRECT",
 			message: "Expected literal `null`, but was `[object Object]`",
@@ -56,7 +56,7 @@ Deno.test("Literal", async t => {
 	})
 	await t.step("invalidates symbol", async t => {
 		// @ts-expect-error: should fail
-		assertObjectMatch(Literal(null).validate(Symbol()), {
+		assertObjectMatch(Literal(null).inspect(Symbol()), {
 			success: false,
 			code: "VALUE_INCORRECT",
 			message: "Expected literal `null`, but was `Symbol()`",
@@ -64,7 +64,7 @@ Deno.test("Literal", async t => {
 	})
 	await t.step("invalidates symbols", async t => {
 		// @ts-expect-error: should fail
-		assertObjectMatch(Literal(null).validate([Symbol("example"), Symbol()]), {
+		assertObjectMatch(Literal(null).inspect([Symbol("example"), Symbol()]), {
 			success: false,
 			code: "VALUE_INCORRECT",
 			message: "Expected literal `null`, but was `[object Object]`",

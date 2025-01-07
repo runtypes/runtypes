@@ -435,12 +435,12 @@ const expectLiteralField = <O, K extends keyof O, V extends O[K]>(o: O, k: K, v:
 }
 
 const assertAccepts = (value: unknown, runtype: Runtype.Core) => {
-	const result = runtype.validate(value)
+	const result = runtype.inspect(value)
 	if (result.success === false) fail(result.message)
 }
 
 const assertRejects = (value: unknown, runtype: Runtype.Core) => {
-	const result = runtype.validate(value)
+	const result = runtype.inspect(value)
 	if (result.success === true)
 		fail("value passed validation even though await it was not expected to")
 }
