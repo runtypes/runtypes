@@ -41,7 +41,7 @@ Deno.test("union", async t => {
 
 			const Shape = Union(Square, Rectangle, Circle)
 
-			assertEquals(Shape.validate({ kind: "square", size: new Date() }), {
+			assertEquals(Shape.inspect({ kind: "square", size: new Date() }), {
 				code: Failcode.TYPE_INCORRECT,
 				details: {
 					0: {
@@ -102,7 +102,7 @@ Deno.test("union", async t => {
 				success: false,
 			})
 
-			assertEquals(Shape.validate({ kind: "rectangle", size: new Date() }), {
+			assertEquals(Shape.inspect({ kind: "rectangle", size: new Date() }), {
 				code: Failcode.TYPE_INCORRECT,
 				details: {
 					0: {
@@ -163,7 +163,7 @@ Deno.test("union", async t => {
 				success: false,
 			})
 
-			assertEquals(Shape.validate({ kind: "circle", size: new Date() }), {
+			assertEquals(Shape.inspect({ kind: "circle", size: new Date() }), {
 				code: Failcode.TYPE_INCORRECT,
 				details: {
 					0: {
@@ -225,7 +225,7 @@ Deno.test("union", async t => {
 			})
 
 			assertEquals(
-				Shape.validate({ kind: "other", size: new Date() }),
+				Shape.inspect({ kind: "other", size: new Date() }),
 
 				{
 					code: Failcode.TYPE_INCORRECT,
@@ -302,7 +302,7 @@ Deno.test("union", async t => {
 
 			const Shape = Union(Square, Rectangle, CircularSquare)
 
-			assertEquals(Shape.validate({ kind: "square", size: new Date() }), {
+			assertEquals(Shape.inspect({ kind: "square", size: new Date() }), {
 				code: Failcode.TYPE_INCORRECT,
 				details: {
 					0: {
@@ -365,7 +365,7 @@ Deno.test("union", async t => {
 
 			const Shape = Union(Square, Rectangle, InstanceOf(Date))
 
-			assertEquals(Shape.validate({ kind: "square", size: new Date() }), {
+			assertEquals(Shape.inspect({ kind: "square", size: new Date() }), {
 				code: Failcode.TYPE_INCORRECT,
 				details: {
 					0: {
@@ -418,7 +418,7 @@ Deno.test("union", async t => {
 
 	await t.step("should never validate with the empty union", async t => {
 		const ShouldNever = Union()
-		assertEquals(ShouldNever.validate(true), {
+		assertEquals(ShouldNever.inspect(true), {
 			success: false,
 			code: Failcode.NOTHING_EXPECTED,
 			message: "Expected nothing, but was boolean",
@@ -436,7 +436,7 @@ Deno.test("union", async t => {
 			// @ts-expect-error: should fail
 			foobar: {},
 		}
-		assertEquals(ABC.validate(input), {
+		assertEquals(ABC.inspect(input), {
 			success: false,
 			code: Failcode.TYPE_INCORRECT,
 			message:
@@ -505,7 +505,7 @@ Deno.test("union", async t => {
 		const This = Object({ size: Number })
 		const That = Object({ size: Number })
 		const Shape = Union(This, That)
-		const result = Shape.validate({ size: {} })
+		const result = Shape.inspect({ size: {} })
 		assertEquals(result, {
 			success: false,
 			code: Failcode.TYPE_INCORRECT,
@@ -547,7 +547,7 @@ Deno.test("union", async t => {
 		type ABCType = Static<typeof ABC>
 		// @ts-expect-error: should fail
 		const input: ABCType = { bar: "foo" }
-		assertEquals(ABC.validate(input), {
+		assertEquals(ABC.inspect(input), {
 			code: Failcode.TYPE_INCORRECT,
 			details: {
 				0: {
@@ -605,7 +605,7 @@ Deno.test("union", async t => {
 				'Expected { foo: "bar"; } | ({ foo: "bar"; } & { bar: "foo"; }) | ({ foo: "bar"; } & { foobar: "foobar"; }), but was incompatible',
 			success: false,
 		})
-		assertEquals(A.validate(input), {
+		assertEquals(A.inspect(input), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: 'Expected { foo: "bar"; }, but was incompatible',
@@ -617,7 +617,7 @@ Deno.test("union", async t => {
 				},
 			},
 		})
-		assertEquals(B.validate(input), {
+		assertEquals(B.inspect(input), {
 			code: Failcode.TYPE_INCORRECT,
 			details: {
 				0: {
@@ -636,7 +636,7 @@ Deno.test("union", async t => {
 			message: 'Expected { foo: "bar"; } & { bar: "foo"; }, but was incompatible',
 			success: false,
 		})
-		assertEquals(C.validate(input), {
+		assertEquals(C.inspect(input), {
 			code: Failcode.TYPE_INCORRECT,
 			details: {
 				0: {
@@ -671,7 +671,7 @@ Deno.test("union", async t => {
 
 	await t.step("should report details #0", async t => {
 		assertEquals(
-			Union(Number, String).validate(
+			Union(Number, String).inspect(
 				// @ts-expect-error: should fail
 				false,
 			),
@@ -696,7 +696,7 @@ Deno.test("union", async t => {
 	})
 
 	await t.step("should report details #1", async t => {
-		assertEquals(Union(Number, String).validate(globalThis.Object.create(null)), {
+		assertEquals(Union(Number, String).inspect(globalThis.Object.create(null)), {
 			success: false,
 			code: Failcode.TYPE_INCORRECT,
 			message: "Expected number | string, but was incompatible",

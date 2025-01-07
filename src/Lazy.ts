@@ -25,7 +25,10 @@ const Lazy = <R extends Runtype.Core>(delayed: () => R) => {
 		return cached
 	}
 
-	return Runtype.create<R>(({ value }) => getWrapped().validate(value), self as Runtype.Base<R>)
+	return Runtype.create<R>(
+		({ value, parsing }) => getWrapped().inspect(value, { parse: parsing }),
+		self as Runtype.Base<R>,
+	)
 }
 
 export default Lazy

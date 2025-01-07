@@ -17,7 +17,7 @@ Deno.test("Record", async t => {
 		const example: Dict = {
 			a: 42,
 		}
-		assertEquals(Dict.validate(example), {
+		assertEquals(Dict.inspect(example), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: 'Expected { [_: "a" | "b"]: number }, but was incompatible',
@@ -35,12 +35,12 @@ Deno.test("Record", async t => {
 		const D = Record(Number, String)
 		type D = Static<typeof D>
 		const d: D = { [globalThis.Number.MAX_VALUE]: "foo" }
-		assertEquals(D.validate(d), { success: true, value: d })
+		assertEquals(D.inspect(d), { success: true, value: d })
 	})
 
 	await t.step("record", async t => {
 		assertEquals(
-			Record(String, String).validate(
+			Record(String, String).inspect(
 				// @ts-expect-error: should fail
 				null,
 			),
@@ -54,7 +54,7 @@ Deno.test("Record", async t => {
 
 	await t.step("record invalid type", async t => {
 		assertEquals(
-			Record(String, Object({ name: String })).validate(
+			Record(String, Object({ name: String })).inspect(
 				// @ts-expect-error: should fail
 				undefined,
 			),
@@ -64,7 +64,7 @@ Deno.test("Record", async t => {
 				message: "Expected { [_: string]: { name: string; } }, but was undefined",
 			},
 		)
-		assertEquals(Record(String, Object({ name: String })).validate(1), {
+		assertEquals(Record(String, Object({ name: String })).inspect(1), {
 			success: false,
 			code: Failcode.TYPE_INCORRECT,
 			message: "Expected { [_: string]: { name: string; } }, but was number",
@@ -72,7 +72,7 @@ Deno.test("Record", async t => {
 	})
 
 	await t.step("record complex", async t => {
-		assertEquals(Record(String, Object({ name: String })).validate({ foo: { name: false } }), {
+		assertEquals(Record(String, Object({ name: String })).inspect({ foo: { name: false } }), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected { [_: string]: { name: string; } }, but was incompatible",
@@ -94,7 +94,7 @@ Deno.test("Record", async t => {
 	})
 
 	await t.step("string record", async t => {
-		assertEquals(Record(String, String).validate({ foo: "bar", test: true }), {
+		assertEquals(Record(String, String).inspect({ foo: "bar", test: true }), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected { [_: string]: string }, but was incompatible",
@@ -109,7 +109,7 @@ Deno.test("Record", async t => {
 	})
 
 	await t.step("number record", async t => {
-		assertEquals(Record(Number, String).validate({ 1: "bar", 2: 20 }), {
+		assertEquals(Record(Number, String).inspect({ 1: "bar", 2: 20 }), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected { [_: number]: string }, but was incompatible",

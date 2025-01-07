@@ -15,17 +15,17 @@ Deno.test("Symbol", async t => {
 	await t.step("symbol", async t => {
 		assertObjectMatch(Symbol, { tag: "symbol" })
 		assertObjectMatch(Symbol("runtypes"), { tag: "symbol", key: "runtypes" })
-		assertEquals(Symbol("runtypes?").validate(globalThis.Symbol.for("runtypes!")), {
+		assertEquals(Symbol("runtypes?").inspect(globalThis.Symbol.for("runtypes!")), {
 			success: false,
 			code: Failcode.VALUE_INCORRECT,
 			message: 'Expected symbol for "runtypes?", but was for "runtypes!"',
 		})
-		assertEquals(Symbol(undefined).validate(globalThis.Symbol.for("undefined")), {
+		assertEquals(Symbol(undefined).inspect(globalThis.Symbol.for("undefined")), {
 			success: false,
 			code: Failcode.VALUE_INCORRECT,
 			message: 'Expected unique symbol, but was for "undefined"',
 		})
-		assertEquals(Symbol("undefined").validate(globalThis.Symbol()), {
+		assertEquals(Symbol("undefined").inspect(globalThis.Symbol()), {
 			success: false,
 			code: Failcode.VALUE_INCORRECT,
 			message: 'Expected symbol for "undefined", but was unique',

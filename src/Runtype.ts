@@ -78,21 +78,20 @@ namespace Runtype {
 		defineProperties(
 			self,
 			{
-				validate: (x: unknown): Result<Static<R>> =>
-					(self[RuntypeSymbol] as any)(x, createVisitedState(), false),
+				inspect: (
+					x: unknown,
+					options: { parse?: boolean | undefined } = {},
+				): Result<Static<R> | Parsed<R>> =>
+					(self[RuntypeSymbol] as any)(x, createVisitedState(), options.parse ?? true),
 				check: (x: unknown): Static<R> => {
-					const result: Result<unknown> = self.validate(x)
+					const result: Result<unknown> = self.inspect(x, { parse: false })
 					if (result.success) return result.value as Static<R>
 					else throw new ValidationError(result)
 				},
-				guard: (x: unknown): x is Static<R> => self.validate(x).success,
+				guard: (x: unknown): x is Static<R> => self.inspect(x, { parse: false }).success,
 				assert: (x: unknown): asserts x is Static<R> => void self.check(x),
 				parse: (x: unknown): Parsed<R> => {
-					const result: Result<unknown> = (self[RuntypeSymbol] as any)(
-						x,
-						createVisitedState(),
-						true,
-					)
+					const result: Result<unknown> = self.inspect(x, { parse: true })
 					if (result.success) return result.value as Static<R>
 					else throw new ValidationError(result)
 				},
@@ -259,7 +258,10 @@ namespace Runtype {
 		/**
 		 * Validates that a value conforms to this runtype, returning a detailed information of success or failure. Does not throw on failure.
 		 */
-		validate: <U = T>(x: Maybe<T, U>) => Result<T & U>
+		inspect: <U = T, P extends boolean = true>(
+			x: Maybe<T, U>,
+			options?: { parse?: P | undefined },
+		) => Result<P extends true ? X : T & U>
 
 		/**
 		 * Validates that a value conforms to this runtype, returning a `boolean` that represents success (`true`) or failure (`false`). Does not throw on failure.

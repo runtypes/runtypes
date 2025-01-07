@@ -147,7 +147,7 @@ Deno.test("Object", async t => {
 	})
 
 	await t.step("object", async t => {
-		assertEquals(Object({ name: String, age: Number }).validate({ name: "Jack", age: "10" }), {
+		assertEquals(Object({ name: String, age: Number }).inspect({ name: "Jack", age: "10" }), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected { name: string; age: number; }, but was incompatible",
@@ -163,14 +163,14 @@ Deno.test("Object", async t => {
 
 	await t.step("object for null prototype", () =>
 		assert(
-			Object({ name: String, age: Number }).validate(
+			Object({ name: String, age: Number }).inspect(
 				globalThis.Object.assign(globalThis.Object.create(null), { name: "Jack", age: 10 }),
 			),
 		),
 	)
 
 	await t.step("object missing keys", async t => {
-		assertEquals(Object({ name: String, age: Number }).validate({ name: "Jack" }), {
+		assertEquals(Object({ name: String, age: Number }).inspect({ name: "Jack" }), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected { name: string; age: number; }, but was incompatible",
@@ -186,7 +186,7 @@ Deno.test("Object", async t => {
 
 	await t.step("object complex", async t => {
 		assertEquals(
-			Object({ name: String, age: Number, likes: Array(Object({ title: String })) }).validate({
+			Object({ name: String, age: Number, likes: Array(Object({ title: String })) }).inspect({
 				name: "Jack",
 				age: 10,
 				likes: [{ title: false }],
@@ -223,7 +223,7 @@ Deno.test("Object", async t => {
 
 	await t.step("readonly object", async t => {
 		assertEquals(
-			Object({ name: String, age: Number }).asReadonly().validate({ name: "Jack", age: "10" }),
+			Object({ name: String, age: Number }).asReadonly().inspect({ name: "Jack", age: "10" }),
 			{
 				success: false,
 				code: Failcode.CONTENT_INCORRECT,
@@ -240,7 +240,7 @@ Deno.test("Object", async t => {
 	})
 
 	await t.step("readonly object missing keys", async t => {
-		assertEquals(Object({ name: String, age: Number }).asReadonly().validate({ name: "Jack" }), {
+		assertEquals(Object({ name: String, age: Number }).asReadonly().inspect({ name: "Jack" }), {
 			success: false,
 			code: Failcode.CONTENT_INCORRECT,
 			message: "Expected { name: string; age: number; }, but was incompatible",
@@ -258,7 +258,7 @@ Deno.test("Object", async t => {
 		assertEquals(
 			Object({ name: String, age: Number, likes: Array(Object({ title: String }).asReadonly()) })
 				.asReadonly()
-				.validate({ name: "Jack", age: 10, likes: [{ title: false }] }),
+				.inspect({ name: "Jack", age: 10, likes: [{ title: false }] }),
 			{
 				success: false,
 				code: Failcode.CONTENT_INCORRECT,

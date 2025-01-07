@@ -27,7 +27,7 @@ Deno.test("template", async t => {
 		type Dog = Static<typeof Dog>
 		// @ts-expect-error: This should fail.
 		const catBob: Dog = "Bob's cat"
-		assertEquals(Dog.validate(catBob), {
+		assertEquals(Dog.inspect(catBob), {
 			code: "VALUE_INCORRECT",
 			message: 'Expected string `${"Bob" | "Jeff"}\'s dog`, but was "Bob\'s cat"',
 			success: false,
@@ -65,7 +65,7 @@ Deno.test("template", async t => {
 	await t.step("emits TYPE_INCORRECT for values other than string", async t => {
 		const Dog = Template("foo")
 		// @ts-expect-error: should fail
-		assertEquals(Dog.validate(42), {
+		assertEquals(Dog.inspect(42), {
 			code: "TYPE_INCORRECT",
 			message: 'Expected string "foo", but was number',
 			success: false,
