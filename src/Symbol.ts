@@ -2,7 +2,7 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Symbol<K extends string | undefined = string | undefined> extends Runtype.Common<symbol> {
+interface Symbol<K extends string | undefined = string | undefined> extends Runtype<symbol> {
 	tag: "symbol"
 	key: K
 

@@ -1,6 +1,6 @@
 import enumerableKeysOf from "./enumerableKeysOf.ts"
 import type Optional from "../Optional.ts"
-import type Runtype from "../Runtype.ts"
+import Runtype from "../Runtype.ts"
 
 /**
  * Return the display string for the stringified version of a type, e.g.
@@ -12,7 +12,8 @@ import type Runtype from "../Runtype.ts"
  */
 const showStringified =
 	(circular: Set<Runtype.Core>) =>
-	(runtype: Runtype): string => {
+	(runtype: Runtype.Core): string => {
+		Runtype.assertIsRuntype(runtype)
 		switch (runtype.tag) {
 			case "literal":
 				return `"${globalThis.String(runtype.value)}"`
@@ -21,14 +22,14 @@ const showStringified =
 			case "brand":
 				return runtype.brand
 			case "constraint":
-				return showStringified(circular)(runtype.underlying as Runtype)
+				return showStringified(circular)(runtype.underlying)
 			case "union":
 				return runtype.alternatives
-					.map(alternative => showStringified(circular)(alternative as Runtype))
+					.map(alternative => showStringified(circular)(alternative))
 					.join(" | ")
 			case "intersect":
 				return runtype.intersectees
-					.map(alternative => showStringified(circular)(alternative as Runtype))
+					.map(alternative => showStringified(circular)(alternative))
 					.join(" & ")
 			default:
 				break
@@ -47,24 +48,25 @@ const showStringified =
  */
 const showEmbedded =
 	(circular: Set<Runtype.Core>) =>
-	(runtype: Runtype): string => {
+	(runtype: Runtype.Core): string => {
+		Runtype.assertIsRuntype(runtype)
 		switch (runtype.tag) {
 			case "literal":
 				return String(runtype.value)
 			case "brand":
 				return `\${${runtype.brand}}`
 			case "constraint":
-				return showEmbedded(circular)(runtype.underlying as Runtype)
+				return showEmbedded(circular)(runtype.underlying)
 			case "union":
 				if (runtype.alternatives.length === 1) {
 					const inner = runtype.alternatives[0]!
-					return showEmbedded(circular)(inner as Runtype)
+					return showEmbedded(circular)(inner)
 				}
 				break
 			case "intersect":
 				if (runtype.intersectees.length === 1) {
 					const inner = runtype.intersectees[0]!
-					return showEmbedded(circular)(inner as Runtype)
+					return showEmbedded(circular)(inner)
 				}
 				break
 			default:
@@ -75,10 +77,11 @@ const showEmbedded =
 
 const show =
 	(needsParens: boolean, circular: Set<Runtype.Core>) =>
-	(runtype: Runtype): string => {
+	(runtype: Runtype.Core): string => {
+		Runtype.assertIsRuntype(runtype)
 		const parenthesize = (s: string) => (needsParens ? `(${s})` : s)
 
-		if (circular.has(runtype as Runtype)) return parenthesize(`CIRCULAR ${runtype.tag}`)
+		if (circular.has(runtype)) return parenthesize(`CIRCULAR ${runtype.tag}`)
 		else circular.add(runtype)
 
 		try {
@@ -105,7 +108,7 @@ const show =
 					else if (runtype.strings.length === 2) {
 						if (runtype.strings.every(string => string === "")) {
 							const r = runtype.runtypes[0]!
-							return showStringified(circular)(r as Runtype)
+							return showStringified(circular)(r)
 						}
 					}
 					let backtick = false
@@ -113,7 +116,7 @@ const show =
 						const prefix = inner + string
 						const r = runtype.runtypes[i]
 						if (r) {
-							const suffix = showEmbedded(circular)(r as Runtype)
+							const suffix = showEmbedded(circular)(r)
 							if (!backtick && suffix.startsWith("$")) backtick = true
 							return prefix + suffix
 						} else return prefix
@@ -121,9 +124,9 @@ const show =
 					return backtick ? `\`${inner}\`` : `"${inner}"`
 				}
 				case "array":
-					return `${show(true, circular)(runtype.element as Runtype)}[]`
+					return `${show(true, circular)(runtype.element)}[]`
 				case "record":
-					return `{ [_: ${show(false, circular)(runtype.key as Runtype)}]: ${show(false, circular)(runtype.value as Runtype)} }`
+					return `{ [_: ${show(false, circular)(runtype.key)}]: ${show(false, circular)(runtype.value)} }`
 				case "object": {
 					const keys = enumerableKeysOf(runtype.fields)
 					return keys.length
@@ -132,11 +135,8 @@ const show =
 									key =>
 										`${key.toString()}${optionalTag(runtype, key)}: ${
 											runtype.fields[key]!.tag === "optional"
-												? show(
-														false,
-														circular,
-													)((runtype.fields[key]! as Optional).underlying as Runtype)
-												: show(false, circular)(runtype.fields[key]! as Runtype)
+												? show(false, circular)((runtype.fields[key]! as Optional).underlying)
+												: show(false, circular)(runtype.fields[key]! as Runtype.Core)
 										};`,
 								)
 								.join(" ")} }`
@@ -146,35 +146,35 @@ const show =
 					return !Array.isArray(runtype.components) &&
 						runtype.components.leading.length === 0 &&
 						runtype.components.trailing.length === 0
-						? show(needsParens, circular)(runtype.components.rest as Runtype)
+						? show(needsParens, circular)(runtype.components.rest)
 						: `[${(Array.isArray(runtype.components)
-								? runtype.components.map(component => show(false, circular)(component as Runtype))
+								? runtype.components.map(component => show(false, circular)(component))
 								: [
 										...runtype.components.leading.map(component =>
-											show(false, circular)(component as Runtype),
+											show(false, circular)(component),
 										),
-										`...${show(true, circular)(runtype.components.rest as Runtype)}`,
+										`...${show(true, circular)(runtype.components.rest)}`,
 										...runtype.components.trailing.map(component =>
-											show(false, circular)(component as Runtype),
+											show(false, circular)(component),
 										),
 									]
 							).join(", ")}]`
 				case "union":
 					return parenthesize(
-						`${runtype.alternatives.map(alternative => show(true, circular)(alternative as Runtype)).join(" | ")}`,
+						`${runtype.alternatives.map(alternative => show(true, circular)(alternative)).join(" | ")}`,
 					)
 				case "intersect":
 					return parenthesize(
-						`${runtype.intersectees.map(intersectee => show(true, circular)(intersectee as Runtype)).join(" & ")}`,
+						`${runtype.intersectees.map(intersectee => show(true, circular)(intersectee)).join(" & ")}`,
 					)
 				case "constraint":
-					return show(needsParens, circular)(runtype.underlying as Runtype)
+					return show(needsParens, circular)(runtype.underlying)
 				case "instanceof":
 					return (runtype.ctor as any).name
 				case "brand":
 					return runtype.brand
 				case "parser":
-					return show(needsParens, circular)(runtype.underlying as Runtype)
+					return show(needsParens, circular)(runtype.underlying)
 			}
 		} finally {
 			circular.delete(runtype)

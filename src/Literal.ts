@@ -2,22 +2,12 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-/**
- * The super type of all literal types.
- */
 type LiteralStatic = undefined | null | boolean | number | bigint | string
 
-interface Literal<T extends LiteralStatic = LiteralStatic> extends Runtype.Common<T> {
+interface Literal<T extends LiteralStatic = LiteralStatic> extends Runtype<T> {
 	tag: "literal"
 	value: T
 }
-
-const literal = (value: LiteralStatic): string =>
-	typeof value === "bigint"
-		? globalThis.String(value) + "n"
-		: typeof value === "string"
-			? `"${globalThis.String(value)}"`
-			: globalThis.String(value)
 
 /**
  * <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness#same-value-zero_equality>
@@ -45,5 +35,3 @@ const Literal = <T extends LiteralStatic>(value: T) =>
 	)
 
 export default Literal
-// eslint-disable-next-line import/no-named-export
-export { type LiteralStatic, literal }

@@ -1,6 +1,5 @@
 import type Intersect from "./Intersect.ts"
 import type Literal from "./Literal.ts"
-import { type LiteralStatic } from "./Literal.ts"
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import type Union from "./Union.ts"
 import type Result from "./result/Result.ts"
@@ -9,6 +8,7 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import escapeRegExp from "./utils-internal/escapeRegExp.ts"
 import typeOf from "./utils-internal/typeOf.ts"
 
+type LiteralStatic = Static<Literal>
 type InnerValidate = <T>(runtype: Runtype.Core, value: unknown, parsing: boolean) => Result<T>
 
 type TemplateParsed<
@@ -48,7 +48,7 @@ type TemplateStatic<
 interface Template<
 	A extends readonly [string, ...string[]] = readonly [string, ...string[]],
 	B extends readonly Runtype.Core<LiteralStatic>[] = readonly Runtype.Core<LiteralStatic>[],
-> extends Runtype.Common<
+> extends Runtype<
 		A extends TemplateStringsArray ? string : TemplateStatic<A, B>,
 		A extends TemplateStringsArray ? string : TemplateParsed<A, B>
 	> {
@@ -197,19 +197,18 @@ const normalizeArgs = (
 	return [strings, runtypes]
 }
 
-const getInnerLiteral = (runtype: Runtype): Literal<LiteralStatic> => {
+const getInnerLiteral = (runtype: Runtype.Core): Literal<LiteralStatic> => {
+	Runtype.assertIsRuntype(runtype)
 	switch (runtype.tag) {
 		case "literal":
 			return runtype
 		case "brand":
-			return getInnerLiteral(runtype.entity as Runtype)
+			return getInnerLiteral(runtype.entity)
 		case "union":
-			if (runtype.alternatives.length === 1)
-				return getInnerLiteral(runtype.alternatives[0]! as Runtype)
+			if (runtype.alternatives.length === 1) return getInnerLiteral(runtype.alternatives[0]!)
 			break
 		case "intersect":
-			if (runtype.intersectees.length === 1)
-				return getInnerLiteral(runtype.intersectees[0]! as Runtype)
+			if (runtype.intersectees.length === 1) return getInnerLiteral(runtype.intersectees[0]!)
 			break
 		default:
 			break
@@ -241,7 +240,8 @@ const revivers: {
 }
 
 type Revivers = Reviver | Revivers[]
-const getReviversFor = (runtype: Runtype): Revivers => {
+const getReviversFor = (runtype: Runtype.Core): Revivers => {
+	Runtype.assertIsRuntype(runtype)
 	switch (runtype.tag) {
 		case "literal": {
 			const [reviver] = revivers[typeOf(runtype.value)] || [identity]
@@ -264,8 +264,9 @@ const getReviversFor = (runtype: Runtype): Revivers => {
 
 /** Recursively map corresponding reviver and  */
 const reviveValidate =
-	(runtype: Runtype, innerValidate: InnerValidate, parsing: boolean) =>
+	(runtype: Runtype.Core, innerValidate: InnerValidate, parsing: boolean) =>
 	(value: string): Result<unknown> => {
+		Runtype.assertIsRuntype(runtype)
 		const revivers = getReviversFor(runtype)
 		if (Array.isArray(revivers)) {
 			switch (runtype.tag) {
@@ -298,7 +299,8 @@ const reviveValidate =
 		}
 	}
 
-const getRegExpPatternFor = (runtype: Runtype): string => {
+const getRegExpPatternFor = (runtype: Runtype.Core): string => {
+	Runtype.assertIsRuntype(runtype)
 	switch (runtype.tag) {
 		case "literal":
 			return escapeRegExp(String(runtype.value))
@@ -429,17 +431,7 @@ const Template: {
 	...args: A
 ) => {
 	const [strings, runtypes] = normalizeArgs(args)
-	return Runtype.create<
-		A extends (LiteralStatic | Runtype.Core<LiteralStatic>)[]
-			? Template<ExtractStrings<A>, ExtractRuntypes<A>>
-			: A extends [infer carA, ...infer cdrA]
-				? carA extends readonly [string, ...string[]]
-					? cdrA extends readonly Runtype.Core<LiteralStatic>[]
-						? Template<carA, cdrA>
-						: never
-					: never
-				: never
-	>(
+	return Runtype.create<any>(
 		({ value, innerValidate, self, parsing }) => {
 			const regexp = createRegExpForTemplate(self as any)
 

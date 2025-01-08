@@ -7,7 +7,7 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 
 interface Intersect<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
-	extends Runtype.Common<
+	extends Runtype<
 		// We use the fact that a union of functions is effectively an intersection of parameters
 		// e.g. to safely call (({x: 1}) => void | ({y: 2}) => void) you must pass {x: 1, y: 2}
 		{

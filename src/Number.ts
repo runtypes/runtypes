@@ -2,7 +2,7 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Number extends Runtype.Common<number> {
+interface Number extends Runtype<number> {
 	tag: "number"
 }
 

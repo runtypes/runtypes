@@ -4,7 +4,7 @@ import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 interface Constraint<R extends Runtype.Core = Runtype.Core, T extends Parsed<R> = Parsed<R>>
-	extends Runtype.Common<[Static<R>, Parsed<R>] extends [Parsed<R>, Static<R>] ? T : Static<R>, T> {
+	extends Runtype<[Static<R>, Parsed<R>] extends [Parsed<R>, Static<R>] ? T : Static<R>, T> {
 	tag: "constraint"
 	underlying: R
 	constraint: (x: Parsed<R>) => asserts x is T

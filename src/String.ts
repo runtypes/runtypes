@@ -2,7 +2,7 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface String extends Runtype.Common<string> {
+interface String extends Runtype<string> {
 	tag: "string"
 }
 

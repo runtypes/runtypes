@@ -6,7 +6,7 @@ type Constructor<V> = {
 	new (...args: never[]): V
 }
 
-interface InstanceOf<V = unknown> extends Runtype.Common<V> {
+interface InstanceOf<V = unknown> extends Runtype<V> {
 	tag: "instanceof"
 	ctor: Constructor<V>
 }

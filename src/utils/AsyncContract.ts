@@ -43,7 +43,7 @@ type AsyncContract<O extends Options> = O & {
 
 const parseReceived = <O extends Options, F extends AsyncFunction>(
 	received: readonly unknown[],
-	receives: O["receives"],
+	receives: (O["receives"] & Runtype) | undefined,
 ): EnforcedParametersParsed<O, F> => {
 	if (!receives) return received as EnforcedParametersParsed<O, F>
 	try {
@@ -64,7 +64,7 @@ const InstanceOfPromise: InstanceOf<Promise<unknown>> = InstanceOf(Promise)
 
 const parseReturned = async <O extends Options, F extends AsyncFunction>(
 	returned: unknown,
-	returns: O["returns"],
+	returns: (O["returns"] & Runtype) | undefined,
 ): Promise<EnforcedReturnTypeParsed<O, F>> => {
 	try {
 		InstanceOfPromise.assert(returned)
@@ -104,7 +104,10 @@ const AsyncContract = <O extends Options>({ receives, returns }: O): AsyncContra
 		enforce:
 			f =>
 			async (...args) =>
-				await parseReturned(f(...(parseReceived(args, receives) as any)), returns),
+				await parseReturned(
+					f(...(parseReceived(args, receives as Runtype) as any)),
+					returns as Runtype,
+				),
 	} as AsyncContract<O>
 }
 

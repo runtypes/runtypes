@@ -1,7 +1,7 @@
 import Runtype from "./Runtype.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Unknown extends Runtype.Common<unknown> {
+interface Unknown extends Runtype<unknown> {
 	tag: "unknown"
 }
 

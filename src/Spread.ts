@@ -37,12 +37,12 @@ const Spread = globalThis.Object.assign(
 	}),
 	{
 		/** @internal */
-		asSpreadable: <R extends Runtype.Spreadable, B extends Runtype.Base<R>>(base: B): B =>
+		asSpreadable: <B extends Runtype.Base<any>>(base: B): B =>
 			defineIntrinsics(base, {
 				[Symbol.iterator]: function* () {
-					yield Spread(base as unknown as Runtype.Spreadable)
+					yield Spread(base as unknown as Runtype.Spreadable) as any
 				},
-			} as Iterable<Spread<R>>) as B,
+			} as any) as B,
 	},
 )
 

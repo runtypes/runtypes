@@ -2,7 +2,7 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface BigInt extends Runtype.Common<bigint> {
+interface BigInt extends Runtype<bigint> {
 	tag: "bigint"
 }
 

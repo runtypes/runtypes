@@ -22,7 +22,7 @@ import Undefined from "../Undefined.ts"
 import Union from "../Union.ts"
 import Unknown from "../Unknown.ts"
 import Void from "../Void.ts"
-import { assert } from "@std/assert"
+import { assertEquals } from "@std/assert"
 
 class TestClass {}
 
@@ -148,8 +148,8 @@ Deno.test("show", async t => {
 	for (const [T, expected] of cases) {
 		const s = show(T as Runtype)
 		await t.step(`${s} === ${expected}`, async t => {
-			assert(s === expected)
-			assert(T.toString() === `Runtype<${s}>`)
+			assertEquals(s, expected)
+			assertEquals(T.toString(), `[object Runtype<${s}>]`)
 		})
 	}
 })

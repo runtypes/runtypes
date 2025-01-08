@@ -28,7 +28,7 @@ type Legend = {
 	/**
 	 * The runtype used to test the value.
 	 */
-	expected: Runtype
+	expected: Runtype.Interfaces
 
 	/**
 	 * The value tested.

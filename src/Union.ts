@@ -8,7 +8,7 @@ import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 interface Union<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
-	extends Runtype.Common<
+	extends Runtype<
 		{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number],
 		{ [K in keyof R]: R[K] extends Runtype.Core ? Parsed<R[K]> : unknown }[number]
 	> {
@@ -21,22 +21,13 @@ interface Union<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 				: never
 			: never
 		: never
-}
-
-namespace Union {
-	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
-	export type Utilities<R extends readonly Runtype.Core[]> = {
-		match: Match<R>
-	}
-
-	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
-	export type WithUtilities<R extends readonly Runtype.Core[]> = Union<R> & Utilities<R>
+	match: Match<R>
 }
 
 /**
  * Construct a union runtype from runtypes for its alternatives.
  */
-const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.WithUtilities<R> => {
+const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union<R> => {
 	const base = {
 		tag: "union",
 		alternatives,
@@ -47,7 +38,7 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 			innerValidate,
 			self,
 			parsing,
-		}): Result<{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number]> => {
+		}): Result<{ [K in keyof R]: R[K] extends Runtype ? Static<R[K]> : unknown }[number]> => {
 			if (self.alternatives.length === 0)
 				return FAILURE.NOTHING_EXPECTED({ expected: self, received: value })
 			const details: Failure.Details = {}
@@ -60,7 +51,7 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 			}
 			return FAILURE.TYPE_INCORRECT({ expected: self, received: value, details })
 		},
-		Spread.asSpreadable(base),
+		Spread.asSpreadable(base) as any,
 	).with(self => ({
 		match: ((...cases: any[]) =>
 			(x: any) => {
