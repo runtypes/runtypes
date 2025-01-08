@@ -40,11 +40,7 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 	const base = {
 		tag: "union",
 		alternatives,
-		*[Symbol.iterator]() {
-			yield Spread(base as any)
-		},
 	} as Runtype.Base<Union<R>>
-
 	return Runtype.create<Union<R>>(
 		({
 			value,
@@ -52,7 +48,8 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 			self,
 			parsing,
 		}): Result<{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number]> => {
-			if (self.alternatives.length === 0) return FAILURE.NOTHING_EXPECTED(value)
+			if (self.alternatives.length === 0)
+				return FAILURE.NOTHING_EXPECTED({ expected: self, received: value })
 			const details: Failure.Details = {}
 			for (let i = 0; i < self.alternatives.length; i++) {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -61,9 +58,9 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union.Wit
 				if (result.success) return SUCCESS(parsing ? result.value : value)
 				details[i] = result
 			}
-			return FAILURE.TYPE_INCORRECT(self, value, details)
+			return FAILURE.TYPE_INCORRECT({ expected: self, received: value, details })
 		},
-		base,
+		Spread.asSpreadable(base),
 	).with(self => ({
 		match: ((...cases: any[]) =>
 			(x: any) => {

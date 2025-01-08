@@ -2,6 +2,7 @@ import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
+import type Success from "./result/Success.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
@@ -28,18 +29,13 @@ const Array = <R extends Runtype.Core>(element: R) => {
 	const base = {
 		tag: "array",
 		element,
-		*[Symbol.iterator]() {
-			yield Spread(base as Array<R>)
-		},
 	} as Runtype.Base<Array<R>>
 	return Runtype.create<Array<R>>(({ value, innerValidate, self, parsing }) => {
-		if (!globalThis.Array.isArray(value)) return FAILURE.TYPE_INCORRECT(self, value)
+		if (!globalThis.Array.isArray(value))
+			return FAILURE.TYPE_INCORRECT({ expected: self, received: value })
 
 		const keys = enumerableKeysOf(value).filter(isNumberLikeKey)
 		const results: Result<unknown>[] = keys.map(key => innerValidate(element, value[key], parsing))
-		const originalOrParsed: any = parsing
-			? results.map(result => (result.success ? result.value : undefined))
-			: value
 		const details: globalThis.Record<number, Failure> = {}
 		for (const key of keys) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -47,9 +43,12 @@ const Array = <R extends Runtype.Core>(element: R) => {
 			if (!result.success) details[key] = result
 		}
 
-		if (enumerableKeysOf(details).length !== 0) return FAILURE.CONTENT_INCORRECT(self, details)
-		else return SUCCESS(originalOrParsed)
-	}, base).with(self => ({ asReadonly: () => self as unknown as ArrayReadonly<R> }))
+		if (enumerableKeysOf(details).length !== 0)
+			return FAILURE.CONTENT_INCORRECT({ expected: self, received: value, details })
+		else return SUCCESS(parsing ? (results as Success<any>[]).map(result => result.value) : value)
+	}, Spread.asSpreadable(base)).with(self => ({
+		asReadonly: () => self as unknown as ArrayReadonly<R>,
+	}))
 }
 
 export default Array

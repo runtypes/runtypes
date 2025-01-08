@@ -5,7 +5,9 @@ import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Template from "./Template.ts"
 import Union from "./Union.ts"
-import { assert, assertEquals, assertThrows } from "@std/assert"
+import Failcode from "./result/Failcode.ts"
+import ValidationError from "./result/ValidationError.ts"
+import { assert, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
 
 Deno.test("template", async t => {
 	await t.step("validates", async t => {
@@ -21,24 +23,33 @@ Deno.test("template", async t => {
 		const dogAlice: Dog = "Alice's cat"
 		assert(!Dog.guard(dogAlice))
 	})
+
 	await t.step("invalidates with correct error messages", async t => {
 		const Owner = Union(Literal("Bob"), Literal("Jeff"))
 		const Dog = Template(["", "'s dog"] as const, Owner)
 		type Dog = Static<typeof Dog>
 		// @ts-expect-error: This should fail.
 		const catBob: Dog = "Bob's cat"
-		assertEquals(Dog.inspect(catBob), {
-			code: "VALUE_INCORRECT",
-			message: 'Expected string `${"Bob" | "Jeff"}\'s dog`, but was "Bob\'s cat"',
-			success: false,
+		const error0 = assertThrows(() => Dog.check(catBob))
+		assertInstanceOf(error0, ValidationError)
+		assertObjectMatch(error0, {
+			message: 'Expected `${"Bob" | "Jeff"}\'s dog`, but was "Bob\'s cat"',
+			failure: {
+				code: Failcode.VALUE_INCORRECT,
+			},
 		})
 		// @ts-expect-error: This should fail.
 		const dogAlice: Dog = "Alice's cat"
-		assertThrows(
-			() => Dog.check(dogAlice),
-			'Expected string `${"Bob" | "Jeff"}\'s dog`, but was "Alice\'s cat"',
-		)
+		const error1 = assertThrows(() => Dog.check(dogAlice))
+		assertInstanceOf(error1, ValidationError)
+		assertObjectMatch(error1, {
+			message: 'Expected `${"Bob" | "Jeff"}\'s dog`, but was "Alice\'s cat"',
+			failure: {
+				code: Failcode.VALUE_INCORRECT,
+			},
+		})
 	})
+
 	await t.step("supports convenient arguments form", async t => {
 		const Owner = Union(Literal("Bob"), Literal("Jeff"))
 		const Dog = Template(Owner, "'s dog")
@@ -46,6 +57,7 @@ Deno.test("template", async t => {
 		const catBob: Dog = "Bob's dog"
 		Dog.check(catBob)
 	})
+
 	await t.step("supports various inner runtypes", async t => {
 		const DogCount = Template(
 			Number,
@@ -62,13 +74,21 @@ Deno.test("template", async t => {
 		DogCount.check("101 false dogs")
 		assertThrows(() => DogCount.check("101 cats"))
 	})
+
 	await t.step("emits TYPE_INCORRECT for values other than string", async t => {
 		const Dog = Template("foo")
-		// @ts-expect-error: should fail
-		assertEquals(Dog.inspect(42), {
-			code: "TYPE_INCORRECT",
-			message: 'Expected string "foo", but was number',
-			success: false,
+		const error = assertThrows(() =>
+			Dog.check(
+				// @ts-expect-error: should fail
+				42,
+			),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: 'Expected "foo", but was number',
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
 		})
 	})
 })

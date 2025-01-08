@@ -6,7 +6,8 @@ import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
-import { assertEquals } from "@std/assert"
+import ValidationError from "./result/ValidationError.ts"
+import { assertEquals, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
 
 Deno.test("Record", async t => {
 	await t.step("should work with keys being union of literals", async t => {
@@ -17,15 +18,16 @@ Deno.test("Record", async t => {
 		const example: Dict = {
 			a: 42,
 		}
-		assertEquals(Dict.inspect(example), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() => Dict.check(example))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
 			message: 'Expected { [_: "a" | "b"]: number }, but was incompatible',
-			details: {
-				b: {
-					success: false,
-					code: Failcode.PROPERTY_MISSING,
-					message: "Expected number, but was missing",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					b: {
+						code: Failcode.PROPERTY_MISSING,
+					},
 				},
 			},
 		})
@@ -35,57 +37,68 @@ Deno.test("Record", async t => {
 		const D = Record(Number, String)
 		type D = Static<typeof D>
 		const d: D = { [globalThis.Number.MAX_VALUE]: "foo" }
-		assertEquals(D.inspect(d), { success: true, value: d })
+		assertEquals(D.check(d), d)
 	})
 
 	await t.step("record", async t => {
-		assertEquals(
-			Record(String, String).inspect(
+		const error = assertThrows(() =>
+			Record(String, String).check(
 				// @ts-expect-error: should fail
 				null,
 			),
-			{
-				success: false,
-				code: Failcode.TYPE_INCORRECT,
-				message: "Expected { [_: string]: string }, but was null",
-			},
 		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Expected { [_: string]: string }, but was null",
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
+		})
 	})
 
 	await t.step("record invalid type", async t => {
-		assertEquals(
-			Record(String, Object({ name: String })).inspect(
+		const error = assertThrows(() =>
+			Record(String, Object({ name: String })).check(
 				// @ts-expect-error: should fail
 				undefined,
 			),
-			{
-				success: false,
-				code: Failcode.TYPE_INCORRECT,
-				message: "Expected { [_: string]: { name: string; } }, but was undefined",
-			},
 		)
-		assertEquals(Record(String, Object({ name: String })).inspect(1), {
-			success: false,
-			code: Failcode.TYPE_INCORRECT,
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Expected { [_: string]: { name: string; } }, but was undefined",
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
+		})
+	})
+
+	await t.step("record invalid type", async t => {
+		const error = assertThrows(() => Record(String, Object({ name: String })).check(1))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
 			message: "Expected { [_: string]: { name: string; } }, but was number",
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
 		})
 	})
 
 	await t.step("record complex", async t => {
-		assertEquals(Record(String, Object({ name: String })).inspect({ foo: { name: false } }), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() =>
+			Record(String, Object({ name: String })).check({ foo: { name: false } }),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
 			message: "Expected { [_: string]: { name: string; } }, but was incompatible",
-			details: {
-				foo: {
-					success: false,
-					code: Failcode.CONTENT_INCORRECT,
-					message: "Expected { name: string; }, but was incompatible",
-					details: {
-						name: {
-							success: false,
-							code: Failcode.TYPE_INCORRECT,
-							message: "Expected string, but was boolean",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					foo: {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							name: {
+								code: Failcode.TYPE_INCORRECT,
+							},
 						},
 					},
 				},
@@ -94,30 +107,32 @@ Deno.test("Record", async t => {
 	})
 
 	await t.step("string record", async t => {
-		assertEquals(Record(String, String).inspect({ foo: "bar", test: true }), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() => Record(String, String).check({ foo: "bar", test: true }))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
 			message: "Expected { [_: string]: string }, but was incompatible",
-			details: {
-				test: {
-					success: false,
-					code: Failcode.TYPE_INCORRECT,
-					message: "Expected string, but was boolean",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					test: {
+						code: Failcode.TYPE_INCORRECT,
+					},
 				},
 			},
 		})
 	})
 
 	await t.step("number record", async t => {
-		assertEquals(Record(Number, String).inspect({ 1: "bar", 2: 20 }), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() => Record(Number, String).check({ 1: "bar", 2: 20 }))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
 			message: "Expected { [_: number]: string }, but was incompatible",
-			details: {
-				2: {
-					success: false,
-					code: Failcode.TYPE_INCORRECT,
-					message: "Expected string, but was number",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					2: {
+						code: Failcode.TYPE_INCORRECT,
+					},
 				},
 			},
 		})

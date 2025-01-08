@@ -1,27 +1,25 @@
 import type Intersect from "./Intersect.ts"
 import type Literal from "./Literal.ts"
-import { type LiteralBase } from "./Literal.ts"
-import { literal } from "./Literal.ts"
+import { type LiteralStatic } from "./Literal.ts"
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import type Union from "./Union.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import escapeRegExp from "./utils-internal/escapeRegExp.ts"
-import show from "./utils-internal/show.ts"
 import typeOf from "./utils-internal/typeOf.ts"
 
 type InnerValidate = <T>(runtype: Runtype.Core, value: unknown, parsing: boolean) => Result<T>
 
 type TemplateParsed<
-	A extends readonly LiteralBase[],
-	B extends readonly Runtype.Core<LiteralBase>[],
+	A extends readonly LiteralStatic[],
+	B extends readonly Runtype.Core<LiteralStatic>[],
 > = A extends readonly [infer carA, ...infer cdrA]
-	? carA extends LiteralBase
+	? carA extends LiteralStatic
 		? B extends readonly [infer carB, ...infer cdrB]
-			? carB extends Runtype.Core<LiteralBase>
-				? cdrA extends readonly LiteralBase[]
-					? cdrB extends readonly Runtype.Core<LiteralBase>[]
+			? carB extends Runtype.Core<LiteralStatic>
+				? cdrA extends readonly LiteralStatic[]
+					? cdrB extends readonly Runtype.Core<LiteralStatic>[]
 						? `${carA}${Parsed<carB>}${TemplateParsed<cdrA, cdrB>}`
 						: `${carA}${Parsed<carB>}`
 					: `${carA}${Parsed<carB>}`
@@ -31,14 +29,14 @@ type TemplateParsed<
 	: ""
 
 type TemplateStatic<
-	A extends readonly LiteralBase[],
-	B extends readonly Runtype.Core<LiteralBase>[],
+	A extends readonly LiteralStatic[],
+	B extends readonly Runtype.Core<LiteralStatic>[],
 > = A extends readonly [infer carA, ...infer cdrA]
-	? carA extends LiteralBase
+	? carA extends LiteralStatic
 		? B extends readonly [infer carB, ...infer cdrB]
-			? carB extends Runtype.Core<LiteralBase>
-				? cdrA extends readonly LiteralBase[]
-					? cdrB extends readonly Runtype.Core<LiteralBase>[]
+			? carB extends Runtype.Core<LiteralStatic>
+				? cdrA extends readonly LiteralStatic[]
+					? cdrB extends readonly Runtype.Core<LiteralStatic>[]
 						? `${carA}${Static<carB>}${TemplateStatic<cdrA, cdrB>}`
 						: `${carA}${Static<carB>}`
 					: `${carA}${Static<carB>}`
@@ -49,7 +47,7 @@ type TemplateStatic<
 
 interface Template<
 	A extends readonly [string, ...string[]] = readonly [string, ...string[]],
-	B extends readonly Runtype.Core<LiteralBase>[] = readonly Runtype.Core<LiteralBase>[],
+	B extends readonly Runtype.Core<LiteralStatic>[] = readonly Runtype.Core<LiteralStatic>[],
 > extends Runtype.Common<
 		A extends TemplateStringsArray ? string : TemplateStatic<A, B>,
 		A extends TemplateStringsArray ? string : TemplateParsed<A, B>
@@ -60,24 +58,24 @@ interface Template<
 }
 
 type ExtractStrings<
-	A extends readonly (LiteralBase | Runtype.Core<LiteralBase>)[],
+	A extends readonly (LiteralStatic | Runtype.Core<LiteralStatic>)[],
 	prefix extends string = "",
 > = A extends readonly [infer carA, ...infer cdrA]
 	? cdrA extends readonly any[]
-		? carA extends Runtype.Core<LiteralBase>
+		? carA extends Runtype.Core<LiteralStatic>
 			? [prefix, ...ExtractStrings<cdrA>] // Omit `carA` if it's a `RuntypeBase<LiteralBase>`
-			: carA extends LiteralBase
+			: carA extends LiteralStatic
 				? [...ExtractStrings<cdrA, `${prefix}${carA}`>]
 				: never // `carA` is neither `RuntypeBase<LiteralBase>` nor `LiteralBase` here
 		: never // If `A` is not empty, `cdrA` must be also an array
 	: [prefix] // `A` is empty here
 
-type ExtractRuntypes<A extends readonly (LiteralBase | Runtype.Core<LiteralBase>)[]> =
+type ExtractRuntypes<A extends readonly (LiteralStatic | Runtype.Core<LiteralStatic>)[]> =
 	A extends readonly [infer carA, ...infer cdrA]
 		? cdrA extends readonly any[]
-			? carA extends Runtype.Core<LiteralBase>
+			? carA extends Runtype.Core<LiteralStatic>
 				? [carA, ...ExtractRuntypes<cdrA>]
-				: carA extends LiteralBase
+				: carA extends LiteralStatic
 					? [...ExtractRuntypes<cdrA>]
 					: never // `carA` is neither `RuntypeBase<LiteralBase>` nor `LiteralBase`
 			: never // If `A` is not empty, `cdrA` must be also an array
@@ -85,19 +83,19 @@ type ExtractRuntypes<A extends readonly (LiteralBase | Runtype.Core<LiteralBase>
 
 const parseArgs = (
 	args:
-		| readonly [readonly [string, ...string[]], ...Runtype.Core<LiteralBase>[]]
-		| readonly (LiteralBase | Runtype.Core<LiteralBase>)[],
-): [[string, ...string[]], Runtype.Core<LiteralBase>[]] => {
+		| readonly [readonly [string, ...string[]], ...Runtype.Core<LiteralStatic>[]]
+		| readonly (LiteralStatic | Runtype.Core<LiteralStatic>)[],
+): [[string, ...string[]], Runtype.Core<LiteralStatic>[]] => {
 	// If the first element is an `Array`, maybe it's called by the tagged style
 	if (0 < args.length && Array.isArray(args[0])) {
 		const [strings, ...runtypes] = args as readonly [
 			readonly [string, ...string[]],
-			...Runtype.Core<LiteralBase>[],
+			...Runtype.Core<LiteralStatic>[],
 		]
 		// For further manipulation, recreate an `Array` because `TemplateStringsArray` is readonly
 		return [Array.from(strings) as [string, ...string[]], runtypes]
 	} else {
-		const convenient = args as readonly (LiteralBase | Runtype.Core<LiteralBase>)[]
+		const convenient = args as readonly (LiteralStatic | Runtype.Core<LiteralStatic>)[]
 		const strings = convenient.reduce<[string, ...string[]]>(
 			(strings, arg) => {
 				// Concatenate every consecutive literals as strings
@@ -108,7 +106,7 @@ const parseArgs = (
 			},
 			[""],
 		)
-		const runtypes = convenient.filter(Runtype.isRuntype) as Runtype.Core<LiteralBase>[]
+		const runtypes = convenient.filter(Runtype.isRuntype) as Runtype.Core<LiteralStatic>[]
 		return [strings, runtypes]
 	}
 }
@@ -118,19 +116,22 @@ const parseArgs = (
  */
 const flattenInnerRuntypes = (
 	strings: [string, ...string[]],
-	runtypes: Runtype.Core<LiteralBase>[],
+	runtypes: Runtype.Core<LiteralStatic>[],
 ): void => {
 	for (let i = 0; i < runtypes.length; ) {
 		switch (runtypes[i]!.tag) {
 			case "literal": {
-				const literal = runtypes[i] as Literal<LiteralBase>
+				const literal = runtypes[i] as Literal<LiteralStatic>
 				runtypes.splice(i, 1)
 				const string = String(literal.value)
 				strings.splice(i, 2, strings[i] + string + strings[i + 1])
 				break
 			}
 			case "template": {
-				const template = runtypes[i] as Template<[string, ...string[]], Runtype.Core<LiteralBase>[]>
+				const template = runtypes[i] as Template<
+					[string, ...string[]],
+					Runtype.Core<LiteralStatic>[]
+				>
 				runtypes.splice(i, 1, ...template.runtypes)
 				const innerStrings = template.strings
 				if (innerStrings.length === 1) {
@@ -188,15 +189,15 @@ const flattenInnerRuntypes = (
 
 const normalizeArgs = (
 	args:
-		| readonly [readonly [string, ...string[]], ...Runtype.Core<LiteralBase>[]]
-		| readonly (LiteralBase | Runtype.Core<LiteralBase>)[],
-): [[string, ...string[]], Runtype.Core<LiteralBase>[]] => {
+		| readonly [readonly [string, ...string[]], ...Runtype.Core<LiteralStatic>[]]
+		| readonly (LiteralStatic | Runtype.Core<LiteralStatic>)[],
+): [[string, ...string[]], Runtype.Core<LiteralStatic>[]] => {
 	const [strings, runtypes] = parseArgs(args)
 	flattenInnerRuntypes(strings, runtypes)
 	return [strings, runtypes]
 }
 
-const getInnerLiteral = (runtype: Runtype): Literal<LiteralBase> => {
+const getInnerLiteral = (runtype: Runtype): Literal<LiteralStatic> => {
 	switch (runtype.tag) {
 		case "literal":
 			return runtype
@@ -273,7 +274,7 @@ const reviveValidate =
 						const validated = reviveValidate(alternative as Runtype, innerValidate, parsing)(value)
 						if (validated.success) return validated
 					}
-					return FAILURE.TYPE_INCORRECT(runtype, value)
+					return FAILURE.TYPE_INCORRECT({ expected: runtype, received: value })
 				case "intersect": {
 					let parsed: any = undefined
 					for (const intersectee of runtype.intersectees) {
@@ -292,11 +293,7 @@ const reviveValidate =
 			const validated = innerValidate(runtype, reviver(value), parsing)
 			if (!validated.success && validated.code === "VALUE_INCORRECT" && runtype.tag === "literal")
 				// TODO: Temporary fix to show unrevived value in message; needs refactor
-				return FAILURE.VALUE_INCORRECT(
-					"literal",
-					`"${literal((runtype as Literal<LiteralBase>).value)}"`,
-					`"${value}"`,
-				)
+				return FAILURE.VALUE_INCORRECT({ expected: runtype, received: value })
 			return validated
 		}
 	}
@@ -330,7 +327,7 @@ const getRegExpPatternFor = (runtype: Runtype): string => {
 
 const createRegExpForTemplate = <
 	A extends readonly [string, ...string[]],
-	B extends readonly Runtype.Core<LiteralBase>[],
+	B extends readonly Runtype.Core<LiteralStatic>[],
 >(
 	template: Template<A, B>,
 ) => {
@@ -413,31 +410,31 @@ const createRegExpForTemplate = <
  * The only thing we can do for parsing such strings correctly is brute-forcing every single possible combination until it fulfills all the constraints, which must be hardly done. Actually `Template` treats `String` runtypes as the simplest `RegExp` pattern `.*` and the “greedy” strategy is always used, that is, the above runtype won't work expectedly because the entire pattern is just `^(.*)(.*)$` and the first `.*` always wins. You have to avoid using `Constraint` this way, and instead manually parse it using a single `Constraint` which covers the entire string.
  */
 const Template: {
-	<A extends TemplateStringsArray, B extends readonly Runtype.Core<LiteralBase>[]>(
+	<A extends TemplateStringsArray, B extends readonly Runtype.Core<LiteralStatic>[]>(
 		strings: A,
 		...runtypes: B
 	): Template<A & [string, ...string[]], B>
-	<A extends readonly [string, ...string[]], B extends readonly Runtype.Core<LiteralBase>[]>(
+	<A extends readonly [string, ...string[]], B extends readonly Runtype.Core<LiteralStatic>[]>(
 		strings: A,
 		...runtypes: B
 	): Template<A, B>
-	<A extends readonly (LiteralBase | Runtype.Core<LiteralBase>)[]>(
+	<A extends readonly (LiteralStatic | Runtype.Core<LiteralStatic>)[]>(
 		...args: A
 	): Template<ExtractStrings<A>, ExtractRuntypes<A>>
 } = <
 	A extends
-		| [readonly [string, ...string[]], ...Runtype.Core<LiteralBase>[]]
-		| readonly (LiteralBase | Runtype.Core<LiteralBase>)[],
+		| [readonly [string, ...string[]], ...Runtype.Core<LiteralStatic>[]]
+		| readonly (LiteralStatic | Runtype.Core<LiteralStatic>)[],
 >(
 	...args: A
 ) => {
 	const [strings, runtypes] = normalizeArgs(args)
 	return Runtype.create<
-		A extends (LiteralBase | Runtype.Core<LiteralBase>)[]
+		A extends (LiteralStatic | Runtype.Core<LiteralStatic>)[]
 			? Template<ExtractStrings<A>, ExtractRuntypes<A>>
 			: A extends [infer carA, ...infer cdrA]
 				? carA extends readonly [string, ...string[]]
-					? cdrA extends readonly Runtype.Core<LiteralBase>[]
+					? cdrA extends readonly Runtype.Core<LiteralStatic>[]
 						? Template<carA, cdrA>
 						: never
 					: never
@@ -473,27 +470,16 @@ const Template: {
 					}
 					return SUCCESS(parsing ? parsed : value)
 				} else {
-					return FAILURE.VALUE_INCORRECT(
-						"string",
-						`${show(self as unknown as Runtype)}`,
-						`"${literal(value)}"`,
-					)
+					return FAILURE.VALUE_INCORRECT({ expected: self, received: value })
 				}
 			}
 
-			if (typeof value !== "string") return FAILURE.TYPE_INCORRECT(self, value)
+			if (typeof value !== "string")
+				return FAILURE.TYPE_INCORRECT({ expected: self, received: value })
 			else {
 				const validated = test(value, innerValidate, parsing)
 				if (validated.success) return validated
-				const result = FAILURE.VALUE_INCORRECT(
-					"string",
-					`${show(self as unknown as Runtype)}`,
-					`"${value}"`,
-				)
-				if (result.message !== validated.message)
-					// TODO: Should use `details` here, but it needs unionizing `string` anew to the definition of `Details`, which is a breaking change
-					result.message += ` (inner: ${validated.message})`
-				return result
+				return FAILURE.VALUE_INCORRECT({ expected: self, received: value })
 			}
 		},
 		{ tag: "template", strings, runtypes } as any,

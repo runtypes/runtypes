@@ -23,12 +23,9 @@ import Undefined from "./Undefined.ts"
 import Union from "./Union.ts"
 import Unknown from "./Unknown.ts"
 import Void from "./Void.ts"
-import type Failcode from "./result/Failcode.ts"
-import type Failure from "./result/Failure.ts"
-import ValidationError from "./result/ValidationError.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 import isObject from "./utils-internal/isObject.ts"
-import { assert, assertEquals, assertThrows, fail } from "@std/assert"
+import { assert, assertEquals, fail } from "@std/assert"
 
 const boolTuple = Tuple(Boolean, Boolean, Boolean)
 const object1 = Object({ Boolean, Number })
@@ -436,30 +433,10 @@ const expectLiteralField = <O, K extends keyof O, V extends O[K]>(o: O, k: K, v:
 
 const assertAccepts = (value: unknown, runtype: Runtype.Core) => {
 	const result = runtype.inspect(value)
-	if (result.success === false) fail(result.message)
+	if (!result.success) fail(result.message)
 }
 
 const assertRejects = (value: unknown, runtype: Runtype.Core) => {
 	const result = runtype.inspect(value)
-	if (result.success === true)
-		fail("value passed validation even though await it was not expected to")
-}
-
-const assertRuntypeThrows = (
-	value: unknown,
-	runtype: Runtype.Core,
-	failcode: Failcode,
-	errorMessage: string,
-	errorDetails?: Failure.Details,
-) => {
-	const exception = assertThrows(() => runtype.check(value), ValidationError)
-	const { code, message, details } = exception
-	assertEquals(code, failcode)
-	// TODO: Fix this. Semantics of `details` is inprecise for array types for now.
-	// assert(message === errorMessage)
-	// if (details !== undefined) {
-	// 	if (errorDetails !== undefined)
-	// 		assertObjectMatch(details, errorDetails as globalThis.Record<PropertyKey, unknown>)
-	// 	else if (String.guard(details)) assert(details === errorMessage)
-	// }
+	if (result.success) fail("value passed validation even though await it was not expected to")
 }

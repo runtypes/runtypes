@@ -3,9 +3,16 @@ import { type Parsed, type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Unknown from "./Unknown.ts"
 import Failcode from "./result/Failcode.ts"
+import ValidationError from "./result/ValidationError.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 import isObject from "./utils-internal/isObject.ts"
-import { assert, assertEquals } from "@std/assert"
+import {
+	assert,
+	assertEquals,
+	assertInstanceOf,
+	assertObjectMatch,
+	assertThrows,
+} from "@std/assert"
 
 Deno.test("Constraint", async t => {
 	await t.step("withConstraint", async t => {
@@ -45,36 +52,40 @@ Deno.test("Constraint", async t => {
 	})
 
 	await t.step("constraint standard message", async t => {
-		assertEquals(
+		const error = assertThrows(() =>
 			Unknown.withConstraint(
 				o => isObject(o) && hasKey("n", o) && typeof o.n === "number" && o.n > 3,
 			)
 				.withBrand("{ n: > 3 }")
-				.inspect({ n: 0 }),
-			{
-				success: false,
-				code: Failcode.CONSTRAINT_FAILED,
-				// TODO: use brand string in error messages
-				message: "Failed constraint check for unknown",
-			},
+				.check({ n: 0 }),
 		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Constraint failed",
+			failure: {
+				code: Failcode.CONSTRAINT_FAILED,
+				thrown: undefined,
+			},
+		})
 	})
 
 	await t.step("constraint custom message", async t => {
-		assertEquals(
+		const error = assertThrows(() =>
 			Unknown.withConstraint(
 				o =>
 					(isObject(o) && hasKey("n", o) && typeof o.n === "number" && o.n > 3) || "n must be > 3",
 			)
 				.withBrand("{ n: > 3 }")
-				.inspect({ n: 0 }),
-			{
-				success: false,
-				code: Failcode.CONSTRAINT_FAILED,
-				// TODO: use brand string in error messages
-				message: "Failed constraint check for unknown: n must be > 3",
-			},
+				.check({ n: 0 }),
 		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Constraint failed: n must be > 3",
+			failure: {
+				code: Failcode.CONSTRAINT_FAILED,
+				thrown: "n must be > 3",
+			},
+		})
 	})
 
 	await t.step("with 1 parser before", async t => {

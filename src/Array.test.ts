@@ -3,7 +3,8 @@ import Number from "./Number.ts"
 import Object from "./Object.ts"
 import String from "./String.ts"
 import Failcode from "./result/Failcode.ts"
-import { assert, assertEquals } from "@std/assert"
+import ValidationError from "./result/ValidationError.ts"
+import { assert, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
 
 Deno.test("Array", async t => {
 	await t.step("guard", async t => {
@@ -16,35 +17,39 @@ Deno.test("Array", async t => {
 	})
 
 	await t.step("array", async t => {
-		assertEquals(Array(Number).inspect([0, 2, "test"]), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() => Array(Number).check([0, 2, "test"]))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			name: "ValidationError",
 			message: "Expected number[], but was incompatible",
-			details: {
-				2: {
-					success: false,
-					code: Failcode.TYPE_INCORRECT,
-					message: "Expected number, but was string",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					2: {
+						code: Failcode.TYPE_INCORRECT,
+					},
 				},
 			},
 		})
 	})
 
 	await t.step("array nested", async t => {
-		assertEquals(Array(Object({ name: String })).inspect([{ name: "Foo" }, { name: false }]), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() =>
+			Array(Object({ name: String })).check([{ name: "Foo" }, { name: false }]),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			name: "ValidationError",
 			message: "Expected { name: string; }[], but was incompatible",
-			details: {
-				1: {
-					success: false,
-					code: Failcode.CONTENT_INCORRECT,
-					message: "Expected { name: string; }, but was incompatible",
-					details: {
-						name: {
-							success: false,
-							code: Failcode.TYPE_INCORRECT,
-							message: "Expected string, but was boolean",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					1: {
+						code: Failcode.CONTENT_INCORRECT,
+						details: {
+							name: {
+								code: Failcode.TYPE_INCORRECT,
+							},
 						},
 					},
 				},
@@ -53,79 +58,83 @@ Deno.test("Array", async t => {
 	})
 
 	await t.step("array null", async t => {
-		assertEquals(Array(Object({ name: String })).inspect([{ name: "Foo" }, null]), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() => Array(Object({ name: String })).check([{ name: "Foo" }, null]))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			name: "ValidationError",
 			message: "Expected { name: string; }[], but was incompatible",
-			details: {
-				1: {
-					success: false,
-					code: Failcode.TYPE_INCORRECT,
-					message: "Expected { name: string; }, but was null",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					1: {
+						code: Failcode.TYPE_INCORRECT,
+					},
 				},
 			},
 		})
 	})
 
 	await t.step("readonly array", async t => {
-		assertEquals(Array(Number).asReadonly().inspect([0, 2, "test"]), {
-			success: false,
-			code: Failcode.CONTENT_INCORRECT,
+		const error = assertThrows(() => Array(Number).asReadonly().check([0, 2, "test"]))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			name: "ValidationError",
 			message: "Expected number[], but was incompatible",
-			details: {
-				2: {
-					success: false,
-					code: Failcode.TYPE_INCORRECT,
-					message: "Expected number, but was string",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					2: {
+						code: Failcode.TYPE_INCORRECT,
+					},
 				},
 			},
 		})
 	})
 
 	await t.step("readonly array nested", async t => {
-		assertEquals(
+		const error = assertThrows(() =>
 			Array(Object({ name: String }))
 				.asReadonly()
-				.inspect([{ name: "Foo" }, { name: false }]),
-			{
-				success: false,
+				.check([{ name: "Foo" }, { name: false }]),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			name: "ValidationError",
+			message: "Expected { name: string; }[], but was incompatible",
+			failure: {
 				code: Failcode.CONTENT_INCORRECT,
-				message: "Expected { name: string; }[], but was incompatible",
 				details: {
 					1: {
-						success: false,
 						code: Failcode.CONTENT_INCORRECT,
-						message: "Expected { name: string; }, but was incompatible",
 						details: {
 							name: {
-								success: false,
 								code: Failcode.TYPE_INCORRECT,
-								message: "Expected string, but was boolean",
 							},
 						},
 					},
 				},
 			},
-		)
+		})
 	})
 
 	await t.step("readonly array null", async t => {
-		assertEquals(
+		const error = assertThrows(() =>
 			Array(Object({ name: String }))
 				.asReadonly()
-				.inspect([{ name: "Foo" }, null]),
-			{
-				success: false,
+				.check([{ name: "Foo" }, null]),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			name: "ValidationError",
+			message: "Expected { name: string; }[], but was incompatible",
+			failure: {
 				code: Failcode.CONTENT_INCORRECT,
-				message: "Expected { name: string; }[], but was incompatible",
 				details: {
 					1: {
-						success: false,
 						code: Failcode.TYPE_INCORRECT,
-						message: "Expected { name: string; }, but was null",
 					},
 				},
 			},
-		)
+		})
 	})
 })

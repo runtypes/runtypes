@@ -11,7 +11,9 @@ interface BigInt extends Runtype.Common<bigint> {
  */
 const BigInt = Runtype.create<BigInt>(
 	({ value, self }) =>
-		typeof value === "bigint" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
+		typeof value === "bigint"
+			? SUCCESS(value)
+			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
 	{ tag: "bigint" },
 )
 

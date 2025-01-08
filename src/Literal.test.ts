@@ -1,5 +1,7 @@
 import Literal from "./Literal.ts"
-import { assert, assertObjectMatch } from "@std/assert"
+import Failcode from "./result/Failcode.ts"
+import ValidationError from "./result/ValidationError.ts"
+import { assert, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
 
 Deno.test("Literal", async t => {
 	await t.step("validates `BigInt(0)`", async t => {
@@ -30,44 +32,73 @@ Deno.test("Literal", async t => {
 		assert(Literal(+0).guard(-0))
 	})
 	await t.step("invalidates object", async t => {
-		// @ts-expect-error: should fail
-		assertObjectMatch(Literal(null).inspect({ key: "value" }), {
-			success: false,
-			code: "VALUE_INCORRECT",
-			message: "Expected literal `null`, but was `[object Object]`",
+		const error = assertThrows(() =>
+			Literal(null).check(
+				// @ts-expect-error: should fail
+				{ key: "value" },
+			),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Expected null, but was object",
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
 		})
 	})
 	await t.step("invalidates null prototype object", async t => {
-		assertObjectMatch(Literal(null).inspect(Object.create(null)), {
-			success: false,
-			code: "VALUE_INCORRECT",
-			message: "Expected literal `null`, but was `[object Object]`",
+		const error = assertThrows(() => Literal(null).check(Object.create(null)))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Expected null, but was object",
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
 		})
 	})
 	await t.step("invalidates null prototype objects", async t => {
-		const value = [Object.assign(Object.create(null), { key: "value " }), Object.create(null)]
-
-		// @ts-expect-error: should fail
-		assertObjectMatch(Literal(null).inspect(value), {
-			success: false,
-			code: "VALUE_INCORRECT",
-			message: "Expected literal `null`, but was `[object Object]`",
+		const error = assertThrows(() =>
+			Literal(null).check(
+				// @ts-expect-error: should fail
+				[Object.assign(Object.create(null), { key: "value " }), Object.create(null)],
+			),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Expected null, but was array",
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
 		})
 	})
 	await t.step("invalidates symbol", async t => {
-		// @ts-expect-error: should fail
-		assertObjectMatch(Literal(null).inspect(Symbol()), {
-			success: false,
-			code: "VALUE_INCORRECT",
-			message: "Expected literal `null`, but was `Symbol()`",
+		const error = assertThrows(() =>
+			Literal(null).check(
+				// @ts-expect-error: should fail
+				Symbol(),
+			),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Expected null, but was symbol",
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
 		})
 	})
 	await t.step("invalidates symbols", async t => {
-		// @ts-expect-error: should fail
-		assertObjectMatch(Literal(null).inspect([Symbol("example"), Symbol()]), {
-			success: false,
-			code: "VALUE_INCORRECT",
-			message: "Expected literal `null`, but was `[object Object]`",
+		const error = assertThrows(() =>
+			Literal(null).check(
+				// @ts-expect-error: should fail
+				[Symbol("example"), Symbol()],
+			),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Expected null, but was array",
+			failure: {
+				code: Failcode.TYPE_INCORRECT,
+			},
 		})
 	})
 })

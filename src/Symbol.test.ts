@@ -1,6 +1,7 @@
 import Symbol from "./Symbol.ts"
 import Failcode from "./result/Failcode.ts"
-import { assert, assertEquals, assertObjectMatch } from "@std/assert"
+import ValidationError from "./result/ValidationError.ts"
+import { assert, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
 
 Deno.test("Symbol", async t => {
 	await t.step("without key", async t => {
@@ -12,23 +13,63 @@ Deno.test("Symbol", async t => {
 		assert(!Symbol("key").guard(globalThis.Symbol()))
 	})
 
-	await t.step("symbol", async t => {
+	await t.step("creates", async t => {
 		assertObjectMatch(Symbol, { tag: "symbol" })
 		assertObjectMatch(Symbol("runtypes"), { tag: "symbol", key: "runtypes" })
-		assertEquals(Symbol("runtypes?").inspect(globalThis.Symbol.for("runtypes!")), {
-			success: false,
-			code: Failcode.VALUE_INCORRECT,
-			message: 'Expected symbol for "runtypes?", but was for "runtypes!"',
+	})
+
+	await t.step("with key invalidates symbol with wrong key", async t => {
+		const error = assertThrows(() => Symbol("runtypes?").check(globalThis.Symbol.for("runtypes!")))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: 'Expected symbol for key "runtypes?", but was for "runtypes!"',
+			failure: {
+				code: Failcode.VALUE_INCORRECT,
+			},
 		})
-		assertEquals(Symbol(undefined).inspect(globalThis.Symbol.for("undefined")), {
-			success: false,
-			code: Failcode.VALUE_INCORRECT,
+	})
+
+	await t.step("with no key invalidates symbol with key", async t => {
+		const error = assertThrows(() => Symbol(undefined).check(globalThis.Symbol.for("undefined")))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
 			message: 'Expected unique symbol, but was for "undefined"',
+			failure: {
+				code: Failcode.VALUE_INCORRECT,
+			},
 		})
-		assertEquals(Symbol("undefined").inspect(globalThis.Symbol()), {
-			success: false,
-			code: Failcode.VALUE_INCORRECT,
-			message: 'Expected symbol for "undefined", but was unique',
+	})
+
+	await t.step("with key invalidates symbol with no key", async t => {
+		const error = assertThrows(() => Symbol("undefined").check(globalThis.Symbol()))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: 'Expected symbol for key "undefined", but was unique',
+			failure: {
+				code: Failcode.VALUE_INCORRECT,
+			},
+		})
+	})
+
+	await t.step("with empty key invalidates symbol with no key", async t => {
+		const error = assertThrows(() => Symbol("").check(globalThis.Symbol()))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: 'Expected symbol for key "", but was unique',
+			failure: {
+				code: Failcode.VALUE_INCORRECT,
+			},
+		})
+	})
+
+	await t.step("with no key invalidates symbol with empty key", async t => {
+		const error = assertThrows(() => Symbol(undefined).check(globalThis.Symbol.for("")))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: 'Expected unique symbol, but was for ""',
+			failure: {
+				code: Failcode.VALUE_INCORRECT,
+			},
 		})
 	})
 })

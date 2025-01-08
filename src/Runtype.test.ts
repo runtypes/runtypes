@@ -18,7 +18,10 @@ Deno.test("Runtype", async t => {
 	await t.step("base object", async t => {
 		const base = { tag: "R" }
 		const R = Runtype.create<Runtype.Common<42>>(
-			({ value }) => (value === 42 ? SUCCESS(value) : FAILURE.VALUE_INCORRECT("number", 42, value)),
+			({ value, self }) =>
+				value === 42
+					? SUCCESS(value)
+					: FAILURE.VALUE_INCORRECT({ expected: self, received: value }),
 			base,
 		)
 		assertEquals(base, R)
@@ -29,7 +32,10 @@ Deno.test("Runtype", async t => {
 	await t.step("base function", async t => {
 		const base = globalThis.Object.assign(() => 42, { tag: "R" })
 		const R = Runtype.create<Runtype.Common<42> & (() => 42)>(
-			({ value }) => (value === 42 ? SUCCESS(value) : FAILURE.VALUE_INCORRECT("number", 42, value)),
+			({ value, self }) =>
+				value === 42
+					? SUCCESS(value)
+					: FAILURE.VALUE_INCORRECT({ expected: self, received: value }),
 			base,
 		)
 		assertEquals(typeof R, "function")
@@ -43,7 +49,10 @@ Deno.test("Runtype", async t => {
 		const method = () => 42 as const
 		const base = { tag: "R" }
 		const R = Runtype.create<Runtype.Common<42>>(
-			({ value }) => (value === 42 ? SUCCESS(value) : FAILURE.VALUE_INCORRECT("number", 42, value)),
+			({ value, self }) =>
+				value === 42
+					? SUCCESS(value)
+					: FAILURE.VALUE_INCORRECT({ expected: self, received: value }),
 			base,
 		).with({ method })
 		assertNotEquals(base, R)
@@ -56,7 +65,10 @@ Deno.test("Runtype", async t => {
 		const method = () => 42 as const
 		const base = { tag: "R" }
 		const R = Runtype.create<Runtype.Common<42>>(
-			({ value }) => (value === 42 ? SUCCESS(value) : FAILURE.VALUE_INCORRECT("number", 42, value)),
+			({ value, self }) =>
+				value === 42
+					? SUCCESS(value)
+					: FAILURE.VALUE_INCORRECT({ expected: self, received: value }),
 			base,
 		).with({ method })
 		const S = R.clone()
@@ -80,7 +92,10 @@ Deno.test("Runtype", async t => {
 	await t.step("and", async t => {
 		const base = { tag: "R" }
 		const R = Runtype.create<Runtype.Common<42>>(
-			({ value }) => (value === 42 ? SUCCESS(value) : FAILURE.VALUE_INCORRECT("number", 42, value)),
+			({ value, self }) =>
+				value === 42
+					? SUCCESS(value)
+					: FAILURE.VALUE_INCORRECT({ expected: self, received: value }),
 			base,
 		).and(Number)
 		assert(R.guard(42))
@@ -88,7 +103,10 @@ Deno.test("Runtype", async t => {
 	await t.step("withConstraint", async t => {
 		const base = { tag: "R" }
 		const R = Runtype.create<Runtype.Common<42>>(
-			({ value }) => (value === 42 ? SUCCESS(value) : FAILURE.VALUE_INCORRECT("number", 42, value)),
+			({ value, self }) =>
+				value === 42
+					? SUCCESS(value)
+					: FAILURE.VALUE_INCORRECT({ expected: self, received: value }),
 			base,
 		)
 			.with({ hello: "hello" })

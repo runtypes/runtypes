@@ -1,5 +1,6 @@
 import type Runtype from "./Runtype.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
+import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 
 interface Spread<R extends Runtype.Spreadable = Runtype.Spreadable> {
 	tag: "spread"
@@ -27,11 +28,22 @@ interface Spread<R extends Runtype.Spreadable = Runtype.Spreadable> {
  * type U = Static<typeof U> // [0, ...1[], 2]
  * ```
  */
-const Spread = <R extends Runtype.Spreadable>(
-	content: HasSymbolIterator<R> extends true ? R : never,
-): Spread<R> => ({
-	tag: "spread",
-	content,
-})
+const Spread = globalThis.Object.assign(
+	<R extends Runtype.Spreadable>(
+		content: HasSymbolIterator<R> extends true ? R : never,
+	): Spread<R> => ({
+		tag: "spread",
+		content,
+	}),
+	{
+		/** @internal */
+		asSpreadable: <R extends Runtype.Spreadable, B extends Runtype.Base<R>>(base: B): B =>
+			defineIntrinsics(base, {
+				[Symbol.iterator]: function* () {
+					yield Spread(base as unknown as Runtype.Spreadable)
+				},
+			} as Iterable<Spread<R>>) as B,
+	},
+)
 
 export default Spread

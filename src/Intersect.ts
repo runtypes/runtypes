@@ -39,11 +39,7 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 	const base = {
 		tag: "intersect",
 		intersectees,
-		*[Symbol.iterator]() {
-			yield Spread(base as any)
-		},
 	} as Runtype.Base<Intersect<R>>
-
 	return Runtype.create<Intersect<R>>(({ value, innerValidate, self, parsing }) => {
 		if (self.intersectees.length === 0) return SUCCESS(value)
 		const details: Failure.Details = {}
@@ -55,9 +51,10 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 			if (!result.success) details[i] = result
 			else parsed = result.value
 		}
-		if (enumerableKeysOf(details).length !== 0) return FAILURE.TYPE_INCORRECT(self, value, details)
+		if (enumerableKeysOf(details).length !== 0)
+			return FAILURE.TYPE_INCORRECT({ expected: self, received: value, details })
 		return SUCCESS(parsing ? parsed : value)
-	}, base)
+	}, Spread.asSpreadable(base))
 }
 
 export default Intersect

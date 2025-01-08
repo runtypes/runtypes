@@ -12,9 +12,11 @@ const Failcode = {
 	/** One or more elements or properties of the received object are incorrect. */
 	CONTENT_INCORRECT: "CONTENT_INCORRECT",
 	/** One or more arguments passed to the function is incorrect. */
-	ARGUMENT_INCORRECT: "ARGUMENT_INCORRECT",
+	ARGUMENTS_INCORRECT: "ARGUMENTS_INCORRECT",
 	/** The value returned by the function is incorrect. */
 	RETURN_INCORRECT: "RETURN_INCORRECT",
+	/** The value resolved by the function is incorrect. */
+	RESOLVE_INCORRECT: "RESOLVE_INCORRECT",
 	/** The received value does not fulfill the constraint. */
 	CONSTRAINT_FAILED: "CONSTRAINT_FAILED",
 	/** The property must be present but missing. */

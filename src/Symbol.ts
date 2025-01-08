@@ -2,7 +2,7 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Symbol<K extends string | undefined = undefined> extends Runtype.Common<symbol> {
+interface Symbol<K extends string | undefined = string | undefined> extends Runtype.Common<symbol> {
 	tag: "symbol"
 	key: K
 
@@ -16,19 +16,11 @@ interface Symbol<K extends string | undefined = undefined> extends Runtype.Commo
 const SymbolFor = <K extends string | undefined>(key: K) =>
 	Runtype.create<Symbol<K>>(
 		({ value, self }) => {
-			if (typeof value !== "symbol") return FAILURE.TYPE_INCORRECT(self, value)
+			if (typeof value !== "symbol")
+				return FAILURE.TYPE_INCORRECT({ expected: self, received: value })
 			else {
-				const keyForValue = globalThis.Symbol.keyFor(value)
-				if (keyForValue !== self.key)
-					if (self.key === undefined) {
-						return FAILURE.VALUE_INCORRECT("unique", "symbol", `for ${quoteIfPresent(keyForValue)}`)
-					} else {
-						return FAILURE.VALUE_INCORRECT(
-							"symbol for",
-							quoteIfPresent(self.key),
-							keyForValue === undefined ? "unique" : `for ${quoteIfPresent(keyForValue)}`,
-						)
-					}
+				if (globalThis.Symbol.keyFor(value) !== self.key)
+					return FAILURE.VALUE_INCORRECT({ expected: self, received: value })
 				else return SUCCESS(value)
 			}
 		},
@@ -40,7 +32,9 @@ const SymbolFor = <K extends string | undefined>(key: K) =>
  */
 const Symbol = Runtype.create<Symbol>(
 	({ value, self }) =>
-		typeof value === "symbol" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
+		typeof value === "symbol"
+			? SUCCESS(value)
+			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
 	globalThis.Object.assign(SymbolFor, { tag: "symbol" as const, key: undefined }),
 )
 

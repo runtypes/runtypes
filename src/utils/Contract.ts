@@ -1,5 +1,7 @@
 import type Runtype from "../Runtype.ts"
 import { type Static, type Parsed } from "../Runtype.ts"
+import { ValidationError } from "../index.ts"
+import FAILURE from "../utils-internal/FAILURE.ts"
 
 type Options = {
 	receives?: Runtype.Core<readonly unknown[]> | undefined
@@ -38,14 +40,38 @@ const parseReceived = <O extends Options, F extends Function>(
 	received: readonly unknown[],
 	receives: O["receives"],
 ): EnforcedParametersParsed<O, F> => {
-	return (receives ? receives.parse(received) : received) as EnforcedParametersParsed<O, F>
+	if (!receives) return received as EnforcedParametersParsed<O, F>
+	try {
+		return receives.parse(received) as EnforcedParametersParsed<O, F>
+	} catch (error) {
+		if (error instanceof ValidationError) {
+			const failure = FAILURE.ARGUMENTS_INCORRECT({
+				expected: receives,
+				received,
+				inner: error.failure,
+			})
+			throw new ValidationError(failure)
+		} else throw error
+	}
 }
 
 const parseReturned = <O extends Options, F extends Function>(
 	returned: unknown,
 	returns: O["returns"],
 ): EnforcedReturnTypeParsed<O, F> => {
-	return (returns ? returns.parse(returned) : returned) as EnforcedReturnTypeParsed<O, F>
+	if (!returns) return returned as EnforcedReturnTypeParsed<O, F>
+	try {
+		return returns.parse(returned) as EnforcedReturnTypeParsed<O, F>
+	} catch (error) {
+		if (error instanceof ValidationError) {
+			const failure = FAILURE.RETURN_INCORRECT({
+				expected: returns,
+				received: returned,
+				inner: error.failure,
+			})
+			throw new ValidationError(failure)
+		} else throw error
+	}
 }
 
 /**

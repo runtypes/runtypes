@@ -24,6 +24,7 @@ import type Unknown from "./Unknown.ts"
 import type Result from "./result/Result.ts"
 import ValidationError from "./result/ValidationError.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 import isObject from "./utils-internal/isObject.ts"
 import show from "./utils-internal/show.ts"
 
@@ -52,94 +53,80 @@ namespace Runtype {
 	): R => {
 		const self = base as Base<R> & R & Runtype.Common<Static<R>>
 
-		defineProperties(
-			self,
-			{
-				[RuntypeSymbol]: (value: unknown, visited: VisitedState, parsing: boolean) => {
-					if (isObject(value)) {
-						const memo = visited.memo(value, self, null)
-						if (memo) return memo
-						else if (memo === undefined) {
-							const innerValidate = createInnerValidate(visited)
-							const result = validate({ value, innerValidate, self, parsing })
-							visited.memo(value, self, result)
-							return result
-						} else return SUCCESS(value)
-					} else {
+		defineIntrinsics(self, {
+			[RuntypeSymbol]: (value: unknown, visited: VisitedState, parsing: boolean) => {
+				if (isObject(value)) {
+					const memo = visited.memo(value, self, null)
+					if (memo) return memo
+					else if (memo === undefined) {
 						const innerValidate = createInnerValidate(visited)
-						return validate({ value, innerValidate, self, parsing })
-					}
-				},
-				toString: (): string => `Runtype<${show(self as Runtype)}>`,
+						const result = validate({ value, innerValidate, self, parsing })
+						visited.memo(value, self, result)
+						return result
+					} else return SUCCESS(value)
+				} else {
+					const innerValidate = createInnerValidate(visited)
+					return validate({ value, innerValidate, self, parsing })
+				}
 			},
-			{ configurable: true, enumerable: false, writable: true },
-		)
-
-		defineProperties(
-			self,
-			{
-				inspect: (
-					x: unknown,
-					options: { parse?: boolean | undefined } = {},
-				): Result<Static<R> | Parsed<R>> =>
-					(self[RuntypeSymbol] as any)(x, createVisitedState(), options.parse ?? true),
-				check: (x: unknown): Static<R> => {
-					const result: Result<unknown> = self.inspect(x, { parse: false })
-					if (result.success) return result.value as Static<R>
-					else throw new ValidationError(result)
-				},
-				guard: (x: unknown): x is Static<R> => self.inspect(x, { parse: false }).success,
-				assert: (x: unknown): asserts x is Static<R> => void self.check(x),
-				parse: (x: unknown): Parsed<R> => {
-					const result: Result<unknown> = self.inspect(x, { parse: true })
-					if (result.success) return result.value as Static<R>
-					else throw new ValidationError(result)
-				},
-				with: <P extends object>(extension: P | ((self: R) => P)): typeof self & P => {
-					const base = self.clone() as typeof self & P
-					const properties = typeof extension === "function" ? extension(self) : extension
-					globalThis.Object.defineProperties(
-						base,
-						globalThis.Object.getOwnPropertyDescriptors(properties),
-					)
-					return base
-				},
-				clone: () => {
-					const base: typeof self =
-						typeof self === "function"
-							? self.bind(undefined)
-							: globalThis.Object.create(globalThis.Object.getPrototypeOf(self))
-					globalThis.Object.defineProperties(
-						base,
-						globalThis.Object.getOwnPropertyDescriptors(self),
-					)
-					return Runtype.create(validate, base)
-				},
-				or: <R extends Runtype.Core>(other: R) => Union(self, other),
-				and: <R extends Runtype.Core>(other: R) => Intersect(self, other),
-				optional: () => Optional(self),
-				default: <Y extends Parsed<R>>(value: Y) => Optional(self, value),
-				nullable: () => Union(self, Literal(null)),
-				undefinedable: () => Union(self, Literal(undefined)),
-				nullishable: () => Union(self, Literal(null), Literal(undefined)),
-				withConstraint: <U extends Static<R>>(constraint: (x: Static<R>) => boolean | string) =>
-					Constraint(self, (x): asserts x is U => {
-						const message = constraint(x)
-						if (typeof message === "string") throw message
-						else if (!message) throw undefined
-					}),
-				withGuard: <U extends Static<R>>(guard: (x: Static<R>) => x is U) =>
-					Constraint(self, (x): asserts x is U => {
-						if (!guard(x)) throw undefined
-					}),
-				withAssertion: <U extends Static<R>>(assert: (x: Static<R>) => asserts x is U) =>
-					Constraint(self, assert),
-				withBrand: <B extends string>(brand: B) => Brand(brand, self),
-				withParser: <Y>(parser: (value: Parsed<R>) => Y) => Parser(self, parser),
-				conform: () => self,
+			toString: (): string => `Runtype<${show(self as Runtype)}>`,
+			inspect: (
+				x: unknown,
+				options: { parse?: boolean | undefined } = {},
+			): Result<Static<R> | Parsed<R>> =>
+				(self[RuntypeSymbol] as any)(x, createVisitedState(), options.parse ?? true),
+			check: (x: unknown): Static<R> => {
+				const result: Result<unknown> = self.inspect(x, { parse: false })
+				if (result.success) return result.value as Static<R>
+				else throw new ValidationError(result)
 			},
-			{ configurable: true, enumerable: true, writable: true },
-		)
+			guard: (x: unknown): x is Static<R> => self.inspect(x, { parse: false }).success,
+			assert: (x: unknown): asserts x is Static<R> => void self.check(x),
+			parse: (x: unknown): Parsed<R> => {
+				const result: Result<unknown> = self.inspect(x, { parse: true })
+				if (result.success) return result.value as Static<R>
+				else throw new ValidationError(result)
+			},
+			with: <P extends object>(extension: P | ((self: R) => P)): typeof self & P => {
+				const base = self.clone() as typeof self & P
+				const properties = typeof extension === "function" ? extension(self) : extension
+				globalThis.Object.defineProperties(
+					base,
+					globalThis.Object.getOwnPropertyDescriptors(properties),
+				)
+				return base
+			},
+			clone: () => {
+				const base: typeof self =
+					typeof self === "function"
+						? self.bind(undefined)
+						: globalThis.Object.create(globalThis.Object.getPrototypeOf(self))
+				globalThis.Object.defineProperties(base, globalThis.Object.getOwnPropertyDescriptors(self))
+				return Runtype.create(validate, base)
+			},
+			or: <R extends Runtype.Core>(other: R) => Union(self, other),
+			and: <R extends Runtype.Core>(other: R) => Intersect(self, other),
+			optional: () => Optional(self),
+			default: <Y extends Parsed<R>>(value: Y) => Optional(self, value),
+			nullable: () => Union(self, Literal(null)),
+			undefinedable: () => Union(self, Literal(undefined)),
+			nullishable: () => Union(self, Literal(null), Literal(undefined)),
+			withConstraint: <U extends Static<R>>(constraint: (x: Static<R>) => boolean | string) =>
+				Constraint(self, (x): asserts x is U => {
+					const message = constraint(x)
+					if (typeof message === "string") throw message
+					else if (!message) throw undefined
+				}),
+			withGuard: <U extends Static<R>>(guard: (x: Static<R>) => x is U) =>
+				Constraint(self, (x): asserts x is U => {
+					if (!guard(x)) throw undefined
+				}),
+			withAssertion: <U extends Static<R>>(assert: (x: Static<R>) => asserts x is U) =>
+				Constraint(self, assert),
+			withBrand: <B extends string>(brand: B) => Brand(brand, self),
+			withParser: <Y>(parser: (value: Parsed<R>) => Y) => Parser(self, parser),
+			conform: () => self,
+		})
 
 		return self as R
 	}
@@ -312,20 +299,6 @@ type Runtype =
 	| Tuple
 	| Union
 	| Unknown
-
-const defineProperties = (
-	target: object,
-	properties: object,
-	descriptor: { enumerable: boolean; writable: boolean; configurable: boolean },
-) => {
-	for (const key of Reflect.ownKeys(properties)) {
-		const value = properties[key as keyof typeof properties]
-		globalThis.Object.defineProperty(target, key, {
-			...descriptor,
-			value,
-		})
-	}
-}
 
 type InnerValidate = <T>(runtype: Runtype.Core, value: unknown, parsing: boolean) => Result<T>
 

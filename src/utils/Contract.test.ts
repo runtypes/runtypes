@@ -6,8 +6,9 @@ import Number from "../Number.ts"
 import String from "../String.ts"
 import Tuple from "../Tuple.ts"
 import Unknown from "../Unknown.ts"
+import Failcode from "../result/Failcode.ts"
 import ValidationError from "../result/ValidationError.ts"
-import { assertEquals, assertThrows } from "@std/assert"
+import { assertEquals, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
 
 Deno.test("Contract", async t => {
 	await t.step("when a function does return a value of a wrong type", async t => {
@@ -17,7 +18,17 @@ Deno.test("Contract", async t => {
 					// @ts-expect-error: should fail
 					"hi",
 			)
-			assertThrows(contractedFunction, ValidationError)
+			const error = assertThrows(contractedFunction)
+			assertInstanceOf(error, ValidationError)
+			assertObjectMatch(error, {
+				message: "Returned unexpected value: Expected number, but was string",
+				failure: {
+					code: Failcode.RETURN_INCORRECT,
+					inner: {
+						code: Failcode.TYPE_INCORRECT,
+					},
+				},
+			})
 		})
 	})
 	await t.step("when a function does return a promise", async t => {
@@ -32,8 +43,21 @@ Deno.test("Contract", async t => {
 				receives: Tuple(Number),
 				returns: Number,
 			}).enforce(n => n + 1)
-			// @ts-expect-error: should fail
-			assertThrows(contractedFunction, ValidationError)
+			const error = assertThrows(
+				// @ts-expect-error: should fail
+				contractedFunction,
+			)
+			assertInstanceOf(error, ValidationError)
+			assertObjectMatch(error, {
+				message: "Received unexpected arguments: Constraint failed: Expected length 1, but was 0",
+				failure: {
+					code: Failcode.ARGUMENTS_INCORRECT,
+					inner: {
+						code: Failcode.CONSTRAINT_FAILED,
+						thrown: "Expected length 1, but was 0",
+					},
+				},
+			})
 		})
 	})
 	await t.step("infers the parameter types", async t => {
@@ -42,8 +66,27 @@ Deno.test("Contract", async t => {
 			returns: Unknown,
 		}).enforce((...args: readonly number[]) => 7 as const)
 		assertEquals<7>(contractedFunction(0), 7)
-		// @ts-expect-error: should fail
-		assertThrows(() => contractedFunction(1), ValidationError)
+		const error = assertThrows(() =>
+			contractedFunction(
+				// @ts-expect-error: should fail
+				1,
+			),
+		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Received unexpected arguments: Expected [0], but was incompatible",
+			failure: {
+				code: Failcode.ARGUMENTS_INCORRECT,
+				inner: {
+					code: Failcode.CONTENT_INCORRECT,
+					details: {
+						0: {
+							code: Failcode.VALUE_INCORRECT,
+						},
+					},
+				},
+			},
+		})
 	})
 	await t.step("infers the returned type", async t => {
 		const contractedFunction = Contract({
@@ -68,39 +111,65 @@ Deno.test("Contract", async t => {
 	await t.step("0 args", async t => {
 		const f = () => 3 as const
 		assertEquals(Contract({ receives: Tuple(), returns: Number }).enforce(f)(), 3)
-		assertThrows(
-			() =>
-				Contract({ receives: Tuple(), returns: String }).enforce(
-					// @ts-expect-error: should fail
-					f,
-				)(),
-			ValidationError,
+		const error = assertThrows(() =>
+			Contract({ receives: Tuple(), returns: String }).enforce(
+				// @ts-expect-error: should fail
+				f,
+			)(),
 		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Returned unexpected value: Expected string, but was number",
+			failure: {
+				code: Failcode.RETURN_INCORRECT,
+				inner: {
+					code: Failcode.TYPE_INCORRECT,
+				},
+			},
+		})
 	})
 
 	await t.step("1 arg", async t => {
 		const f = (x: string) => x.length
 		const C = Contract({ receives: Tuple(String), returns: Number })
 		assertEquals(C.enforce(f)("hel"), 3)
-		assertThrows(
-			() =>
-				C.enforce(f)(
-					// @ts-expect-error: should fail
-					3,
-				),
-			ValidationError,
+		const error = assertThrows(() =>
+			C.enforce(f)(
+				// @ts-expect-error: should fail
+				3,
+			),
 		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Received unexpected arguments: Expected [string], but was incompatible",
+			failure: {
+				code: Failcode.ARGUMENTS_INCORRECT,
+				inner: {
+					code: Failcode.CONTENT_INCORRECT,
+					details: {
+						0: {
+							code: Failcode.TYPE_INCORRECT,
+						},
+					},
+				},
+			},
+		})
 	})
 
 	await t.step("2 args", async t => {
 		const f = (x: string, y: boolean) => (y ? x.length : 4)
 		const C = Contract({ receives: Tuple(String, Boolean), returns: Number })
 		assertEquals(C.enforce(f)("hello", false), 4)
-		assertThrows(
-			() =>
-				// @ts-expect-error: should fail
-				C.enforce(f)("hello"),
-			ValidationError,
+		const error = assertThrows(() =>
+			// @ts-expect-error: should fail
+			C.enforce(f)("hello"),
 		)
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			message: "Received unexpected arguments: Constraint failed: Expected length 2, but was 1",
+			failure: {
+				code: Failcode.ARGUMENTS_INCORRECT,
+			},
+		})
 	})
 })

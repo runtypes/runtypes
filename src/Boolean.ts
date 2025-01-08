@@ -11,7 +11,9 @@ interface Boolean extends Runtype.Common<boolean> {
  */
 const Boolean = Runtype.create<Boolean>(
 	({ value, self }) =>
-		typeof value === "boolean" ? SUCCESS(value) : FAILURE.TYPE_INCORRECT(self, value),
+		typeof value === "boolean"
+			? SUCCESS(value)
+			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
 	{ tag: "boolean" },
 )
 
