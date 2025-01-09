@@ -2,7 +2,7 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Boolean extends Runtype.Common<boolean> {
+interface Boolean extends Runtype<boolean> {
 	tag: "boolean"
 }
 

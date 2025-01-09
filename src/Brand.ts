@@ -12,7 +12,7 @@ type RuntypeBrand<B extends string> = {
 }
 
 interface Brand<B extends string = string, R extends Runtype.Core = Runtype.Core>
-	extends Runtype.Common<
+	extends Runtype<
 		// TODO: replace it by nominal type when it has been released
 		// https://github.com/microsoft/TypeScript/pull/33038
 		Static<R> & RuntypeBrand<B>,

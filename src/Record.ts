@@ -28,7 +28,7 @@ type RecordParsed<
 interface Record<
 	K extends RecordKeyRuntype = RecordKeyRuntype,
 	V extends Runtype.Core = Runtype.Core,
-> extends Runtype.Common<RecordStatic<K, V>, RecordParsed<K, V>> {
+> extends Runtype<RecordStatic<K, V>, RecordParsed<K, V>> {
 	tag: "record"
 	key: K
 	value: V
@@ -73,22 +73,6 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 	const keyRuntype = key
 	const valueRuntype = value
 
-	const testKey = (key: string | number | symbol): Failure | undefined => {
-		// We should provide interoperability with `number` and `string` here, as a user would expect JavaScript engines to convert numeric keys to string keys automatically. So, if the key can be interpreted as a decimal number, then test it against a `Number` OR `String` runtype.
-		if (typeof key === "number" || isNumberLikeKey(key)) {
-			const keyInterop = globalThis.Number(key)
-			const result = keyRuntype.inspect(keyInterop)
-			if (!result.success) {
-				const result = keyRuntype.inspect(key)
-				if (!result.success) return result
-			}
-		} else {
-			const result = keyRuntype.inspect(key)
-			if (!result.success) return result
-		}
-		return undefined
-	}
-
 	return Runtype.create<Record<K, V>>(
 		({ value: x, innerValidate, self, parsing }) => {
 			if (x === null || x === undefined || typeof x !== "object")
@@ -103,6 +87,22 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 			for (const key of keys) {
 				const xHasKey = hasKey(key, x)
 				if (xHasKey) {
+					const testKey = (key: string | number | symbol): Failure | undefined => {
+						// We should provide interoperability with `number` and `string` here, as a user would expect JavaScript engines to convert numeric keys to string keys automatically. So, if the key can be interpreted as a decimal number, then test it against a `Number` OR `String` runtype.
+						if (typeof key === "number" || isNumberLikeKey(key)) {
+							const keyInterop = globalThis.Number(key)
+							const result = innerValidate(keyRuntype, keyInterop, parsing)
+							if (!result.success) {
+								const result = innerValidate(keyRuntype, key, parsing)
+								if (!result.success) return result
+							}
+						} else {
+							const result = innerValidate(keyRuntype, key, parsing)
+							if (!result.success) return result
+						}
+						return undefined
+					}
+
 					const failure = testKey(key)
 					if (failure) {
 						results[key] = FAILURE.KEY_INCORRECT({

@@ -32,6 +32,8 @@ Deno.test("union", async t => {
 			assert(match(3) === 8)
 			assert(match("hello") === 20)
 		})
+
+		// TODO: parsers
 	})
 
 	await t.step("discriminated union", async t => {

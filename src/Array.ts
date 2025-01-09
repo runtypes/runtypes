@@ -8,22 +8,25 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import isNumberLikeKey from "./utils-internal/isNumberLikeKey.ts"
 
-interface ArrayReadonly<R extends Runtype.Core = Runtype.Core>
-	extends Runtype.Common<readonly Static<R>[], readonly Parsed<R>[]>,
-		Iterable<Spread<ArrayReadonly<R>>> {
-	tag: "array"
-	element: R
-}
-
 interface Array<R extends Runtype.Core = Runtype.Core>
-	extends Runtype.Common<Static<R>[], Parsed<R>[]>,
+	extends Runtype<Static<R>[], Parsed<R>[]>,
 		Iterable<Spread<Array<R>>> {
 	tag: "array"
 	element: R
 }
 
+namespace Array {
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
+	export interface Readonly<R extends Runtype.Core = Runtype.Core>
+		extends Runtype<readonly Static<R>[], readonly Parsed<R>[]>,
+			Iterable<Spread<Readonly<R>>> {
+		tag: "array"
+		element: R
+	}
+}
+
 /**
- * Construct an array runtype from a runtype for its elements.
+ * Constructs an array runtype from a runtype for its elements.
  */
 const Array = <R extends Runtype.Core>(element: R) => {
 	const base = {
@@ -47,7 +50,7 @@ const Array = <R extends Runtype.Core>(element: R) => {
 			return FAILURE.CONTENT_INCORRECT({ expected: self, received: value, details })
 		else return SUCCESS(parsing ? (results as Success<any>[]).map(result => result.value) : value)
 	}, Spread.asSpreadable(base)).with(self => ({
-		asReadonly: () => self as unknown as ArrayReadonly<R>,
+		asReadonly: () => self as unknown as Array.Readonly<R>,
 	}))
 }
 

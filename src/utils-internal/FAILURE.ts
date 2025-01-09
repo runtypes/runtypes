@@ -1,5 +1,4 @@
 import type Literal from "../Literal.ts"
-import { literal } from "../Literal.ts"
 import type Runtype from "../Runtype.ts"
 import { type Static } from "../Runtype.ts"
 import Failcode from "../result/Failcode.ts"
@@ -51,10 +50,10 @@ const toMessage = (failure: Failure): string => {
 					return `Expected ${expected === undefined ? "unique symbol" : `symbol for key "${expected}"`}, but was ${received === undefined ? "unique" : `for "${received}"`}`
 				}
 				default:
-					return `Expected ${show(failure.expected)}, but was ${literal(failure.received as Static<Literal>)}`
+					return `Expected ${show(failure.expected)}, but was ${showValueOf(failure.received as Static<Literal>)}`
 			}
 		case Failcode.KEY_INCORRECT:
-			return `Expected key to be ${show(failure.expected)}, but was ${"details" in failure ? "incompatible" : literal(failure.received as Static<Literal>)}`
+			return `Expected key to be ${show(failure.expected)}, but was ${"details" in failure ? "incompatible" : showValueOf(failure.received as Static<Literal>)}`
 		case Failcode.CONTENT_INCORRECT:
 			return `Expected ${show(failure.expected)}, but was incompatible`
 		case Failcode.ARGUMENTS_INCORRECT:
@@ -85,5 +84,12 @@ const toMessage = (failure: Failure): string => {
 			)
 	}
 }
+
+const showValueOf = (value: Static<Literal>): string =>
+	typeof value === "bigint"
+		? globalThis.String(value) + "n"
+		: typeof value === "string"
+			? `"${globalThis.String(value)}"`
+			: globalThis.String(value)
 
 export default FAILURE

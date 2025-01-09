@@ -38,7 +38,7 @@ type Contract<O extends Options> = O & {
 
 const parseReceived = <O extends Options, F extends Function>(
 	received: readonly unknown[],
-	receives: O["receives"],
+	receives: (O["receives"] & Runtype) | undefined,
 ): EnforcedParametersParsed<O, F> => {
 	if (!receives) return received as EnforcedParametersParsed<O, F>
 	try {
@@ -57,7 +57,7 @@ const parseReceived = <O extends Options, F extends Function>(
 
 const parseReturned = <O extends Options, F extends Function>(
 	returned: unknown,
-	returns: O["returns"],
+	returns: (O["returns"] & Runtype) | undefined,
 ): EnforcedReturnTypeParsed<O, F> => {
 	if (!returns) return returned as EnforcedReturnTypeParsed<O, F>
 	try {
@@ -84,7 +84,7 @@ const Contract = <O extends Options>({ receives, returns }: O): Contract<O> => {
 		enforce:
 			f =>
 			(...args) =>
-				parseReturned(f(...(parseReceived(args, receives) as any)), returns),
+				parseReturned(f(...(parseReceived(args, receives as Runtype) as any)), returns as Runtype),
 	} as Contract<O>
 }
 

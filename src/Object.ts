@@ -5,6 +5,7 @@ import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import hasKey from "./utils-internal/hasKey.ts"
 
@@ -72,25 +73,26 @@ type ObjectParsed<O extends Object.Fields> = {
 	? { [K in keyof P]: P[K] }
 	: never
 
-interface ObjectReadonly<O extends Object.Fields = Object.Fields>
-	extends Runtype.Common<ObjectStaticReadonly<O>, ObjectParsedReadonly<O>> {
-	tag: "object"
-	fields: O
-	isExact: boolean
-}
-
 interface Object<O extends Object.Fields = Object.Fields>
-	extends Runtype.Common<ObjectStatic<O>, ObjectParsed<O>> {
+	extends Runtype<ObjectStatic<O>, ObjectParsed<O>> {
 	tag: "object"
 	fields: O
 	isExact: boolean
 }
 
 namespace Object {
-	// eslint-disable-next-line import/no-named-export
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 	export type Fields = { [_: string | number | symbol]: Runtype.Core | Optional }
 
-	// eslint-disable-next-line import/no-named-export
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
+	export interface Readonly<O extends Object.Fields = Object.Fields>
+		extends Runtype<ObjectStaticReadonly<O>, ObjectParsedReadonly<O>> {
+		tag: "object"
+		fields: O
+		isExact: boolean
+	}
+
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 	export type Utilities<O extends Object.Fields> = {
 		asPartial(): Object.WithUtilities<{
 			[K in keyof O]: O[K] extends Optional
@@ -99,7 +101,7 @@ namespace Object {
 					? Optional<O[K]>
 					: never
 		}>
-		asReadonly(): ObjectReadonly<O>
+		asReadonly(): Object.Readonly<O>
 
 		pick<K extends keyof O = never>(...keys: K[]): Object.WithUtilities<Pick<O, K>>
 		omit<K extends keyof O = never>(...keys: K[]): Object.WithUtilities<Omit<O, K>>
@@ -133,7 +135,7 @@ namespace Object {
 		exact(): Object.WithUtilities<O>
 	}
 
-	// eslint-disable-next-line import/no-named-export
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 	export type WithUtilities<O extends Object.Fields> = Object<O> & Utilities<O>
 }
 
@@ -207,42 +209,45 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 		{ tag: "object", fields, isExact: false } as Runtype.Base<Object<O>>,
 	).with(
 		self =>
-			({
-				asPartial: () =>
-					Object(
-						globalThis.Object.fromEntries(
-							globalThis.Object.entries(fields).map(([key, value]) => [
-								key,
-								isOptional(value) ? value : Optional(value),
-							]),
+			defineIntrinsics(
+				{},
+				{
+					asPartial: () =>
+						Object(
+							globalThis.Object.fromEntries(
+								globalThis.Object.entries(self.fields).map(([key, value]) => [
+									key,
+									isOptional(value) ? value : Optional(value),
+								]),
+							),
 						),
-					),
 
-				asReadonly: () => Object(fields),
+					asReadonly: () => Object(self.fields),
 
-				pick: (...keys: (string | number | symbol)[]) => {
-					const cloned = self.clone()
-					const result: any = {}
-					for (const key of keys) result[key] = fields[key]
-					cloned.fields = result
-					return cloned
+					pick: (...keys: (string | number | symbol)[]) => {
+						const cloned = self.clone()
+						const result: any = {}
+						for (const key of keys) result[key] = self.fields[key]
+						cloned.fields = result
+						return cloned
+					},
+
+					omit: (...keys: (string | number | symbol)[]) => {
+						const result: any = {}
+						const existingKeys = enumerableKeysOf(self.fields)
+						for (const key of existingKeys) if (!keys.includes(key)) result[key] = self.fields[key]
+						return Object(result)
+					},
+
+					extend: (extension: any) => Object(globalThis.Object.assign({}, self.fields, extension)),
+
+					exact: () => {
+						const cloned = self.clone()
+						cloned.isExact = true
+						return cloned
+					},
 				},
-
-				omit: (...keys: (string | number | symbol)[]) => {
-					const result: any = {}
-					const existingKeys = enumerableKeysOf(fields)
-					for (const key of existingKeys) if (!keys.includes(key)) result[key] = fields[key]
-					return Object(result)
-				},
-
-				extend: (extension: any) => Object(globalThis.Object.assign({}, fields, extension)),
-
-				exact: () => {
-					const cloned = self.clone()
-					cloned.isExact = true
-					return cloned
-				},
-			}) as unknown as Object.Utilities<O>,
+			) as unknown as Object.Utilities<O>,
 	)
 }
 

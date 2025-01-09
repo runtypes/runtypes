@@ -64,10 +64,9 @@ type ToReadonlyImpl<A extends readonly unknown[], B extends readonly unknown[]> 
 	: B
 type ToReadonly<A extends readonly unknown[]> = ToReadonlyImpl<A, readonly []>
 
-interface TupleReadonly<
-	R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype.Core | Spread)[],
-> extends Runtype.Common<ToReadonly<TupleStatic<R>>, ToReadonly<TupleParsed<R>>>,
-		Iterable<Spread<TupleReadonly<R>>> {
+interface Tuple<R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype.Core | Spread)[]>
+	extends Runtype<TupleStatic<R>, TupleParsed<R>>,
+		Iterable<Spread<Tuple<R>>> {
 	tag: "tuple"
 	readonly components:
 		| (Runtype[] & R)
@@ -78,17 +77,21 @@ interface TupleReadonly<
 		  }
 }
 
-interface Tuple<R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype.Core | Spread)[]>
-	extends Runtype.Common<TupleStatic<R>, TupleParsed<R>>,
-		Iterable<Spread<Tuple<R>>> {
-	tag: "tuple"
-	readonly components:
-		| (Runtype[] & R)
-		| {
-				leading: Runtype[]
-				rest: Runtype.Spreadable
-				trailing: Runtype[]
-		  }
+namespace Tuple {
+	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
+	export interface Readonly<
+		R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype.Core | Spread)[],
+	> extends Runtype<ToReadonly<TupleStatic<R>>, ToReadonly<TupleParsed<R>>>,
+			Iterable<Spread<Readonly<R>>> {
+		tag: "tuple"
+		readonly components:
+			| (Runtype[] & R)
+			| {
+					leading: Runtype[]
+					rest: Runtype.Spreadable
+					trailing: Runtype[]
+			  }
+	}
 }
 
 const isSpread = (component: Runtype.Core | Spread): component is Spread =>
@@ -108,7 +111,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const component = componentsFlattened[i]!
 				if (isSpread(component)) {
-					const runtype = unwrapTrivial(component.content as Runtype)
+					const runtype = unwrapTrivial(component.content)
 					switch (runtype.tag) {
 						case "tuple":
 							if (globalThis.Array.isArray(runtype.components))
@@ -127,7 +130,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 							continue
 						default:
 							throw new Error(
-								`Unsupported content type of \`Spread\` in \`Tuple\`: ${show(component.content as Runtype)}`,
+								`Unsupported content type of \`Spread\` in \`Tuple\`: ${show(component.content)}`,
 							)
 					}
 				} else {
@@ -138,12 +141,12 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 
 			// Split at the `Spread<Array>` if exists.
 			const leading: Runtype.Core[] = []
-			let rest: Runtype | undefined = undefined
+			let rest: Runtype.Core | undefined = undefined
 			const trailing: Runtype.Core[] = []
 			for (const component of componentsFlattened) {
 				if (isSpread(component)) {
 					if (rest) throw new Error("A rest element cannot follow another rest element.")
-					rest = component.content as Runtype
+					rest = component.content
 				} else if (rest) {
 					trailing.push(component)
 				} else {
@@ -212,7 +215,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		else
 			return SUCCESS(parsing ? (results as Success<any>[]).map(result => result.value) : x) as any
 	}, Spread.asSpreadable(base)).with(self =>
-		defineIntrinsics({}, { asReadonly: () => self as unknown as TupleReadonly<R> }),
+		defineIntrinsics({}, { asReadonly: () => self as unknown as Tuple.Readonly<R> }),
 	)
 }
 

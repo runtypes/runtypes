@@ -125,14 +125,14 @@ If you want to inform your users about the validation error, it's strongly disco
 The inferred type of `Asteroid` in the above example is a subtype of
 
 ```ts
-Runtype.Common<{
+Runtype<{
 	type: "asteroid"
 	location: [number, number, number]
 	mass: number
 }>
 ```
 
-That is, it's a `Runtype.Common<Asteroid>`, and you could annotate it as such. But we don't really have to define the `Asteroid` type at all now, because the inferred type is correct. Defining each of your types twice, once at the type level and then again at the value level, is a pain and not very [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself). Fortunately you can define a static `Asteroid` type which is an alias to the `Runtype`-derived type like so:
+That is, it's a `Runtype<Asteroid>`, and you could annotate it as such. But we don't really have to define the `Asteroid` type at all now, because the inferred type is correct. Defining each of your types twice, once at the type level and then again at the value level, is a pain and not very [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself). Fortunately you can define a static `Asteroid` type which is an alias to the `Runtype`-derived type like so:
 
 ```ts
 type Asteroid = Static<typeof Asteroid>

@@ -2,7 +2,7 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Function extends Runtype.Common<(...args: never[]) => unknown> {
+interface Function extends Runtype<(...args: never[]) => unknown> {
 	tag: "function"
 }
 

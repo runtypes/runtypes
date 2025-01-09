@@ -1,9 +1,9 @@
-import Runtype, { type Static } from "./Runtype.ts"
+import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 interface Parser<R extends Runtype.Core = Runtype.Core, X = Static<R>>
-	extends Runtype.Common<Static<R>, X> {
+	extends Runtype<Static<R>, X> {
 	tag: "parser"
 	underlying: R
 	parser: (value: Static<R>) => X
@@ -12,7 +12,10 @@ interface Parser<R extends Runtype.Core = Runtype.Core, X = Static<R>>
 /**
  * Constructs a runtype that transforms values validated and transformed by another runtype.
  */
-const Parser = <R extends Runtype.Core, X>(underlying: R, parser: (value: Static<R>) => X) =>
+const Parser = <R extends Runtype.Core, X>(
+	underlying: R,
+	parser: (value: Parsed<R>) => X,
+): Parser<R, X> =>
 	Runtype.create<Parser<R, X>>(
 		({ value, innerValidate, self, parsing }) => {
 			try {

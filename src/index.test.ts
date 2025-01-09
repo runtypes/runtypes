@@ -13,7 +13,7 @@ import Number from "./Number.ts"
 import Object from "./Object.ts"
 import Optional from "./Optional.ts"
 import Record from "./Record.ts"
-import type Runtype from "./Runtype.ts"
+import Runtype from "./Runtype.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import { default as Sym } from "./Symbol.ts"
@@ -432,11 +432,13 @@ const expectLiteralField = <O, K extends keyof O, V extends O[K]>(o: O, k: K, v:
 }
 
 const assertAccepts = (value: unknown, runtype: Runtype.Core) => {
+	Runtype.assertIsRuntype(runtype)
 	const result = runtype.inspect(value)
 	if (!result.success) fail(result.message)
 }
 
 const assertRejects = (value: unknown, runtype: Runtype.Core) => {
+	Runtype.assertIsRuntype(runtype)
 	const result = runtype.inspect(value)
 	if (result.success) fail("value passed validation even though await it was not expected to")
 }

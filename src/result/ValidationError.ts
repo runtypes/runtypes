@@ -16,9 +16,9 @@ class ValidationError extends Error {
 	}
 
 	static isValidationError = (value: unknown): value is ValidationError =>
-		value instanceof Error && ValidationErrorSymbol in value
+		value instanceof Error && globalThis.Object.hasOwn(value, ValidationErrorSymbol)
 
-	static override [Symbol.hasInstance] = ValidationError.isValidationError
+	static override [globalThis.Symbol.hasInstance] = ValidationError.isValidationError
 }
 
 export default ValidationError
