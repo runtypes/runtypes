@@ -5,28 +5,25 @@ import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import defineProperty from "./utils-internal/defineProperty.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
-import hasKey from "./utils-internal/hasKey.ts"
+import hasEnumerableOwn from "./utils-internal/hasEnumerableOwn.ts"
 import isNumberLikeKey from "./utils-internal/isNumberLikeKey.ts"
 import show from "./utils-internal/show.ts"
 import unwrapTrivial from "./utils-internal/unwrapTrivial.ts"
 
-type RecordKeyStatic = string | number | symbol
-
-type RecordKeyRuntype = Runtype.Core<RecordKeyStatic>
-
 type RecordStatic<
-	K extends RecordKeyRuntype = RecordKeyRuntype,
+	K extends Runtype.Core<PropertyKey> = Runtype.Core<PropertyKey>,
 	V extends Runtype.Core = Runtype.Core,
 > = V extends Optional ? { [_ in Static<K>]?: Static<V> } : { [_ in Static<K>]: Static<V> }
 
 type RecordParsed<
-	K extends RecordKeyRuntype = RecordKeyRuntype,
+	K extends Runtype.Core<PropertyKey> = Runtype.Core<PropertyKey>,
 	V extends Runtype.Core = Runtype.Core,
 > = V extends Optional ? { [_ in Parsed<K>]?: Parsed<V> } : { [_ in Parsed<K>]: Parsed<V> }
 
 interface Record<
-	K extends RecordKeyRuntype = RecordKeyRuntype,
+	K extends Runtype.Core<PropertyKey> = Runtype.Core<PropertyKey>,
 	V extends Runtype.Core = Runtype.Core,
 > extends Runtype<RecordStatic<K, V>, RecordParsed<K, V>> {
 	tag: "record"
@@ -34,8 +31,8 @@ interface Record<
 	value: V
 }
 
-const extractLiteralKeys = (runtype: RecordKeyRuntype) => {
-	const literalKeys: RecordKeyStatic[] = []
+const extractLiteralKeys = (runtype: Runtype.Core<PropertyKey>) => {
+	const literalKeys: PropertyKey[] = []
 	const inner = unwrapTrivial(runtype as Runtype)
 	switch (inner.tag) {
 		case "union": {
@@ -69,7 +66,7 @@ const extractLiteralKeys = (runtype: RecordKeyRuntype) => {
  * @param key - A `Runtype` for key.
  * @param value - A `Runtype` for value.
  */
-const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, value: V) => {
+const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(key: K, value: V) => {
 	const keyRuntype = key
 	const valueRuntype = value
 
@@ -83,11 +80,11 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 					return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
 
 			const keys = [...new Set([...extractLiteralKeys(key), ...enumerableKeysOf(x)])]
-			const results: { [key in RecordKeyStatic]: Result<unknown> } = {}
+			const results: globalThis.Record<PropertyKey, Result<unknown>> = {}
 			for (const key of keys) {
-				const xHasKey = hasKey(key, x)
+				const xHasKey = hasEnumerableOwn(key, x)
 				if (xHasKey) {
-					const testKey = (key: string | number | symbol): Failure | undefined => {
+					const testKey = (key: PropertyKey): Failure | undefined => {
 						// We should provide interoperability with `number` and `string` here, as a user would expect JavaScript engines to convert numeric keys to string keys automatically. So, if the key can be interpreted as a decimal number, then test it against a `Number` OR `String` runtype.
 						if (typeof key === "number" || isNumberLikeKey(key)) {
 							const keyInterop = globalThis.Number(key)
@@ -105,24 +102,28 @@ const Record = <K extends RecordKeyRuntype, V extends Runtype.Core>(key: K, valu
 
 					const failure = testKey(key)
 					if (failure) {
-						results[key] = FAILURE.KEY_INCORRECT({
-							expected: keyRuntype,
-							received: key,
-							inner: failure,
-						})
+						defineProperty(
+							results,
+							key,
+							FAILURE.KEY_INCORRECT({
+								expected: keyRuntype,
+								received: key,
+								inner: failure,
+							}),
+						)
 					} else {
-						results[key] = innerValidate(valueRuntype, x[key], parsing)
+						defineProperty(results, key, innerValidate(valueRuntype, x[key], parsing))
 					}
 				} else {
 					// TODO: symbols
-					results[key] = FAILURE.PROPERTY_MISSING({ expected: Literal(key as any) })
+					defineProperty(results, key, FAILURE.PROPERTY_MISSING({ expected: Literal(key as any) }))
 				}
 			}
 
 			const details: Failure.Details = {}
 			for (const key of keys) {
 				const result = results[key]!
-				if (!result.success) details[key] = result
+				if (!result.success) defineProperty(details, key, result)
 			}
 
 			if (enumerableKeysOf(details).length !== 0)

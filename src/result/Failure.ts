@@ -6,7 +6,7 @@ namespace Failure {
 	 * A detailed object enumerating where the validation failed exactly.
 	 */
 	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
-	export type Details = { [key in string | number | symbol]: Failure }
+	export type Details = globalThis.Record<PropertyKey, Failure>
 }
 
 type Legend = {

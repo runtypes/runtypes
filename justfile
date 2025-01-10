@@ -8,11 +8,11 @@ setup:
 	pnpm install
 
 test *ARGS='src/**/*.test.ts src/*.test.ts':
-	deno test --coverage=coverage --allow-net --allow-read {{ARGS}}
+	deno test --coverage=coverage --allow-net --allow-read --unstable-unsafe-proto {{ARGS}}
 	deno coverage coverage
 
 ci *ARGS='src/**/*.test.ts src/*.test.ts':
-	deno test --coverage=coverage --allow-net --allow-read {{ARGS}}
+	deno test --coverage=coverage --allow-net --allow-read --unstable-unsafe-proto {{ARGS}}
 	deno coverage --lcov coverage > coverage/coverage.lcov
 
 build:

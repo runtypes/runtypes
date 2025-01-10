@@ -6,8 +6,9 @@ import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
+import defineProperty from "./utils-internal/defineProperty.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
-import hasKey from "./utils-internal/hasKey.ts"
+import hasEnumerableOwn from "./utils-internal/hasEnumerableOwn.ts"
 
 type OptionalKeysStatic<T> = {
 	[K in keyof T]: T[K] extends Optional ? K : never
@@ -82,7 +83,7 @@ interface Object<O extends Object.Fields = Object.Fields>
 
 namespace Object {
 	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
-	export type Fields = { [_: string | number | symbol]: Runtype.Core | Optional }
+	export type Fields = globalThis.Record<PropertyKey, Runtype.Core | Optional>
 
 	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 	export interface Readonly<O extends Object.Fields = Object.Fields>
@@ -155,40 +156,45 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 				return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
 
 			const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])]
-			const results: { [key in string | number | symbol]: Result<unknown> } = {}
+			const results: globalThis.Record<PropertyKey, Result<unknown>> = {}
 			const parsed: any = {}
 			for (const key of keys) {
-				const fieldsHasKey = hasKey(key, self.fields)
-				const xHasKey = hasKey(key, x)
+				const fieldsHasKey = hasEnumerableOwn(key, self.fields)
+				const xHasKey = hasEnumerableOwn(key, x)
 				if (fieldsHasKey) {
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					const runtype = self.fields[key]!
 					if (xHasKey) {
 						const value = x[key]
 						if (isOptional(runtype)) {
-							results[key] = innerValidate(runtype.underlying, value, parsing)
+							defineProperty(results, key, innerValidate(runtype.underlying, value, parsing))
 						} else {
-							results[key] = innerValidate(runtype, value, parsing)
+							defineProperty(results, key, innerValidate(runtype, value, parsing))
 						}
-						if (results[key].success) parsed[key] = results[key].value
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+						if (results[key]!.success) defineProperty(parsed, key, results[key]!.value)
 					} else {
 						if (isOptional(runtype)) {
 							if ("defaultValue" in runtype) {
-								results[key] = SUCCESS(runtype.defaultValue)
-								parsed[key] = runtype.defaultValue
+								defineProperty(results, key, SUCCESS(runtype.defaultValue))
+								defineProperty(parsed, key, runtype.defaultValue)
 							} else {
-								results[key] = SUCCESS(undefined)
+								defineProperty(results, key, SUCCESS(undefined))
 							}
 						} else {
-							results[key] = FAILURE.PROPERTY_MISSING({ expected: runtype })
+							defineProperty(results, key, FAILURE.PROPERTY_MISSING({ expected: runtype }))
 						}
 					}
 				} else if (xHasKey) {
 					const value = x[key]
 					if (self.isExact) {
-						results[key] = FAILURE.PROPERTY_PRESENT({ expected: Never, received: value })
+						defineProperty(
+							results,
+							key,
+							FAILURE.PROPERTY_PRESENT({ expected: Never, received: value }),
+						)
 					} else {
-						results[key] = SUCCESS(value)
+						defineProperty(results, key, SUCCESS(value))
 					}
 				} else {
 					throw new Error("impossible")
@@ -199,7 +205,7 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 			for (const key of keys) {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const result = results[key]!
-				if (!result.success) details[key] = result
+				if (!result.success) defineProperty(details, key, result)
 			}
 
 			if (enumerableKeysOf(details).length !== 0)
@@ -224,18 +230,19 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 
 					asReadonly: () => Object(self.fields),
 
-					pick: (...keys: (string | number | symbol)[]) => {
+					pick: (...keys: PropertyKey[]) => {
 						const cloned = self.clone()
 						const result: any = {}
-						for (const key of keys) result[key] = self.fields[key]
+						for (const key of keys) defineProperty(result, key, self.fields[key])
 						cloned.fields = result
 						return cloned
 					},
 
-					omit: (...keys: (string | number | symbol)[]) => {
+					omit: (...keys: PropertyKey[]) => {
 						const result: any = {}
 						const existingKeys = enumerableKeysOf(self.fields)
-						for (const key of existingKeys) if (!keys.includes(key)) result[key] = self.fields[key]
+						for (const key of existingKeys)
+							if (!keys.includes(key)) defineProperty(result, key, self.fields[key])
 						return Object(result)
 					},
 

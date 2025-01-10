@@ -1,4 +1,5 @@
 import enumerableKeysOf from "./enumerableKeysOf.ts"
+import type Object from "../Object.ts"
 import type Optional from "../Optional.ts"
 import Runtype from "../Runtype.ts"
 
@@ -59,12 +60,14 @@ const showEmbedded =
 				return showEmbedded(circular)(runtype.underlying)
 			case "union":
 				if (runtype.alternatives.length === 1) {
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					const inner = runtype.alternatives[0]!
 					return showEmbedded(circular)(inner)
 				}
 				break
 			case "intersect":
 				if (runtype.intersectees.length === 1) {
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					const inner = runtype.intersectees[0]!
 					return showEmbedded(circular)(inner)
 				}
@@ -107,6 +110,7 @@ const show =
 					else if (runtype.strings.length === 1) return `"${runtype.strings[0]}"`
 					else if (runtype.strings.length === 2) {
 						if (runtype.strings.every(string => string === "")) {
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 							const r = runtype.runtypes[0]!
 							return showStringified(circular)(r)
 						}
@@ -119,7 +123,9 @@ const show =
 							const suffix = showEmbedded(circular)(r)
 							if (!backtick && suffix.startsWith("$")) backtick = true
 							return prefix + suffix
-						} else return prefix
+						} else {
+							return prefix
+						}
 					}, "")
 					return backtick ? `\`${inner}\`` : `"${inner}"`
 				}
@@ -134,9 +140,12 @@ const show =
 								.map(
 									key =>
 										`${key.toString()}${optionalTag(runtype, key)}: ${
+											// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 											runtype.fields[key]!.tag === "optional"
-												? show(false, circular)((runtype.fields[key]! as Optional).underlying)
-												: show(false, circular)(runtype.fields[key]! as Runtype.Core)
+												? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+													show(false, circular)((runtype.fields[key]! as Optional).underlying)
+												: // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+													show(false, circular)(runtype.fields[key]! as Runtype.Core)
 										};`,
 								)
 								.join(" ")} }`
@@ -170,7 +179,7 @@ const show =
 				case "constraint":
 					return show(needsParens, circular)(runtype.underlying)
 				case "instanceof":
-					return (runtype.ctor as any).name
+					return runtype.ctor.name
 				case "brand":
 					return runtype.brand
 				case "parser":
@@ -181,9 +190,8 @@ const show =
 		}
 	}
 
-const optionalTag = (
-	{ fields }: { fields: { [_: string | number | symbol]: Runtype.Core | Optional } },
-	key: string | number | symbol,
-): "?" | "" => (fields[key]!.tag === "optional" ? "?" : "")
+const optionalTag = ({ fields }: { fields: Object.Fields }, key: PropertyKey): "?" | "" =>
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	fields[key]!.tag === "optional" ? "?" : ""
 
 export default show(false, new Set<Runtype.Core>())
