@@ -10,12 +10,6 @@ Safely bring untyped data into the fold.
 
 Runtypes allow you to take values about which you have no assurances and check that they conform to some type `A`. This is done by means of composable type validators of primitives, literals, arrays, tuples, objects, unions, intersections and more.
 
-## Installation
-
-```sh
-npm install --save runtypes
-```
-
 ## Example
 
 Suppose you have objects which represent asteroids, planets, ships and crew members. In TypeScript, you might write their types like so:
