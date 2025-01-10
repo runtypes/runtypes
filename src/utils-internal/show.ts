@@ -1,6 +1,5 @@
 import enumerableKeysOf from "./enumerableKeysOf.ts"
-import type Object from "../Object.ts"
-import type Optional from "../Optional.ts"
+import Optional from "../Optional.ts"
 import Runtype from "../Runtype.ts"
 
 /**
@@ -137,16 +136,12 @@ const show =
 					const keys = enumerableKeysOf(runtype.fields)
 					return keys.length
 						? `{ ${keys
-								.map(
-									key =>
-										`${key.toString()}${optionalTag(runtype, key)}: ${
-											// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-											runtype.fields[key]!.tag === "optional"
-												? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-													show(false, circular)((runtype.fields[key]! as Optional).underlying)
-												: // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-													show(false, circular)(runtype.fields[key]! as Runtype.Core)
-										};`,
+								.map(key =>
+									// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+									Optional.isOptional(runtype.fields[key]!)
+										? `${key.toString()}?: ${show(false, circular)(runtype.fields[key].underlying)};`
+										: // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+											`${key.toString()}: ${show(false, circular)(runtype.fields[key]!)};`,
 								)
 								.join(" ")} }`
 						: "{}"
@@ -189,9 +184,5 @@ const show =
 			circular.delete(runtype)
 		}
 	}
-
-const optionalTag = ({ fields }: { fields: Object.Fields }, key: PropertyKey): "?" | "" =>
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	fields[key]!.tag === "optional" ? "?" : ""
 
 export default show(false, new Set<Runtype.Core>())

@@ -24,6 +24,7 @@ import type Unknown from "./Unknown.ts"
 import type Result from "./result/Result.ts"
 import ValidationError from "./result/ValidationError.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import copyProperties from "./utils-internal/copyProperties.ts"
 import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 import isObject from "./utils-internal/isObject.ts"
 import show from "./utils-internal/show.ts"
@@ -361,10 +362,6 @@ namespace Runtype {
 
 	// eslint-disable-next-line import/no-unused-modules
 	export type Spreadable = Runtype.Core<readonly unknown[]> & Iterable<Spread<Spreadable>>
-}
-
-const copyProperties = (dst: object, src: object) => {
-	globalThis.Object.defineProperties(dst, globalThis.Object.getOwnPropertyDescriptors(src))
 }
 
 const bindThis = (self: object, prototype: object) => {
