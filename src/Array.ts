@@ -5,6 +5,7 @@ import type Result from "./result/Result.ts"
 import type Success from "./result/Success.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import isNumberLikeKey from "./utils-internal/isNumberLikeKey.ts"
 
@@ -49,9 +50,9 @@ const Array = <R extends Runtype.Core>(element: R) => {
 		if (enumerableKeysOf(details).length !== 0)
 			return FAILURE.CONTENT_INCORRECT({ expected: self, received: value, details })
 		else return SUCCESS(parsing ? (results as Success<any>[]).map(result => result.value) : value)
-	}, Spread.asSpreadable(base)).with(self => ({
-		asReadonly: () => self as unknown as Array.Readonly<R>,
-	}))
+	}, Spread.asSpreadable(base)).with(self =>
+		defineIntrinsics({}, { asReadonly: () => self as unknown as Array.Readonly<R> }),
+	)
 }
 
 export default Array

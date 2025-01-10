@@ -6,6 +6,7 @@ import { type Match } from "./utils/match.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 
 interface Union<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 	extends Runtype<
@@ -52,17 +53,22 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union<R> 
 			return FAILURE.TYPE_INCORRECT({ expected: self, received: value, details })
 		},
 		Spread.asSpreadable(base) as any,
-	).with(self => ({
-		match: ((...cases: any[]) =>
-			(x: any) => {
-				for (let i = 0; i < self.alternatives.length; i++) {
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					if (self.alternatives[i]!.guard(x)) {
-						return cases[i](x)
-					}
-				}
-			}) as Match<R>,
-	}))
+	).with(self =>
+		defineIntrinsics(
+			{},
+			{
+				match: ((...cases: any[]) =>
+					(x: any) => {
+						for (let i = 0; i < self.alternatives.length; i++) {
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							if (self.alternatives[i]!.guard(x)) {
+								return cases[i](x)
+							}
+						}
+					}) satisfies Match<R>,
+			},
+		),
+	)
 }
 
 export default Union
