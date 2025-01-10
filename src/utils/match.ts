@@ -1,41 +1,45 @@
 import type Runtype from "../Runtype.ts"
-import { type Static } from "../Runtype.ts"
+import { type Static, type Parsed } from "../Runtype.ts"
+
+declare const Case: unique symbol
 
 const match =
-	<A extends [PairCase<any, any>, ...PairCase<any, any>[]]>(
-		...cases: A
+	<C extends readonly [Case<any, any>, ...Case<any, any>[]]>(
+		...cases: C
 	): Matcher<
-		{
-			[key in keyof A]: A[key] extends PairCase<infer RT, any> ? RT : unknown
-		},
-		{
-			[key in keyof A]: A[key] extends PairCase<any, infer Z> ? Z : unknown
-		}[number]
+		{ [key in keyof C]: C[key] extends Case<infer RT, any> ? RT : unknown },
+		{ [key in keyof C]: C[key] extends Case<any, infer Z> ? Z : unknown }[number]
 	> =>
 	x => {
-		for (const [T, f] of cases) if (T.guard(x)) return f(x)
+		for (const [T, f] of cases)
+			try {
+				return f(T.parse(x))
+			} catch (error) {
+				continue
+			}
 		throw new Error("No alternatives were matched")
 	}
 
-type PairCase<A extends Runtype.Core, Z> = [A, Case<A, Z>]
+type Case<R extends Runtype.Core, Y> = CaseArgs<R, Y> & {
+	[Case]: "must be defined with `when` helper"
+}
 
-type Match<A extends readonly Runtype.Core[]> = <Z>(
-	...cases: { [K in keyof A]: A[K] extends Runtype.Core<any> ? Case<A[K], Z> : never }
-) => Matcher<A, Z>
+type CaseArgs<R extends Runtype.Core, Y> = [runtype: R, transformer: (value: Parsed<R>) => Y]
 
-type Case<R extends Runtype.Core, Result> = (v: Static<R>) => Result
+type Match<R extends readonly Runtype.Core[]> = <Z>(
+	...cases: { [K in keyof R]: Case<R[K], Z>[1] }
+) => Matcher<R, Z>
 
-type Matcher<A extends readonly Runtype.Core[], Z> = (
-	x: {
-		[K in keyof A]: A[K] extends Runtype.Core<infer T> ? T : unknown
-	}[number],
+type Matcher<R extends readonly Runtype.Core[], Z> = (
+	x: { [K in keyof R]: Static<R[K]> }[number],
 ) => Z
 
-const when = <R extends Runtype.Core<any>, B>(
-	runtype: R,
-	transformer: (value: Static<R>) => B,
-): PairCase<R, B> => [runtype, transformer]
+const when: {
+	<R extends Runtype.Core, Y>(runtype: R, transformer: (value: Parsed<R>) => Y): Case<R, Y>
+	<R extends Runtype.Core, Y>(case_: CaseArgs<R, Y>): Case<R, Y>
+} = <R extends Runtype.Core, Y>(...args: [CaseArgs<R, Y>] | CaseArgs<R, Y>): Case<R, Y> =>
+	(Array.isArray(args[0]) ? args[0] : [args[0], args[1]]) as Case<R, Y>
 
 export default match
 // eslint-disable-next-line import/no-named-export
-export { type Case, type Match, type Matcher, type PairCase, when }
+export { type Case, type Match, type Matcher, when }

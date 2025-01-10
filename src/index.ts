@@ -6,14 +6,7 @@ export { default as AsyncContract } from "./utils/AsyncContract.ts"
 export { default as BigInt } from "./BigInt.ts"
 export { default as Boolean } from "./Boolean.ts"
 export { default as Brand, type RuntypeBrand } from "./Brand.ts"
-export {
-	type Case,
-	type Match,
-	type Matcher,
-	type PairCase,
-	default as match,
-	when,
-} from "./utils/match.ts"
+export { type Case, type Match, type Matcher, default as match, when } from "./utils/match.ts"
 export { default as Constraint } from "./Constraint.ts"
 export { default as Contract } from "./utils/Contract.ts"
 export { type default as Failure } from "./result/Failure.ts"
