@@ -2,9 +2,7 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-type Constructor<V> = {
-	new (...args: never[]): V
-}
+type Constructor<V> = { new (...args: never[]): V }
 
 interface InstanceOf<V = unknown> extends Runtype<V> {
 	tag: "instanceof"
@@ -21,5 +19,3 @@ const InstanceOf = <V>(ctor: Constructor<V>) =>
 	)
 
 export default InstanceOf
-// eslint-disable-next-line import/no-named-export
-export { type Constructor }
