@@ -1,6 +1,6 @@
 import type Runtype from "../Runtype.ts"
 import { type Static, type Parsed } from "../Runtype.ts"
-import { ValidationError } from "../index.ts"
+import ValidationError from "../result/ValidationError.ts"
 import FAILURE from "../utils-internal/FAILURE.ts"
 
 type Options = {
