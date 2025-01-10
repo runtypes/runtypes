@@ -1,6 +1,7 @@
-import type Literal from "../Literal.ts"
+import Literal from "../Literal.ts"
 import type Runtype from "../Runtype.ts"
 import { type Static } from "../Runtype.ts"
+import quoteWithDoubleQuote from "./quoteWithDoubleQuote.ts"
 import Failcode from "../result/Failcode.ts"
 import type Failure from "../result/Failure.ts"
 import show from "../utils-internal/show.ts"
@@ -47,13 +48,19 @@ const toMessage = (failure: Failure): string => {
 				case "symbol": {
 					const expected = failure.expected.key
 					const received = globalThis.Symbol.keyFor(failure.received as symbol)
-					return `Expected ${expected === undefined ? "unique symbol" : `symbol for key "${expected}"`}, but was ${received === undefined ? "unique" : `for "${received}"`}`
+					const messageExpected =
+						expected === undefined
+							? "unique symbol"
+							: `symbol for key ${quoteWithDoubleQuote(expected)}`
+					const messageReceived =
+						received === undefined ? "unique" : `for ${quoteWithDoubleQuote(received)}`
+					return `Expected ${messageExpected}, but was ${messageReceived}`
 				}
 				default:
-					return `Expected ${show(failure.expected)}, but was ${showValueOf(failure.received as Static<Literal>)}`
+					return `Expected ${show(failure.expected)}, but was ${show(Literal(failure.received as Static<Literal>))}`
 			}
 		case Failcode.KEY_INCORRECT:
-			return `Expected key to be ${show(failure.expected)}, but was ${"details" in failure ? "incompatible" : showValueOf(failure.received as Static<Literal>)}`
+			return `Expected key to be ${show(failure.expected)}, but was ${"details" in failure ? "incompatible" : show(Literal(failure.received as Static<Literal>))}`
 		case Failcode.CONTENT_INCORRECT:
 			return `Expected ${show(failure.expected)}, but was incompatible`
 		case Failcode.ARGUMENTS_INCORRECT:
@@ -84,12 +91,5 @@ const toMessage = (failure: Failure): string => {
 			)
 	}
 }
-
-const showValueOf = (value: Static<Literal>): string =>
-	typeof value === "bigint"
-		? globalThis.String(value) + "n"
-		: typeof value === "string"
-			? `"${globalThis.String(value)}"`
-			: globalThis.String(value)
 
 export default FAILURE

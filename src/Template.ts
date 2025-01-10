@@ -99,6 +99,7 @@ const parseArgs = (
 		const strings = convenient.reduce<[string, ...string[]]>(
 			(strings, arg) => {
 				// Concatenate every consecutive literals as strings
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				if (!Runtype.isRuntype(arg)) strings.push(strings.pop()! + String(arg))
 				// Skip runtypes
 				else strings.push("")
@@ -119,19 +120,18 @@ const flattenInnerRuntypes = (
 	runtypes: Runtype.Core<LiteralStatic>[],
 ): void => {
 	for (let i = 0; i < runtypes.length; ) {
-		switch (runtypes[i]!.tag) {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const runtype = runtypes[i]!
+		switch (runtype.tag) {
 			case "literal": {
-				const literal = runtypes[i] as Literal<LiteralStatic>
+				const literal = runtype as Literal<LiteralStatic>
 				runtypes.splice(i, 1)
 				const string = String(literal.value)
 				strings.splice(i, 2, strings[i] + string + strings[i + 1])
 				break
 			}
 			case "template": {
-				const template = runtypes[i] as Template<
-					[string, ...string[]],
-					Runtype.Core<LiteralStatic>[]
-				>
+				const template = runtype as Template<[string, ...string[]], Runtype.Core<LiteralStatic>[]>
 				runtypes.splice(i, 1, ...template.runtypes)
 				const innerStrings = template.strings
 				if (innerStrings.length === 1) {
@@ -139,13 +139,15 @@ const flattenInnerRuntypes = (
 				} else {
 					const first = innerStrings[0]
 					const rest = innerStrings.slice(1, -1)
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					const last = innerStrings[innerStrings.length - 1]!
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					strings.splice(i, 2, strings[i] + first, ...rest, last + strings[i + 1]!)
 				}
 				break
 			}
 			case "union": {
-				const union = runtypes[i] as Union
+				const union = runtype as Union
 				if (union.alternatives.length === 1) {
 					try {
 						const literal = getInnerLiteral(union)
@@ -163,7 +165,7 @@ const flattenInnerRuntypes = (
 				}
 			}
 			case "intersect": {
-				const intersect = runtypes[i] as Intersect
+				const intersect = runtype as Intersect
 				if (intersect.intersectees.length === 1) {
 					try {
 						const literal = getInnerLiteral(intersect)
@@ -205,9 +207,11 @@ const getInnerLiteral = (runtype: Runtype.Core): Literal<LiteralStatic> => {
 		case "brand":
 			return getInnerLiteral(runtype.entity)
 		case "union":
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			if (runtype.alternatives.length === 1) return getInnerLiteral(runtype.alternatives[0]!)
 			break
 		case "intersect":
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			if (runtype.intersectees.length === 1) return getInnerLiteral(runtype.intersectees[0]!)
 			break
 		default:
