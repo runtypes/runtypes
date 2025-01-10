@@ -7,13 +7,13 @@ const match =
 	<C extends readonly [Case<any, any>, ...Case<any, any>[]]>(
 		...cases: C
 	): Matcher<
-		{ [key in keyof C]: C[key] extends Case<infer RT, any> ? RT : unknown },
-		{ [key in keyof C]: C[key] extends Case<any, infer Z> ? Z : unknown }[number]
+		{ [K in keyof C]: C[K] extends Case<infer R, any> ? R : unknown },
+		{ [K in keyof C]: C[K] extends Case<any, infer Y> ? Y : unknown }[number]
 	> =>
-	x => {
+	value => {
 		for (const [T, f] of cases)
 			try {
-				return f(T.parse(x))
+				return f(T.parse(value))
 			} catch (error) {
 				continue
 			}
@@ -26,12 +26,8 @@ type Case<R extends Runtype.Core, Y> = CaseArgs<R, Y> & {
 
 type CaseArgs<R extends Runtype.Core, Y> = [runtype: R, transformer: (value: Parsed<R>) => Y]
 
-type Match<R extends readonly Runtype.Core[]> = <Z>(
-	...cases: { [K in keyof R]: Case<R[K], Z>[1] }
-) => Matcher<R, Z>
-
 type Matcher<R extends readonly Runtype.Core[], Z> = (
-	x: { [K in keyof R]: Static<R[K]> }[number],
+	value: { [K in keyof R]: Static<R[K]> }[number],
 ) => Z
 
 const when: {
@@ -42,4 +38,4 @@ const when: {
 
 export default match
 // eslint-disable-next-line import/no-named-export
-export { type Case, type Match, type Matcher, when }
+export { when }
