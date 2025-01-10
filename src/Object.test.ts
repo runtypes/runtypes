@@ -1,5 +1,6 @@
 import Array from "./Array.ts"
 import Literal from "./Literal.ts"
+import Never from "./Never.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
 import Optional from "./Optional.ts"
@@ -7,6 +8,7 @@ import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Undefined from "./Undefined.ts"
 import Failcode from "./result/Failcode.ts"
+import type Failure from "./result/Failure.ts"
 import ValidationError from "./result/ValidationError.ts"
 import {
 	assert,
@@ -294,5 +296,37 @@ Deno.test("Object", async t => {
 				},
 			},
 		})
+	})
+
+	// TODO: check behavior of parse when value runtype is never or optional
+
+	await t.step("should be immune to prototype pollution", async t => {
+		const Sanity = Object({ ["__proto__"]: Never.optional() })
+		assertEquals(Sanity.parse({ hello: "world" }), {})
+		const error = assertThrows(() =>
+			Sanity.parse({
+				// @ts-expect-error: should fail
+				["__proto__"]: { polluted: true },
+			}),
+		)
+		assert(ValidationError.isValidationError(error))
+		assertObjectMatch(error, {
+			message: "Expected { __proto__?: never; }, but was incompatible",
+			failure: {
+				message: "Expected { __proto__?: never; }, but was incompatible",
+				code: "CONTENT_INCORRECT",
+				details: {}, // <https://github.com/denoland/std/issues/6341>
+			},
+		})
+		// <https://github.com/denoland/std/issues/6341>
+		assertObjectMatch(
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			(error.failure as Failure & { code: typeof Failcode.CONTENT_INCORRECT }).details.__proto__!,
+			{
+				message: "Expected nothing, but was object",
+				code: Failcode.NOTHING_EXPECTED,
+			},
+		)
+		assertEquals(({} as any).polluted, undefined)
 	})
 })

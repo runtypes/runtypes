@@ -4,7 +4,7 @@ import String from "./String.ts"
 import Unknown from "./Unknown.ts"
 import Failcode from "./result/Failcode.ts"
 import ValidationError from "./result/ValidationError.ts"
-import hasKey from "./utils-internal/hasKey.ts"
+import hasEnumerableOwn from "./utils-internal/hasEnumerableOwn.ts"
 import isObject from "./utils-internal/isObject.ts"
 import {
 	assert,
@@ -54,7 +54,7 @@ Deno.test("Constraint", async t => {
 	await t.step("constraint standard message", async t => {
 		const error = assertThrows(() =>
 			Unknown.withConstraint(
-				o => isObject(o) && hasKey("n", o) && typeof o.n === "number" && o.n > 3,
+				o => isObject(o) && hasEnumerableOwn("n", o) && typeof o.n === "number" && o.n > 3,
 			)
 				.withBrand("{ n: > 3 }")
 				.check({ n: 0 }),
@@ -73,7 +73,8 @@ Deno.test("Constraint", async t => {
 		const error = assertThrows(() =>
 			Unknown.withConstraint(
 				o =>
-					(isObject(o) && hasKey("n", o) && typeof o.n === "number" && o.n > 3) || "n must be > 3",
+					(isObject(o) && hasEnumerableOwn("n", o) && typeof o.n === "number" && o.n > 3) ||
+					"n must be > 3",
 			)
 				.withBrand("{ n: > 3 }")
 				.check({ n: 0 }),

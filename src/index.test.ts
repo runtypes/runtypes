@@ -23,7 +23,7 @@ import Undefined from "./Undefined.ts"
 import Union from "./Union.ts"
 import Unknown from "./Unknown.ts"
 import Void from "./Void.ts"
-import hasKey from "./utils-internal/hasKey.ts"
+import hasEnumerableOwn from "./utils-internal/hasEnumerableOwn.ts"
 import isObject from "./utils-internal/isObject.ts"
 import { assert, assertEquals, fail } from "@std/assert"
 
@@ -75,13 +75,13 @@ class SomeClassV1 {
 	constructor(public n: number) {}
 	public _someClassTag = SOMECLASS_TAG
 	public static isSomeClass = (o: unknown): o is SomeClassV1 =>
-		isObject(o) && hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
+		isObject(o) && hasEnumerableOwn("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
 }
 class SomeClassV2 {
 	constructor(public n: number) {}
 	public _someClassTag = SOMECLASS_TAG
 	public static isSomeClass = (o: unknown): o is SomeClassV2 =>
-		isObject(o) && hasKey("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
+		isObject(o) && hasEnumerableOwn("_someClassTag", o) && o._someClassTag === SOMECLASS_TAG
 }
 
 const runtypes = {

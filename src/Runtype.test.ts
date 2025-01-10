@@ -68,8 +68,10 @@ Deno.test("Runtype", async t => {
 		})
 
 		await t.step("should be immune to prototype pollution", async t => {
-			const R = Number.with(JSON.parse('{ "__proto__": { "polluted": true } }'))
+			const R = Number.with({ ["__proto__"]: { polluted: true } })
 			assertEquals(({} as any).polluted, undefined)
+			assertEquals((Number as any).polluted, undefined)
+			assertEquals((Runtype as any).polluted, undefined)
 		})
 
 		await t.step("should chain", async t => {
@@ -103,8 +105,10 @@ Deno.test("Runtype", async t => {
 		})
 
 		await t.step("should be immune to prototype pollution", async t => {
-			const R = Number.with(JSON.parse('{ "__proto__": { "polluted": true } }')).clone()
+			const R = Number.with({ ["__proto__"]: { polluted: true } }).clone()
 			assertEquals(({} as any).polluted, undefined)
+			assertEquals((Number as any).polluted, undefined)
+			assertEquals((Runtype as any).polluted, undefined)
 		})
 	})
 
