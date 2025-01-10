@@ -1,3 +1,4 @@
+import Boolean from "./Boolean.ts"
 import InstanceOf from "./InstanceOf.ts"
 import Intersect from "./Intersect.ts"
 import Literal from "./Literal.ts"
@@ -8,9 +9,7 @@ import String from "./String.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
 import ValidationError from "./result/ValidationError.ts"
-import { assert, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
-
-const ThreeOrString = Union(Literal(3), String)
+import { assertEquals, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
 
 Deno.test("union", async t => {
 	await t.step("mapped literals", async t => {
@@ -25,15 +24,22 @@ Deno.test("union", async t => {
 
 	await t.step("match", async t => {
 		await t.step("works with exhaustive cases", async t => {
-			const match = ThreeOrString.match(
+			const match = Union(Literal(3), String).match(
 				three => three + 5,
 				str => str.length * 4,
 			)
-			assert(match(3) === 8)
-			assert(match("hello") === 20)
+			assertEquals(match(3), 8)
+			assertEquals(match("hello"), 20)
 		})
 
-		// TODO: parsers
+		await t.step("works with parsers", async => {
+			const match = Union(String.withParser(parseInt), Boolean).match(
+				n => n * 2,
+				b => !b,
+			)
+			assertEquals(match("42"), 84)
+			assertEquals(match(true), false)
+		})
 	})
 
 	await t.step("discriminated union", async t => {

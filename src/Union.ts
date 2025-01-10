@@ -2,7 +2,6 @@ import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
-import { type Match } from "./utils/match.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
@@ -24,6 +23,18 @@ interface Union<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 		: never
 	match: Match<R>
 }
+
+type Match<R extends readonly Runtype.Core[]> = <C extends Cases<R>>(
+	...cases: C
+) => Matcher<R, ReturnType<C[number]>>
+
+type Matcher<R extends readonly Runtype.Core[], Z> = (
+	value: { [K in keyof R]: Static<R[K]> }[number],
+) => Z
+
+type Cases<R extends readonly Runtype.Core[]> = { [K in keyof R]: Case<R[K], any> }
+
+type Case<R extends Runtype.Core, Y> = (value: Parsed<R>) => Y
 
 /**
  * Construct a union runtype from runtypes for its alternatives.
@@ -57,14 +68,16 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union<R> 
 		defineIntrinsics(
 			{},
 			{
-				match: ((...cases: any[]) =>
-					(x: any) => {
-						for (let i = 0; i < self.alternatives.length; i++) {
-							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							if (self.alternatives[i]!.guard(x)) {
-								return cases[i](x)
+				match: ((...cases) =>
+					value => {
+						for (let i = 0; i < self.alternatives.length; i++)
+							try {
+								// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+								return cases[i]!(self.alternatives[i]!.parse(value))
+							} catch (error) {
+								continue
 							}
-						}
+						throw new Error("No alternatives were matched")
 					}) satisfies Match<R>,
 			},
 		),
