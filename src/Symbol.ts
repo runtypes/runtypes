@@ -38,6 +38,4 @@ const Symbol = Runtype.create<Symbol>(
 	globalThis.Object.assign(SymbolFor, { tag: "symbol" as const, key: undefined }),
 )
 
-const quoteIfPresent = (key: string | undefined) => (key === undefined ? "undefined" : `"${key}"`)
-
 export default Symbol

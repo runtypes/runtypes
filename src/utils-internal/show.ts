@@ -1,6 +1,8 @@
 import enumerableKeysOf from "./enumerableKeysOf.ts"
 import Optional from "../Optional.ts"
 import Runtype from "../Runtype.ts"
+import quoteWithBacktick from "./quoteWithBacktick.ts"
+import quoteWithDoubleQuote from "./quoteWithDoubleQuote.ts"
 
 /**
  * Return the display string for the stringified version of a type, e.g.
@@ -16,7 +18,7 @@ const showStringified =
 		Runtype.assertIsRuntype(runtype)
 		switch (runtype.tag) {
 			case "literal":
-				return `"${globalThis.String(runtype.value)}"`
+				return quoteWithDoubleQuote(globalThis.String(runtype.value))
 			case "string":
 				return "string"
 			case "brand":
@@ -52,7 +54,7 @@ const showEmbedded =
 		Runtype.assertIsRuntype(runtype)
 		switch (runtype.tag) {
 			case "literal":
-				return String(runtype.value)
+				return globalThis.String(runtype.value)
 			case "brand":
 				return `\${${runtype.brand}}`
 			case "constraint":
@@ -98,21 +100,21 @@ const show =
 				case "symbol":
 				case "function":
 					return runtype.tag
-				case "literal": {
-					const { value } = runtype
-					return typeof value === "string" ? `"${value}"` : String(value)
-				}
+				case "literal":
+					return typeof runtype.value === "bigint"
+						? globalThis.String(runtype.value) + "n"
+						: typeof runtype.value === "string"
+							? quoteWithDoubleQuote(runtype.value)
+							: globalThis.String(runtype.value)
 
 				// Complex types
 				case "template": {
 					if (runtype.strings.length === 0) return '""'
-					else if (runtype.strings.length === 1) return `"${runtype.strings[0]}"`
+					else if (runtype.strings.length === 1) return quoteWithDoubleQuote(runtype.strings[0])
 					else if (runtype.strings.length === 2) {
-						if (runtype.strings.every(string => string === "")) {
+						if (runtype.strings.every(string => string === ""))
 							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							const r = runtype.runtypes[0]!
-							return showStringified(circular)(r)
-						}
+							return showStringified(circular)(runtype.runtypes[0]!)
 					}
 					let backtick = false
 					const inner = runtype.strings.reduce((inner, string, i) => {
@@ -126,7 +128,8 @@ const show =
 							return prefix
 						}
 					}, "")
-					return backtick ? `\`${inner}\`` : `"${inner}"`
+					console.log(inner)
+					return backtick ? quoteWithBacktick(inner) : quoteWithDoubleQuote(inner)
 				}
 				case "array":
 					return `${show(true, circular)(runtype.element)}[]`
