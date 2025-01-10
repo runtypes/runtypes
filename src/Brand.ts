@@ -43,5 +43,3 @@ const Brand = <B extends string, R extends Runtype.Core>(brand: B, entity: R) =>
 }
 
 export default Brand
-// eslint-disable-next-line import/no-named-export
-export { type RuntypeBrand }
