@@ -1,9 +1,7 @@
 import type Failure from "./Failure.ts"
 import defineIntrinsics from "../utils-internal/defineIntrinsics.ts"
 
-const ValidationErrorSymbol: unique symbol = globalThis.Symbol.for(
-	"runtypes/ValidationError",
-) as any
+const ValidationErrorSymbol: unique symbol = globalThis.Symbol() as any
 
 class ValidationError extends Error {
 	override name = "ValidationError" as const
