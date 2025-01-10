@@ -6,10 +6,10 @@ import { assert, assertThrows } from "@std/assert"
 
 Deno.test("match", async t => {
 	await t.step("works", async t => {
-		const f: (value: string | number) => number = match(
-			when(Literal(42), fortyTwo => fortyTwo / 2),
-			when(Number, n => n + 9),
-			when(String, s => s.length * 2),
+		const f = match(
+			when([Literal(42), fortyTwo => fortyTwo / 2]),
+			when([Number, n => n + 9]),
+			when([String, s => s.length * 2]),
 		)
 
 		assert(f(42) === 21)
