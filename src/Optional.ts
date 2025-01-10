@@ -17,10 +17,17 @@ interface Optional<R extends Runtype.Core = Runtype.Core, D = any> {
 const Optional: {
 	<R extends Runtype.Core>(underlying: R): Optional<R, never>
 	<R extends Runtype.Core, D>(underlying: R, defaultValue: D): Optional<R, D>
-} = (<R extends Runtype.Core, D>(...args: [underlying: R, defaultValue?: D]): Optional<R, D> => ({
-	tag: "optional",
-	underlying: args[0],
-	...(args.length === 2 ? { defaultValue: args[1] } : {}),
-})) as any
+	isOptional: (runtype: Runtype.Core | Optional) => runtype is Optional
+} = Object.assign(
+	(<R extends Runtype.Core, D>(...args: [underlying: R, defaultValue?: D]): Optional<R, D> => ({
+		tag: "optional",
+		underlying: args[0],
+		...(args.length === 2 ? { defaultValue: args[1] } : {}),
+	})) as any,
+	{
+		isOptional: (runtype: Runtype.Core | Optional): runtype is Optional =>
+			runtype.tag === "optional",
+	},
+)
 
 export default Optional

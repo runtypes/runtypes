@@ -5,6 +5,7 @@ import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
+import copyProperties from "./utils-internal/copyProperties.ts"
 import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 import defineProperty from "./utils-internal/defineProperty.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
@@ -140,8 +141,6 @@ namespace Object {
 	export type WithUtilities<O extends Object.Fields> = Object<O> & Utilities<O>
 }
 
-const isOptional = (value: Runtype.Core | Optional): value is Optional => value.tag === "optional"
-
 /**
  * Construct an object runtype from runtypes for its values.
  */
@@ -166,7 +165,7 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 					const runtype = self.fields[key]!
 					if (xHasKey) {
 						const value = x[key]
-						if (isOptional(runtype)) {
+						if (Optional.isOptional(runtype)) {
 							defineProperty(results, key, innerValidate(runtype.underlying, value, parsing))
 						} else {
 							defineProperty(results, key, innerValidate(runtype, value, parsing))
@@ -174,7 +173,7 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						if (results[key]!.success) defineProperty(parsed, key, results[key]!.value)
 					} else {
-						if (isOptional(runtype)) {
+						if (Optional.isOptional(runtype)) {
 							if ("defaultValue" in runtype) {
 								defineProperty(results, key, SUCCESS(runtype.defaultValue))
 								defineProperty(parsed, key, runtype.defaultValue)
@@ -218,35 +217,49 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 			defineIntrinsics(
 				{},
 				{
-					asPartial: () =>
-						Object(
-							globalThis.Object.fromEntries(
-								globalThis.Object.entries(self.fields).map(([key, value]) => [
-									key,
-									isOptional(value) ? value : Optional(value),
-								]),
-							),
-						),
+					asPartial: () => {
+						const cloned = self.clone()
+						const existingKeys = enumerableKeysOf(self.fields)
+						const fields: any = {}
+						for (const key of existingKeys) {
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							const value = self.fields[key]!
+							defineProperty(fields, key, Optional.isOptional(value) ? value : Optional(value))
+						}
+						cloned.fields = fields
+						return cloned
+					},
 
-					asReadonly: () => Object(self.fields),
+					asReadonly: () => self.clone(),
 
 					pick: (...keys: PropertyKey[]) => {
 						const cloned = self.clone()
-						const result: any = {}
-						for (const key of keys) defineProperty(result, key, self.fields[key])
-						cloned.fields = result
+						const existingKeys = enumerableKeysOf(self.fields)
+						const fields: any = {}
+						for (const key of existingKeys)
+							if (keys.includes(key)) defineProperty(fields, key, self.fields[key])
+						cloned.fields = fields
 						return cloned
 					},
 
 					omit: (...keys: PropertyKey[]) => {
-						const result: any = {}
+						const cloned = self.clone()
 						const existingKeys = enumerableKeysOf(self.fields)
+						const fields: any = {}
 						for (const key of existingKeys)
-							if (!keys.includes(key)) defineProperty(result, key, self.fields[key])
-						return Object(result)
+							if (!keys.includes(key)) defineProperty(fields, key, self.fields[key])
+						cloned.fields = fields
+						return cloned
 					},
 
-					extend: (extension: any) => Object(globalThis.Object.assign({}, self.fields, extension)),
+					extend: (extension: any) => {
+						const cloned = self.clone()
+						const fields: any = {}
+						copyProperties(fields, self.fields)
+						copyProperties(fields, extension)
+						cloned.fields = fields
+						return cloned
+					},
 
 					exact: () => {
 						const cloned = self.clone()
