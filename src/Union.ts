@@ -53,17 +53,28 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union<R> 
 		}): Result<{ [K in keyof R]: R[K] extends Runtype ? Static<R[K]> : unknown }[number]> => {
 			if (self.alternatives.length === 0)
 				return FAILURE.NOTHING_EXPECTED({ expected: self, received: value })
+
+			const results: Result<any>[] = []
 			const details: Failure.Details = {}
 			for (let i = 0; i < self.alternatives.length; i++) {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				const alternative = self.alternatives[i]!
 				const result = innerValidate(alternative, value, parsing)
-				if (result.success) return SUCCESS(parsing ? result.value : value)
-				details[i] = result
+				results.push(result)
+
+				if (result.success) {
+					if (!parsing) return SUCCESS(value)
+				} else {
+					details[i] = result
+				}
 			}
+
+			const first = results.find(result => result.success)
+			if (first) return SUCCESS(first.value)
+
 			return FAILURE.TYPE_INCORRECT({ expected: self, received: value, details })
 		},
-		Spread.asSpreadable(base) as any,
+		Spread.asSpreadable(base),
 	).with(self =>
 		defineIntrinsics(
 			{},

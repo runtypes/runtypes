@@ -59,7 +59,7 @@ leftHand.left = rightHand
 const Ambi: Runtype.Core<Ambi> = Lazy(() =>
 	Intersect(Object({ left: Ambi }), Object({ right: Ambi })),
 )
-type Ambi = { left: Ambi; right: Ambi }
+type Ambi = { left: Ambi } & { right: Ambi }
 const ambi: Ambi = { left: undefined as unknown as Ambi, right: undefined as unknown as Ambi }
 ambi.left = ambi
 ambi.right = ambi
@@ -433,12 +433,12 @@ const expectLiteralField = <O, K extends keyof O, V extends O[K]>(o: O, k: K, v:
 
 const assertAccepts = (value: unknown, runtype: Runtype.Core) => {
 	Runtype.assertIsRuntype(runtype)
-	const result = runtype.inspect(value)
+	const result = runtype.inspect(value, { parse: false })
 	if (!result.success) fail(result.message)
 }
 
 const assertRejects = (value: unknown, runtype: Runtype.Core) => {
 	Runtype.assertIsRuntype(runtype)
-	const result = runtype.inspect(value)
+	const result = runtype.inspect(value, { parse: false })
 	if (result.success) fail("value passed validation even though await it was not expected to")
 }
