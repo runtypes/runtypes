@@ -79,9 +79,8 @@ const toMessage = (failure: Failure): string => {
 		case Failcode.PROPERTY_MISSING:
 			return `Expected ${show(failure.expected)}, but was missing`
 		case Failcode.PROPERTY_PRESENT:
-			return `Expected nothing, but was ${typeOf(failure.received)}`
 		case Failcode.NOTHING_EXPECTED:
-			return `Expected nothing, but was ${typeOf(failure.received)}`
+			return `Expected nothing, but was present`
 		case Failcode.PARSING_FAILED:
 			return (
 				`Parsing failed` +

@@ -323,7 +323,7 @@ Deno.test("Object", async t => {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			(error.failure as Failure & { code: typeof Failcode.CONTENT_INCORRECT }).details.__proto__!,
 			{
-				message: "Expected nothing, but was object",
+				message: "Expected nothing, but was present",
 				code: Failcode.NOTHING_EXPECTED,
 			},
 		)
