@@ -108,7 +108,7 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(key
 							FAILURE.KEY_INCORRECT({
 								expected: keyRuntype,
 								received: key,
-								inner: failure,
+								detail: failure,
 							}),
 						)
 					} else {

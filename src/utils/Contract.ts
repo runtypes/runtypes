@@ -48,7 +48,7 @@ const parseReceived = <O extends Options, F extends Function>(
 			const failure = FAILURE.ARGUMENTS_INCORRECT({
 				expected: receives,
 				received,
-				inner: error.failure,
+				detail: error.failure,
 			})
 			throw new ValidationError(failure)
 		} else throw error
@@ -67,7 +67,7 @@ const parseReturned = <O extends Options, F extends Function>(
 			const failure = FAILURE.RETURN_INCORRECT({
 				expected: returns,
 				received: returned,
-				inner: error.failure,
+				detail: error.failure,
 			})
 			throw new ValidationError(failure)
 		} else throw error

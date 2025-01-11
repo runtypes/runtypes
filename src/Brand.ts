@@ -38,7 +38,7 @@ const Brand = <B extends string, R extends Runtype.Core>(brand: B, entity: R) =>
 	return Runtype.create<Brand<B, R>>(({ value, innerValidate, self, parsing }): Result<any> => {
 		const result = innerValidate(self.entity, value, parsing)
 		if (result.success) return result
-		return FAILURE.TYPE_INCORRECT({ expected: self, received: value, inner: result })
+		return FAILURE.TYPE_INCORRECT({ expected: self, received: value, detail: result })
 	}, Spread.asSpreadable(base))
 }
 
