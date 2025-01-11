@@ -14,8 +14,7 @@ Deno.test("Brand", async t => {
 			code: Failcode.TYPE_INCORRECT,
 			// TODO: rename this to detail
 			inner: {
-				// TODO: exact
-				message: "Expected {}, but was incompatible",
+				message: "Expected exact {}, but was incompatible",
 				code: Failcode.CONTENT_INCORRECT,
 				details: {
 					extra: {
