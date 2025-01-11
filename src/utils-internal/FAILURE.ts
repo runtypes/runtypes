@@ -42,7 +42,7 @@ const FAILURE: {
 const toMessage = (failure: Failure): string => {
 	switch (failure.code) {
 		case Failcode.TYPE_INCORRECT:
-			return `Expected ${show(failure.expected)}, but was ${"details" in failure ? "incompatible" : typeOf(failure.received)}`
+			return `Expected ${show(failure.expected)}, but was ${"details" in failure || "inner" in failure ? "incompatible" : typeOf(failure.received)}`
 		case Failcode.VALUE_INCORRECT:
 			switch (failure.expected.tag) {
 				case "symbol": {
