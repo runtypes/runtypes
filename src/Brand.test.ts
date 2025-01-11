@@ -17,7 +17,7 @@ Deno.test("Brand", async t => {
 				code: Failcode.CONTENT_INCORRECT,
 				details: {
 					extra: {
-						message: "Expected nothing, but was boolean",
+						message: "Expected nothing, but was present",
 						code: Failcode.PROPERTY_PRESENT,
 					},
 				},
