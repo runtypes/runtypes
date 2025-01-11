@@ -53,7 +53,7 @@ const parseReceived = <O extends Options, F extends AsyncFunction>(
 			const failure = FAILURE.ARGUMENTS_INCORRECT({
 				expected: receives,
 				received,
-				inner: error.failure,
+				detail: error.failure,
 			})
 			throw new ValidationError(failure)
 		} else throw error
@@ -73,7 +73,7 @@ const parseReturned = async <O extends Options, F extends AsyncFunction>(
 			const failure = FAILURE.RETURN_INCORRECT({
 				expected: InstanceOfPromise,
 				received: returned,
-				inner: error.failure,
+				detail: error.failure,
 			})
 			throw new ValidationError(failure)
 		}
@@ -87,7 +87,7 @@ const parseReturned = async <O extends Options, F extends AsyncFunction>(
 			const failure = FAILURE.RESOLVE_INCORRECT({
 				expected: returns,
 				received: awaited,
-				inner: error.failure,
+				detail: error.failure,
 			})
 			throw new ValidationError(failure)
 		} else throw error

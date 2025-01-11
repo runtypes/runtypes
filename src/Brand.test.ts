@@ -12,8 +12,7 @@ Deno.test("Brand", async t => {
 		assertObjectMatch(Object({}).exact().withBrand("Empty").inspect({ extra: true }), {
 			message: "Expected Empty, but was incompatible",
 			code: Failcode.TYPE_INCORRECT,
-			// TODO: rename this to detail
-			inner: {
+			detail: {
 				message: "Expected exact {}, but was incompatible",
 				code: Failcode.CONTENT_INCORRECT,
 				details: {

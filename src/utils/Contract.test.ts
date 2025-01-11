@@ -24,7 +24,7 @@ Deno.test("Contract", async t => {
 				message: "Returned unexpected value: Expected number, but was string",
 				failure: {
 					code: Failcode.RETURN_INCORRECT,
-					inner: {
+					detail: {
 						code: Failcode.TYPE_INCORRECT,
 					},
 				},
@@ -52,7 +52,7 @@ Deno.test("Contract", async t => {
 				message: "Received unexpected arguments: Constraint failed: Expected length 1, but was 0",
 				failure: {
 					code: Failcode.ARGUMENTS_INCORRECT,
-					inner: {
+					detail: {
 						code: Failcode.CONSTRAINT_FAILED,
 						thrown: "Expected length 1, but was 0",
 					},
@@ -77,7 +77,7 @@ Deno.test("Contract", async t => {
 			message: "Received unexpected arguments: Expected [0], but was incompatible",
 			failure: {
 				code: Failcode.ARGUMENTS_INCORRECT,
-				inner: {
+				detail: {
 					code: Failcode.CONTENT_INCORRECT,
 					details: {
 						0: {
@@ -122,7 +122,7 @@ Deno.test("Contract", async t => {
 			message: "Returned unexpected value: Expected string, but was number",
 			failure: {
 				code: Failcode.RETURN_INCORRECT,
-				inner: {
+				detail: {
 					code: Failcode.TYPE_INCORRECT,
 				},
 			},
@@ -144,7 +144,7 @@ Deno.test("Contract", async t => {
 			message: "Received unexpected arguments: Expected [string], but was incompatible",
 			failure: {
 				code: Failcode.ARGUMENTS_INCORRECT,
-				inner: {
+				detail: {
 					code: Failcode.CONTENT_INCORRECT,
 					details: {
 						0: {

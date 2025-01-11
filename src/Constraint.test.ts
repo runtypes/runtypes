@@ -65,7 +65,7 @@ Deno.test("Constraint", async t => {
 			failure: {
 				message: "Expected GreaterThan3, but was incompatible",
 				code: Failcode.TYPE_INCORRECT,
-				inner: {
+				detail: {
 					message: "Constraint failed",
 					code: Failcode.CONSTRAINT_FAILED,
 					thrown: undefined,
@@ -90,7 +90,7 @@ Deno.test("Constraint", async t => {
 			failure: {
 				message: "Expected GreaterThan3, but was incompatible",
 				code: Failcode.TYPE_INCORRECT,
-				inner: {
+				detail: {
 					message: "Constraint failed: n must be > 3",
 					code: Failcode.CONSTRAINT_FAILED,
 					thrown: "n must be > 3",

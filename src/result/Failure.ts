@@ -43,7 +43,7 @@ type Legend = {
 	/**
 	 * The result of inner validation.
 	 */
-	inner: Failure
+	detail: Failure
 
 	/**
 	 * The value thrown by the parser function.
@@ -56,7 +56,7 @@ type Legend = {
  */
 type Failure =
 	| ((Pick<Legend, "success" | "message" | "code" | "expected" | "received"> &
-			(Pick<Legend, "details"> | Pick<Legend, "inner"> | object)) & {
+			(Pick<Legend, "details"> | Pick<Legend, "detail"> | object)) & {
 			code: typeof Failcode.TYPE_INCORRECT
 	  } extends infer T
 			? { [K in keyof T]: T[K] }
@@ -67,7 +67,7 @@ type Failure =
 			? { [K in keyof T]: T[K] }
 			: never)
 	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received"> &
-			(Pick<Legend, "details"> | Pick<Legend, "inner">) & {
+			(Pick<Legend, "details"> | Pick<Legend, "detail">) & {
 				code: typeof Failcode.KEY_INCORRECT
 			} extends infer T
 			? { [K in keyof T]: T[K] }
@@ -77,17 +77,17 @@ type Failure =
 	  } extends infer T
 			? { [K in keyof T]: T[K] }
 			: never)
-	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received" | "inner"> & {
+	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received" | "detail"> & {
 			code: typeof Failcode.ARGUMENTS_INCORRECT
 	  } extends infer T
 			? { [K in keyof T]: T[K] }
 			: never)
-	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received" | "inner"> & {
+	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received" | "detail"> & {
 			code: typeof Failcode.RETURN_INCORRECT
 	  } extends infer T
 			? { [K in keyof T]: T[K] }
 			: never)
-	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received" | "inner"> & {
+	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received" | "detail"> & {
 			code: typeof Failcode.RESOLVE_INCORRECT
 	  } extends infer T
 			? { [K in keyof T]: T[K] }
