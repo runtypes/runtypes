@@ -137,17 +137,20 @@ const show =
 					return `{ [_: ${show(false, circular)(runtype.key)}]: ${show(false, circular)(runtype.value)} }`
 				case "object": {
 					const keys = enumerableKeysOf(runtype.fields)
-					return keys.length
-						? `{ ${keys
-								.map(key =>
-									// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-									Optional.isOptional(runtype.fields[key]!)
-										? `${key.toString()}?: ${show(false, circular)(runtype.fields[key].underlying)};`
-										: // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-											`${key.toString()}: ${show(false, circular)(runtype.fields[key]!)};`,
-								)
-								.join(" ")} }`
-						: "{}"
+					return (
+						(runtype.isExact ? "exact " : "") +
+						(keys.length
+							? `{ ${keys
+									.map(key =>
+										// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+										Optional.isOptional(runtype.fields[key]!)
+											? `${key.toString()}?: ${show(false, circular)(runtype.fields[key].underlying)};`
+											: // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+												`${key.toString()}: ${show(false, circular)(runtype.fields[key]!)};`,
+									)
+									.join(" ")} }`
+							: "{}")
+					)
 				}
 				case "tuple":
 					return !Array.isArray(runtype.components) &&
