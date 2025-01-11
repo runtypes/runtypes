@@ -1,6 +1,7 @@
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
 import type Result from "./result/Result.ts"
+import FAILURE from "./utils-internal/FAILURE.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 
 declare const RuntypeName: unique symbol
@@ -37,8 +38,7 @@ const Brand = <B extends string, R extends Runtype.Core>(brand: B, entity: R) =>
 	return Runtype.create<Brand<B, R>>(({ value, innerValidate, self, parsing }): Result<any> => {
 		const result = innerValidate(self.entity, value, parsing)
 		if (result.success) return result
-		// TODO: use brand string in error messages
-		return result
+		return FAILURE.TYPE_INCORRECT({ expected: self, received: value, inner: result })
 	}, Spread.asSpreadable(base))
 }
 

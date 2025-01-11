@@ -56,15 +56,20 @@ Deno.test("Constraint", async t => {
 			Unknown.withConstraint(
 				o => isObject(o) && hasEnumerableOwn("n", o) && typeof o.n === "number" && o.n > 3,
 			)
-				.withBrand("{ n: > 3 }")
+				.withBrand("GreaterThan3")
 				.check({ n: 0 }),
 		)
 		assertInstanceOf(error, ValidationError)
 		assertObjectMatch(error, {
-			message: "Constraint failed",
+			message: "Expected GreaterThan3, but was incompatible",
 			failure: {
-				code: Failcode.CONSTRAINT_FAILED,
-				thrown: undefined,
+				message: "Expected GreaterThan3, but was incompatible",
+				code: Failcode.TYPE_INCORRECT,
+				inner: {
+					message: "Constraint failed",
+					code: Failcode.CONSTRAINT_FAILED,
+					thrown: undefined,
+				},
 			},
 		})
 	})
@@ -76,15 +81,20 @@ Deno.test("Constraint", async t => {
 					(isObject(o) && hasEnumerableOwn("n", o) && typeof o.n === "number" && o.n > 3) ||
 					"n must be > 3",
 			)
-				.withBrand("{ n: > 3 }")
+				.withBrand("GreaterThan3")
 				.check({ n: 0 }),
 		)
 		assertInstanceOf(error, ValidationError)
 		assertObjectMatch(error, {
-			message: "Constraint failed: n must be > 3",
+			message: "Expected GreaterThan3, but was incompatible",
 			failure: {
-				code: Failcode.CONSTRAINT_FAILED,
-				thrown: "n must be > 3",
+				message: "Expected GreaterThan3, but was incompatible",
+				code: Failcode.TYPE_INCORRECT,
+				inner: {
+					message: "Constraint failed: n must be > 3",
+					code: Failcode.CONSTRAINT_FAILED,
+					thrown: "n must be > 3",
+				},
 			},
 		})
 	})
