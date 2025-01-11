@@ -59,7 +59,7 @@ leftHand.left = rightHand
 const Ambi: Runtype.Core<Ambi> = Lazy(() =>
 	Intersect(Object({ left: Ambi }), Object({ right: Ambi })),
 )
-type Ambi = { left: Ambi; right: Ambi }
+type Ambi = { left: Ambi } & { right: Ambi }
 const ambi: Ambi = { left: undefined as unknown as Ambi, right: undefined as unknown as Ambi }
 ambi.left = ambi
 ambi.right = ambi
