@@ -128,7 +128,6 @@ const show =
 							return prefix
 						}
 					}, "")
-					console.log(inner)
 					return backtick ? quoteWithBacktick(inner) : quoteWithDoubleQuote(inner)
 				}
 				case "array":
