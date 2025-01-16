@@ -3,6 +3,7 @@ import Optional from "../Optional.ts"
 import Runtype from "../Runtype.ts"
 import quoteWithBacktick from "./quoteWithBacktick.ts"
 import quoteWithDoubleQuote from "./quoteWithDoubleQuote.ts"
+import type Tuple from "../Tuple.ts"
 
 /**
  * Return the display string for the stringified version of a type, e.g.
@@ -151,23 +152,22 @@ const show =
 							: "{}")
 					)
 				}
-				case "tuple":
-					return !Array.isArray(runtype.components) &&
-						runtype.components.leading.length === 0 &&
-						runtype.components.trailing.length === 0
-						? show(needsParens, circular)(runtype.components.rest)
-						: `[${(Array.isArray(runtype.components)
-								? runtype.components.map(component => show(false, circular)(component))
-								: [
-										...runtype.components.leading.map(component =>
-											show(false, circular)(component),
-										),
-										`...${show(true, circular)(runtype.components.rest)}`,
-										...runtype.components.trailing.map(component =>
-											show(false, circular)(component),
-										),
-									]
-							).join(", ")}]`
+				case "tuple": {
+					if (!Array.isArray(runtype.components)) {
+						const components = runtype.components as Tuple.Components.Variadic
+						if (components.leading.length === 0 && components.trailing.length === 0) {
+							return show(needsParens, circular)(components.rest)
+						}
+						return `[${[
+							...components.leading.map(component => show(false, circular)(component)),
+							`...${show(true, circular)(components.rest)}`,
+							...components.trailing.map(component => show(false, circular)(component)),
+						].join(", ")}]`
+					} else {
+						const components = runtype.components as Tuple.Components.Fixed
+						return `[${components.map(component => show(false, circular)(component)).join(", ")}]`
+					}
+				}
 				case "union":
 					return parenthesize(
 						`${runtype.alternatives.map(alternative => show(true, circular)(alternative)).join(" | ")}`,

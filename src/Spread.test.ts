@@ -17,13 +17,63 @@ Deno.test("Spread", async t => {
 		const SpreadTuple = Tuple(Literal(0), ...Tuple(Literal(1), Literal(2)), Literal(3))
 		type SpreadTuple = Static<typeof SpreadTuple>
 		const spreadTuple: SpreadTuple = [0, 1, 2, 3]
+		assert(SpreadTuple.guard(spreadTuple))
 		assert(globalThis.Array.isArray(SpreadTuple.components))
+		assertEquals(SpreadTuple.components.length, 4)
+		const literal0: Literal<0> = SpreadTuple.components[0]
+		const literal1: Literal<1> = SpreadTuple.components[1]
+		const literal2: Literal<2> = SpreadTuple.components[2]
+		const literal3: Literal<3> = SpreadTuple.components[3]
+		assert(literal0.guard(0))
+		assert(literal1.guard(1))
+		assert(literal2.guard(2))
+		assert(literal3.guard(3))
 	})
 	await t.step("Symbol.iterator array", async t => {
 		const SpreadArray = Tuple(Literal(0), ...Array(Literal(1)), Literal(2))
 		type SpreadArray = Static<typeof SpreadArray>
 		const spreadArray: SpreadArray = [0, 1, 1, 1, 2]
+		assert(SpreadArray.guard(spreadArray))
 		assert(!globalThis.Array.isArray(SpreadArray.components))
+		assert(globalThis.Array.isArray(SpreadArray.components.leading))
+		assertEquals(SpreadArray.components.leading.length, 1)
+		assert(globalThis.Array.isArray(SpreadArray.components.trailing))
+		assertEquals(SpreadArray.components.trailing.length, 1)
+		const leading0: Literal<0> = SpreadArray.components.leading[0]
+		const rest: Array<Literal<1>> = SpreadArray.components.rest
+		const trailing0: Literal<2> = SpreadArray.components.trailing[0]
+		assert(leading0.guard(0))
+		assert(rest.guard([]))
+		assert(rest.guard([1, 1, 1]))
+		assert(!rest.guard([1, 0, 1]))
+		assert(trailing0.guard(2))
+	})
+	await t.step("Symbol.iterator array nested", async t => {
+		const SpreadArray = Tuple(
+			Literal(0),
+			...Tuple(Literal(1), ...Array(Literal(2)), Literal(3)),
+			Literal(4),
+		)
+		type SpreadArray = Static<typeof SpreadArray>
+		const spreadArray: SpreadArray = [0, 1, 2, 2, 3, 4]
+		assert(SpreadArray.guard(spreadArray))
+		assert(!globalThis.Array.isArray(SpreadArray.components))
+		assert(globalThis.Array.isArray(SpreadArray.components.leading))
+		assertEquals(SpreadArray.components.leading.length, 2)
+		assert(globalThis.Array.isArray(SpreadArray.components.trailing))
+		assertEquals(SpreadArray.components.trailing.length, 2)
+		const leading0: Literal<0> = SpreadArray.components.leading[0]
+		const leading1: Literal<1> = SpreadArray.components.leading[1]
+		const rest: Array<Literal<2>> = SpreadArray.components.rest
+		const trailing0: Literal<3> = SpreadArray.components.trailing[0]
+		const trailing1: Literal<4> = SpreadArray.components.trailing[1]
+		assert(leading0.guard(0))
+		assert(leading1.guard(1))
+		assert(rest.guard([]))
+		assert(rest.guard([2, 2, 2]))
+		assert(!rest.guard([1, 0, 2]))
+		assert(trailing0.guard(3))
+		assert(trailing1.guard(4))
 	})
 	await t.step("spread tuple", async t => {
 		const A = Tuple(Literal(0), Literal(1), Literal(2))
