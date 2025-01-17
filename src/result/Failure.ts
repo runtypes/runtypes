@@ -16,37 +16,37 @@ type Legend = {
 	success: false
 
 	/**
-	 * A string that summarizes the problem overall.
-	 */
-	message: string
-
-	/**
-	 * The error code assigned to this type of error.
+	 * An error code that roughly categorizes the problem.
 	 */
 	code: Failcode
 
 	/**
-	 * The runtype used to test the value.
+	 * A string that summarizes the problem overall. Only for debugging.
+	 */
+	message: string
+
+	/**
+	 * The runtype that yielded this failure.
 	 */
 	expected: Runtype.Interfaces
 
 	/**
-	 * The value tested.
+	 * The value that caused this failure.
 	 */
 	received: unknown
 
 	/**
-	 * The detailed object enumerating where the validation failed exactly.
+	 * An object that describes which property was invalid precisely. Only available for complex runtypes (e.g. `Object`, `Array`, and the like; `Union` and `Intersect` also emit this enumerating a failure for each member).
 	 */
 	details: Failure.Details
 
 	/**
-	 * The result of inner validation.
+	 * An object that describes the failure of the inner runtype. Only available for `Brand` and contextual failures (e.g. failures in `Record` keys, in boundaries of `Contract`/`AsyncContract`, etc.).
 	 */
 	detail: Failure
 
 	/**
-	 * The value thrown by the parser function.
+	 * A thrown value, which is typically an error message, if any. Only available for runtypes that involve user-provided validation functions (e.g. `Constraint` and `Parser`) or constraint-like failures like about the length of `Tuple`.
 	 */
 	thrown: unknown
 }
@@ -67,7 +67,7 @@ type Failure =
 			? { [K in keyof T]: T[K] }
 			: never)
 	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received"> &
-			(Pick<Legend, "details"> | Pick<Legend, "detail">) & {
+			Pick<Legend, "detail"> & {
 				code: typeof Failcode.KEY_INCORRECT
 			} extends infer T
 			? { [K in keyof T]: T[K] }
