@@ -109,10 +109,21 @@ When it fails to validate, your runtype emits a `ValidationError` object that co
 
 - `name`: Always `"ValidationError"`
 - `message`: A `string` that summarizes the problem overall
-- `code`: A [`Failcode`](src/result/Failcode.ts) that categorizes the problem
-- `details`: An object that describes which property was invalid precisely; only for complex runtypes (e.g. `Object`, `Array`, and the like)
+- `failure`: A [`Failure`](src/result/Failure.ts) that describes the problem in a structured way
 
-If you want to inform your users about the validation error, it's strongly discouraged to rely on the format of `message` property in your code, as it may change across minor versions for readability thoughts. Instead of parsing `message`, you should use `code` and/or `details` property to programmatically inspect the validation error, and handle other stuff such as i18n.
+If you want to inspect why the validation failed, look into the `failure` object:
+
+- `code`: A [`Failcode`](src/result/Failcode.ts) that roughly categorizes the problem
+- `message`: A `string` that summarizes the problem overall
+- `expected`: The runtype that yielded this failure
+- `received`: The value that caused this failure
+- `details`: An object that describes which property was invalid precisely. Only available for complex runtypes (e.g. `Object`, `Array`, and the like; `Union` and `Intersect` also emit this enumerating a failure for each member)
+- `detail`: An object that describes the failure of the inner runtype. Only available for `Brand` and contextual failures (e.g. failures in `Record` keys, in boundaries of `Contract`/`AsyncContract`, etc.)
+- `thrown`: A thrown value, which is typically an error message, if any. Only available for runtypes that involve user-provided validation functions (e.g. `Constraint` and `Parser`) or constraint-like failures like about the length of `Tuple`
+
+What shapes of failure there might actually be can be seen in the definition of [`Failure`](src/result/Failure.ts), which is a union discriminated by `code`.
+
+If you want to inform your users about the validation error, it's strongly discouraged to rely on the format of the `message` property, as it may change across minor versions for readability thoughts. Instead of parsing `message`, you should use other properties to handle further tasks such as i18n.
 
 ## Static type inference
 
