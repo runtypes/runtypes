@@ -201,22 +201,22 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		},
 	} as Runtype.Base<Tuple<R>>
 
-	return Runtype.create<Tuple<R>>(({ value: x, innerValidate, self, parsing }) => {
-		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
+	return Runtype.create<Tuple<R>>(({ received: x, innerValidate, expected, parsing }) => {
+		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT({ expected, received: x })
 
-		if (globalThis.Array.isArray(self.components)) {
-			const components = self.components as Tuple.Components.Fixed<R>
+		if (globalThis.Array.isArray(expected.components)) {
+			const components = expected.components as Tuple.Components.Fixed<R>
 			if (x.length !== components.length)
 				return FAILURE.CONSTRAINT_FAILED({
-					expected: self,
+					expected,
 					received: x,
 					thrown: `Expected length ${components.length}, but was ${x.length}`,
 				})
 		} else {
-			const components = self.components as Tuple.Components.Variadic<R>
+			const components = expected.components as Tuple.Components.Variadic<R>
 			if (x.length < components.leading.length + components.trailing.length)
 				return FAILURE.CONSTRAINT_FAILED({
-					expected: self,
+					expected,
 					received: x,
 					thrown: `Expected length >= ${components.leading.length + components.trailing.length}, but was ${x.length}`,
 				})
@@ -224,29 +224,29 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 
 		const values: unknown[] = [...x]
 		let results: Result<unknown>[] = []
-		if (globalThis.Array.isArray(self.components)) {
-			const components = self.components as Tuple.Components.Fixed<R>
+		if (globalThis.Array.isArray(expected.components)) {
+			const components = expected.components as Tuple.Components.Fixed<R>
 			for (const component of components) {
-				const value = values.shift()
-				const result = innerValidate(component, value, parsing)
+				const received = values.shift()
+				const result = innerValidate({ expected: component, received, parsing })
 				results.push(result)
 			}
 		} else {
-			const components = self.components as Tuple.Components.Variadic<R>
+			const components = expected.components as Tuple.Components.Variadic<R>
 			const resultsLeading: Result<unknown>[] = []
 			let resultRest: Result<unknown> | undefined = undefined
 			const resultsTrailing: Result<unknown>[] = []
 			for (const component of components.leading) {
-				const value = values.shift()
-				const result = innerValidate(component, value, parsing)
+				const received = values.shift()
+				const result = innerValidate({ expected: component, received, parsing })
 				resultsLeading.push(result)
 			}
 			for (const component of components.trailing.toReversed()) {
-				const value = values.pop()
-				const result = innerValidate(component, value, parsing)
+				const received = values.pop()
+				const result = innerValidate({ expected: component, received, parsing })
 				resultsTrailing.unshift(result)
 			}
-			resultRest = innerValidate(components.rest, values, parsing)
+			resultRest = innerValidate({ expected: components.rest, received: values, parsing })
 			results = [...resultsLeading, resultRest, ...resultsTrailing]
 		}
 
@@ -258,7 +258,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		}
 
 		if (enumerableKeysOf(details).length !== 0)
-			return FAILURE.CONTENT_INCORRECT({ expected: self, received: x, details })
+			return FAILURE.CONTENT_INCORRECT({ expected, received: x, details })
 		else
 			return SUCCESS(
 				parsing ? (results as Success<any>[]).map(result => result.value) : x,

@@ -46,24 +46,24 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union<R> 
 	} as Runtype.Base<Union<R>>
 	return Runtype.create<Union<R>>(
 		({
-			value,
+			received,
 			innerValidate,
-			self,
+			expected,
 			parsing,
 		}): Result<{ [K in keyof R]: R[K] extends Runtype ? Static<R[K]> : unknown }[number]> => {
-			if (self.alternatives.length === 0)
-				return FAILURE.NOTHING_EXPECTED({ expected: self, received: value })
+			if (expected.alternatives.length === 0)
+				return FAILURE.NOTHING_EXPECTED({ expected, received })
 
 			const results: Result<any>[] = []
 			const details: Failure.Details = {}
-			for (let i = 0; i < self.alternatives.length; i++) {
+			for (let i = 0; i < expected.alternatives.length; i++) {
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const alternative = self.alternatives[i]!
-				const result = innerValidate(alternative, value, parsing)
+				const alternative = expected.alternatives[i]!
+				const result = innerValidate({ expected: alternative, received, parsing })
 				results.push(result)
 
 				if (result.success) {
-					if (!parsing) return SUCCESS(value)
+					if (!parsing) return SUCCESS(received)
 				} else {
 					details[i] = result
 				}
@@ -72,7 +72,7 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union<R> 
 			const first = results.find(result => result.success)
 			if (first) return SUCCESS(first.value)
 
-			return FAILURE.TYPE_INCORRECT({ expected: self, received: value, details })
+			return FAILURE.TYPE_INCORRECT({ expected, received, details })
 		},
 		Spread.asSpreadable(base),
 	).with(self =>

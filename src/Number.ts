@@ -10,10 +10,10 @@ interface Number extends Runtype<number> {
  * Validates that a value is a number.
  */
 const Number = Runtype.create<Number>(
-	({ value, self }) =>
-		typeof value === "number"
-			? SUCCESS(value)
-			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
+	({ received, expected }) =>
+		typeof received === "number"
+			? SUCCESS(received)
+			: FAILURE.TYPE_INCORRECT({ expected, received }),
 	{ tag: "number" },
 )
 

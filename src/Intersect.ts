@@ -38,15 +38,15 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 		tag: "intersect",
 		intersectees,
 	} as Runtype.Base<Intersect<R>>
-	return Runtype.create<Intersect<R>>(({ value, innerValidate, self, parsing }) => {
-		if (self.intersectees.length === 0) return SUCCESS(value)
+	return Runtype.create<Intersect<R>>(({ received, innerValidate, expected, parsing }) => {
+		if (expected.intersectees.length === 0) return SUCCESS(received)
 
 		const results: Result<any>[] = []
 		const details: Failure.Details = {}
-		for (let i = 0; i < self.intersectees.length; i++) {
+		for (let i = 0; i < expected.intersectees.length; i++) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const intersectee = self.intersectees[i]!
-			const result = innerValidate(intersectee, value, parsing)
+			const intersectee = expected.intersectees[i]!
+			const result = innerValidate({ expected: intersectee, received, parsing })
 			results.push(result)
 
 			if (result.success) {
@@ -57,11 +57,11 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 		}
 
 		if (enumerableKeysOf(details).length !== 0)
-			return FAILURE.TYPE_INCORRECT({ expected: self, received: value, details })
+			return FAILURE.TYPE_INCORRECT({ expected, received, details })
 
 		return SUCCESS(
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			parsing ? results.findLast(result => result.success)!.value : value,
+			parsing ? results.findLast(result => result.success)!.value : received,
 		)
 	}, Spread.asSpreadable(base))
 }

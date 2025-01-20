@@ -15,13 +15,12 @@ interface Symbol<K extends string | undefined = string | undefined> extends Runt
 
 const SymbolFor = <K extends string | undefined>(key: K) =>
 	Runtype.create<Symbol<K>>(
-		({ value, self }) => {
-			if (typeof value !== "symbol")
-				return FAILURE.TYPE_INCORRECT({ expected: self, received: value })
+		({ received, expected }) => {
+			if (typeof received !== "symbol") return FAILURE.TYPE_INCORRECT({ expected, received })
 			else {
-				if (globalThis.Symbol.keyFor(value) !== self.key)
-					return FAILURE.VALUE_INCORRECT({ expected: self, received: value })
-				else return SUCCESS(value)
+				if (globalThis.Symbol.keyFor(received) !== expected.key)
+					return FAILURE.VALUE_INCORRECT({ expected, received })
+				else return SUCCESS(received)
 			}
 		},
 		{ tag: "symbol", key },
@@ -31,10 +30,10 @@ const SymbolFor = <K extends string | undefined>(key: K) =>
  * Validates that a value is a symbol, regardless of whether it is keyed or not.
  */
 const Symbol = Runtype.create<Symbol>(
-	({ value, self }) =>
-		typeof value === "symbol"
-			? SUCCESS(value)
-			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
+	({ received, expected }) =>
+		typeof received === "symbol"
+			? SUCCESS(received)
+			: FAILURE.TYPE_INCORRECT({ expected, received }),
 	globalThis.Object.assign(SymbolFor, { tag: "symbol" as const, key: undefined }),
 )
 

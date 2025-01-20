@@ -146,29 +146,32 @@ namespace Object {
  */
 const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => {
 	return Runtype.create<Object<O>>(
-		({ value: x, innerValidate, self, parsing }) => {
-			if (x === null || x === undefined)
-				return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
+		({ received: x, innerValidate, expected, parsing }) => {
+			if (x === null || x === undefined) return FAILURE.TYPE_INCORRECT({ expected, received: x })
 
-			const keysOfFields = enumerableKeysOf(self.fields)
+			const keysOfFields = enumerableKeysOf(expected.fields)
 			if (keysOfFields.length !== 0 && typeof x !== "object")
-				return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
+				return FAILURE.TYPE_INCORRECT({ expected, received: x })
 
 			const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])]
 			const results: globalThis.Record<PropertyKey, Result<unknown>> = {}
 			const parsed: any = {}
 			for (const key of keys) {
-				const fieldsHasKey = hasEnumerableOwn(key, self.fields)
+				const fieldsHasKey = hasEnumerableOwn(key, expected.fields)
 				const xHasKey = hasEnumerableOwn(key, x)
 				if (fieldsHasKey) {
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					const runtype = self.fields[key]!
+					const runtype = expected.fields[key]!
 					if (xHasKey) {
-						const value = x[key]
+						const received = x[key]
 						if (Optional.isOptional(runtype)) {
-							defineProperty(results, key, innerValidate(runtype.underlying, value, parsing))
+							defineProperty(
+								results,
+								key,
+								innerValidate({ expected: runtype.underlying, received, parsing }),
+							)
 						} else {
-							defineProperty(results, key, innerValidate(runtype, value, parsing))
+							defineProperty(results, key, innerValidate({ expected: runtype, received, parsing }))
 						}
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						if (results[key]!.success) defineProperty(parsed, key, results[key]!.value)
@@ -185,15 +188,11 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 						}
 					}
 				} else if (xHasKey) {
-					const value = x[key]
-					if (self.isExact) {
-						defineProperty(
-							results,
-							key,
-							FAILURE.PROPERTY_PRESENT({ expected: Never, received: value }),
-						)
+					const received = x[key]
+					if (expected.isExact) {
+						defineProperty(results, key, FAILURE.PROPERTY_PRESENT({ expected: Never, received }))
 					} else {
-						defineProperty(results, key, SUCCESS(value))
+						defineProperty(results, key, SUCCESS(received))
 					}
 				} else {
 					throw new Error("impossible")
@@ -208,7 +207,7 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 			}
 
 			if (enumerableKeysOf(details).length !== 0)
-				return FAILURE.CONTENT_INCORRECT({ expected: self, received: x, details })
+				return FAILURE.CONTENT_INCORRECT({ expected, received: x, details })
 			else return SUCCESS(parsing ? (parsed as ObjectParsed<O>) : (x as ObjectStatic<O>))
 		},
 		{ tag: "object", fields, isExact: false } as Runtype.Base<Object<O>>,

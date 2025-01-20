@@ -9,7 +9,7 @@ interface Never extends Runtype<never> {
  * Validates nothing.
  */
 const Never = Runtype.create<any>(
-	({ value, self }) => FAILURE.NOTHING_EXPECTED({ expected: self, received: value }),
+	({ received, expected }) => FAILURE.NOTHING_EXPECTED({ expected, received }),
 	{ tag: "never" },
 ) as Never
 

@@ -71,13 +71,13 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(key
 	const valueRuntype = value
 
 	return Runtype.create<Record<K, V>>(
-		({ value: x, innerValidate, self, parsing }) => {
+		({ received: x, innerValidate, expected, parsing }) => {
 			if (x === null || x === undefined || typeof x !== "object")
-				return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
+				return FAILURE.TYPE_INCORRECT({ expected, received: x })
 
 			if (globalThis.Object.getPrototypeOf(x) !== globalThis.Object.prototype)
 				if (!Array.isArray(x) || keyRuntype.tag === "string")
-					return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
+					return FAILURE.TYPE_INCORRECT({ expected, received: x })
 
 			const keys = [...new Set([...extractLiteralKeys(key), ...enumerableKeysOf(x)])]
 			const results: globalThis.Record<PropertyKey, Result<unknown>> = {}
@@ -88,13 +88,13 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(key
 						// We should provide interoperability with `number` and `string` here, as a user would expect JavaScript engines to convert numeric keys to string keys automatically. So, if the key can be interpreted as a decimal number, then test it against a `Number` OR `String` runtype.
 						if (typeof key === "number" || isNumberLikeKey(key)) {
 							const keyInterop = globalThis.Number(key)
-							const result = innerValidate(keyRuntype, keyInterop, parsing)
+							const result = innerValidate({ expected: keyRuntype, received: keyInterop, parsing })
 							if (!result.success) {
-								const result = innerValidate(keyRuntype, key, parsing)
+								const result = innerValidate({ expected: keyRuntype, received: key, parsing })
 								if (!result.success) return result
 							}
 						} else {
-							const result = innerValidate(keyRuntype, key, parsing)
+							const result = innerValidate({ expected: keyRuntype, received: key, parsing })
 							if (!result.success) return result
 						}
 						return undefined
@@ -112,7 +112,11 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(key
 							}),
 						)
 					} else {
-						defineProperty(results, key, innerValidate(valueRuntype, x[key], parsing))
+						defineProperty(
+							results,
+							key,
+							innerValidate({ expected: valueRuntype, received: x[key], parsing }),
+						)
 					}
 				} else {
 					// TODO: symbols
@@ -127,7 +131,7 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(key
 			}
 
 			if (enumerableKeysOf(details).length !== 0)
-				return FAILURE.CONTENT_INCORRECT({ expected: self, received: x, details })
+				return FAILURE.CONTENT_INCORRECT({ expected, received: x, details })
 			else return SUCCESS(x as Static<Record<K, V>>)
 		},
 		{ tag: "record", key, value },
