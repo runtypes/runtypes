@@ -88,6 +88,13 @@ const toMessage = (failure: Failure): string => {
 					? `: ${failure.thrown instanceof Error ? failure.thrown.message : failure.thrown}`
 					: "")
 			)
+		case Failcode.INSTANCEOF_FAILED:
+			return (
+				`\`instanceof\` failed in ${show(failure.expected)}` +
+				("thrown" in failure
+					? `: ${failure.thrown instanceof Error ? failure.thrown.message : failure.thrown}`
+					: "")
+			)
 	}
 }
 

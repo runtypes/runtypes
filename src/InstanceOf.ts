@@ -11,10 +11,14 @@ interface InstanceOf<V = unknown> extends Runtype<V> {
 
 const InstanceOf = <V>(ctor: Constructor<V>) =>
 	Runtype.create<InstanceOf<V>>(
-		({ value, self }) =>
-			value instanceof ctor
-				? SUCCESS(value)
-				: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
+		({ value, self }) => {
+			try {
+				if (value instanceof ctor) return SUCCESS(value)
+				else return FAILURE.TYPE_INCORRECT({ expected: self, received: value })
+			} catch (error) {
+				return FAILURE.INSTANCEOF_FAILED({ expected: self, received: value, thrown: error })
+			}
+		},
 		{ tag: "instanceof", ctor },
 	)
 
