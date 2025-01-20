@@ -672,6 +672,14 @@ const contractedFunction = Contract({
 contractedFunction("42", "24") // [42, 24]
 ```
 
+## Miscellaneous tips
+
+### Annotating runtypes
+
+There might be cases that you have to annotate the type of a runtype itself, not of the checked or parsed value. Basically you should use `Runtype.Core` for it to reduce the type inference cost. `Runtype.Core` is a slim version of `Runtype`; it omits the utility methods that are only used to define a runtype from it.
+
+On the boundaries of a function, the “accept broader, return narrower” principle applies to runtypes of course; it's a good habit to use `Runtype.Core` in the parameter types and `Runtype` in the return type. When you're to introspect the contents of a variable `x` typed as `Runtype.Core`, you'd want to narrow it to `Runtype` first by `x as Runtype` or `x instanceof Runtype`.
+
 ## Related libraries
 
 - [generate-runtypes](https://github.com/simenandre/generate-runtypes#readme) Generates runtypes from structured data. Useful for code generators
