@@ -386,6 +386,27 @@ const U = Tuple(Literal(0), ...Array(Literal(1)), Literal(2))
 type U = Static<typeof U> // [0, ...1[], 2]
 ```
 
+Component runtypes are expectedly inferred like this:
+
+```typescript
+const T = Tuple(Literal(0), ...Tuple(Literal(1), Literal(2)), Literal(3))
+const literal0: Literal<0> = T.components[0]
+const literal1: Literal<1> = T.components[1]
+const literal2: Literal<2> = T.components[2]
+const literal3: Literal<3> = T.components[3]
+```
+
+Nested spreading is also supported:
+
+```typescript
+const T = Tuple(Literal(0), ...Tuple(Literal(1), ...Array(Literal(2)), Literal(3)), Literal(4))
+const leading0: Literal<0> = T.components.leading[0]
+const leading1: Literal<1> = T.components.leading[1]
+const rest: Array<Literal<2>> = T.components.rest
+const trailing0: Literal<3> = T.components.trailing[0]
+const trailing1: Literal<4> = T.components.trailing[1]
+```
+
 ## `instanceof` wrapper
 
 If you have access to the class that you want to test values with the `instanceof` operator, then the `InstanceOf` runtype is exactly what you're looking for. Usage is straightforward:
