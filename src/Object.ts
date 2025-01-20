@@ -174,9 +174,9 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 						if (results[key]!.success) defineProperty(parsed, key, results[key]!.value)
 					} else {
 						if (Optional.isOptional(runtype)) {
-							if ("defaultValue" in runtype) {
-								defineProperty(results, key, SUCCESS(runtype.defaultValue))
-								defineProperty(parsed, key, runtype.defaultValue)
+							if ("default" in runtype) {
+								defineProperty(results, key, SUCCESS(runtype.default))
+								defineProperty(parsed, key, runtype.default)
 							} else {
 								defineProperty(results, key, SUCCESS(undefined))
 							}
