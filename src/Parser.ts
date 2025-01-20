@@ -2,11 +2,11 @@ import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
-interface Parser<R extends Runtype.Core = Runtype.Core, X = Static<R>>
+interface Parser<R extends Runtype.Core = Runtype.Core, X = Parsed<R>>
 	extends Runtype<Static<R>, X> {
 	tag: "parser"
 	underlying: R
-	parser: (value: Static<R>) => X
+	parser: (value: Parsed<R>) => X
 }
 
 /**
