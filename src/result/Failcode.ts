@@ -27,6 +27,8 @@ const Failcode = {
 	NOTHING_EXPECTED: "NOTHING_EXPECTED",
 	/** The value can't be parsed. */
 	PARSING_FAILED: "PARSING_FAILED",
+	/** `Symbol.hasInstance` of the class failed. */
+	INSTANCEOF_FAILED: "INSTANCEOF_FAILED",
 } as const
 
 export default Failcode

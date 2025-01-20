@@ -179,7 +179,7 @@ const show =
 				case "constraint":
 					return show(needsParens, circular)(runtype.underlying)
 				case "instanceof":
-					return runtype.ctor.name
+					return runtype.ctor.name || "(Anonymous class)"
 				case "brand":
 					return runtype.brand
 				case "parser":

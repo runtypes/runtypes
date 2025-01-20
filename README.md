@@ -119,7 +119,7 @@ If you want to inspect why the validation failed, look into the `failure` object
 - `received`: The value that caused this failure
 - `details`: An object that describes which property was invalid precisely. Only available for complex runtypes (e.g. `Object`, `Array`, and the like; `Union` and `Intersect` also emit this enumerating a failure for each member)
 - `detail`: An object that describes the failure of the inner runtype. Only available for `Brand` and contextual failures (e.g. failures in `Record` keys, in boundaries of `Contract`/`AsyncContract`, etc.)
-- `thrown`: A thrown value, which is typically an error message, if any. Only available for runtypes that involve user-provided validation functions (e.g. `Constraint` and `Parser`) or constraint-like failures like about the length of `Tuple`
+- `thrown`: A thrown value, which is typically an error message, if any. Only available for runtypes that involve user-provided validation functions (e.g. `Constraint`, `Parser`, and `InstanceOf`) or constraint-like failures like about the length of `Tuple`
 
 What shapes of failure there might actually be can be seen in the definition of [`Failure`](src/result/Failure.ts), which is a union discriminated by `code`.
 

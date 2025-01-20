@@ -117,5 +117,10 @@ type Failure =
 	  } extends infer T
 			? { [K in keyof T]: T[K] }
 			: never)
+	| (Pick<Legend, "success" | "message" | "code" | "expected" | "received" | "thrown"> & {
+			code: typeof Failcode.INSTANCEOF_FAILED
+	  } extends infer T
+			? { [K in keyof T]: T[K] }
+			: never)
 
 export default Failure
