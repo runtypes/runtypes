@@ -11,15 +11,21 @@ import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import show from "./utils-internal/show.ts"
 import unwrapTrivial from "./utils-internal/unwrapTrivial.ts"
 
-// TODO: simplify types
+type Lrt<
+	L extends readonly Runtype.Core[] = readonly Runtype.Core[],
+	R = unknown,
+	T extends readonly Runtype.Core[] = readonly Runtype.Core[],
+> = { leading: L; rest: R; trailing: T }
 
 type SplitAtSpreadImplRest<
 	L extends readonly Runtype.Core[],
 	R extends readonly (Runtype.Core | Spread)[],
 	T extends readonly Runtype.Core[],
-> = R extends readonly [...Spread<infer X>[]]
-	? ComponentsTupleVariadicObject<L, X, T>
-	: ComponentsTupleVariadicObject<L, never, T>
+> = R["length"] extends 0
+	? Lrt<L, unknown, T>
+	: R extends readonly [...(readonly Spread<infer X>[])]
+		? Lrt<L, X, T>
+		: Lrt<L, unknown, T>
 type SplitAtSpreadImplTrailing<
 	L extends readonly Runtype.Core[],
 	R extends readonly (Runtype.Core | Spread)[],
@@ -47,106 +53,37 @@ type SplitAtSpread<R extends readonly (Runtype.Core | Spread)[]> = SplitAtSpread
 	R,
 	[]
 >
-
-type ComponentsTupleVariadicObject<
-	L extends readonly Runtype.Core[] = readonly Runtype.Core[],
-	R extends Runtype.Spreadable = Runtype.Spreadable,
-	T extends readonly Runtype.Core[] = readonly Runtype.Core[],
-> = { leading: L; rest: R; trailing: T }
-type ComponentsTupleVariadic<R extends readonly (Runtype.Core | Spread)[]> =
-	SplitAtSpread<R> extends ComponentsTupleVariadicObject<infer L0, infer R0, infer T0>
+type FlattenSplitAtSpread<R extends readonly (Runtype.Core | Spread)[]> =
+	SplitAtSpread<R> extends Lrt<infer L0, infer R0, infer T0>
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
 			R0 extends Array<any>
-			? { leading: L0; rest: R0; trailing: T0 }
+			? Lrt<L0, R0, T0>
 			: R0 extends Tuple<infer R>
-				? ComponentsTupleVariadic<R> extends ComponentsTupleVariadicObject<
-						infer L1,
-						infer R1,
-						infer T1
-					>
+				? FlattenSplitAtSpread<R> extends Lrt<infer L1, infer R1, infer T1>
 					? { leading: [...L0, ...L1]; rest: R1; trailing: [...T1, ...T0] }
-					: { leading: L0; rest: R0; trailing: T0 }
-				: { leading: L0; rest: R0; trailing: T0 }
+					: Lrt<L0, R0, T0>
+				: Lrt<L0, R0, T0>
 		: never
 
-type ComponentsTupleSpreadInner<R extends Runtype.Core> =
-	R extends Tuple<infer R>
-		? ComponentsTupleFixed<R>
-		: R extends Array<infer R>
-			? ComponentsTupleFixed<R[]>
+type MapParsed<R extends readonly Runtype.Core[]> = { [K in keyof R]: Parsed<R[K]> }
+type TupleParsed<R extends readonly (Runtype.Core | Spread)[]> =
+	FlattenSplitAtSpread<R> extends infer X
+		? X extends Lrt<infer L, infer R, infer T>
+			? R extends Runtype.Core<readonly unknown[]>
+				? [...MapParsed<L>, ...Parsed<R>, ...MapParsed<T>]
+				: [...MapParsed<L>, ...MapParsed<T>]
 			: never
-type ComponentsTupleImpl<
-	L extends readonly unknown[],
-	C extends readonly unknown[],
-	R extends readonly unknown[],
-> = C extends [infer T, ...infer C]
-	? T extends Runtype.Core
-		? ComponentsTupleImpl<[...L, T], C, R>
-		: T extends Spread<infer T>
-			? ComponentsTupleImpl<[...L, ...ComponentsTupleSpreadInner<T>], C, R>
-			: never
-	: C extends [...infer C, infer T]
-		? T extends Runtype.Core
-			? ComponentsTupleImpl<L, C, [T, ...R]>
-			: T extends Spread<infer T>
-				? ComponentsTupleImpl<L, C, [...ComponentsTupleSpreadInner<T>, ...R]>
-				: never
-		: C["length"] extends 0
-			? [...L, ...R]
-			: C extends readonly Spread<infer T>[]
-				? [...L, ...ComponentsTupleSpreadInner<T>, ...R]
-				: never
-type ComponentsTupleFixed<R extends readonly (Runtype.Core | Spread)[]> = ComponentsTupleImpl<
-	[],
-	R,
-	[]
->
+		: never
 
-type TupleParsedImpl<
-	L extends readonly unknown[],
-	C extends readonly unknown[],
-	R extends readonly unknown[],
-> = C extends [infer T, ...infer C]
-	? T extends Runtype.Core
-		? TupleParsedImpl<[...L, Parsed<T>], C, R>
-		: T extends Spread<infer T>
-			? TupleParsedImpl<[...L, ...Parsed<T>], C, R>
+type MapStatic<R extends readonly Runtype.Core[]> = { [K in keyof R]: Static<R[K]> }
+type TupleStatic<R extends readonly (Runtype.Core | Spread)[]> =
+	FlattenSplitAtSpread<R> extends infer X
+		? X extends Lrt<infer L, infer R, infer T>
+			? R extends Runtype.Core<readonly unknown[]>
+				? [...MapStatic<L>, ...Static<R>, ...MapStatic<T>]
+				: [...MapStatic<L>, ...MapStatic<T>]
 			: never
-	: C extends [...infer C, infer T]
-		? T extends Runtype.Core
-			? TupleParsedImpl<L, C, [Parsed<T>, ...R]>
-			: T extends Spread<infer T>
-				? TupleParsedImpl<L, C, [...Parsed<T>, ...R]>
-				: never
-		: C["length"] extends 0
-			? [...L, ...R]
-			: C extends readonly Spread<infer T>[]
-				? [...L, ...Parsed<T>, ...R]
-				: never
-type TupleParsed<R extends readonly (Runtype.Core | Spread)[]> = TupleParsedImpl<[], R, []>
-
-type TupleStaticImpl<
-	L extends readonly unknown[],
-	C extends readonly unknown[],
-	R extends readonly unknown[],
-> = C extends [infer T, ...infer C]
-	? T extends Runtype.Core
-		? TupleStaticImpl<[...L, Static<T>], C, R>
-		: T extends Spread<infer T>
-			? TupleStaticImpl<[...L, ...Static<T>], C, R>
-			: never
-	: C extends [...infer C, infer T]
-		? T extends Runtype.Core
-			? TupleStaticImpl<L, C, [Static<T>, ...R]>
-			: T extends Spread<infer T>
-				? TupleStaticImpl<L, C, [...Static<T>, ...R]>
-				: never
-		: C["length"] extends 0
-			? [...L, ...R]
-			: C extends readonly Spread<infer T>[]
-				? [...L, ...Static<T>, ...R]
-				: never
-type TupleStatic<R extends readonly (Runtype.Core | Spread)[]> = TupleStaticImpl<[], R, []>
+		: never
 
 type ToReadonlyImpl<A extends readonly unknown[], B extends readonly unknown[]> = A extends [
 	infer A0,
@@ -160,14 +97,19 @@ interface Tuple<R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype
 	extends Runtype<TupleStatic<R>, TupleParsed<R>>,
 		Iterable<Spread<Tuple<R>>> {
 	tag: "tuple"
-	readonly components: Tuple.Components<R>
+	readonly components: Tuple.Components<R> extends infer X ? { [K in keyof X]: X[K] } : never
 }
 
 namespace Tuple {
 	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 	export type Components<R extends readonly (Runtype.Core | Spread)[]> =
-		| Components.Fixed<R>
-		| Components.Variadic<R>
+		FlattenSplitAtSpread<R> extends infer X
+			? X extends Lrt<infer L, infer R, infer T>
+				? unknown extends R
+					? [...L, ...T]
+					: X
+				: never
+			: never
 
 	// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 	export interface Readonly<
@@ -175,7 +117,7 @@ namespace Tuple {
 	> extends Runtype<ToReadonly<TupleStatic<R>>, ToReadonly<TupleParsed<R>>>,
 			Iterable<Spread<Readonly<R>>> {
 		tag: "tuple"
-		readonly components: Tuple.Components<R>
+		readonly components: Tuple.Components<R> extends infer X ? { [K in keyof X]: X[K] } : never
 	}
 
 	// eslint-disable-next-line import/no-named-export, sort-exports/sort-exports
@@ -183,12 +125,12 @@ namespace Tuple {
 		// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 		export type Fixed<R extends readonly (Runtype.Core | Spread)[] = never> = [R] extends [never]
 			? readonly Runtype[]
-			: ComponentsTupleFixed<R>
+			: Components<R>
 
 		// eslint-disable-next-line import/no-named-export, import/no-unused-modules
 		export type Variadic<R extends readonly (Runtype.Core | Spread)[] = never> = [R] extends [never]
-			? { leading: readonly Runtype[]; rest: Runtype.Spreadable; trailing: readonly Runtype[] }
-			: ComponentsTupleVariadic<R>
+			? Lrt<readonly Runtype[], Runtype.Spreadable, readonly Runtype[]>
+			: Components<R>
 	}
 }
 
@@ -213,10 +155,10 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 					switch (runtype.tag) {
 						case "tuple":
 							if (globalThis.Array.isArray(runtype.components)) {
-								const components = runtype.components as ComponentsTupleFixed<R>
+								const components = runtype.components as Tuple.Components.Fixed<R>
 								componentsFlattened.splice(i, 1, ...components)
 							} else {
-								const components = runtype.components as ComponentsTupleVariadicObject
+								const components = runtype.components as Tuple.Components.Variadic<R>
 								componentsFlattened.splice(
 									i,
 									1,
@@ -263,7 +205,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		if (!globalThis.Array.isArray(x)) return FAILURE.TYPE_INCORRECT({ expected: self, received: x })
 
 		if (globalThis.Array.isArray(self.components)) {
-			const components = self.components as Tuple.Components.Fixed
+			const components = self.components as Tuple.Components.Fixed<R>
 			if (x.length !== components.length)
 				return FAILURE.CONSTRAINT_FAILED({
 					expected: self,
@@ -271,7 +213,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 					thrown: `Expected length ${components.length}, but was ${x.length}`,
 				})
 		} else {
-			const components = self.components as Tuple.Components.Variadic
+			const components = self.components as Tuple.Components.Variadic<R>
 			if (x.length < components.leading.length + components.trailing.length)
 				return FAILURE.CONSTRAINT_FAILED({
 					expected: self,
@@ -283,14 +225,14 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 		const values: unknown[] = [...x]
 		let results: Result<unknown>[] = []
 		if (globalThis.Array.isArray(self.components)) {
-			const components = self.components as Tuple.Components.Fixed
+			const components = self.components as Tuple.Components.Fixed<R>
 			for (const component of components) {
 				const value = values.shift()
 				const result = innerValidate(component, value, parsing)
 				results.push(result)
 			}
 		} else {
-			const components = self.components as Tuple.Components.Variadic
+			const components = self.components as Tuple.Components.Variadic<R>
 			const resultsLeading: Result<unknown>[] = []
 			let resultRest: Result<unknown> | undefined = undefined
 			const resultsTrailing: Result<unknown>[] = []
