@@ -6,7 +6,7 @@ import FAILURE from "../utils-internal/FAILURE.ts"
 
 type Options = {
 	receives?: Runtype.Core<readonly unknown[]> | undefined
-	returns?: Runtype.Core | undefined
+	resolves?: Runtype.Core | undefined
 }
 
 type AsyncFunction = (...args: readonly any[]) => Promise<any>
@@ -19,7 +19,7 @@ type EnforcedParametersStatic<
 type EnforcedReturnTypeStatic<
 	O extends Options,
 	F extends AsyncFunction,
-> = O["returns"] extends Runtype.Core ? Static<O["returns"]> : Awaited<ReturnType<F>>
+> = O["resolves"] extends Runtype.Core ? Static<O["resolves"]> : Awaited<ReturnType<F>>
 
 type EnforcedParametersParsed<
 	O extends Options,
@@ -29,8 +29,8 @@ type EnforcedParametersParsed<
 type EnforcedReturnTypeParsed<
 	O extends Options,
 	F extends AsyncFunction,
-> = O["returns"] extends Runtype.Core
-	? Parsed<O["returns"]> & Awaited<ReturnType<F>>
+> = O["resolves"] extends Runtype.Core
+	? Parsed<O["resolves"]> & Awaited<ReturnType<F>>
 	: Awaited<ReturnType<F>>
 
 type AsyncContract<O extends Options> = O & {
@@ -64,7 +64,7 @@ const InstanceOfPromise: InstanceOf<Promise<unknown>> = InstanceOf(Promise)
 
 const parseReturned = async <O extends Options, F extends AsyncFunction>(
 	returned: unknown,
-	returns: (O["returns"] & Runtype) | undefined,
+	returns: (O["resolves"] & Runtype) | undefined,
 ): Promise<EnforcedReturnTypeParsed<O, F>> => {
 	try {
 		InstanceOfPromise.assert(returned)
@@ -97,16 +97,16 @@ const parseReturned = async <O extends Options, F extends AsyncFunction>(
 /**
  * Creates an async function contract.
  */
-const AsyncContract = <O extends Options>({ receives, returns }: O): AsyncContract<O> => {
+const AsyncContract = <O extends Options>({ receives, resolves }: O): AsyncContract<O> => {
 	return {
 		receives,
-		returns,
+		resolves,
 		enforce:
 			f =>
 			async (...args) =>
 				await parseReturned(
 					f(...(parseReceived(args, receives as Runtype) as any)),
-					returns as Runtype,
+					resolves as Runtype,
 				),
 	} as AsyncContract<O>
 }
