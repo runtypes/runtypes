@@ -12,7 +12,7 @@ import { assertEquals, assertInstanceOf, assertObjectMatch, assertRejects } from
 Deno.test("AsyncContract", async t => {
 	await t.step("when function does not return a promise", async t => {
 		await t.step("throws a validation error", async t => {
-			const contractedFunction = AsyncContract({ receives: Tuple(), returns: Number }).enforce(
+			const contractedFunction = AsyncContract({ receives: Tuple(), resolves: Number }).enforce(
 				() =>
 					// @ts-expect-error: should fail
 					7,
@@ -32,9 +32,10 @@ Deno.test("AsyncContract", async t => {
 	})
 	await t.step("when a function does return a promise, but of a wrong awaited type", async t => {
 		await t.step("throws a validation error asynchronously", async t => {
-			const contractedFunction = AsyncContract({ receives: Tuple(), returns: Number }).enforce(() =>
-				// @ts-expect-error: should fail
-				Promise.resolve("hi"),
+			const contractedFunction = AsyncContract({ receives: Tuple(), resolves: Number }).enforce(
+				() =>
+					// @ts-expect-error: should fail
+					Promise.resolve("hi"),
 			)
 			const error = await assertRejects(contractedFunction)
 			assertInstanceOf(error, ValidationError)
@@ -51,8 +52,8 @@ Deno.test("AsyncContract", async t => {
 	})
 	await t.step("when a function does return a promise", async t => {
 		await t.step("should validate successfully", async () => {
-			const contractedFunction = AsyncContract({ receives: Tuple(), returns: Number }).enforce(() =>
-				Promise.resolve(7),
+			const contractedFunction = AsyncContract({ receives: Tuple(), resolves: Number }).enforce(
+				() => Promise.resolve(7),
 			)
 			assertEquals(await contractedFunction(), 7)
 		})
@@ -61,7 +62,7 @@ Deno.test("AsyncContract", async t => {
 		await t.step("throws a validation error", async t => {
 			const contractedFunction = AsyncContract({
 				receives: Tuple(Number),
-				returns: Number,
+				resolves: Number,
 			}).enforce(n => Promise.resolve(n + 1))
 			const error = await assertRejects(
 				// @ts-expect-error: should fail
@@ -83,7 +84,7 @@ Deno.test("AsyncContract", async t => {
 	await t.step("infers the parameter types", async t => {
 		const contractedFunction = AsyncContract({
 			receives: Tuple(Literal(0)),
-			returns: Unknown,
+			resolves: Unknown,
 		}).enforce((...args: readonly number[]) => Promise.resolve(7 as const))
 		assertEquals<7>(await contractedFunction(0), 7)
 		// @ts-expect-error: should fail
@@ -107,7 +108,7 @@ Deno.test("AsyncContract", async t => {
 	await t.step("infers the returned type", async t => {
 		const contractedFunction = AsyncContract({
 			receives: Array(Unknown),
-			returns: Unknown,
+			resolves: Unknown,
 		}).enforce(() => Promise.resolve(7 as const))
 		assertEquals<7>(await contractedFunction(), 7)
 	})
@@ -115,7 +116,7 @@ Deno.test("AsyncContract", async t => {
 		const ParseInt = String.withParser(parseInt)
 		const contractedFunction = AsyncContract({
 			receives: Array(ParseInt),
-			returns: Array(ParseInt),
+			resolves: Array(ParseInt),
 		}).enforce(async (...args) => args.map(globalThis.String))
 		assertEquals(await contractedFunction("42", "24"), [42, 24])
 	})
