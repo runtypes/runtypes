@@ -1,6 +1,7 @@
 import Literal from "./Literal.ts"
 import type Optional from "./Optional.ts"
 import Runtype, { type Parsed, type Static } from "./Runtype.ts"
+import Symbol from "./Symbol.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
@@ -127,8 +128,14 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(key
 						)
 					}
 				} else {
-					// TODO: symbols
-					defineProperty(results, key, FAILURE.PROPERTY_MISSING({ expected: Literal(key as any) }))
+					defineProperty(
+						results,
+						key,
+						FAILURE.PROPERTY_MISSING({
+							expected:
+								typeof key === "symbol" ? Symbol(globalThis.Symbol.keyFor(key)) : Literal(key),
+						}),
+					)
 				}
 			}
 

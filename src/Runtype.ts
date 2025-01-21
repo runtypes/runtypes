@@ -374,6 +374,7 @@ namespace Runtype {
 		| Record
 		| String
 		| Symbol
+		| Symbol<string | undefined>
 		| Template
 		| Tuple
 		| Tuple.Readonly
