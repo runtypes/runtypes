@@ -10,9 +10,9 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
  * - `TYPE_INCORRECT` for non-symbols
  * - `VALUE_INCORRECT` if the key is not equal to the given one
  */
-interface Symbol<K extends string | undefined = string | undefined> extends Runtype<symbol> {
+interface Symbol<K extends string | undefined = never> extends Runtype<symbol> {
 	tag: "symbol"
-	key: K
+	key?: K
 	<K extends string | undefined>(key: K): Symbol<K>
 }
 
@@ -34,7 +34,7 @@ const Symbol = Runtype.create<Symbol>(
 		typeof received === "symbol"
 			? SUCCESS(received)
 			: FAILURE.TYPE_INCORRECT({ expected, received }),
-	globalThis.Object.assign(SymbolFor, { tag: "symbol" as const, key: undefined }),
+	globalThis.Object.assign(SymbolFor, { tag: "symbol" as const }),
 )
 
 export default Symbol

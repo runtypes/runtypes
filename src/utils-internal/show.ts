@@ -98,9 +98,14 @@ const show =
 				case "number":
 				case "bigint":
 				case "string":
-				case "symbol":
 				case "function":
 					return runtype.tag
+				case "symbol":
+					return "key" in runtype
+						? runtype.key === undefined
+							? "unique symbol"
+							: "symbol" // TODO: <https://github.com/microsoft/TypeScript/issues/35909>
+						: "symbol"
 				case "literal":
 					return typeof runtype.value === "bigint"
 						? globalThis.String(runtype.value) + "n"
