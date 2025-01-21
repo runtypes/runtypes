@@ -26,7 +26,7 @@ const Lazy = <R extends Runtype.Core>(delayed: () => R) => {
 	}
 
 	return Runtype.create<any>(
-		({ value, parsing }) => getWrapped().inspect(value, { parse: parsing }),
+		({ received, parsing }) => getWrapped().inspect(received, { parse: parsing }),
 		self as Runtype.Base<R>,
 	) as R
 }

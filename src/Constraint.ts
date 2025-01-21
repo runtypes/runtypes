@@ -15,14 +15,14 @@ const Constraint = <R extends Runtype.Core, T extends Parsed<R>>(
 	constraint: (x: Parsed<R>) => asserts x is T,
 ) =>
 	Runtype.create<Constraint<R, T>>(
-		({ value, innerValidate, self, parsing }): Result<any> => {
-			const result = innerValidate(self.underlying, value, true)
+		({ received, innerValidate, expected, parsing }): Result<any> => {
+			const result = innerValidate({ expected: expected.underlying, received, parsing: true })
 			if (!result.success) return result
 			try {
 				constraint(result.value)
-				return SUCCESS(parsing ? result.value : value)
+				return SUCCESS(parsing ? result.value : received)
 			} catch (error) {
-				return FAILURE.CONSTRAINT_FAILED({ expected: self, received: value, thrown: error })
+				return FAILURE.CONSTRAINT_FAILED({ expected, received, thrown: error })
 			}
 		},
 		{ tag: "constraint", underlying, constraint },

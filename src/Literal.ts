@@ -25,12 +25,12 @@ const sameValueZero = (x: unknown, y: unknown) => {
  */
 const Literal = <T extends LiteralStatic>(value: T) =>
 	Runtype.create<Literal<T>>(
-		({ value: x, self }) =>
+		({ received: x, expected }) =>
 			sameValueZero(x, value)
 				? SUCCESS(x as T)
 				: typeof x !== typeof value || value === null
-					? FAILURE.TYPE_INCORRECT({ expected: self, received: x })
-					: FAILURE.VALUE_INCORRECT({ expected: self, received: x }),
+					? FAILURE.TYPE_INCORRECT({ expected, received: x })
+					: FAILURE.VALUE_INCORRECT({ expected, received: x }),
 		{ tag: "literal", value },
 	)
 

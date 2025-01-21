@@ -9,7 +9,8 @@ import escapeRegExp from "./utils-internal/escapeRegExp.ts"
 import typeOf from "./utils-internal/typeOf.ts"
 
 type LiteralStatic = Static<Literal>
-type InnerValidate = <T>(runtype: Runtype.Core, value: unknown, parsing: boolean) => Result<T>
+type Context<R extends Runtype.Core> = { expected: R; received: unknown; parsing: boolean }
+type InnerValidate = <T, X>(context: Context<Runtype.Core<T, X>>) => Result<T | X>
 
 type TemplateParsed<
 	A extends readonly LiteralStatic[],
@@ -268,26 +269,34 @@ const getReviversFor = (runtype: Runtype.Core): Revivers => {
 
 /** Recursively map corresponding reviver and  */
 const reviveValidate =
-	(runtype: Runtype.Core, innerValidate: InnerValidate, parsing: boolean) =>
-	(value: string): Result<unknown> => {
-		Runtype.assertIsRuntype(runtype)
-		const revivers = getReviversFor(runtype)
+	(expected: Runtype.Core, innerValidate: InnerValidate, parsing: boolean) =>
+	(received: string): Result<unknown> => {
+		Runtype.assertIsRuntype(expected)
+		const revivers = getReviversFor(expected)
 		if (Array.isArray(revivers)) {
-			switch (runtype.tag) {
+			switch (expected.tag) {
 				case "union":
-					for (const alternative of runtype.alternatives) {
-						const validated = reviveValidate(alternative as Runtype, innerValidate, parsing)(value)
+					for (const alternative of expected.alternatives) {
+						const validated = reviveValidate(
+							alternative as Runtype,
+							innerValidate,
+							parsing,
+						)(received)
 						if (validated.success) return validated
 					}
-					return FAILURE.TYPE_INCORRECT({ expected: runtype, received: value })
+					return FAILURE.TYPE_INCORRECT({ expected, received })
 				case "intersect": {
 					let parsed: any = undefined
-					for (const intersectee of runtype.intersectees) {
-						const validated = reviveValidate(intersectee as Runtype, innerValidate, parsing)(value)
+					for (const intersectee of expected.intersectees) {
+						const validated = reviveValidate(
+							intersectee as Runtype,
+							innerValidate,
+							parsing,
+						)(received)
 						if (!validated.success) return validated
 						parsed = validated.value
 					}
-					return SUCCESS(parsing ? parsed : value)
+					return SUCCESS(parsing ? parsed : received)
 				}
 				default:
 					/* istanbul ignore next */
@@ -295,10 +304,10 @@ const reviveValidate =
 			}
 		} else {
 			const reviver = revivers
-			const validated = innerValidate(runtype, reviver(value), parsing)
-			if (!validated.success && validated.code === "VALUE_INCORRECT" && runtype.tag === "literal")
+			const validated = innerValidate({ expected, received: reviver(received), parsing })
+			if (!validated.success && validated.code === "VALUE_INCORRECT" && expected.tag === "literal")
 				// TODO: Temporary fix to show unrevived value in message; needs refactor
-				return FAILURE.VALUE_INCORRECT({ expected: runtype, received: value })
+				return FAILURE.VALUE_INCORRECT({ expected, received })
 			return validated
 		}
 	}
@@ -436,22 +445,24 @@ const Template: {
 ) => {
 	const [strings, runtypes] = normalizeArgs(args)
 	return Runtype.create<any>(
-		({ value, innerValidate, self, parsing }) => {
-			const regexp = createRegExpForTemplate(self as any)
+		({ received, innerValidate, expected, parsing }) => {
+			const regexp = createRegExpForTemplate(expected as any)
 
 			const test = (
-				value: string,
+				received: string,
 				innerValidate: InnerValidate,
 				parsing: boolean,
 			): Result<string> => {
-				const matches = value.match(regexp)
+				const matches = received.match(regexp)
 				if (matches) {
 					const values = matches.slice(1)
 					let parsed: string = ""
 					for (let i = 0; i < strings.length; i++) {
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						const string = strings[i]!
 						const runtype = runtypes[i]
 						if (runtype) {
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 							const value = values[i]!
 							const validated = reviveValidate(
 								runtype as Runtype,
@@ -464,18 +475,17 @@ const Template: {
 							parsed += string
 						}
 					}
-					return SUCCESS(parsing ? parsed : value)
+					return SUCCESS(parsing ? parsed : received)
 				} else {
-					return FAILURE.VALUE_INCORRECT({ expected: self, received: value })
+					return FAILURE.VALUE_INCORRECT({ expected, received })
 				}
 			}
 
-			if (typeof value !== "string")
-				return FAILURE.TYPE_INCORRECT({ expected: self, received: value })
+			if (typeof received !== "string") return FAILURE.TYPE_INCORRECT({ expected, received })
 			else {
-				const validated = test(value, innerValidate, parsing)
+				const validated = test(received, innerValidate, parsing)
 				if (validated.success) return validated
-				return FAILURE.VALUE_INCORRECT({ expected: self, received: value })
+				return FAILURE.VALUE_INCORRECT({ expected, received })
 			}
 		},
 		{ tag: "template", strings, runtypes } as any,

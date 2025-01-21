@@ -34,12 +34,13 @@ const Array = <R extends Runtype.Core>(element: R) => {
 		tag: "array",
 		element,
 	} as Runtype.Base<Array<R>>
-	return Runtype.create<Array<R>>(({ value, innerValidate, self, parsing }) => {
-		if (!globalThis.Array.isArray(value))
-			return FAILURE.TYPE_INCORRECT({ expected: self, received: value })
+	return Runtype.create<Array<R>>(({ received, innerValidate, expected, parsing }) => {
+		if (!globalThis.Array.isArray(received)) return FAILURE.TYPE_INCORRECT({ expected, received })
 
-		const keys = enumerableKeysOf(value).filter(isNumberLikeKey)
-		const results: Result<unknown>[] = keys.map(key => innerValidate(element, value[key], parsing))
+		const keys = enumerableKeysOf(received).filter(isNumberLikeKey)
+		const results: Result<unknown>[] = keys.map(key =>
+			innerValidate({ expected: element, received: received[key], parsing }),
+		)
 		const details: globalThis.Record<number, Failure> = {}
 		for (const key of keys) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -48,8 +49,9 @@ const Array = <R extends Runtype.Core>(element: R) => {
 		}
 
 		if (enumerableKeysOf(details).length !== 0)
-			return FAILURE.CONTENT_INCORRECT({ expected: self, received: value, details })
-		else return SUCCESS(parsing ? (results as Success<any>[]).map(result => result.value) : value)
+			return FAILURE.CONTENT_INCORRECT({ expected, received, details })
+		else
+			return SUCCESS(parsing ? (results as Success<any>[]).map(result => result.value) : received)
 	}, Spread.asSpreadable(base)).with(self =>
 		defineIntrinsics({}, { asReadonly: () => self as unknown as Array.Readonly<R> }),
 	)

@@ -17,14 +17,14 @@ const Parser = <R extends Runtype.Core, X>(
 	parser: (value: Parsed<R>) => X,
 ): Parser<R, X> =>
 	Runtype.create<Parser<R, X>>(
-		({ value, innerValidate, self, parsing }) => {
+		({ received, innerValidate, expected, parsing }) => {
 			try {
-				const result = innerValidate(self.underlying, value, parsing)
+				const result = innerValidate({ expected: expected.underlying, received, parsing })
 				if (!result.success) return result
 				if (!parsing) return result
-				return SUCCESS(self.parser(result.value))
+				return SUCCESS(expected.parser(result.value))
 			} catch (error) {
-				return FAILURE.PARSING_FAILED({ expected: self, received: value, thrown: error })
+				return FAILURE.PARSING_FAILED({ expected, received, thrown: error })
 			}
 		},
 		{ tag: "parser", underlying, parser },

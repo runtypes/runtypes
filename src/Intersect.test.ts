@@ -44,7 +44,8 @@ Deno.test("Intersect", async t => {
 		assert(Ambi.check(ambi) === ambi)
 		const ambiParsed = { right: undefined as unknown as AmbiParsed }
 		ambiParsed.right = ambiParsed
-		// TODO
-		// assertEquals(Ambi.parse(ambi), ambiParsed)
+		const parsed = Ambi.parse(ambi)
+		assert(parsed !== ambiParsed)
+		assertEquals(parsed, ambiParsed)
 	})
 })

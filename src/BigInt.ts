@@ -10,10 +10,10 @@ interface BigInt extends Runtype<bigint> {
  * Validates that a value is a bigint.
  */
 const BigInt = Runtype.create<BigInt>(
-	({ value, self }) =>
-		typeof value === "bigint"
-			? SUCCESS(value)
-			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
+	({ received, expected }) =>
+		typeof received === "bigint"
+			? SUCCESS(received)
+			: FAILURE.TYPE_INCORRECT({ expected, received }),
 	{ tag: "bigint" },
 )
 

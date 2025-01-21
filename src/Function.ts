@@ -10,10 +10,10 @@ interface Function extends Runtype<(...args: never[]) => unknown> {
  * Construct a runtype for functions.
  */
 const Function = Runtype.create<Function>(
-	({ value, self }) =>
-		typeof value === "function"
-			? SUCCESS(value as (...args: never[]) => unknown)
-			: FAILURE.TYPE_INCORRECT({ expected: self, received: value }),
+	({ received, expected }) =>
+		typeof received === "function"
+			? SUCCESS(received as (...args: never[]) => unknown)
+			: FAILURE.TYPE_INCORRECT({ expected, received }),
 	{ tag: "function" },
 )
 
