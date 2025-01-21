@@ -8,6 +8,8 @@ interface Unknown extends Runtype<unknown> {
 	tag: "unknown"
 }
 
-const Unknown = Runtype.create<Unknown>(({ received }) => SUCCESS(received), { tag: "unknown" })
+const Unknown: Unknown = Runtype.create<Unknown>(({ received }) => SUCCESS(received), {
+	tag: "unknown",
+})
 
 export default Unknown

@@ -13,7 +13,7 @@ interface String extends Runtype<string> {
 	tag: "string"
 }
 
-const String = Runtype.create<String>(
+const String: String = Runtype.create<String>(
 	({ received, expected }) =>
 		typeof received === "string"
 			? SUCCESS(received)

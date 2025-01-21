@@ -28,7 +28,7 @@ const sameValueZero = (x: unknown, y: unknown) => {
 	return x === y
 }
 
-const Literal = <T extends LiteralStatic>(value: T) =>
+const Literal = <T extends LiteralStatic>(value: T): Literal<T> =>
 	Runtype.create<Literal<T>>(
 		({ received: x, expected }) =>
 			sameValueZero(x, value)

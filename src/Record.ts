@@ -75,7 +75,10 @@ const extractLiteralKeys = (runtype: Runtype.Core<PropertyKey>) => {
 	return literalKeys
 }
 
-const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(key: K, value: V) => {
+const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(
+	key: K,
+	value: V,
+): Record<K, V> => {
 	const keyRuntype = key
 	const valueRuntype = value
 

@@ -37,7 +37,7 @@ interface Intersect<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 		: never
 }
 
-const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
+const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R): Intersect<R> => {
 	const base = {
 		tag: "intersect",
 		intersectees,

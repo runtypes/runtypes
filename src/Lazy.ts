@@ -3,7 +3,7 @@ import Runtype from "./Runtype.ts"
 /**
  * Constructs a possibly-recursive runtype.
  */
-const Lazy = <R extends Runtype.Core>(delayed: () => R) => {
+const Lazy = <R extends Runtype.Core>(delayed: () => R): R => {
 	const self = {
 		get tag() {
 			return getWrapped().tag

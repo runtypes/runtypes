@@ -13,7 +13,7 @@ interface Function extends Runtype<(...args: never[]) => unknown> {
 	tag: "function"
 }
 
-const Function = Runtype.create<Function>(
+const Function: Function = Runtype.create<Function>(
 	({ received, expected }) =>
 		typeof received === "function"
 			? SUCCESS(received as (...args: never[]) => unknown)

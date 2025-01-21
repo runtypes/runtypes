@@ -17,7 +17,7 @@ interface InstanceOf<V = unknown> extends Runtype<V> {
 	ctor: Constructor<V>
 }
 
-const InstanceOf = <V>(ctor: Constructor<V>) =>
+const InstanceOf = <V>(ctor: Constructor<V>): InstanceOf<V> =>
 	Runtype.create<InstanceOf<V>>(
 		({ received, expected }) => {
 			try {

@@ -13,7 +13,7 @@ interface BigInt extends Runtype<bigint> {
 	tag: "bigint"
 }
 
-const BigInt = Runtype.create<BigInt>(
+const BigInt: BigInt = Runtype.create<BigInt>(
 	({ received, expected }) =>
 		typeof received === "bigint"
 			? SUCCESS(received)
