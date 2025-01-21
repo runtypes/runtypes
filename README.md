@@ -121,7 +121,7 @@ If you want to inspect why the validation failed, look into the `failure` object
 - `detail`: An object that describes the failure of the inner runtype. Only available for `Brand` and contextual failures (e.g. failures in `Record` keys, in boundaries of `Contract`/`AsyncContract`, etc.)
 - `thrown`: A thrown value, which is typically an error message, if any. Only available for runtypes that involve user-provided validation functions (e.g. `Constraint`, `Parser`, and `InstanceOf`) or constraint-like failures like about the length of `Tuple`
 
-What shapes of failure there might actually be can be seen in the definition of [`Failure`](src/result/Failure.ts), which is a union discriminated by `code`.
+What shapes of failures there might actually be is documented on the JSDoc comment of each runtype.
 
 If you want to inform your users about the validation error, it's strongly discouraged to rely on the format of the `message` property, as it may change across minor versions for readability thoughts. Instead of parsing `message`, you should use other properties to handle further tasks such as i18n.
 
@@ -219,45 +219,6 @@ const disembark = (value: unknown) => {
 ```
 
 This might be uncomfortable that TypeScript requires you to manually write the type annotation for your runtype.
-
-## Pattern matching
-
-The `Union` runtype offers the ability to do type-safe, exhaustive case analysis across its variants using the `match` method:
-
-```ts
-const isHabitable = SpaceObject.match(
-	asteroid => false,
-	planet => planet.habitable,
-	ship => true,
-)
-
-if (isHabitable(spaceObject)) {
-	// ...
-}
-```
-
-There's also a top-level `match` function which allows testing an ad-hoc sequence of runtypes. You should use it along with `when` helper function to enable type inference of the parameters of the case functions:
-
-```ts
-const makeANumber = match(
-	when(Number, n => n * 3),
-	when(Boolean, b => (b ? 1 : 0)),
-	when(String, s => s.length),
-)
-
-makeANumber(9) // = 27
-```
-
-To allow the function to be applied to anything and then handle match failures, simply use an `Unknown` case at the end:
-
-```ts
-const makeANumber = match(
-	when(Number, n => n * 3),
-	when(Boolean, b => (b ? 1 : 0)),
-	when(String, s => s.length),
-	when(Unknown, () => 42),
-)
-```
 
 ## Constraint checking
 
@@ -551,6 +512,18 @@ const FlipFlip = Intersect(
 FlipFlip.parse(true) === true
 ```
 
+Where the members are `Object`s, this behavior doesn't match with TypeScript; this is to avoid [unsound type inference](https://github.com/runtypes/runtypes/pull/443).
+
+```typescript
+const A = Object({ n: String.withParser(() => 1 as const) })
+const B = Object({ n: String.withParser(parseInt) })
+const AB = A.and(B)
+type A = Parsed<typeof A>
+type B = Parsed<typeof B>
+type AB0 = A & B // { n: 1 } & { n: number }
+type AB1 = Parsed<typeof AB> // { n: number }
+```
+
 ## Readonly objects and arrays
 
 `Array` and `Object` runtypes have a special function `.asReadonly()`, that returns the same runtype but the static counterpart is readonly.
@@ -607,6 +580,45 @@ const WrongMember = CrewMember.extend({
 	rank: Literal("wrong"),
 	// Type '"wrong"' is not assignable to type '"captain" | "first mate" | "officer" | "ensign"'.
 })
+```
+
+## Pattern matching
+
+The `Union` runtype offers the ability to do type-safe, exhaustive case analysis across its variants using the `match` method:
+
+```ts
+const isHabitable = SpaceObject.match(
+	asteroid => false,
+	planet => planet.habitable,
+	ship => true,
+)
+
+if (isHabitable(spaceObject)) {
+	// ...
+}
+```
+
+There's also a top-level `match` function which allows testing an ad-hoc sequence of runtypes. You should use it along with `when` helper function to enable type inference of the parameters of the case functions:
+
+```ts
+const makeANumber = match(
+	when(Number, n => n * 3),
+	when(Boolean, b => (b ? 1 : 0)),
+	when(String, s => s.length),
+)
+
+makeANumber(9) // = 27
+```
+
+To allow the function to be applied to anything and then handle match failures, simply use an `Unknown` case at the end:
+
+```ts
+const makeANumber = match(
+	when(Number, n => n * 3),
+	when(Boolean, b => (b ? 1 : 0)),
+	when(String, s => s.length),
+	when(Unknown, () => 42),
+)
 ```
 
 ## Adding additional properties
