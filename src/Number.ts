@@ -13,7 +13,7 @@ interface Number extends Runtype<number> {
 	tag: "number"
 }
 
-const Number = Runtype.create<Number>(
+const Number: Number = Runtype.create<Number>(
 	({ received, expected }) =>
 		typeof received === "number"
 			? SUCCESS(received)

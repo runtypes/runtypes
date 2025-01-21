@@ -28,7 +28,10 @@ interface Spread<R extends Runtype.Spreadable = Runtype.Spreadable> {
 	content: R
 }
 
-const Spread = globalThis.Object.assign(
+const Spread: {
+	<R extends Runtype.Spreadable>(content: HasSymbolIterator<R> extends true ? R : never): Spread<R>
+	/** @internal */ asSpreadable: <B extends Runtype.Base<any>>(base: B) => B
+} = globalThis.Object.assign(
 	<R extends Runtype.Spreadable>(
 		content: HasSymbolIterator<R> extends true ? R : never,
 	): Spread<R> => ({
@@ -40,9 +43,9 @@ const Spread = globalThis.Object.assign(
 		asSpreadable: <B extends Runtype.Base<any>>(base: B): B =>
 			defineIntrinsics(base, {
 				*[Symbol.iterator]() {
-					yield Spread(base as unknown as Runtype.Spreadable) as any
+					yield Spread(base as unknown as Runtype.Spreadable)
 				},
-			} as any) as B,
+			}) as B,
 	},
 )
 

@@ -21,7 +21,7 @@ interface Constraint<R extends Runtype.Core = Runtype.Core, T extends Parsed<R> 
 const Constraint = <R extends Runtype.Core, T extends Parsed<R>>(
 	underlying: R,
 	constraint: (x: Parsed<R>) => asserts x is T,
-) =>
+): Constraint<R, T> =>
 	Runtype.create<Constraint<R, T>>(
 		({ received, innerValidate, expected, parsing }): Result<any> => {
 			const result = innerValidate({ expected: expected.underlying, received, parsing: true })

@@ -11,7 +11,7 @@ import FAILURE from "./utils-internal/FAILURE.ts"
 interface Never extends Runtype<never> {
 	tag: "never"
 }
-const Never = Runtype.create<any>(
+const Never: Never = Runtype.create<any>(
 	({ received, expected }) => FAILURE.NOTHING_EXPECTED({ expected, received }),
 	{ tag: "never" },
 ) as Never

@@ -36,7 +36,7 @@ interface Brand<B extends string = string, R extends Runtype.Core = Runtype.Core
 		: never
 }
 
-const Brand = <B extends string, R extends Runtype.Core>(brand: B, entity: R) => {
+const Brand = <B extends string, R extends Runtype.Core>(brand: B, entity: R): Brand<B, R> => {
 	const base = {
 		tag: "brand",
 		brand,

@@ -16,7 +16,7 @@ interface Symbol<K extends string | undefined = never> extends Runtype<symbol> {
 	<K extends string | undefined>(key: K): Symbol<K>
 }
 
-const SymbolFor = <K extends string | undefined>(key: K) =>
+const SymbolFor = <K extends string | undefined>(key: K): Symbol<K> =>
 	Runtype.create<Symbol<K>>(
 		({ received, expected }) => {
 			if (typeof received !== "symbol") return FAILURE.TYPE_INCORRECT({ expected, received })
@@ -29,7 +29,7 @@ const SymbolFor = <K extends string | undefined>(key: K) =>
 		{ tag: "symbol", key },
 	)
 
-const Symbol = Runtype.create<Symbol>(
+const Symbol: Symbol = Runtype.create<Symbol>(
 	({ received, expected }) =>
 		typeof received === "symbol"
 			? SUCCESS(received)

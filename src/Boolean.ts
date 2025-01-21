@@ -13,7 +13,7 @@ interface Boolean extends Runtype<boolean> {
 	tag: "boolean"
 }
 
-const Boolean = Runtype.create<Boolean>(
+const Boolean: Boolean = Runtype.create<Boolean>(
 	({ received, expected }) =>
 		typeof received === "boolean"
 			? SUCCESS(received)
