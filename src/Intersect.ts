@@ -2,10 +2,10 @@ import Runtype, { type Parsed, type Static } from "./Runtype.ts"
 import Spread from "./Spread.ts"
 import type Failure from "./result/Failure.ts"
 import type Result from "./result/Result.ts"
+import type Success from "./result/Success.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
-import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 
 /**
  * Validates that a value fulfills all of the given runtypes.
@@ -47,6 +47,7 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 
 		const results: Result<any>[] = []
 		const details: Failure.Details = {}
+		let success: Success<any> | undefined = SUCCESS(received)
 		for (let i = 0; i < expected.intersectees.length; i++) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const intersectee = expected.intersectees[i]!
@@ -54,19 +55,15 @@ const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 			results.push(result)
 
 			if (result.success) {
-				/* empty */
+				if (success) success = result
 			} else {
 				details[i] = result
+				success = undefined
 			}
 		}
 
-		if (enumerableKeysOf(details).length !== 0)
-			return FAILURE.TYPE_INCORRECT({ expected, received, details })
-
-		return SUCCESS(
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			parsing ? results.findLast(result => result.success)!.value : received,
-		)
+		if (!success) return FAILURE.TYPE_INCORRECT({ expected, received, details })
+		return SUCCESS(parsing ? success.value : received)
 	}, Spread.asSpreadable(base))
 }
 

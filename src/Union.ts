@@ -67,14 +67,11 @@ const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union<R> 
 				results.push(result)
 
 				if (result.success) {
-					if (!parsing) return SUCCESS(received)
+					return SUCCESS(parsing ? result.value : received)
 				} else {
 					details[i] = result
 				}
 			}
-
-			const first = results.find(result => result.success)
-			if (first) return SUCCESS(first.value)
 
 			return FAILURE.TYPE_INCORRECT({ expected, received, details })
 		},
