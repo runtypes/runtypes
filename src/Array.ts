@@ -22,6 +22,7 @@ interface Array<R extends Runtype.Core = Runtype.Core>
 		Iterable<Spread<Array<R>>> {
 	tag: "array"
 	element: R
+	asReadonly: () => Array.Readonly<R>
 }
 
 namespace Array {
@@ -34,7 +35,7 @@ namespace Array {
 	}
 }
 
-const Array = <R extends Runtype.Core>(element: R) => {
+const Array = <R extends Runtype.Core>(element: R): Array<R> => {
 	const base = {
 		tag: "array",
 		element,
@@ -57,9 +58,7 @@ const Array = <R extends Runtype.Core>(element: R) => {
 			return FAILURE.CONTENT_INCORRECT({ expected, received, details })
 		else
 			return SUCCESS(parsing ? (results as Success<any>[]).map(result => result.value) : received)
-	}, Spread.asSpreadable(base)).with(self =>
-		defineIntrinsics({}, { asReadonly: () => self as unknown as Array.Readonly<R> }),
-	)
+	}, Spread.asSpreadable(base)).with(self => defineIntrinsics({}, { asReadonly: () => self }))
 }
 
 export default Array
