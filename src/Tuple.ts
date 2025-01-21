@@ -93,6 +93,15 @@ type ToReadonlyImpl<A extends readonly unknown[], B extends readonly unknown[]> 
 	: B
 type ToReadonly<A extends readonly unknown[]> = ToReadonlyImpl<A, readonly []>
 
+/**
+ * Validates that a value is an array of the given element types.
+ *
+ * Possible failures:
+ *
+ * - `TYPE_INCORRECT` for non-arrays
+ * - `CONSTRAINT_FAILED` with `thrown` being a string reporting that the length constraint was not fulfilled
+ * - `CONTENT_INCORRECT` with `details` reporting the failed elements
+ */
 interface Tuple<R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype.Core | Spread)[]>
 	extends Runtype<TupleStatic<R>, TupleParsed<R>>,
 		Iterable<Spread<Tuple<R>>> {
@@ -137,9 +146,6 @@ namespace Tuple {
 const isSpread = (component: Runtype.Core | Spread): component is Spread =>
 	component.tag === "spread"
 
-/**
- * Construct a tuple runtype from runtypes for each of its elements.
- */
 const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) => {
 	const base = {
 		tag: "tuple",

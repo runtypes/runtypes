@@ -1,7 +1,7 @@
 import Runtype from "./Runtype.ts"
 
 /**
- * Construct a possibly-recursive runtype.
+ * Constructs a possibly-recursive runtype.
  */
 const Lazy = <R extends Runtype.Core>(delayed: () => R) => {
 	const self = {

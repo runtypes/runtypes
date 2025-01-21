@@ -2,13 +2,17 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
+/**
+ * Validates that a value is a boolean.
+ *
+ * Possible failures:
+ *
+ * - `TYPE_INCORRECT` for non-booleans
+ */
 interface Boolean extends Runtype<boolean> {
 	tag: "boolean"
 }
 
-/**
- * Validates that a value is a boolean.
- */
 const Boolean = Runtype.create<Boolean>(
 	({ received, expected }) =>
 		typeof received === "boolean"

@@ -12,6 +12,13 @@ type RuntypeBrand<B extends string> = {
 	}
 }
 
+/**
+ * Adds a brand to the inferred static type.
+ *
+ * Possible failures:
+ *
+ * - `TYPE_INCORRECT` with `detail` reporting the inner failure
+ */
 interface Brand<B extends string = string, R extends Runtype.Core = Runtype.Core>
 	extends Runtype<
 		// TODO: replace it by nominal type when it has been released

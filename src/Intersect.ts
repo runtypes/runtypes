@@ -7,6 +7,13 @@ import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 
+/**
+ * Validates that a value fulfills all of the given runtypes.
+ *
+ * Possible failures:
+ *
+ * - `TYPE_INCORRECT` with `details` reporting failures for each runtype
+ */
 interface Intersect<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 	extends Runtype<
 		// We use the fact that a union of functions is effectively an intersection of parameters e.g. to safely call `(({ x: 1 }) => unknown) | (({ y: 2 }) => unknown)` you must pass `{ x: 1, y: 2 }`
@@ -30,9 +37,6 @@ interface Intersect<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 		: never
 }
 
-/**
- * Construct an intersection runtype from runtypes for its alternatives.
- */
 const Intersect = <R extends readonly Runtype.Core[]>(...intersectees: R) => {
 	const base = {
 		tag: "intersect",
