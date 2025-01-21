@@ -1,4 +1,4 @@
-import { type Static, Union, Literal, match } from "../../src/index.ts"
+import { type Static, Union, Literal, match, when } from "../../src/index.ts"
 
 // Define the runtype
 const Day = Union(
@@ -22,7 +22,7 @@ for (const day of days) {
 }
 
 const isWeekend = match(
-	[Literal("Sunday"), () => true],
-	[Literal("Saturday"), () => true],
-	[Day, () => false],
+	when(Literal("Sunday"), () => true),
+	when(Literal("Saturday"), () => true),
+	when(Day, () => false),
 )

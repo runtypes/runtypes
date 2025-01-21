@@ -1,7 +1,6 @@
 // Inspired by https://github.com/Microsoft/TypeScript/issues/165#issuecomment-342989523
 
-import { match, Object, Number, Union } from "../../src/index.ts"
-import { when } from "../../src/utils/match.ts"
+import { match, Object, Number, Union, when } from "../../src/index.ts"
 
 const Square = Object({ size: Number })
 const Rectangle = Object({ width: Number, height: Number })
