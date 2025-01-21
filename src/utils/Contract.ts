@@ -76,6 +76,11 @@ const parseReturned = <O extends Options, F extends Function>(
 
 /**
  * Creates an  function contract.
+ *
+ * Possible failures:
+ *
+ * - `ARGUMENTS_INCORRECT` with `detail` reporting the inner failures
+ * - `RETURN_INCORRECT` with `detail` reporting the inner failure
  */
 const Contract = <O extends Options>({ receives, returns }: O): Contract<O> => {
 	return {

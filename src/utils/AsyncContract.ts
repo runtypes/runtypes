@@ -96,6 +96,12 @@ const parseReturned = async <O extends Options, F extends AsyncFunction>(
 
 /**
  * Creates an async function contract.
+ *
+ * Possible failures:
+ *
+ * - `ARGUMENTS_INCORRECT` with `detail` reporting the inner failures
+ * - `RETURN_INCORRECT` with `detail` reporting that the returned value is not a `Promise`
+ * - `RESOLVE_INCORRECT` with `detail` reporting the inner failure
  */
 const AsyncContract = <O extends Options>({ receives, resolves }: O): AsyncContract<O> => {
 	return {
