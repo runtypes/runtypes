@@ -22,4 +22,4 @@ check *ARGS='src/**/*.ts src/*.test.ts examples/**/*.ts examples/*.ts':
 	deno check {{ARGS}}
 
 pack: build
-	cd lib && pnpm pack
+	cd build && pnpm pack
