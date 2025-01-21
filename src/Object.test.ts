@@ -128,7 +128,7 @@ Deno.test("Object", async t => {
 				name: String,
 				title: String,
 			})
-			const extendWithId = <O extends { name: String }>(r: Object.WithUtilities<O>) =>
+			const extendWithId = <O extends { name: String }>(r: Object<O>) =>
 				r.omit("name").extend({
 					// @ts-expect-error: TODO: solve this
 					id: String,

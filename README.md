@@ -176,8 +176,8 @@ const Wrong = Object({
 The error message on the wrong definition might be verbose like below, but you'll eventually find it contains where is the wrong piece if you scroll down the wall of text.
 
 ```plaintext
-The 'this' context of type 'WithUtilities<{ foo: String; bar: String; }>' is not assignable to method's 'this' of type 'Conform<Specification>'.
-	Type 'WithUtilities<{ foo: String; bar: String; }>' is not assignable to type 'Conformance<Specification>'.
+The 'this' context of type 'Object<{ foo: String; bar: String; }>' is not assignable to method's 'this' of type 'Conform<Specification>'.
+	Type 'Object<{ foo: String; bar: String; }>' is not assignable to type 'Conformance<Specification>'.
 		Types of property '[RuntypeConformance]' are incompatible.
 			Type '(StaticTypeOfThis: { foo: string; bar: string; }) => { foo: string; bar: string; }' is not assignable to type '(StaticTypeOfThis: Specification) => Specification'.
 				Types of parameters 'StaticTypeOfThis' and 'StaticTypeOfThis' are incompatible.

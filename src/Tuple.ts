@@ -107,6 +107,7 @@ interface Tuple<R extends readonly (Runtype.Core | Spread)[] = readonly (Runtype
 		Iterable<Spread<Tuple<R>>> {
 	tag: "tuple"
 	readonly components: Tuple.Components<R> extends infer X ? { [K in keyof X]: X[K] } : never
+	asReadonly: () => Tuple.Readonly<R>
 }
 
 namespace Tuple {
@@ -146,7 +147,7 @@ namespace Tuple {
 const isSpread = (component: Runtype.Core | Spread): component is Spread =>
 	component.tag === "spread"
 
-const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) => {
+const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R): Tuple<R> => {
 	const base = {
 		tag: "tuple",
 		// TODO: unuse getter
@@ -269,9 +270,7 @@ const Tuple = <R extends readonly (Runtype.Core | Spread)[]>(...components: R) =
 			return SUCCESS(
 				parsing ? (results as Success<any>[]).map(result => result.value) : x,
 			) as Result<any>
-	}, Spread.asSpreadable(base)).with(self =>
-		defineIntrinsics({}, { asReadonly: () => self as unknown as Tuple.Readonly<R> }),
-	)
+	}, Spread.asSpreadable(base)).with(self => defineIntrinsics({}, { asReadonly: () => self }))
 }
 
 export default Tuple
