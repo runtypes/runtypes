@@ -9,6 +9,14 @@ import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import isNumberLikeKey from "./utils-internal/isNumberLikeKey.ts"
 
+/**
+ * Validates a value is an array of the given element type.
+ *
+ * Possible failures:
+ *
+ * - `TYPE_INCORRECT` for non-arrays
+ * - `CONTENT_INCORRECT` with `details` reporting the failed elements
+ */
 interface Array<R extends Runtype.Core = Runtype.Core>
 	extends Runtype<Static<R>[], Parsed<R>[]>,
 		Iterable<Spread<Array<R>>> {
@@ -26,9 +34,6 @@ namespace Array {
 	}
 }
 
-/**
- * Constructs an array runtype from a runtype for its elements.
- */
 const Array = <R extends Runtype.Core>(element: R) => {
 	const base = {
 		tag: "array",

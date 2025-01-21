@@ -2,14 +2,17 @@ import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
+/**
+ * Validates that a value is a symbol, and optionally the key is equal to the given one. If you want to ensure a symbol is *not* keyed, pass `undefined`.
+ *
+ * Possible failures:
+ *
+ * - `TYPE_INCORRECT` for non-symbols
+ * - `VALUE_INCORRECT` if the key is not equal to the given one
+ */
 interface Symbol<K extends string | undefined = string | undefined> extends Runtype<symbol> {
 	tag: "symbol"
 	key: K
-
-	/**
-	Validates that a value is a symbol with a specific key or without any key.
-	@param {string | undefined} key - Specify what key the symbol is for. If you want to ensure the validated symbol is *not* keyed, pass `undefined`.
-	*/
 	<K extends string | undefined>(key: K): Symbol<K>
 }
 
@@ -26,9 +29,6 @@ const SymbolFor = <K extends string | undefined>(key: K) =>
 		{ tag: "symbol", key },
 	)
 
-/**
- * Validates that a value is a symbol, regardless of whether it is keyed or not.
- */
 const Symbol = Runtype.create<Symbol>(
 	({ received, expected }) =>
 		typeof received === "symbol"

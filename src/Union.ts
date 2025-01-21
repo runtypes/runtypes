@@ -7,6 +7,13 @@ import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 
+/**
+ * Validates that a value fulfills one of the given runtypes.
+ *
+ * Possible failures:
+ *
+ * - `TYPE_INCORRECT` with `details` reporting failures for each runtype
+ */
 interface Union<R extends readonly Runtype.Core[] = readonly Runtype.Core[]>
 	extends Runtype<
 		{ [K in keyof R]: R[K] extends Runtype.Core ? Static<R[K]> : unknown }[number],
@@ -36,9 +43,6 @@ type Cases<R extends readonly Runtype.Core[]> = { [K in keyof R]: Case<R[K], any
 
 type Case<R extends Runtype.Core, Y> = (value: Parsed<R>) => Y
 
-/**
- * Construct a union runtype from runtypes for its alternatives.
- */
 const Union = <R extends readonly Runtype.Core[]>(...alternatives: R): Union<R> => {
 	const base = {
 		tag: "union",

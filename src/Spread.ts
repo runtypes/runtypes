@@ -2,13 +2,8 @@ import type Runtype from "./Runtype.ts"
 import type HasSymbolIterator from "./utils-internal/HasSymbolIterator.ts"
 import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 
-interface Spread<R extends Runtype.Spreadable = Runtype.Spreadable> {
-	tag: "spread"
-	content: R
-}
-
 /**
- * Constructs a pseudo-runtype that is only usable in the context of `Tuple` arguments. This works as the runtime counterpart of variadic tuple types.
+ * A pseudo-runtype that is only usable in the context of `Tuple` arguments. This works as the runtime counterpart of variadic tuple types.
  *
  * ```typescript
  * const T = Tuple(Literal(0), Spread(Tuple(Literal(1), Literal(2))), Literal(3))
@@ -28,6 +23,11 @@ interface Spread<R extends Runtype.Spreadable = Runtype.Spreadable> {
  * type U = Static<typeof U> // [0, ...1[], 2]
  * ```
  */
+interface Spread<R extends Runtype.Spreadable = Runtype.Spreadable> {
+	tag: "spread"
+	content: R
+}
+
 const Spread = globalThis.Object.assign(
 	<R extends Runtype.Spreadable>(
 		content: HasSymbolIterator<R> extends true ? R : never,
@@ -39,7 +39,7 @@ const Spread = globalThis.Object.assign(
 		/** @internal */
 		asSpreadable: <B extends Runtype.Base<any>>(base: B): B =>
 			defineIntrinsics(base, {
-				[Symbol.iterator]: function* () {
+				*[Symbol.iterator]() {
 					yield Spread(base as unknown as Runtype.Spreadable) as any
 				},
 			} as any) as B,

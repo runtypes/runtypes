@@ -76,6 +76,19 @@ type ObjectParsed<O extends Object.Fields> = {
 	? { [K in keyof P]: P[K] }
 	: never
 
+/**
+ * Validates that a value is an object and each property fulfills the given property runtype.
+ *
+ * Possible failures:
+ *
+ * - `TYPE_INCORRECT` for `null`, `undefined`, and non-objects if fields were non-empty
+ * - `CONTENT_INCORRECT` with `details` reporting the failed properties
+ *
+ * For each property, contextual failures can be seen in addition to failures of the property runtype:
+ *
+ * - `PROPERTY_MISSING` for missing required properties
+ * - `PROPERTY_PRESENT` for extraneous properties where `.exact()` flag is enabled
+ */
 interface Object<O extends Object.Fields = Object.Fields>
 	extends Runtype<ObjectStatic<O>, ObjectParsed<O>> {
 	tag: "object"
@@ -142,9 +155,6 @@ namespace Object {
 	export type WithUtilities<O extends Object.Fields> = Object<O> & Utilities<O>
 }
 
-/**
- * Construct an object runtype from runtypes for its values.
- */
 const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => {
 	return Runtype.create<Object<O>>(
 		({ received: x, innerValidate, expected, parsing, memoParsed: memoParsedInherited }) => {

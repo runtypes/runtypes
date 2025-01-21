@@ -3,9 +3,9 @@ import Unknown from "./Unknown.ts"
 type Void = Unknown
 
 /**
- * Void is an alias for Unknown
+ * An alias for `Unknown`.
  *
- * @deprecated Please use Unknown instead
+ * @deprecated Use `Unknown` instead.
  */
 const Void = Unknown
 
