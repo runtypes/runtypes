@@ -54,9 +54,14 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 	/** @internal */ readonly [RuntypeConformance]!: Conformance<T, X>[typeof RuntypeConformance]
 
 	/** @internal */ private readonly [RuntypePrivate]!: {
-		(context: Context<Runtype.Core<T, X>> & { visited: VisitedState }): Result<T | X>
+		(
+			context: Context<Runtype.Core<T, X>> & {
+				visited: VisitedState
+				memoParsed?: WeakMap<object, object>
+			},
+		): Result<T | X>
 		validate: <R extends Runtype>(
-			context: Context<R> & { innerValidate: InnerValidate },
+			context: Context<R> & { innerValidate: InnerValidate; memoParsed: WeakMap<object, object> },
 		) => Result<Static<R> | Parsed<R>>
 		extensions: (object | ((self: Runtype) => object))[]
 	}
@@ -71,7 +76,7 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 
 	/** @internal */ static create = <R extends Runtype>(
 		validate: (
-			context: Context<R> & { innerValidate: InnerValidate },
+			context: Context<R> & { innerValidate: InnerValidate; memoParsed?: WeakMap<object, object> },
 		) => Result<Static<R> | Parsed<R>>,
 		base: Runtype.Base<R>,
 	): R => new Runtype(validate as any, base) as R
@@ -97,7 +102,11 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 					received,
 					visited,
 					parsing,
-				}: Context<Runtype<T, X>> & { visited: VisitedState }) => {
+					memoParsed,
+				}: Context<Runtype<T, X>> & {
+					visited: VisitedState
+					memoParsed: WeakMap<object, object>
+				}) => {
 					if (isObject(received)) {
 						const memo = visited.memo(received, expected, null)
 						if (memo) return memo
@@ -108,13 +117,20 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 								innerValidate,
 								expected,
 								parsing,
+								memoParsed,
 							})
 							visited.memo(received, expected, result)
 							return result
-						} else return SUCCESS(received)
+						} else return SUCCESS((parsing && memoParsed?.get(received)) || received)
 					} else {
 						const innerValidate = Runtype.#createInnerValidate(visited)
-						return expected[RuntypePrivate].validate({ received, innerValidate, expected, parsing })
+						return expected[RuntypePrivate].validate({
+							received,
+							innerValidate,
+							expected,
+							parsing,
+							memoParsed,
+						})
 					}
 				},
 				{ validate, extensions: [] },
@@ -396,7 +412,9 @@ type Maybe<T, U> = [T] extends [never] ? unknown : [T & U] extends [never] ? T :
 
 type Context<R extends Runtype.Core> = { expected: R; received: unknown; parsing: boolean }
 
-type InnerValidate = <T, X>(context: Context<Runtype.Core<T, X>>) => Result<T | X>
+type InnerValidate = <T, X>(
+	context: Context<Runtype.Core<T, X>> & { memoParsed?: WeakMap<object, object> },
+) => Result<T | X>
 
 type VisitedState = {
 	memo: (

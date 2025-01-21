@@ -1,9 +1,11 @@
 import Array from "./Array.ts"
+import Lazy from "./Lazy.ts"
 import Literal from "./Literal.ts"
 import Never from "./Never.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
 import Optional from "./Optional.ts"
+import type Runtype from "./Runtype.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Undefined from "./Undefined.ts"
@@ -328,5 +330,17 @@ Deno.test("Object", async t => {
 			},
 		)
 		assertEquals(({} as any).polluted, undefined)
+	})
+
+	await t.step("recursive", async t => {
+		type T = { rec: T }
+		const T: Runtype.Core<T> = Lazy(() => Object({ rec: T }))
+		const x: T = { rec: undefined as unknown as T }
+		x.rec = x
+		// @ts-expect-error: should fail
+		x.extra = x
+		const y: T = { rec: undefined as unknown as T }
+		y.rec = y
+		assertEquals(T.parse(x), y)
 	})
 })

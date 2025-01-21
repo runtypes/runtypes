@@ -10,6 +10,7 @@ import defineIntrinsics from "./utils-internal/defineIntrinsics.ts"
 import defineProperty from "./utils-internal/defineProperty.ts"
 import enumerableKeysOf from "./utils-internal/enumerableKeysOf.ts"
 import hasEnumerableOwn from "./utils-internal/hasEnumerableOwn.ts"
+import isObject from "./utils-internal/isObject.ts"
 
 type OptionalKeysStatic<T> = {
 	[K in keyof T]: T[K] extends Optional ? K : never
@@ -146,7 +147,7 @@ namespace Object {
  */
 const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => {
 	return Runtype.create<Object<O>>(
-		({ received: x, innerValidate, expected, parsing }) => {
+		({ received: x, innerValidate, expected, parsing, memoParsed: memoParsedInherited }) => {
 			if (x === null || x === undefined) return FAILURE.TYPE_INCORRECT({ expected, received: x })
 
 			const keysOfFields = enumerableKeysOf(expected.fields)
@@ -155,7 +156,16 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 
 			const keys = [...new Set([...keysOfFields, ...enumerableKeysOf(x)])]
 			const results: globalThis.Record<PropertyKey, Result<unknown>> = {}
-			const parsed: any = {}
+			const memoParsed = memoParsedInherited ?? new WeakMap()
+			const parsed = (() => {
+				if (isObject(x)) {
+					const parsed = memoParsed.get(x) ?? {}
+					memoParsed.set(x, parsed)
+					return parsed
+				} else {
+					return {}
+				}
+			})()
 			for (const key of keys) {
 				const fieldsHasKey = hasEnumerableOwn(key, expected.fields)
 				const xHasKey = hasEnumerableOwn(key, x)
@@ -168,10 +178,14 @@ const Object = <O extends Object.Fields>(fields: O): Object.WithUtilities<O> => 
 							defineProperty(
 								results,
 								key,
-								innerValidate({ expected: runtype.underlying, received, parsing }),
+								innerValidate({ expected: runtype.underlying, received, parsing, memoParsed }),
 							)
 						} else {
-							defineProperty(results, key, innerValidate({ expected: runtype, received, parsing }))
+							defineProperty(
+								results,
+								key,
+								innerValidate({ expected: runtype, received, parsing, memoParsed }),
+							)
 						}
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						if (results[key]!.success) defineProperty(parsed, key, results[key]!.value)
