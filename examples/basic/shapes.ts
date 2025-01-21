@@ -1,6 +1,7 @@
 // Inspired by https://github.com/Microsoft/TypeScript/issues/165#issuecomment-342989523
 
 import { match, Object, Number, Union } from "../../src/index.ts"
+import { when } from "../../src/utils/match.ts"
 
 const Square = Object({ size: Number })
 const Rectangle = Object({ width: Number, height: Number })
@@ -14,4 +15,7 @@ const area = Shape.match(
 	({ radius }) => Math.PI * Math.pow(radius, 2),
 )
 
-const hasCorners = match([Circle, () => false], [Union(Square, Rectangle), () => true])
+const hasCorners = match(
+	when(Circle, () => false),
+	when(Union(Square, Rectangle), () => true),
+)
