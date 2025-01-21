@@ -47,3 +47,18 @@ await Deno.writeTextFile(
 	"build/script/Object.js",
 	objectCjs.replace(/^Object\.defineProperty/m, "globalThis.Object.defineProperty"),
 )
+
+// Generate `jsr.json`
+const jsrJson = {
+	name: "@runtypes/runtypes",
+	version: packageBuildJson.version,
+	license: packageBuildJson.license,
+	exports: Object.fromEntries(
+		entryPoints.map(entry => [entry.name === "./index" ? "." : entry.name, "./" + entry.path]),
+	),
+	publish: {
+		include: ["LICENSE", "README.md", "src/**/*.ts"],
+		exclude: ["src/**/*.test.ts"],
+	},
+}
+await Deno.writeTextFile("jsr.json", JSON.stringify(jsrJson, null, "\t"))
