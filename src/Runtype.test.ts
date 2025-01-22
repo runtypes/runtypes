@@ -1,3 +1,4 @@
+import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
 import Runtype, { type Static } from "./Runtype.ts"
@@ -13,12 +14,13 @@ import {
 	assertNotEquals,
 	assertNotStrictEquals,
 	assertStrictEquals,
+	assertThrows,
 } from "@std/assert"
 
 Deno.test("Runtype", async t => {
 	await t.step("base object", async t => {
-		const base = { tag: "R" }
-		const R = Runtype.create<Runtype<42>>(
+		const base = { tag: "R" as const }
+		const R = Runtype.create<Runtype<42> & typeof base>(
 			({ received, expected }) =>
 				received === 42 ? SUCCESS(received) : FAILURE.VALUE_INCORRECT({ expected, received }),
 			base,
@@ -31,8 +33,8 @@ Deno.test("Runtype", async t => {
 	})
 
 	await t.step("base function", async t => {
-		const base = globalThis.Object.assign(() => 42, { tag: "R" })
-		const R = Runtype.create<Runtype<42> & (() => 42)>(
+		const base = globalThis.Object.assign(() => 42, { tag: "R" as const })
+		const R = Runtype.create<Runtype<42> & typeof base>(
 			({ received, expected }) =>
 				received === 42 ? SUCCESS(received) : FAILURE.VALUE_INCORRECT({ expected, received }),
 			base,
@@ -48,8 +50,8 @@ Deno.test("Runtype", async t => {
 	await t.step("with", async t => {
 		await t.step("should add properties", async t => {
 			const method = () => 42 as const
-			const base = { tag: "R" }
-			const R = Runtype.create<Runtype<42>>(
+			const base = { tag: "R" as const }
+			const R = Runtype.create<Runtype<42> & typeof base>(
 				({ received, expected }) =>
 					received === 42 ? SUCCESS(received) : FAILURE.VALUE_INCORRECT({ expected, received }),
 				base,
@@ -196,5 +198,23 @@ Deno.test("Runtype", async t => {
 			],
 		)
 		assertEquals(enumerableKeysOf(Object({})), ["tag", "fields", "isExact"])
+	})
+
+	await t.step("generic unknown", async t => {
+		const validate =
+			<T>(runtype: Runtype.Core<T>) =>
+			(value: unknown) =>
+				runtype.check(value)
+		const x = validate(Object({ hello: Literal("world") }))({ hello: "world" })
+		assertThrows(() => validate(Object({ hello: Literal("world") }))(undefined))
+	})
+
+	await t.step("generic generic", async t => {
+		const validate =
+			<T>(runtype: Runtype.Core<T>) =>
+			<U>(value: U) =>
+				runtype.check(value)
+		const x = validate(Object({ hello: Literal("world") }))({ hello: "world" })
+		assertThrows(() => validate(Object({ hello: Literal("world") }))(undefined))
 	})
 })
