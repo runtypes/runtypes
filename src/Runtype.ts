@@ -166,7 +166,7 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 	/**
 	 * Validates that a value conforms to this runtype, returning the original value, statically typed. Throws `ValidationError` on failure.
 	 */
-	check<U = T>(x: Maybe<T, U>): T & U {
+	check<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): T & U {
 		const result: Result<unknown> = this.inspect(x, { parse: false })
 		if (result.success) return result.value as T & U
 		else throw new ValidationError(result)
@@ -175,21 +175,21 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 	/**
 	 * Validates that a value conforms to this runtype, returning a `boolean` that represents success or failure. Does not throw on failure.
 	 */
-	guard<U = T>(x: Maybe<T, U>): x is T & U {
+	guard<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): x is T & U {
 		return this.inspect(x, { parse: false }).success
 	}
 
 	/**
 	 * Validates that a value conforms to this runtype. Throws `ValidationError` on failure.
 	 */
-	assert<U = T>(x: Maybe<T, U>): asserts x is T & U {
+	assert<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): asserts x is T & U {
 		return void this.check(x)
 	}
 
 	/**
 	 * Validates that a value conforms to this runtype and returns another value returned by the function passed to `withParser`. Throws `ValidationError` on failure. Does not modify the original value.
 	 */
-	parse<U = T>(x: Maybe<T, U>): X {
+	parse<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): X {
 		const result: Result<unknown> = this.inspect(x, { parse: true })
 		if (result.success) return result.value as X
 		else throw new ValidationError(result)
@@ -409,6 +409,8 @@ type Conformance<T, X> = {
 }
 
 type Maybe<T, U> = [T & U] extends [never] ? T : U
+
+type IsGeneric<R extends Runtype.Core> = string extends R["tag"] ? true : false
 
 type Context<R extends Runtype.Core> = { expected: R; received: unknown; parsing: boolean }
 
