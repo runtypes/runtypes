@@ -144,8 +144,8 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 	/**
 	 * Process a value with this runtype, returning a detailed information of success or failure. Does not throw on failure.
 	 */
-	inspect<U = T, P extends boolean = true>(
-		x: Maybe<T, U>,
+	inspect<U, P extends boolean = true>(
+		x: U,
 		options: {
 			/**
 			 * Whether to parse.
