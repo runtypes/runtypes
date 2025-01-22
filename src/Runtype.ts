@@ -408,8 +408,7 @@ type Conformance<T, X> = {
 	]
 }
 
-// Special-casing when `T = never`, as it breaks expected assignability everywhere.
-type Maybe<T, U> = [T] extends [never] ? unknown : [T & U] extends [never] ? T : U
+type Maybe<T, U> = [T & U] extends [never] ? T : U
 
 type Context<R extends Runtype.Core> = { expected: R; received: unknown; parsing: boolean }
 
