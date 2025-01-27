@@ -343,4 +343,24 @@ Deno.test("Object", async t => {
 		y.rec = y
 		assertEquals(T.parse(x), y)
 	})
+
+	await t.step("extends", async t => {
+		const a = Literal("a")
+		const b = Literal("b")
+		const c = Literal("c")
+		const A = Object({ a })
+		const AB = A.extend({ b })
+		const ABC = AB.extend({ c })
+		assertEquals(A.fields, { a })
+		assertEquals(AB.fields, { a, b })
+		assertEquals(ABC.fields, { a, b, c })
+	})
+
+	await t.step("extend and exact", async t => {
+		const a = Literal("a")
+		const b = Literal("b")
+		const A = Object({ a }).exact()
+		const AB = A.extend({ b }).exact()
+		assert(AB.check({ ...A.check({ a: "a" }), b: "b" }))
+	})
 })
