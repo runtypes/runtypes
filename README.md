@@ -2,7 +2,7 @@
 
 # Runtypes
 
-[![License](https://img.shields.io/github/license/runtypes/runtypes?color=%231e2327)](LICENSE) [![Coverage Status](https://coveralls.io/repos/github/runtypes/runtypes/badge.svg?branch=master)](https://coveralls.io/github/runtypes/runtypes?branch=master)
+[![License](https://img.shields.io/github/license/runtypes/runtypes?color=%231e2327)](LICENSE) [![JSR](https://jsr.io/badges/@runtypes/runtypes)](https://jsr.io/@runtypes/runtypes) [![NPM Version](https://img.shields.io/npm/v/runtypes)](https://www.npmjs.com/package/runtypes) [![Coverage Status](https://coveralls.io/repos/github/runtypes/runtypes/badge.svg?branch=master)](https://coveralls.io/github/runtypes/runtypes?branch=master)
 
 Safely bring untyped data into the fold.
 
