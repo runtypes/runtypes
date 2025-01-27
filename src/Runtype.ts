@@ -137,7 +137,7 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 			),
 		})
 		copyProperties(base, this)
-		bindThis(base, globalThis.Object.getPrototypeOf(this))
+		bindThis(base, new.target.prototype)
 		return base as this
 	}
 
@@ -215,7 +215,11 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 				? (this as globalThis.Function).bind(undefined)
 				: globalThis.Object.create(globalThis.Object.getPrototypeOf(this))
 		copyProperties(base, this)
-		return new Runtype(this[RuntypePrivate].validate as any, base) as any
+		const cloned = new Runtype(this[RuntypePrivate].validate as any, base) as this
+		cloned[RuntypePrivate].extensions = this[RuntypePrivate].extensions
+		for (const extension of cloned[RuntypePrivate].extensions)
+			copyProperties(cloned, typeof extension === "function" ? extension(cloned) : extension)
+		return cloned
 	}
 
 	/**
