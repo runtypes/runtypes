@@ -166,7 +166,7 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 	/**
 	 * Validates that a value conforms to this runtype, returning the original value, statically typed. Throws `ValidationError` on failure.
 	 */
-	check<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): Validated<T, U> {
+	check<U = T>(x: Target<T, U, this>): Validated<T, U> {
 		const result: Result<unknown> = this.inspect(x, { parse: false })
 		if (result.success) return result.value as Validated<T, U>
 		else throw new ValidationError(result)
@@ -175,27 +175,21 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 	/**
 	 * Validates that a value conforms to this runtype, returning a `boolean` that represents success or failure. Does not throw on failure.
 	 */
-	guard<U = T>(
-		x: IsGeneric<this> extends true ? U : Maybe<T, U>,
-		// @ts-expect-error: required to narrow `any` inputs
-	): x is Validated<T, U> {
+	guard<U = T>(x: Target<T, U, this>): x is Validated<T, U> {
 		return this.inspect(x, { parse: false }).success
 	}
 
 	/**
 	 * Validates that a value conforms to this runtype. Throws `ValidationError` on failure.
 	 */
-	assert<U = T>(
-		x: IsGeneric<this> extends true ? U : Maybe<T, U>,
-		// @ts-expect-error: required to narrow `any` inputs
-	): asserts x is Validated<T, U> {
+	assert<U = T>(x: Target<T, U, this>): asserts x is Validated<T, U> {
 		return void this.check(x)
 	}
 
 	/**
 	 * Validates that a value conforms to this runtype and returns another value returned by the function passed to `withParser`. Throws `ValidationError` on failure. Does not modify the original value.
 	 */
-	parse<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): X {
+	parse<U = T>(x: Target<T, U, this>): X {
 		const result: Result<unknown> = this.inspect(x, { parse: true })
 		if (result.success) return result.value as X
 		else throw new ValidationError(result)
@@ -418,11 +412,19 @@ type Conformance<T, X> = {
 	]
 }
 
-type Maybe<T, U> = [T & U] extends [never] ? T : U
-
 type IsGeneric<R extends Runtype.Core> = string extends R["tag"] ? true : false
 
 type IsAny<T> = boolean extends (T extends never ? true : false) ? true : false
+
+type Target<T, U, This extends Runtype.Core> =
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	IsAny<T & U> extends true
+		? any
+		: IsGeneric<This> extends true
+			? U
+			: [T & U] extends [never]
+				? T
+				: U
 
 type Validated<T, U> = IsAny<T & U> extends true ? T : T & U
 
