@@ -154,35 +154,41 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 			 */
 			parse?: P | undefined
 		} = {},
-	): Result<P extends true ? X : T & U> {
+	): Result<P extends true ? X : Validated<T, U>> {
 		return this[RuntypePrivate]({
 			expected: this,
 			received: x,
 			visited: createVisitedState(),
 			parsing: options.parse ?? true,
-		}) as Result<P extends true ? X : T & U>
+		}) as Result<P extends true ? X : Validated<T, U>>
 	}
 
 	/**
 	 * Validates that a value conforms to this runtype, returning the original value, statically typed. Throws `ValidationError` on failure.
 	 */
-	check<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): T & U {
+	check<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): Validated<T, U> {
 		const result: Result<unknown> = this.inspect(x, { parse: false })
-		if (result.success) return result.value as T & U
+		if (result.success) return result.value as Validated<T, U>
 		else throw new ValidationError(result)
 	}
 
 	/**
 	 * Validates that a value conforms to this runtype, returning a `boolean` that represents success or failure. Does not throw on failure.
 	 */
-	guard<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): x is T & U {
+	guard<U = T>(
+		x: IsGeneric<this> extends true ? U : Maybe<T, U>,
+		// @ts-expect-error: required to narrow `any` inputs
+	): x is Validated<T, U> {
 		return this.inspect(x, { parse: false }).success
 	}
 
 	/**
 	 * Validates that a value conforms to this runtype. Throws `ValidationError` on failure.
 	 */
-	assert<U = T>(x: IsGeneric<this> extends true ? U : Maybe<T, U>): asserts x is T & U {
+	assert<U = T>(
+		x: IsGeneric<this> extends true ? U : Maybe<T, U>,
+		// @ts-expect-error: required to narrow `any` inputs
+	): asserts x is Validated<T, U> {
 		return void this.check(x)
 	}
 
@@ -415,6 +421,10 @@ type Conformance<T, X> = {
 type Maybe<T, U> = [T & U] extends [never] ? T : U
 
 type IsGeneric<R extends Runtype.Core> = string extends R["tag"] ? true : false
+
+type IsAny<T> = boolean extends (T extends never ? true : false) ? true : false
+
+type Validated<T, U> = IsAny<T & U> extends true ? T : T & U
 
 type Context<R extends Runtype.Core> = { expected: R; received: unknown; parsing: boolean }
 

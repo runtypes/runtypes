@@ -217,4 +217,17 @@ Deno.test("Runtype", async t => {
 		const x = validate(Object({ hello: Literal("world") }))({ hello: "world" })
 		assertThrows(() => validate(Object({ hello: Literal("world") }))(undefined))
 	})
+
+	type IsAny<T> = boolean extends (T extends never ? true : false) ? true : false
+
+	await t.step("narrow any", async t => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const x = String.check("hello" as any)
+		const isAnyX: IsAny<typeof x> = false
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const y: any = "hello"
+		const isAnyY0: IsAny<typeof y> = true
+		String.assert(y)
+		const isAnyY1: IsAny<typeof y> = false
+	})
 })
