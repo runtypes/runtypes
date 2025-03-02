@@ -1,5 +1,5 @@
-import Runtype from "./Runtype.ts"
 import FAILURE from "./utils-internal/FAILURE.ts"
+import Runtype from "./Runtype.ts"
 import SUCCESS from "./utils-internal/SUCCESS.ts"
 
 /**
@@ -9,14 +9,14 @@ import SUCCESS from "./utils-internal/SUCCESS.ts"
  *
  * - `TYPE_INCORRECT` for non-functions
  */
-interface Function extends Runtype<(...args: never[]) => unknown> {
+interface Function<T> extends Runtype<T> {
 	tag: "function"
 }
 
-const Function: Function = Runtype.create<Function>(
+const Function = <T>() => Runtype.create<Function<T>>(
 	({ received, expected }) =>
 		typeof received === "function"
-			? SUCCESS(received as (...args: never[]) => unknown)
+			? SUCCESS(received as T)
 			: FAILURE.TYPE_INCORRECT({ expected, received }),
 	{ tag: "function" },
 )
