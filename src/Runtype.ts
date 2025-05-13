@@ -275,6 +275,8 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 
 	/**
 	 * Uses a constraint function to add additional constraints to this runtype, and manually converts a static type of this runtype into another via the type argument if passed.
+	 *
+	 * Note that the constraint function always receives a **parsed** value from the base runtype, even when being run in a non-parsing validation method such as `check`. This might result in an unexpected behavior, because not only `Parser` runtypes but also some basic runtypes inherently have different semantics depending on whether executed in a parsing or non-parsing context. For example, `Object` runtypes return the original value itself which may contain additional properties when used with `check`, whereas they return a new object containing only the specified properties when used with `parse`.
 	 */
 	withConstraint<Y extends X>(constraint: (x: X) => boolean | string): Constraint<this, Y> {
 		return Constraint(this, (x: X): asserts x is Y => {
@@ -286,6 +288,8 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 
 	/**
 	 * Uses a guard function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
+	 *
+	 * Note that the constraint function always receives a **parsed** value from the base runtype, even when being run in a non-parsing validation method such as `check`. This might result in an unexpected behavior, because not only `Parser` runtypes but also some basic runtypes inherently have different semantics depending on whether executed in a parsing or non-parsing context. For example, `Object` runtypes return the original value itself which may contain additional properties when used with `check`, whereas they return a new object containing only the specified properties when used with `parse`.
 	 */
 	withGuard<Y extends X>(guard: (x: X) => x is Y): Constraint<this, Y> {
 		return Constraint(this, (x: X): asserts x is Y => {
@@ -295,6 +299,8 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 
 	/**
 	 * Uses an assertion function to add additional constraints to this runtype, and automatically converts a static type of this runtype into another.
+	 *
+	 * Note that the constraint function always receives a **parsed** value from the base runtype, even when being run in a non-parsing validation method such as `check`. This might result in an unexpected behavior, because not only `Parser` runtypes but also some basic runtypes inherently have different semantics depending on whether executed in a parsing or non-parsing context. For example, `Object` runtypes return the original value itself which may contain additional properties when used with `check`, whereas they return a new object containing only the specified properties when used with `parse`.
 	 */
 	withAssertion<Y extends X>(assert: (x: X) => asserts x is Y): Constraint<this, Y> {
 		return Constraint(this, assert)

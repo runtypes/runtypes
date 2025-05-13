@@ -265,6 +265,10 @@ const PositiveNumber = Number.withConstraint(n => n > 0).withBrand("PositiveNumb
 
 `withBrand` modifier is also useful when you want to give your runtype a custom name, which will be used in error messages.
 
+### Caveat
+
+Note that the constraint function always receives a **parsed** value from the base runtype, even when being run in a non-parsing validation method such as `check`. This might result in an unexpected behavior, because not only `Parser` runtypes but also some basic runtypes inherently have different semantics depending on whether executed in a parsing or non-parsing context. For example, `Object` runtypes return the original value itself which may contain additional properties when used with `check`, whereas they return a new object containing only the specified properties when used with `parse`.
+
 ## Template literals
 
 The `Template` runtype validates that a value is a string that conforms to the template.
