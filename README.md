@@ -418,7 +418,7 @@ Object({ x: Number.optional() })
 
 You must be aware of the difference between `Object({ x: Union(String, Undefined) })` and `Object({ x: String.optional() })`; the former means “_**`x` must be present**, and must be `string` or `undefined`_”, while the latter means “_**`x` can be present or absent**, but must be `string` if present_”.
 
-It's strongly discouraged to disable [`"exactOptionalPropertyTypes"`](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) in the tsconfig; if you do so, the correspondence between runtypes and the inferred static types get lost. We can't respect tsconfig at runtime, so `runtypes` always conform the behavior `"exactOptionalPropertyTypes": true`, in favor of the expressiveness.
+It's strongly discouraged to disable [`"exactOptionalPropertyTypes"`](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) in the tsconfig; if you do so, the correspondence between runtypes and the inferred static types will be lost. We can't respect tsconfig at runtime, so `runtypes` always conform to the behavior `"exactOptionalPropertyTypes": true`, in favor of the expressiveness.
 
 ## Exact object validation
 
