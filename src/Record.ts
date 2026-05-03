@@ -93,6 +93,7 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(
 
 			const keys = [...new Set([...extractLiteralKeys(key), ...enumerableKeysOf(x)])]
 			const results: globalThis.Record<PropertyKey, Result<unknown>> = {}
+			const parsed: globalThis.Record<PropertyKey, unknown> = {}
 			for (const key of keys) {
 				const xHasKey = hasEnumerableOwn(key, x)
 				if (xHasKey) {
@@ -124,11 +125,9 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(
 							}),
 						)
 					} else {
-						defineProperty(
-							results,
-							key,
-							innerValidate({ expected: valueRuntype, received: x[key], parsing }),
-						)
+						const result = innerValidate({ expected: valueRuntype, received: x[key], parsing })
+						defineProperty(results, key, result)
+						if (result.success) defineProperty(parsed, key, result.value)
 					}
 				} else {
 					defineProperty(
@@ -150,7 +149,7 @@ const Record = <K extends Runtype.Core<PropertyKey>, V extends Runtype.Core>(
 
 			if (enumerableKeysOf(details).length !== 0)
 				return FAILURE.CONTENT_INCORRECT({ expected, received: x, details })
-			else return SUCCESS(x as Static<Record<K, V>>)
+			else return SUCCESS(parsing ? (parsed as RecordParsed<K, V>) : (x as Static<Record<K, V>>))
 		},
 		{ tag: "record", key, value },
 	)

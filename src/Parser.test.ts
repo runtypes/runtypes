@@ -4,6 +4,7 @@ import Intersect from "./Intersect.ts"
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
+import Record from "./Record.ts"
 import { type Parsed, type Static } from "./Runtype.ts"
 import String from "./String.ts"
 import Template from "./Template.ts"
@@ -115,6 +116,13 @@ Deno.test("Parser", async t => {
 				Boolean.withParser(b => !!b),
 			)
 			assertEquals(FlipFlip.parse(true), true)
+		})
+
+		await t.step("`Record` transparently", async t => {
+			const R = Record(String, Array(String).withParser(arr => new Set(arr)))
+			const result = R.parse({ key: ["value1", "value2"] })
+			assertEquals(result.key instanceof Set, true)
+			assertEquals(result.key, new Set(["value1", "value2"]))
 		})
 
 		await t.step("`Template` transparently", async t => {
