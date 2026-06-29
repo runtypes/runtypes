@@ -48,9 +48,11 @@ const Array = <R extends Runtype.Core>(element: R): Array<R> => {
 			innerValidate({ expected: element, received: received[key], parsing }),
 		)
 		const details: globalThis.Record<number, Failure> = {}
-		for (const key of keys) {
+		for (let index = 0; index < keys.length; index++) {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const result = results[key]!
+			const key = keys[index]!
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const result = results[index]!
 			if (!result.success) details[key] = result
 		}
 
