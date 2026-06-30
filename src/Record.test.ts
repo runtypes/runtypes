@@ -33,6 +33,40 @@ Deno.test("Record", async t => {
 		})
 	})
 
+	await t.step("should enforce a bare literal key", async t => {
+		const Dict = Record(Literal("a"), Number)
+		assertEquals(Dict.guard({}), false)
+		const error = assertThrows(() => Dict.check({}))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					a: {
+						code: Failcode.PROPERTY_MISSING,
+					},
+				},
+			},
+		})
+	})
+
+	await t.step("should enforce a single-element union of literal as key", async t => {
+		const Dict = Record(Union(Literal("a")), Number)
+		assertEquals(Dict.guard({}), false)
+		const error = assertThrows(() => Dict.check({}))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					a: {
+						code: Failcode.PROPERTY_MISSING,
+					},
+				},
+			},
+		})
+	})
+
 	await t.step("should work with certain edge case number keys", async t => {
 		const D = Record(Number, String)
 		type D = Static<typeof D>
