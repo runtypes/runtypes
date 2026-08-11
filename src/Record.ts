@@ -49,6 +49,15 @@ const extractLiteralKeys = (runtype: Runtype.Core<PropertyKey>) => {
 	const literalKeys: PropertyKey[] = []
 	const inner = unwrapTrivial(runtype as Runtype)
 	switch (inner.tag) {
+		case "literal": {
+			switch (typeof inner.value) {
+				case "string":
+				case "number":
+				case "symbol":
+					literalKeys.push(inner.value)
+			}
+			break
+		}
 		case "union": {
 			for (const alternative of inner.alternatives) {
 				const inner = unwrapTrivial(alternative as Runtype)
