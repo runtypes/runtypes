@@ -74,6 +74,33 @@ Deno.test("Array", async t => {
 		})
 	})
 
+	await t.step("sparse array", async t => {
+		// A hole is non-enumerable, so a sparse array must validate its present
+		// elements without crashing.
+		const array: number[] = [0]
+		array[2] = 2
+		assert(Array(Number).guard(array))
+	})
+
+	await t.step("sparse array with failure", async t => {
+		const array: unknown[] = [0]
+		array[2] = "test"
+		const error = assertThrows(() => Array(Number).check(array))
+		assertInstanceOf(error, ValidationError)
+		assertObjectMatch(error, {
+			name: "ValidationError",
+			message: "Expected number[], but was incompatible",
+			failure: {
+				code: Failcode.CONTENT_INCORRECT,
+				details: {
+					2: {
+						code: Failcode.TYPE_INCORRECT,
+					},
+				},
+			},
+		})
+	})
+
 	await t.step("readonly array", async t => {
 		const error = assertThrows(() => Array(Number).asReadonly().check([0, 2, "test"]))
 		assertInstanceOf(error, ValidationError)
