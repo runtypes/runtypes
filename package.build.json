@@ -1,6 +1,6 @@
 {
 	"name": "runtypes",
-	"version": "7.0.4",
+	"version": "7.0.5",
 	"description": "Runtime validation for static types",
 	"sideEffects": false,
 	"author": "Thomas Crockett",
