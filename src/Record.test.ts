@@ -1,9 +1,13 @@
+import Array from "./Array.ts"
+import Lazy from "./Lazy.ts"
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
 import Object from "./Object.ts"
 import Record from "./Record.ts"
+import type Runtype from "./Runtype.ts"
 import { type Static } from "./Runtype.ts"
 import String from "./String.ts"
+import Symbol from "./Symbol.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
 import ValidationError from "./result/ValidationError.ts"
@@ -171,4 +175,62 @@ Deno.test("Record", async t => {
 			},
 		})
 	})
+})
+
+Deno.test("Record parses its values", () => {
+	const schema = Record(
+		String,
+		String.withParser(value => value.length),
+	)
+	const input = { first: "hello", second: "world!" }
+	assertEquals(schema.parse(input), { first: 5, second: 6 })
+	assertEquals(schema.check(input), input)
+	assertEquals(input, { first: "hello", second: "world!" })
+})
+
+Deno.test("Record preserves symbol and prototype-named keys when parsing", () => {
+	const key = globalThis.Symbol("key")
+	const schema = Record(
+		Union(String, Symbol),
+		String.withParser(value => value.length),
+	)
+	const input = { [key]: "symbol", ["__proto__"]: "own", constructor: "constructor" }
+	assertEquals(schema.parse(input), { [key]: 6, ["__proto__"]: 3, constructor: 11 })
+	assertEquals(globalThis.Object.getPrototypeOf(schema.parse(input)), globalThis.Object.prototype)
+})
+
+Deno.test("Record parses arrays without changing their shape", () => {
+	const schema = Record(
+		Number,
+		String.withParser(value => value.length),
+	)
+	assertEquals(schema.parse(["hello", "world!"]), [5, 6])
+	const sparse = new globalThis.Array<string>(3)
+	sparse[1] = "hello"
+	const parsed = schema.parse(sparse)
+	if (!globalThis.Array.isArray(parsed)) throw new Error("Expected an array")
+	assertEquals(parsed.length, 3)
+	assertEquals(0 in parsed, false)
+	assertEquals(parsed[1], 5)
+	assertEquals(2 in parsed, false)
+})
+
+Deno.test("Record applies parsers to array values", () => {
+	const schema = Record(
+		String,
+		Array(String).withParser(value => new Set(value)),
+	)
+	assertEquals(schema.parse({ key: ["value1", "value2"] }), { key: new Set(["value1", "value2"]) })
+})
+
+Deno.test("Record preserves cycles when parsing nested objects", () => {
+	type Node = { name: string; children: { [key: string]: Node } }
+	const schema: Runtype.Core<Node> = Lazy(() =>
+		Object({ name: String, children: Record(String, schema) }),
+	)
+	const input: Node = { name: "root", children: {} }
+	input.children.self = input
+	const parsed = schema.parse(input)
+	assertEquals(parsed.children.self === parsed, true)
+	assertEquals(parsed === input, false)
 })
