@@ -422,6 +422,39 @@ type IsGeneric<R extends Runtype.Core> = string extends R["tag"] ? true : false
 
 type IsAny<T> = boolean extends (T extends never ? true : false) ? true : false
 
+type RequiredKnownKeys<T> = {
+	[K in keyof T]-?: string extends K
+		? never
+		: number extends K
+			? never
+			: symbol extends K
+				? never
+				: Pick<T, K> extends Required<Pick<T, K>>
+					? K
+					: never
+}[keyof T]
+
+type IncompatibleOptionalKeys<T, U> = {
+	[K in keyof T & RequiredKnownKeys<U>]-?: Pick<T, K> extends Required<Pick<T, K>>
+		? never
+		: [Required<T>[K] & U[K]] extends [never]
+			? K
+			: never
+}[keyof T & RequiredKnownKeys<U>]
+
+// A present optional property must satisfy its declared value type, without the
+// implicit undefined from indexed access. Keep any possible union branch, and
+// retain the existing behavior when exactOptionalPropertyTypes is disabled.
+type OptionalCompatible<T, U> = { value: undefined } extends { value?: never }
+	? T & U
+	: T extends object
+		? U extends object
+			? [IncompatibleOptionalKeys<T, U>] extends [never]
+				? T & U
+				: never
+			: T & U
+		: T & U
+
 type Target<T, U, This extends Runtype.Core> =
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	IsAny<T & U> extends true
@@ -430,7 +463,11 @@ type Target<T, U, This extends Runtype.Core> =
 			? U
 			: [T & U] extends [never]
 				? T
-				: U
+				: This["tag"] extends "object"
+					? [OptionalCompatible<T, U>] extends [never]
+						? T
+						: U
+					: U
 
 type Validated<T, U> = IsAny<T & U> extends true ? T : T & U
 

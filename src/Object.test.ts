@@ -143,7 +143,48 @@ Deno.test("Object", async t => {
 		const O = Object({ optional: String.optional() })
 		assert(O.guard({ optional: "optional" }))
 		assert(O.guard({}))
+		// @ts-expect-error: a present optional string cannot be undefined
 		assert(!O.guard({ optional: undefined }))
+	})
+
+	await t.step("known incompatible optional properties", async t => {
+		const schema = Object({ optional: String.optional() })
+		const O: typeof schema = schema
+		const input = { optional: undefined }
+		// @ts-expect-error: an optional string cannot be present as undefined
+		assert(!O.guard(input))
+		// @ts-expect-error: an optional string cannot be present as undefined
+		assertThrows(() => O.check(input))
+		// @ts-expect-error: an optional string cannot be present as undefined
+		assertThrows(() => O.assert(input))
+		// @ts-expect-error: an optional string cannot be present as undefined
+		assertThrows(() => O.parse(input))
+
+		assert(O.guard({}))
+		assert(O.guard({ optional: "present" }))
+		assertEquals(O.check({}), {})
+		assertEquals(O.parse({ optional: "present" }), { optional: "present" })
+		const possiblyAbsent: { optional?: undefined } = {}
+		assert(O.guard(possiblyAbsent))
+		const withUndefined = Object({ optional: String.or(Undefined).optional() })
+		assert(withUndefined.guard(input))
+		assertEquals(withUndefined.parse(input), input)
+		const required = Object({ optional: String.or(Undefined) })
+		assert(required.guard(input))
+		assert(!required.guard({}))
+	})
+
+	await t.step("optional intersections retain possible union branches", async t => {
+		const O = Object({ optional: String.optional() })
+		const validate = (input: { optional: string } | { optional: undefined }) => O.guard(input)
+		assert(validate({ optional: "present" }))
+		assert(!validate({ optional: undefined }))
+		const either = O.or(Object({ optional: Undefined }))
+		assert(either.guard({ optional: undefined }))
+		const unknownInput: unknown = { optional: undefined }
+		assert(!O.guard(unknownInput))
+		assertThrows(() => O.check(unknownInput))
+		assert(Object({ forbidden: Never.optional() }).guard({}))
 	})
 
 	await t.step("exact", async t => {
