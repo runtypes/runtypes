@@ -157,6 +157,24 @@ Deno.test("Runtype", async t => {
 		}).conform<Specification>()
 	})
 
+	await t.step("exact conformance with optional keys", () => {
+		type Specification = { added?: string; deleted?: string }
+		type Equivalent = { added?: string } & { deleted?: string }
+		const schema = Object({ added: String.optional(), deleted: String.optional() })
+		assertStrictEquals(schema.conform<Specification>(), schema)
+		assertStrictEquals(schema.conform<Equivalent>(), schema)
+
+		const typo = Object({ addded: String.optional(), deleted: String.optional() })
+		// @ts-expect-error: the static keys do not conform
+		typo.conform<Specification>()
+
+		type Parsed = { addded?: string; deleted?: string }
+		const parser = schema.withParser((): Parsed => ({ addded: "entry" }))
+		assertStrictEquals(parser.conform<Specification, Parsed>(), parser)
+		// @ts-expect-error: the parsed keys do not conform
+		parser.conform<Specification, Specification>()
+	})
+
 	await t.step("own keys", async t => {
 		assertEquals(
 			globalThis.Reflect.ownKeys(Object({})).filter(

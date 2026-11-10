@@ -323,7 +323,9 @@ class Runtype<T = any, X = T> implements Conformance<T, X> {
 	/**
 	 * Statically ensures this runtype is defined for exactly `T`, not for a subtype of `T`. `X` is for the parsed type.
 	 */
-	conform<T, X = T>(this: Conform<T, X>): Conform<T, X> & this {
+	conform<T, X = T>(
+		this: Conform<T, X> & MatchingKeys<T, Static<this>> & MatchingKeys<X, Parsed<this>>,
+	): Conform<T, X> & this {
 		return this as any
 	}
 
@@ -410,6 +412,14 @@ const bindThis = (self: object, prototype: object) => {
 }
 
 type Conform<T, X> = Runtype.Core<T, X> & Conformance<T, X>
+
+// Mutual assignability alone can accept different optional keys.
+type MatchingKeys<T, U> =
+	IsAny<T & U> extends true
+		? unknown
+		: [keyof T, keyof U] extends [keyof U, keyof T]
+			? unknown
+			: never
 
 type Conformance<T, X> = {
 	/** @internal */ readonly [RuntypeConformance]: [
