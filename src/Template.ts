@@ -312,7 +312,7 @@ const revivers: {
 		"0[Xx][0-9A-Fa-f]+",
 		// Note: `"NaN"` isn't here, as TS doesn't allow `"NaN"` to be a `` `${number}` ``
 	],
-	bigint: [s => BigInt(s), "-?[1-9]d*"],
+	bigint: [s => BigInt(s), "-?(?:0|[1-9]\\d*)"],
 	boolean: [s => (s === "false" ? false : true), "true", "false"],
 	null: [() => null, "null"],
 	undefined: [() => undefined, "undefined"],
@@ -351,6 +351,9 @@ const reviveValidate =
 			switch (expected.tag) {
 				case "union":
 					for (const alternative of expected.alternatives) {
+						// Skip alternatives whose own pattern doesn't match, so e.g. `"auto"` isn't revived by `Number` into `NaN`
+						const pattern = getRegExpPatternFor(alternative as Runtype)
+						if (!new RegExp(`^(?:${pattern})$`, "su").test(received)) continue
 						const validated = reviveValidate(
 							alternative as Runtype,
 							innerValidate,
