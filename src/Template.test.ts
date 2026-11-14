@@ -1,3 +1,4 @@
+import BigInt from "./BigInt.ts"
 import Boolean from "./Boolean.ts"
 import Literal from "./Literal.ts"
 import Number from "./Number.ts"
@@ -7,7 +8,13 @@ import Template from "./Template.ts"
 import Union from "./Union.ts"
 import Failcode from "./result/Failcode.ts"
 import ValidationError from "./result/ValidationError.ts"
-import { assert, assertInstanceOf, assertObjectMatch, assertThrows } from "@std/assert"
+import {
+	assert,
+	assertEquals,
+	assertInstanceOf,
+	assertObjectMatch,
+	assertThrows,
+} from "@std/assert"
 
 Deno.test("template", async t => {
 	await t.step("validates", async t => {
@@ -90,5 +97,27 @@ Deno.test("template", async t => {
 				code: Failcode.TYPE_INCORRECT,
 			},
 		})
+	})
+
+	await t.step("validates multi-digit and zero bigints", async t => {
+		const Id = Template("id-", BigInt)
+		assert(Id.guard("id-1"))
+		assert(Id.guard("id-12"))
+		assert(Id.guard("id-0"))
+		assert(Id.guard("id--42"))
+		// @ts-expect-error: should fail
+		assert(!Id.guard("id-1d"))
+		// @ts-expect-error: should fail
+		assert(!Id.guard("id-01"))
+		assertEquals(Id.parse("id-12"), "id-12")
+	})
+
+	await t.step("parses a union with the alternative that matches the text", async t => {
+		const Size = Template(Union(Number, Literal("auto")), "px")
+		assertEquals(Size.parse("10px"), "10px")
+		assertEquals(Size.parse("autopx"), "autopx")
+		const Flag = Template(Union(Boolean, Literal("yes")))
+		assertEquals(Flag.parse("yes"), "yes")
+		assertEquals(Flag.parse("false"), "false")
 	})
 })
